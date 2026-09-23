@@ -12,7 +12,7 @@ requirement_ids := [
 	"GHA-01", "GHA-02", "GHA-03", "GHA-04", "GHA-05", "GHA-06", "GHA-07", "GHA-08", "GHA-09",
 	"GHA-10", "GHA-11", "GHA-12", "GHA-13", "GHA-14", "GHA-15", "GHA-16", "GHA-17",
 	"GHA-20", "GHA-21", "GHA-22", "GHA-23",
-	"GHA-24", "GHA-25", "GHA-26", "GHA-27", "GHA-28", "GHA-29", "GHA-30", "GHA-31", "GHA-32", "GHA-38",
+	"GHA-24", "GHA-26", "GHA-27", "GHA-28", "GHA-29", "GHA-30", "GHA-31", "GHA-32", "GHA-38",
 ]
 
 index := {

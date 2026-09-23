@@ -85,34 +85,6 @@ def test_global_terminology_and_base_profile_are_valid() -> None:
     assert schemas.problems(PRODUCT, schemas.PROFILE, profile, "base-repo") == []
 
 
-DECISION = {
-    "id": "0004",
-    "title": "Identifiers and diagnostic URLs",
-    "date": "2026-09-23",
-    "status": "accepted",
-    "deciders": ["@octocat"],
-}
-
-
-def test_decision_frontmatter_accepts_a_record() -> None:
-    assert schemas.problems(PRODUCT, schemas.DECISION, DECISION, "decision") == []
-
-
-@pytest.mark.parametrize(
-    "change",
-    [
-        {"id": 4},
-        {"status": "done"},
-        {"status": "superseded"},
-        {"date": "2026-9-23"},
-        {"extra": True},
-    ],
-    ids=["numeric-id", "unknown-status", "superseded-without-successor", "bad-date", "extra"],
-)
-def test_decision_frontmatter_rejects(change: dict[str, object]) -> None:
-    assert schemas.problems(PRODUCT, schemas.DECISION, DECISION | change, "decision") != []
-
-
 def test_waiver_on_adopt_is_rejected_with_a_clear_path() -> None:
     declaration = read_yaml(FIXTURES / "declarations" / "invalid" / "adopt-waiver.yaml")
     errors = list(schemas.iter_errors(PRODUCT, schemas.DECLARATION, declaration))

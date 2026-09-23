@@ -30,7 +30,7 @@ repository, the proposal carries `authority` pointing there
 
 1. **Allocate the ID.** Take the next number in the family. Numbers are never reused, including numbers of retired
    requirements; `conventions/README.md` lists every ID ever issued. A new family needs an entry in
-   `conventions/families.yml`, and a prefix listed under `reserved` there is not available.
+   `conventions/families.yml`.
 2. **Add the frontmatter entry** to the convention's `requirements:` list:
 
    ```yaml

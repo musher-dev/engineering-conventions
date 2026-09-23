@@ -2,7 +2,7 @@
 
 Architecture decision records for this repository: why it exists, how it checks conventions, how it is released and
 consumed, and why the vocabulary is what it is. Each record follows [MADR](https://adr.github.io/madr/) with YAML
-frontmatter validated by `engineering-conventions/checks/schemas/decision-frontmatter.schema.json`.
+frontmatter validated by [`decision.schema.json`](decision.schema.json).
 
 These records govern this repository. The conventions it publishes are in
 [`engineering-conventions/conventions/`](../../engineering-conventions/conventions/); decisions about how the company

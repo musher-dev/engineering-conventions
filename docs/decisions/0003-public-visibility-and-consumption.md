@@ -1,5 +1,4 @@
 ---
-id: "0003"
 title: The repository is public, and consumers vendor a verified, tagged bundle
 date: 2026-09-23
 status: accepted

@@ -119,7 +119,6 @@ class Profile:
 class Content:
     product: Path
     families: tuple[Family, ...]
-    reserved: tuple[str, ...]
     conventions: tuple[Convention, ...]
     terminology: Terminology
     areas: tuple[Terminology, ...]
@@ -147,10 +146,10 @@ def _validated(product: Path, schema: str, data: object, path: Path) -> dict[str
     return as_map(data)
 
 
-def load_families(product: Path) -> tuple[tuple[Family, ...], tuple[str, ...]]:
+def load_families(product: Path) -> tuple[Family, ...]:
     path = families_file(product)
     data = _validated(product, schemas.FAMILIES, read_yaml(path), path)
-    families = tuple(
+    return tuple(
         Family(
             prefix=get_str(item, "prefix"),
             title=get_str(item, "title"),
@@ -158,8 +157,6 @@ def load_families(product: Path) -> tuple[tuple[Family, ...], tuple[str, ...]]:
         )
         for item in map(as_map, as_list(data.get("families")))
     )
-    reserved = tuple(get_str(as_map(item), "prefix") for item in as_list(data.get("reserved")))
-    return families, reserved
 
 
 def _requirement(data: dict[str, object], convention: str, path: str) -> Requirement:
@@ -309,13 +306,12 @@ def load_profiles(product: Path, directory: Path | None = None) -> tuple[Profile
 def load_content(product: Path) -> Content:
     found: list[str] = []
     families: tuple[Family, ...] = ()
-    reserved: tuple[str, ...] = ()
     conventions: tuple[Convention, ...] = ()
     terminology: Terminology | None = None
     areas: tuple[Terminology, ...] = ()
     profiles: tuple[Profile, ...] = ()
     try:
-        families, reserved = load_families(product)
+        families = load_families(product)
     except ContentError as error:
         found.extend(error.problems)
     try:
@@ -339,7 +335,6 @@ def load_content(product: Path) -> Content:
     return Content(
         product=product,
         families=families,
-        reserved=reserved,
         conventions=conventions,
         terminology=terminology,
         areas=areas,

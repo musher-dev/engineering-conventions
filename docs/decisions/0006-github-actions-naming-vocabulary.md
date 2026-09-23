@@ -1,5 +1,4 @@
 ---
-id: "0006"
 title: GitHub Actions units are named for responsibility, result and capability, from closed token sets
 date: 2026-09-23
 status: accepted

@@ -1,5 +1,4 @@
 ---
-id: "0005"
 title: Requirements start as warnings, and a release's version says what it can break
 date: 2026-09-23
 status: accepted

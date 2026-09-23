@@ -1,22 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Decision record frontmatter",
-  "description": "The YAML frontmatter of an architecture decision record in docs/decisions/NNNN-slug.md.",
+  "description": "The YAML frontmatter of a decision record in docs/decisions/NNNN-slug.md. The filename carries the decision number, so the frontmatter does not repeat it.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "title", "date", "status"],
+  "required": ["title", "date", "status"],
   "properties": {
-    "id": {
-      "description": "The four-digit decision number, as a string so leading zeros survive, e.g. \"0004\". It matches the filename prefix.",
-      "$ref": "#/definitions/decisionId"
-    },
     "title": {
       "description": "The decision, in sentence case.",
-      "$ref": "common.schema.json#/definitions/nonEmptyString"
+      "$ref": "#/definitions/nonEmptyString"
     },
     "date": {
       "description": "When the decision reached its current status.",
-      "$ref": "common.schema.json#/definitions/date"
+      "$ref": "#/definitions/date"
     },
     "status": {
       "description": "proposed: open for comment; accepted: in force; rejected: considered and declined; deprecated: no longer applies; superseded: replaced by the decisions in superseded_by.",
@@ -27,19 +23,19 @@
       "description": "Who made the decision.",
       "type": "array",
       "uniqueItems": true,
-      "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+      "items": { "$ref": "#/definitions/nonEmptyString" }
     },
     "consulted": {
       "description": "Whose opinion was sought before deciding.",
       "type": "array",
       "uniqueItems": true,
-      "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+      "items": { "$ref": "#/definitions/nonEmptyString" }
     },
     "informed": {
       "description": "Who is kept up to date on the decision.",
       "type": "array",
       "uniqueItems": true,
-      "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+      "items": { "$ref": "#/definitions/nonEmptyString" }
     },
     "supersedes": {
       "description": "Decisions this one replaces.",
@@ -64,8 +60,20 @@
   },
   "definitions": {
     "decisionId": {
+      "description": "A decision's four-digit number, the prefix of its filename, as a string so leading zeros survive.",
       "type": "string",
       "pattern": "^[0-9]{4}$"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "date": {
+      "description": "A calendar date in ISO 8601 form, YYYY-MM-DD.",
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
     }
   }
 }

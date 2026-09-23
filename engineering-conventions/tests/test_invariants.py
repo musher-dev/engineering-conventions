@@ -50,11 +50,6 @@ def test_family_topic_must_match_convention_topic(content: Content) -> None:
     )
 
 
-def test_reserved_prefix_cannot_be_registered(content: Content) -> None:
-    edited = replace(content, reserved=(*content.reserved, content.families[0].prefix))
-    assert any("reserved" in p for p in invariants.families_registered(edited))
-
-
 def test_replaced_by_must_resolve(content: Content) -> None:
     first = content.conventions[0]
     retired = replace(first.requirements[0], status="retired", replaced_by=("GHA-98",))
@@ -255,22 +250,17 @@ def test_baseline_that_predates_the_index_is_skipped(content: Content, tmp_path:
     assert invariants.append_only(replace(content, product=tmp_path), "HEAD") == []
 
 
-def test_decision_records_are_validated(content: Content, product: Path, tmp_path: Path) -> None:
+def test_family_unread_by_waiver_checks_is_reported(
+    content: Content, product: Path, tmp_path: Path
+) -> None:
     copy = _product_copy(product, tmp_path)
-    decisions = tmp_path / "docs" / "decisions"
-    decisions.mkdir(parents=True)
-    (decisions / "0001-engines.md").write_text(
-        "---\nid: '0002'\ntitle: Engines\ndate: 2026-09-23\nstatus: accepted\n---\n\n# Engines\n",
-        encoding="utf-8",
+    layout = copy / "checks" / "rego" / "layout"
+    layout.mkdir()
+    (layout / "structure.rego").write_text(
+        "package conventions.checks.layout.structure\n", encoding="utf-8"
     )
-    (decisions / "0002-broken.md").write_text(
-        "---\nid: '0002'\ntitle: Broken\ndate: 2026-09-23\nstatus: done\n---\n",
-        encoding="utf-8",
-    )
-    (decisions / "README.md").write_text("# Decisions\n", encoding="utf-8")
-    problems = invariants.decisions_valid(replace(content, product=copy))
+    problems = invariants.waivers_see_every_family(replace(content, product=copy))
     assert problems == [
-        "docs/decisions/0001-engines.md: id must be '0001', the filename's number",
-        "docs/decisions/0002-broken.md: status: 'done' is not one of "
-        "['proposed', 'accepted', 'rejected', 'deprecated', 'superseded']",
+        "checks/rego/adoption/declaration.rego does not read data.conventions.checks.layout, "
+        "so ADOPT-06 cannot see the findings its waivers cover; add it to raw_findings"
     ]

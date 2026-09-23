@@ -15,7 +15,6 @@ from conventions_tools.paths import schemas_dir
 COMMON = "common.schema.json"
 FAMILIES = "families.schema.json"
 CONVENTION = "convention-frontmatter.schema.json"
-DECISION = "decision-frontmatter.schema.json"
 TERMINOLOGY = "terminology.schema.json"
 PROFILE = "profile.schema.json"
 DECLARATION = "conventions-declaration.schema.json"

@@ -1,5 +1,4 @@
 ---
-id: "0000"
 title: This repository is the home of shared engineering conventions, and owns nothing else
 date: 2026-09-23
 status: accepted

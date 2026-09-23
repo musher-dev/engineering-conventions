@@ -74,12 +74,3 @@ ID is permanent: it is never renumbered or reused.
 | --- | --- | --- |
 | ADOPT | Adopting the conventions | adoption |
 | GHA | GitHub Actions | github-actions |
-
-## Planned topics
-
-These topics have no conventions yet; the directories are created with their
-first convention.
-
-- `structure`
-- `naming`
-- `implementation`

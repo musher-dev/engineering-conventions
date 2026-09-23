@@ -19,8 +19,7 @@ as a public API.
 - **MUST** give every requirement exactly one `### <ID>` heading in the body,
   with its title as a bold first line. The heading is the diagnostic URL's
   anchor.
-- **MUST** register a new ID prefix in `conventions/families.yml` first, and
-  never take a `reserved` one.
+- **MUST** register a new ID prefix in `conventions/families.yml` first.
 - **MUST** choose the commit type from the change-classification table in
   docs/decisions/0005-status-severity-and-versioning.md, the only copy of it.
   Anything that can fail a build that passed is a `!` commit; a change to what

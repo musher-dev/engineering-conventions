@@ -1,5 +1,4 @@
 ---
-id: "0001"
 title: Conventions are checked with Conftest and Rego, JSON Schema and Vale
 date: 2026-09-23
 status: accepted

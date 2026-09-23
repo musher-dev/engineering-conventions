@@ -119,7 +119,9 @@ findings contains lib.finding("ADOPT-08", files.declaration_path, message) if {
 
 # Waiver checks judge the findings a waiver could cover, before any waiver is
 # applied. They are read from each family's check packages by name: reading
-# all of data.conventions.checks would include this package and recurse.
+# all of data.conventions.checks would include this package and recurse. A
+# new family is added here with its checks (`conventions invariants` fails
+# until it is).
 raw_findings contains finding if {
 	some convention
 	package_findings := data.conventions.checks.github_actions[convention].findings

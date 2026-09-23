@@ -23,7 +23,6 @@ from conventions_tools.profiles import resolve_all
 
 SCHEMA_VERSION = 1
 NOT_WAIVABLE_FAMILIES = frozenset({"ADOPT"})
-PLANNED_TOPICS = ("structure", "naming", "implementation")
 TERMINOLOGY_URL = f"{REPOSITORY_URL}/blob/main/{PRODUCT_DIR_NAME}/terminology/README.md"
 
 
@@ -184,15 +183,6 @@ def render_readme(content: Content) -> str:
         f"| {family.prefix} | {_cell(family.title)} | {family.topic} |"
         for family in content.families
     )
-    lines += [
-        "",
-        "## Planned topics",
-        "",
-        "These topics have no conventions yet; the directories are created with their",
-        "first convention.",
-        "",
-    ]
-    lines.extend(f"- `{topic}`" for topic in PLANNED_TOPICS)
     return "\n".join(lines) + "\n"
 
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Requirement-ID families",
-  "description": "The registry of requirement-ID prefixes (conventions/families.yml). Every requirement ID's prefix is a registered family; reserved prefixes are held for rules that will migrate here with their IDs unchanged and may not be registered as new families.",
+  "description": "The registry of requirement-ID prefixes (conventions/families.yml). Every requirement ID's prefix is a registered family.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "families"],
@@ -31,22 +31,6 @@
           "owner": {
             "description": "Who reviews changes to this family.",
             "$ref": "common.schema.json#/definitions/owner"
-          }
-        }
-      }
-    },
-    "reserved": {
-      "description": "Prefixes claimed for rules that exist elsewhere today and will move here keeping their IDs.",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["prefix", "source"],
-        "properties": {
-          "prefix": { "$ref": "common.schema.json#/definitions/familyPrefix" },
-          "source": {
-            "description": "Where the rules carrying this prefix live today.",
-            "$ref": "common.schema.json#/definitions/nonEmptyString"
           }
         }
       }

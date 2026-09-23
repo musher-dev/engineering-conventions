@@ -2,7 +2,7 @@
 
 Copy the block below into `NNNN-kebab-title.md`, taking the next unused number from the [index](README.md), and add a
 row to the index. The frontmatter is validated against
-`engineering-conventions/checks/schemas/decision-frontmatter.schema.json`.
+[`decision.schema.json`](decision.schema.json). The number is the filename's; the frontmatter does not repeat it.
 
 - `status` is one of `proposed`, `accepted`, `rejected`, `deprecated` or `superseded`.
 - A superseded decision keeps its file, gains `superseded_by`, and its status becomes `superseded`. The decision that
@@ -11,7 +11,6 @@ row to the index. The frontmatter is validated against
 
 ````markdown
 ---
-id: "NNNN"
 title: Short, decision-first title
 date: YYYY-MM-DD
 status: proposed

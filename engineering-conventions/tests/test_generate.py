@@ -244,14 +244,12 @@ def test_vale_accepts_the_generated_styles(product: Path, tmp_path: Path) -> Non
     assert checks == ["MusherConventions.Terms"]
 
 
-def test_readme_lists_every_requirement_and_planned_topics(content: Content) -> None:
+def test_readme_lists_every_requirement(content: Content) -> None:
     readme = generate.render_readme(content)
     assert readme.startswith("# Conventions\n")
     assert "Do not edit" in readme
     for req in content.requirements:
         assert f"[{req.id}](" in readme
-    for topic in ("structure", "naming", "implementation"):
-        assert f"- `{topic}`" in readme
     assert "\\<Subject\\>" in readme
 
 

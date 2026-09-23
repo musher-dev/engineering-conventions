@@ -14,7 +14,6 @@ applies them.
 | **check** | An implementation that validates a requirement: a Rego package, a schema, a Vale rule, a platform check such as CI-14 | |
 | **waiver** | A consumer's time-boxed, tracked deviation from a requirement | `exception` (Conftest and Python both use that word) |
 | **topic** | A subdirectory of `conventions/`, such as `github-actions` | |
-| **area** | A terminology overlay for a group of repositories | `domain` |
 | **convention profile** | A named selection of requirements for a kind of repository | `baseline` |
 | **conventions declaration** | A consumer's `.repo/conventions.yaml` | `manifest` |
 | **family** | A requirement-ID prefix registered in `conventions/families.yml` | |
@@ -105,10 +104,9 @@ repository, the proposal carries `authority` pointing there
 
 ## Adding or changing a term
 
-Terms live in `engineering-conventions/terminology/global.yml` (or an area overlay under `terminology/areas/`). A term
-has either a `definition` or an `authority` pointing at the repository that defines it, never both. Do not restate a
-definition another repository owns. An area overlay may add terms and aliases; it may never redefine a global term.
-Run `task generate` afterward: tokens and display forms feed the Rego data, and prose aliases feed the Vale style.
+Terms live in `engineering-conventions/terminology/global.yml`. A term has either a `definition` or an `authority`
+pointing at the repository that defines it, never both. Do not restate a definition another repository owns. Run
+`task generate` afterward: tokens and display forms feed the Rego data, and prose aliases feed the Vale style.
 
 ## Retiring a requirement
 

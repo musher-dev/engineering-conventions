@@ -1,0 +1,15 @@
+schema_version: 1
+description: A term with a banned alias, and a display form.
+terms:
+  - id: example.widget
+    display_name: widget
+    definition: A thing the example builds.
+    tags: [example]
+    stability: provisional
+    aliases:
+      - text: gizmo
+        status: banned
+        scope: [identifier]
+display_forms:
+  - token: grpc
+    display: gRPC

@@ -37,9 +37,6 @@ and names that checks read) or `prose` (Markdown that Vale reads). The two scope
 wrong in one and right in the other: `pr` is rejected as a filename token and is ordinary in a sentence. Display forms
 (`api` → `API`) live beside the terms.
 
-**Areas overlay the global terms.** An area (`terminology/areas/<area>.yml`) is a bounded-context overlay for a group
-of repositories. It may add terms and aliases. It may never redefine a global term.
-
 **Not mirrored here:** positioning vocabulary, the customer glossary, platform domain nouns and telemetry names. They
 stay with their owners, and this repository does not ship rules about them.
 
@@ -76,7 +73,6 @@ tooling; a consumer uses the committed output and never runs it.
 ## Enforcement
 
 - `task generate:check` (in the `Content` job of `Validate`) fails on any drift between sources and committed artifacts.
-- `conventions invariants` fails when an area overlay redefines a global term.
 - `terminology.schema.json` requires a term to have exactly one of `definition` and `authority`.
 
 ## Considered options

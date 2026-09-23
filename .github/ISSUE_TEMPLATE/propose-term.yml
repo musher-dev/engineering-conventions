@@ -53,7 +53,6 @@ body:
       label: Scope
       options:
         - Global (every repository)
-        - An area overlay (a group of repositories)
         - One repository (use vocabulary.display_forms in its declaration instead)
     validations:
       required: true

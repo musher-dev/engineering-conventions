@@ -26,10 +26,6 @@
       "description": "The convention profile that applies, e.g. base-repo.",
       "$ref": "common.schema.json#/definitions/slug"
     },
-    "area": {
-      "description": "The terminology area this repository belongs to, when it has one.",
-      "$ref": "common.schema.json#/definitions/slug"
-    },
     "vocabulary": {
       "description": "Repository-specific vocabulary on top of the release's.",
       "type": "object",

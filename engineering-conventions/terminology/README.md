@@ -6,10 +6,9 @@ Vale style and this documentation; nothing restates it by hand.
 
 | File | What it holds |
 | --- | --- |
-| [`global.yml`](global.yml) | Every term that applies everywhere |
-| [`areas/`](areas/README.md) | Area overlays: terms that apply to one part of the organisation |
+| [`global.yml`](global.yml) | Every term the conventions use |
 
-Both are validated against
+It is validated against
 [`terminology.schema.json`](../checks/schemas/terminology.schema.json).
 
 ## The model
@@ -55,13 +54,6 @@ from it: `api` is written `API`, so `deploy-api.yml` is named `Deploy API`.
 
 A consuming repository may add display forms of its own in its conventions
 declaration (`vocabulary.display_forms`); it cannot remove or change these.
-
-## Overlays add, never redefine
-
-An area overlay may **add** terms, aliases on global terms (`extend`), and
-display forms. It may never **redefine** anything global: a term ID, a
-display form token, or an alias already owned by another term. `conventions
-invariants` enforces this.
 
 ## Authority references
 

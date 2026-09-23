@@ -1,10 +1,9 @@
 # The global terminology. Every convention uses these words with these
-# meanings; area overlays in areas/ may add to it but never redefine it.
+# meanings.
 # `conventions generate` projects the gha.* tags, the identifier-scope
 # aliases and the display forms into checks/data/index.json, and the
 # prose-scope aliases into the MusherConventions Vale style.
 schema_version: 1
-area: global
 description: >-
   Words the conventions themselves are written in, the GitHub Actions naming
   vocabulary, and pointers to terms another repository defines.
@@ -338,19 +337,6 @@ terms:
       such as github-actions.
     tags: [meta]
     stability: stable
-  - id: conventions.area
-    display_name: area
-    definition: >-
-      A terminology overlay for one bounded part of the organisation, adding
-      terms to the global terminology without redefining any.
-    tags: [meta]
-    stability: stable
-    aliases:
-      - text: domain overlay
-        status: banned
-        scope: [prose]
-        suggest: area overlay
-        note: Domain already means a DDD, DNS or company domain.
   - id: conventions.convention-profile
     display_name: convention profile
     definition: >-

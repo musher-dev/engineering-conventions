@@ -94,10 +94,8 @@ class Term:
 
 @dataclass(frozen=True)
 class Terminology:
-    area: str
     path: str
     terms: tuple[Term, ...]
-    extend: tuple[tuple[str, tuple[Alias, ...]], ...]
     display_forms: tuple[tuple[str, str], ...]
 
 
@@ -121,7 +119,6 @@ class Content:
     families: tuple[Family, ...]
     conventions: tuple[Convention, ...]
     terminology: Terminology
-    areas: tuple[Terminology, ...]
     profiles: tuple[Profile, ...]
 
     @property
@@ -235,25 +232,13 @@ def _term(data: dict[str, object]) -> Term:
 def load_terminology(product: Path, path: Path) -> Terminology:
     data = _validated(product, schemas.TERMINOLOGY, read_yaml(path), path)
     return Terminology(
-        area=get_str(data, "area"),
         path=_relative(product, path),
         terms=tuple(_term(as_map(item)) for item in as_list(data.get("terms"))),
-        extend=tuple(
-            (
-                get_str(entry, "term"),
-                tuple(_alias(as_map(item)) for item in as_list(entry.get("aliases"))),
-            )
-            for entry in map(as_map, as_list(data.get("extend")))
-        ),
         display_forms=tuple(
             (get_str(entry, "token"), get_str(entry, "display"))
             for entry in map(as_map, as_list(data.get("display_forms")))
         ),
     )
-
-
-def area_files(product: Path) -> list[Path]:
-    return sorted((terminology_dir(product) / "areas").glob("*.yml"))
 
 
 def load_profile(product: Path, path: Path) -> Profile:
@@ -308,7 +293,6 @@ def load_content(product: Path) -> Content:
     families: tuple[Family, ...] = ()
     conventions: tuple[Convention, ...] = ()
     terminology: Terminology | None = None
-    areas: tuple[Terminology, ...] = ()
     profiles: tuple[Profile, ...] = ()
     try:
         families = load_families(product)
@@ -323,10 +307,6 @@ def load_content(product: Path) -> Content:
     except ContentError as error:
         found.extend(error.problems)
     try:
-        areas = _collect(load_terminology, product, area_files(product))
-    except ContentError as error:
-        found.extend(error.problems)
-    try:
         profiles = load_profiles(product)
     except ContentError as error:
         found.extend(error.problems)
@@ -337,6 +317,5 @@ def load_content(product: Path) -> Content:
         families=families,
         conventions=conventions,
         terminology=terminology,
-        areas=areas,
         profiles=profiles,
     )

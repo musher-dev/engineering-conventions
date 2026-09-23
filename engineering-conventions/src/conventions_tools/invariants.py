@@ -232,25 +232,18 @@ def fixtures_cover(content: Content) -> list[str]:
     return found
 
 
-def _alias_owners(files: Iterable[Terminology]) -> dict[tuple[str, str], set[str]]:
+def _alias_owners(terminology: Terminology) -> dict[tuple[str, str], set[str]]:
     owners: dict[tuple[str, str], set[str]] = {}
-    for terminology in files:
-        entries = [(term.id, term.aliases) for term in terminology.terms] + list(terminology.extend)
-        for term_id, aliases in entries:
-            for alias in aliases:
-                for scope in alias.scope:
-                    owners.setdefault((alias.text, scope), set()).add(term_id)
+    for term in terminology.terms:
+        for alias in term.aliases:
+            for scope in alias.scope:
+                owners.setdefault((alias.text, scope), set()).add(term.id)
     return owners
 
 
 def terminology_consistent(content: Content) -> list[str]:
     glob = content.terminology
-    found: list[str] = []
-    if glob.area != "global":
-        found.append(f"{glob.path}: area must be 'global'")
-    global_ids = {term.id for term in glob.terms}
-    global_tokens = {token for token, _ in glob.display_forms}
-    found += [
+    found = [
         f"{glob.path}: term {tid} is defined more than once"
         for tid in _duplicates(t.id for t in glob.terms)
     ]
@@ -264,27 +257,9 @@ def terminology_consistent(content: Content) -> list[str]:
             f"{glob.path}: token {tok!r} is used by more than one {tag} term"
             for tok in _duplicates(tokens)
         ]
-    seen_ids = set(global_ids)
-    for area in content.areas:
-        if area.area == "global" or Path(area.path).stem != area.area:
-            found.append(f"{area.path}: area must be the file's name, {Path(area.path).stem!r}")
-        for term in area.terms:
-            if term.id in seen_ids:
-                found.append(f"{area.path}: term {term.id} redefines a term that already exists")
-            seen_ids.add(term.id)
-        found += [
-            f"{area.path}: extends unknown global term {term_id}"
-            for term_id, _ in area.extend
-            if term_id not in global_ids
-        ]
-        found += [
-            f"{area.path}: display form {token!r} redefines a global display form"
-            for token, _ in area.display_forms
-            if token in global_tokens
-        ]
     found += [
         f"alias {text!r} ({scope}) belongs to more than one term: {', '.join(sorted(owners))}"
-        for (text, scope), owners in sorted(_alias_owners([glob, *content.areas]).items())
+        for (text, scope), owners in sorted(_alias_owners(glob).items())
         if len(owners) > 1
     ]
     return found

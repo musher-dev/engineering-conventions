@@ -9,7 +9,7 @@ nothing here needs Python to use.
 | `conventions/` | The conventions (`EC-NNNN`), one Markdown document each, with the requirement catalog in YAML frontmatter | |
 | `conventions/families.yml` | The registered requirement-ID prefixes | |
 | `conventions/README.md` | An index of every convention and requirement ID, retired ones included | yes |
-| `terminology/` | `global.yml` and area overlays: terms, display forms and aliases | |
+| `terminology/` | `global.yml`: terms, display forms and aliases | |
 | `profiles/` | Convention profiles, such as `base-repo` | |
 | `checks/rego/` | The Conftest checks and the `main` router that applies profiles, severities and waivers | |
 | `checks/schemas/` | JSON Schemas for the conventions declaration, frontmatter, terminology and profiles | |

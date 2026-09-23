@@ -7,7 +7,7 @@ import pytest
 
 from conventions_tools import invariants
 from conventions_tools.cli import main
-from conventions_tools.content import Content, Convention, load_profiles, load_terminology
+from conventions_tools.content import Content, Convention, load_profiles
 from conventions_tools.paths import HOME_ENV
 
 
@@ -145,31 +145,16 @@ def test_missing_clean_fixture_is_reported(content: Content, product: Path, tmp_
     assert any("clean/ is missing" in p for p in problems)
 
 
-def test_valid_overlay_is_accepted(content: Content, fixtures: Path) -> None:
-    overlay = load_terminology(
-        content.product, fixtures / "terminology" / "valid" / "example-area.yml"
-    )
-    edited = replace(content, areas=(overlay,))
-    assert invariants.terminology_consistent(edited) == []
-
-
-@pytest.mark.parametrize(
-    ("name", "expected"),
-    [
-        ("redefines-term", "redefines a term that already exists"),
-        ("redefines-display-form", "redefines a global display form"),
-        ("alias-conflict", "alias 'ci' (identifier) belongs to more than one term"),
-        ("unknown-extend", "extends unknown global term gha.responsibility.observe"),
-        ("wrong-area-name", "area must be the file's name"),
-    ],
-)
-def test_overlay_cannot_redefine_global_terms(
-    content: Content, fixtures: Path, name: str, expected: str
-) -> None:
-    path = fixtures / "terminology" / "invalid" / "overlay" / f"{name}.yml"
-    edited = replace(content, areas=(load_terminology(content.product, path),))
+def test_alias_owned_by_two_terms_is_reported(content: Content) -> None:
+    glob = content.terminology
+    owner = next(term for term in glob.terms if term.aliases)
+    alias = owner.aliases[0]
+    other = next(term for term in glob.terms if term.id != owner.id)
+    claimed = replace(other, aliases=(*other.aliases, alias))
+    terms = tuple(claimed if term.id == other.id else term for term in glob.terms)
+    edited = replace(content, terminology=replace(glob, terms=terms))
     problems = invariants.terminology_consistent(edited)
-    assert any(expected in p for p in problems), problems
+    assert any(f"alias {alias.text!r}" in p and "more than one term" in p for p in problems)
 
 
 def test_profile_cycle_is_reported(content: Content, fixtures: Path) -> None:

@@ -121,9 +121,6 @@ conventions:
 # The convention profile that applies. base-repo is the default for every repository.
 profile: base-repo
 
-# Optional: the terminology area this repository belongs to.
-# area: hosts
-
 # Optional: display forms for this repository's own filename tokens. They add to
 # the release's display forms and can never redefine one it ships.
 vocabulary:
@@ -148,7 +145,6 @@ waivers:
 | `schema_version` | yes | The file format version. Always `1`. |
 | `conventions.version` | yes | The release pinned, such as `0.1.0`. Upgrade by changing this value and the vendored bundle together; ADOPT-08 reports a mismatch. |
 | `profile` | yes | The convention profile that selects which requirements apply and at what severity. It must be one the pinned release defines (ADOPT-07). |
-| `area` | no | The terminology area overlay that applies, when the repository belongs to one. |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
 | `waivers` | no | A list of waivers, described below. |
 

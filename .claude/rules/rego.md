@@ -21,7 +21,8 @@ conftest and nothing else, so what is written here is what a consumer executes.
 - **MUST** write a `message` a reader can act on without the URL: what is wrong
   and what to change it to.
 - **MUST** ship a fixture repo for every requirement a check emits:
-  `engineering-conventions/tests/fixtures/repos/<id-lower>-<slug>/` with an
+  `engineering-conventions/tests/fixtures/repos/<id-lower>-<slug>/`, an overlay
+  on `clean/` holding only the files that differ (plus `removed.txt`), with an
   `expected.json` that names it. A requirement no fixture expects is unproven;
   `task invariants` fails on it.
 - **MUST** put a `*_test.rego` beside every policy file. `task checks:test` fails

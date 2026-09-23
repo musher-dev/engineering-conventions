@@ -1,6 +1,11 @@
-"""Running the fixture repositories under tests/fixtures/repos/ and comparing results."""
+"""Running the fixture repositories under tests/fixtures/repos/ and comparing results.
+
+Each case is an overlay on the clean case; see `materialize`.
+"""
 
 import json
+import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -65,10 +70,54 @@ def expected_findings(case: Path) -> list[Expectation]:
 # expected.json, in the shape bundle:build writes into a release.
 RELEASE_FILE = "release.json"
 
+# Every case is an overlay on the clean case, which conforms fully: the case
+# directory holds only the files that differ, and removed.txt lists the clean
+# files the case lacks, one repository-relative path per line.
+BASE_CASE = "clean"
+REMOVED_FILE = "removed.txt"
+CASE_FILES = frozenset({"expected.json", RELEASE_FILE, REMOVED_FILE})
+
+
+def _repository_files(directory: Path) -> list[Path]:
+    """The files of a case that belong to the repository it describes, not its metadata."""
+    return sorted(
+        path
+        for path in directory.rglob("*")
+        if path.is_file() and path.relative_to(directory).as_posix() not in CASE_FILES
+    )
+
+
+def removed_paths(case: Path) -> list[str]:
+    removed = case / REMOVED_FILE
+    if not removed.is_file():
+        return []
+    lines = (line.strip() for line in removed.read_text(encoding="utf-8").splitlines())
+    return [line for line in lines if line and not line.startswith("#")]
+
+
+def materialize(case: Path, target: Path) -> Path:
+    """Write the repository `case` describes into `target`: clean, overlaid, minus removed."""
+    base = case.parent / BASE_CASE
+    for layer in (base, case):
+        for source in _repository_files(layer):
+            destination = target / source.relative_to(layer)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+    for relative in removed_paths(case):
+        path = target / relative
+        if not path.is_file():
+            raise FileNotFoundError(
+                f"{case.name}/{REMOVED_FILE} removes {relative}, which {BASE_CASE}/ does not have"
+            )
+        path.unlink()
+    return target
+
 
 def run_case(product: Path, case: Path) -> CaseResult:
     release = case / RELEASE_FILE
-    report = check(product, case, FIXTURE_NOW, release if release.is_file() else None)
+    with tempfile.TemporaryDirectory() as directory:
+        repo = materialize(case, Path(directory) / case.name)
+        report = check(product, repo, FIXTURE_NOW, release if release.is_file() else None)
     findings = [*report.findings, *(error.as_finding() for error in report.errors)]
     return CaseResult(
         name=case.name,

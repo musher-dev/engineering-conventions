@@ -26,7 +26,8 @@ wrong. Paths are relative to the repository root.
 - [ ] **Check** (`conftest` only). Emit `{"id", "path", "message"}` and nothing more. No severity, time or waiver logic:
   the `main` router owns those. Put a `*_test.rego` beside it.
 - [ ] **Fixture** (`conftest` only). Add a case under `engineering-conventions/tests/fixtures/repos/` whose
-  `expected.json` names the requirement. `clean` must still expect `[]`.
+  `expected.json` names the requirement. Put only the files that differ from `clean/` in it, and list any
+  `clean/` file it must lack in `removed.txt`. `clean` must still expect `[]`.
 - [ ] **Generated files.** Run `task generate` and commit what it rewrites. Never hand-edit a file `.gitattributes`
   marks `linguist-generated`.
 - [ ] **Verify.** Run `task check`. `task conventions:self` must report zero findings, warnings included.

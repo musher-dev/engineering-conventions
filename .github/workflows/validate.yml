@@ -124,10 +124,13 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-tools
         with:
-          # conftest is here because the test suite runs every fixture
-          # repository through `conventions check`, which shells out to it.
+          # The test suite shells out to three of these: conftest (every
+          # fixture repository runs through `conventions check`), vale (the
+          # generated styles must load) and check-jsonschema (the schemas'
+          # relative $refs must resolve from disk).
           install-args: >-
             aqua:go-task/task aqua:astral-sh/uv aqua:open-policy-agent/conftest
+            aqua:vale-cli/vale pipx:check-jsonschema
       - name: Lint, type-check and test the conventions CLI
         run: task cli:lint cli:typecheck cli:test
       # The baseline is what the change builds on: the PR base, the merge

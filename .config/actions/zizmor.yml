@@ -1,0 +1,14 @@
+# zizmor configuration: the GitHub Actions security audit.
+# Read by: zizmor, via an explicit --config path (taskfiles/lint.Taskfile.yml,
+# `task lint:actions:security`). The severity floor (medium, persona regular)
+# is set on the command line to match GHA-33, which states it for consumers.
+# Docs: https://docs.zizmor.sh/configuration/
+
+rules:
+  # Every `uses:` is pinned to a full commit SHA, first-party actions
+  # included. zizmor's default policy lets `actions/*` float on a tag;
+  # GHA-24 does not, so this repo holds itself to the stricter rule.
+  unpinned-uses:
+    config:
+      policies:
+        "*": hash-pin

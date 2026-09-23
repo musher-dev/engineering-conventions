@@ -1,0 +1,28 @@
+# Requirement-ID families. A requirement ID is `<PREFIX>-<NN>`: the prefix is
+# registered here, the number is monotonic within the family, and neither is
+# ever reused -- a retired requirement stays in its convention as a tombstone.
+#
+# Reserved prefixes are claimed for rules that will migrate here with their
+# IDs unchanged (docs/decisions/0004-identifiers-and-diagnostic-urls.md), so no
+# new family may take them.
+schema_version: 1
+families:
+  - prefix: ADOPT
+    title: Adopting the conventions
+    topic: adoption
+    owner: "@justinmerrell"
+  - prefix: GHA
+    title: GitHub Actions
+    topic: github-actions
+    owner: "@justinmerrell"
+reserved:
+  - prefix: LAYOUT
+    source: musher-dev/development-container LAYOUT.md (LAYOUT-01..11)
+  - prefix: CFG
+    source: musher-dev/development-container .config/README.md (CFG-01..09)
+  - prefix: HOOK
+    source: musher-dev/development-container .repo hooks policy (HOOK-01..04)
+  - prefix: TC
+    source: musher-dev/development-container .repo toolchain policy (TC-01..03)
+  - prefix: CMT
+    source: musher-dev/development-container CONFIGURATION.md (CMT-01..03)

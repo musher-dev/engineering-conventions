@@ -1,0 +1,14 @@
+schema_version: 1
+conventions:
+  version: 1.2.3
+profile: base-repo
+area: example-area
+vocabulary:
+  display_forms:
+    grpc: gRPC
+waivers:
+  - requirement: GHA-07
+    paths: [".github/workflows/legacy-*.yml"]
+    reason: The legacy workflows are renamed with the deploy split.
+    tracking: https://github.com/your-org/your-repo/issues/1
+    expires: 2026-12-31

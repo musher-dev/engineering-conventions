@@ -1,55 +1,85 @@
 version: '3'
 
-# Lint tasks. Every command names its config file explicitly with the tool's
-# own config flag -- default discovery is deliberately never relied upon, which
-# is what keeps the configs in .config/ instead of scattered at the repo root.
-#
-# Tool versions come from .devcontainer/mise.toml (the single source).
-# Policy: CONFIGURATION.md → "Where Configuration Lives".
+# Repository-level lint and secret scan. Every command names its config file
+# explicitly with the tool's own flag; default discovery is never relied upon,
+# which is what keeps the configs in .config/ instead of at the repo root.
+# File lists come from LIST_FILES (.github/scripts/list-files.sh), so every
+# tool sees the same set: tracked plus untracked-but-not-ignored.
+
+set: [errexit, nounset, pipefail]
 
 vars:
   MD_CONFIG: .config/markdown/markdownlint.jsonc
   YAML_CONFIG: .config/yaml/yamllint.yaml
+  TYPOS_CONFIG: .config/spelling/typos.toml
   ACTIONLINT_CONFIG: .config/actions/actionlint.yaml
-  CODESPELL_CONFIG: .config/spelling/codespell.cfg
-  # Directories that contain YAML this repo owns.
-  YAML_PATHS: .github .devcontainer .config taskfiles Taskfile.yml
+  ZIZMOR_CONFIG: .config/actions/zizmor.yml
+  GITLEAKS_CONFIG: .config/security/gitleaks.toml
+  # CHANGELOG.md is written by release-please, whose output markdownlint
+  # rejects and no commit can fix. The PR template is a PR body, whose H1 is
+  # the PR title, so it starts at `##` by design (MD041). Fixtures are data
+  # for the checks under test.
+  MD_PATHSPEC: >-
+    '**/*.md' ':!:CHANGELOG.md' ':!:.github/pull_request_template.md'
+    ':!:engineering-conventions/tests/fixtures/**'
+  # Fixture repos are linted by the checks they exist to exercise, and some
+  # carry deliberate faults; the product's own YAML is otherwise in scope.
+  YAML_PATHSPEC: >-
+    '**/*.yml' '**/*.yaml' ':!:engineering-conventions/tests/fixtures/**'
 
 tasks:
-  all:
-    desc: Run every lint check (markdown, yaml, actions, spelling).
+  lint:
+    desc: Lint Markdown, YAML, spelling and shell scripts.
     cmds:
-      - task: md
-      - task: yaml
-      - task: actions
-      - task: spelling
+      - task: lint:md
+      - task: lint:yaml
+      - task: lint:spelling
+      - task: lint:shell
 
-  md:
+  lint:md:
     desc: Lint Markdown against .config/markdown/markdownlint.jsonc.
     cmds:
-      - markdownlint-cli2 --config {{.MD_CONFIG}} "**/*.md" "#node_modules" "#.repo/.venv"
+      - '{{.LIST_FILES}} {{.MD_PATHSPEC}} | xargs -0 -r markdownlint-cli2 --config {{.MD_CONFIG}}'
 
-  md:fix:
-    desc: Auto-fix the Markdown issues markdownlint can repair.
+  lint:md:fix:
+    desc: Auto-fix the Markdown issues markdownlint can repair (review the diff).
     cmds:
-      - markdownlint-cli2 --config {{.MD_CONFIG}} --fix "**/*.md" "#node_modules" "#.repo/.venv"
+      - '{{.LIST_FILES}} {{.MD_PATHSPEC}} | xargs -0 -r markdownlint-cli2 --config {{.MD_CONFIG}} --fix'
 
-  yaml:
-    desc: Lint YAML against .config/yaml/yamllint.yaml.
+  lint:yaml:
+    desc: Lint YAML against .config/yaml/yamllint.yaml (warnings fail).
     cmds:
-      - yamllint -c {{.YAML_CONFIG}} {{.YAML_PATHS}}
+      - '{{.LIST_FILES}} {{.YAML_PATHSPEC}} | xargs -0 -r yamllint -c {{.YAML_CONFIG}} --strict'
 
-  actions:
-    desc: Lint GitHub Actions workflows against .config/actions/actionlint.yaml.
+  lint:spelling:
+    desc: Spellcheck every file against .config/spelling/typos.toml.
+    cmds:
+      - typos --config {{.TYPOS_CONFIG}}
+
+  lint:shell:
+    desc: Run ShellCheck on every shell script, following sourced libraries.
+    cmds:
+      - "{{.LIST_FILES}} '**/*.sh' | xargs -0 -r shellcheck -x -P SCRIPTDIR"
+
+  lint:actions:
+    desc: Lint the workflows with actionlint (.config/actions/actionlint.yaml).
     cmds:
       - actionlint -config-file {{.ACTIONLINT_CONFIG}}
 
-  spelling:
-    desc: Spellcheck the repo against .config/spelling/codespell.cfg.
+  lint:actions:security:
+    desc: Audit workflows, composite actions and Dependabot config with zizmor at GHA-33's floor.
     cmds:
-      - codespell --config {{.CODESPELL_CONFIG}} .
+      # Online audits (impostor commits, stale version comments, known-vulnerable
+      # actions) run when GH_TOKEN is set, as in CI; locally they stay offline.
+      # Explicit files rather than `zizmor .`: a directory walk would also
+      # collect the deliberately non-conforming fixture repos under tests/.
+      - >-
+        {{.LIST_FILES}} '.github/workflows/*.yml' '.github/workflows/*.yaml'
+        '.github/actions/*/action.yml' '.github/actions/*/action.yaml' '.github/dependabot.yml'
+        | xargs -0 -r zizmor --config {{.ZIZMOR_CONFIG}} {{if not .GH_TOKEN}}--offline {{end}}
+        --min-severity medium --persona regular
 
-  spelling:fix:
-    desc: Apply codespell's suggested corrections in place (review the diff).
+  secrets:scan:
+    desc: Scan the git history for secrets with gitleaks (.config/security/gitleaks.toml).
     cmds:
-      - codespell --config {{.CODESPELL_CONFIG}} --write-changes .
+      - gitleaks git --redact --no-banner --config {{.GITLEAKS_CONFIG}} .

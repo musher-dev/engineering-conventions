@@ -1,0 +1,136 @@
+version: '3'
+
+# The release bundle: what a consumer downloads and pins. `Publish` builds it
+# from a tag and attaches dist/* to the GitHub Release; `Validate / Bundle`
+# builds and verifies it on every change so a broken bundle never reaches a
+# tag.
+#
+# dist/ holds:
+#   engineering-conventions-<V>.tar.gz  the product dir minus the authoring
+#                                       CLI, plus checks/data/release.json
+#   MusherConventions.zip               the Vale style as a Vale package
+#   manifest.json                       version, commit, per-file sha256
+#   SHA256SUMS                          `sha256sum -c` input for all three
+#
+# Byte-for-byte reproducible from a commit: sorted entries, the commit's
+# timestamp on every file, numeric root ownership, normalised modes, and
+# gzip -n (no name or time in the gzip header).
+
+set: [errexit, nounset, pipefail]
+
+vars:
+  DIST: '{{.ROOT_DIR}}/dist'
+  VERSION:
+    sh: tr -d '[:space:]' < '{{.ROOT_DIR}}/version.txt'
+  TARBALL: engineering-conventions-{{.VERSION}}.tar.gz
+  VALE_PACKAGE: MusherConventions.zip
+  # The bundle's top-level entries under engineering-conventions/. The
+  # authoring side (src/, tests/, pyproject.toml, uv.lock, .python-version)
+  # is excluded because consumers run the rules with conftest and Vale alone.
+  # So are the Rego unit tests: conftest would load them as policy.
+  BUNDLE_ENTRIES: README.md checks conventions examples profiles terminology
+
+tasks:
+  bundle:build:
+    desc: Build the reproducible release bundle, Vale package, manifest and SHA256SUMS into dist/.
+    vars:
+      COMMIT:
+        sh: git rev-parse HEAD
+      EPOCH:
+        sh: git log -1 --format=%ct
+    cmds:
+      - |
+        rm -rf "{{.DIST}}"
+        mkdir -p "{{.DIST}}"
+        stage="$(mktemp -d)"
+        trap 'rm -rf "${stage}"' EXIT
+
+        {{.LIST_FILES}} engineering-conventions \
+          ':!:engineering-conventions/src' ':!:engineering-conventions/tests' \
+          ':!:engineering-conventions/pyproject.toml' ':!:engineering-conventions/uv.lock' \
+          ':!:engineering-conventions/.python-version' \
+          ':!:engineering-conventions/checks/rego/**/*_test.rego' \
+          | xargs -0 cp -P --parents -t "${stage}"
+
+        # A symlink would carry content from outside the product into a
+        # published artifact; the product holds none, so any is a mistake.
+        links="$(find "${stage}" -type l)"
+        if [[ -n "${links}" ]]; then
+          echo "bundle:build: symlinks are not allowed in the bundle: ${links}" >&2
+          exit 1
+        fi
+
+        # Release data exists only in the bundle: with it, diagnostic URLs
+        # point at the immutable v<V> tag; without it (a checkout), at main.
+        jq -n --arg version "{{.VERSION}}" '{conventions: {release: {version: $version}}}' \
+          > "${stage}/engineering-conventions/checks/data/release.json"
+
+        find "${stage}" -exec touch -h -d "@{{.EPOCH}}" {} +
+        chmod -R u=rwX,go=rX "${stage}"
+
+        tar --create --format=gnu --sort=name --mtime="@{{.EPOCH}}" \
+          --owner=0 --group=0 --numeric-owner \
+          --directory="${stage}" engineering-conventions \
+          | gzip -n -9 > "{{.DIST}}/{{.TARBALL}}"
+
+        # A Vale style package is a zip whose root is the style directory.
+        # -X drops uid/gid and extended timestamps; TZ=UTC pins the DOS time.
+        (cd "${stage}/engineering-conventions/checks/vale" \
+          && find MusherConventions -print | LC_ALL=C sort \
+          | TZ=UTC zip -X -q -@ "{{.DIST}}/{{.VALE_PACKAGE}}")
+
+        tarball_sha="$(sha256sum "{{.DIST}}/{{.TARBALL}}" | cut -d' ' -f1)"
+        vale_sha="$(sha256sum "{{.DIST}}/{{.VALE_PACKAGE}}" | cut -d' ' -f1)"
+        (cd "${stage}" && find engineering-conventions -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) \
+          | jq -R -n \
+              --arg version "{{.VERSION}}" --arg commit "{{.COMMIT}}" \
+              --arg tarball "{{.TARBALL}}" --arg tarball_sha "${tarball_sha}" \
+              --arg vale "{{.VALE_PACKAGE}}" --arg vale_sha "${vale_sha}" \
+              '{
+                name: "engineering-conventions",
+                version: $version,
+                commit: $commit,
+                artifacts: {($tarball): $tarball_sha, ($vale): $vale_sha},
+                files: ([inputs | capture("^(?<sha>[0-9a-f]{64})  (?<path>.+)$") | {(.path): .sha}] | add)
+              }' > "{{.DIST}}/manifest.json"
+
+        (cd "{{.DIST}}" && sha256sum "{{.TARBALL}}" "{{.VALE_PACKAGE}}" manifest.json > SHA256SUMS)
+        ls -l "{{.DIST}}"
+
+  bundle:verify:
+    desc: Verify dist/ checksums, and that the bundle holds only the allowed entries and the right release data.
+    cmds:
+      # cd rather than `dir:`: Task resolves `dir:` when it starts, and
+      # bundle:build replaces dist/ underneath it when both run in one call.
+      - cd "{{.DIST}}" && sha256sum -c SHA256SUMS
+      - |
+        cd "{{.DIST}}"
+        fail() { echo "bundle:verify: $*" >&2; exit 1; }
+
+        roots="$(tar -tzf "{{.TARBALL}}" | cut -d/ -f1 | sort -u)"
+        [[ "${roots}" == "engineering-conventions" ]] \
+          || fail "tarball roots must be exactly engineering-conventions/, got: ${roots}"
+
+        unexpected="$(tar -tzf "{{.TARBALL}}" | awk -F/ -v allowed=" {{.BUNDLE_ENTRIES}} " '
+          NF > 1 && $2 != "" && index(allowed, " " $2 " ") == 0 { print $2 }' | sort -u)"
+        [[ -z "${unexpected}" ]] \
+          || fail "not bundle entries: ${unexpected} (allowed: {{.BUNDLE_ENTRIES}})"
+
+        rego_tests="$(tar -tzf "{{.TARBALL}}" | grep '_test\.rego$' || true)"
+        [[ -z "${rego_tests}" ]] || fail "the bundle carries Rego unit tests: ${rego_tests}"
+
+        tar -xzOf "{{.TARBALL}}" engineering-conventions/checks/data/index.json | jq -e . > /dev/null \
+          || fail "checks/data/index.json is missing or not JSON"
+        tar -xzOf "{{.TARBALL}}" engineering-conventions/checks/data/release.json \
+          | jq -e --arg v "{{.VERSION}}" '.conventions.release.version == $v' > /dev/null \
+          || fail "checks/data/release.json does not carry version {{.VERSION}}"
+
+        zip_roots="$(unzip -Z1 "{{.VALE_PACKAGE}}" | cut -d/ -f1 | sort -u)"
+        [[ "${zip_roots}" == "MusherConventions" ]] \
+          || fail "{{.VALE_PACKAGE}} root must be exactly MusherConventions/, got: ${zip_roots}"
+        unzip -Z1 "{{.VALE_PACKAGE}}" | grep '^MusherConventions/.*\.yml$' > /dev/null \
+          || fail "{{.VALE_PACKAGE}} contains no Vale rules"
+
+        jq -e --arg v "{{.VERSION}}" '.version == $v and (.files | length > 0)' manifest.json > /dev/null \
+          || fail "manifest.json does not describe version {{.VERSION}}"
+        echo "bundle:verify: {{.TARBALL}} and {{.VALE_PACKAGE}} are well-formed"

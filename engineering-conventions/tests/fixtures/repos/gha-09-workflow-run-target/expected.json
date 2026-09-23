@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-09",
+    "path": ".github/workflows/deploy-docs.yml",
+    "severity": "warning"
+  }
+]

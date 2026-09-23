@@ -1,0 +1,17 @@
+name: Reusable Build Image
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: "false"
+      - name: Build the image
+        run: docker build .

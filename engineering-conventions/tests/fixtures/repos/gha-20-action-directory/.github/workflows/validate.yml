@@ -1,0 +1,42 @@
+name: Validate
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Set up the tools
+        id: setup_tools
+        uses: ./.github/actions/tools
+        with:
+          tool-version: "1.0.0"
+      - name: Lint the repository
+        run: task lint
+  image:
+    name: Image
+    uses: ./.github/workflows/reusable-build-image.yml
+  required:
+    name: Validate / Required
+    if: always()
+    needs: [lint, image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every needed job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: jq -e 'all(. == "success")' <<< "$RESULTS"

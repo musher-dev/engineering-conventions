@@ -1,0 +1,14 @@
+schema_version: 1
+area: alias-conflict
+description: Claims an alias a global term already owns.
+terms:
+  - id: alias-conflict.pipeline
+    display_name: pipeline
+    token: pipeline
+    definition: A pipeline.
+    tags: [alias-conflict]
+    stability: provisional
+    aliases:
+      - text: ci
+        status: banned
+        scope: [identifier]

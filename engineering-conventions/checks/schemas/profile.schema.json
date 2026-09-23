@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Convention profile",
+  "description": "A convention profile (profiles/<id>.yml): the set of requirements that applies to one kind of repository, and the severity each is reported at. A consuming repository names its profile in .repo/conventions.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "display_name", "description"],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "id": {
+      "description": "The profile's identifier; matches its filename.",
+      "$ref": "common.schema.json#/definitions/slug"
+    },
+    "display_name": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+    "description": {
+      "description": "Which repositories the profile is for.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "inherits": {
+      "description": "Profiles whose selections and severities this one starts from. Cycles are rejected.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/slug" }
+    },
+    "include": {
+      "description": "Requirements to select, by family, by convention, or by ID. A requirement matching any list is selected.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "families": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/familyPrefix" }
+        },
+        "conventions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/conventionId" }
+        },
+        "requirements": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/requirementId" }
+        }
+      }
+    },
+    "exclude": {
+      "description": "Requirements removed from the selection, whichever include (or inherited profile) selected them.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requirements": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/requirementId" }
+        }
+      }
+    },
+    "include_proposed": {
+      "description": "Whether selected requirements with status proposed apply. Unset inherits the value from the profiles this one inherits (true if any of them sets it); the default is false. Retired requirements never apply.",
+      "type": "boolean"
+    },
+    "severity": {
+      "description": "Severity overrides by requirement ID. An override may only raise a requirement's severity (warning to error), never lower it, and may only name a selected requirement.",
+      "type": "object",
+      "propertyNames": { "$ref": "common.schema.json#/definitions/requirementId" },
+      "additionalProperties": { "$ref": "common.schema.json#/definitions/severity" }
+    }
+  }
+}

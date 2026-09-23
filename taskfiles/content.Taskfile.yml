@@ -1,0 +1,139 @@
+version: '3'
+
+# The content the rules are generated from, and the prose around it: schema
+# checks, the committed generated artifacts, and the MusherConventions Vale
+# style run against this repository's own documentation.
+
+set: [errexit, nounset, pipefail]
+
+vars:
+  SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
+  VALE_CONFIG: .config/markdown/vale.ini
+  PROSE_PATHS: README.md CONTRIBUTING.md docs engineering-conventions/conventions
+  WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
+
+tasks:
+  schemas:check:
+    desc: Check every JSON Schema in checks/schemas against its metaschema.
+    cmds:
+      - check-jsonschema --check-metaschema {{.SCHEMA_DIR}}/*.schema.json
+
+  schemas:validate:
+    desc: Validate content, frontmatter and GitHub/Task config against their JSON Schemas.
+    cmds:
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: terminology
+          PATHSPEC: "'engineering-conventions/terminology/**/*.yml'"
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: profile
+          PATHSPEC: "'engineering-conventions/profiles/*.yml'"
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: families
+          PATHSPEC: "'engineering-conventions/conventions/families.yml'"
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: conventions-declaration
+          PATHSPEC: "'.repo/conventions.yaml' 'engineering-conventions/examples/**/.repo/conventions.yaml'"
+      # Topic READMEs and the generated index carry no frontmatter.
+      - task: schemas:validate:files
+        vars:
+          YQ_FLAGS: --front-matter=extract
+          SCHEMA: convention-frontmatter
+          PATHSPEC: "'engineering-conventions/conventions/*/*.md' ':!:engineering-conventions/conventions/*/README.md'"
+      - task: schemas:validate:files
+        vars:
+          YQ_FLAGS: --front-matter=extract
+          SCHEMA: decision-frontmatter
+          PATHSPEC: "'docs/decisions/[0-9]*.md'"
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: vendor.github-workflows
+          PATHSPEC: '{{.WORKFLOWS}}'
+      # GHA-29 for this repo's own workflows, checked a second, independent way.
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: custom.github-workflows-require-timeout
+          PATHSPEC: '{{.WORKFLOWS}}'
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: vendor.github-actions
+          PATHSPEC: "'.github/actions/*/action.yml' '.github/actions/*/action.yaml'"
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: vendor.dependabot
+          PATHSPEC: "'.github/dependabot.yml'"
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: vendor.github-issue-forms
+          PATHSPEC: "'.github/ISSUE_TEMPLATE/*.yml' ':!:.github/ISSUE_TEMPLATE/config.yml'"
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: vendor.github-issue-config
+          PATHSPEC: "'.github/ISSUE_TEMPLATE/config.yml'"
+      - task: schemas:validate:builtin
+        vars:
+          SCHEMA: vendor.taskfile
+          PATHSPEC: "'Taskfile.yml' 'taskfiles/*.yml'"
+
+  schemas:validate:files:
+    internal: true
+    silent: true
+    requires:
+      vars: [SCHEMA, PATHSPEC]
+    vars:
+      # '--front-matter=extract' for Markdown; empty for plain YAML.
+      YQ_FLAGS: '{{.YQ_FLAGS | default ""}}'
+    cmds:
+      # Through yq to JSON first, so YAML typing (a bare date becomes a string)
+      # matches what the conventions CLI's loader sees, rather than
+      # check-jsonschema's own YAML loader. The JSON copies mirror the source
+      # paths, so an error still names the file to fix. An empty match fails:
+      # a mistyped pathspec must not turn the gate into a silent pass.
+      - |
+        out="$(mktemp -d)"
+        trap 'rm -rf "${out}"' EXIT
+        {{.LIST_FILES}} {{.PATHSPEC}} | tr '\0' '\n' | while IFS= read -r file; do
+          mkdir -p "${out}/$(dirname "${file}")"
+          yq {{.YQ_FLAGS}} -o=json '.' "${file}" > "${out}/${file}.json" || exit 1
+        done
+        if [[ -z "$(ls -A "${out}")" ]]; then
+          echo "schemas:validate: nothing matches {{.PATHSPEC}} for {{.SCHEMA}}" >&2
+          exit 1
+        fi
+        cd "${out}"
+        find . -name '*.json' | LC_ALL=C sort | xargs check-jsonschema \
+          --schemafile {{.SCHEMA_DIR}}/{{.SCHEMA}}.schema.json
+
+  schemas:validate:builtin:
+    internal: true
+    requires:
+      vars: [SCHEMA, PATHSPEC]
+    cmds:
+      - '{{.LIST_FILES}} {{.PATHSPEC}} | xargs -0 -r check-jsonschema --builtin-schema {{.SCHEMA}}'
+
+  generate:
+    desc: Regenerate index.json, the MusherConventions Vale style and conventions/README.md.
+    cmds:
+      - '{{.UV_RUN}} conventions generate'
+
+  generate:check:
+    desc: Fail if a committed generated artifact is stale (run `task generate` to fix).
+    cmds:
+      - '{{.UV_RUN}} conventions generate --check'
+
+  prose:lint:
+    desc: Lint this repository's prose with the generated MusherConventions Vale style; any alert fails.
+    cmds:
+      # Vale exits non-zero only for error-level alerts, and the style ships
+      # its rules as warnings for consumers. Here every alert fails, since a
+      # gate that only prints is not a gate.
+      - |
+        alerts="$(vale --config {{.VALE_CONFIG}} --output=line {{.PROSE_PATHS}})"
+        if [[ -n "${alerts}" ]]; then
+          printf '%s\n' "${alerts}"
+          echo "prose:lint: fix the alerts above; the terms come from engineering-conventions/terminology/" >&2
+          exit 1
+        fi

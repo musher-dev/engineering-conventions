@@ -1,0 +1,7 @@
+[
+  {
+    "id": "ADOPT-06",
+    "path": ".repo/conventions.yaml",
+    "severity": "warning"
+  }
+]

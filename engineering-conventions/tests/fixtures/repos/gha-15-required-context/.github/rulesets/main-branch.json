@@ -1,0 +1,19 @@
+{
+  "name": "Main branch",
+  "target": "branch",
+  "enforcement": "active",
+  "rules": [
+    {"type": "pull_request"},
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "required_status_checks": [
+          {"context": "Validate / Required"},
+          {"context": "Validate / Tests"},
+          {"context": "Validate Pull Request / Title"}
+        ]
+      }
+    }
+  ]
+}

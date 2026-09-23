@@ -1,0 +1,13 @@
+# This repository's own conventions declaration: it is held to the rules it
+# publishes (`task conventions:self`), and must report zero findings.
+#
+# conventions.version tracks this repository's own release. release-please
+# rewrites the marked line on every release (extra-files in
+# .github/release-please/config.json), so never bump it by hand. The marker
+# comment is what it finds; its yaml updater would re-dump the file and drop
+# every comment in it.
+schema_version: 1
+conventions:
+  version: "0.0.0"  # x-release-please-version
+profile: base-repo
+waivers: []

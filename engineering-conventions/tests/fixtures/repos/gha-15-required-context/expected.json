@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-15",
+    "path": ".github/rulesets/main-branch.json",
+    "severity": "warning"
+  }
+]

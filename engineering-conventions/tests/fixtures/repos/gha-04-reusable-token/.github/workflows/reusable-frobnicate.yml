@@ -1,0 +1,12 @@
+name: Reusable Frobnicate
+on:
+  workflow_call:
+permissions: {}
+jobs:
+  frobnicate:
+    name: Frobnicate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Frobnicate the inputs
+        run: echo frobnicate

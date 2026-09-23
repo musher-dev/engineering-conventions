@@ -1,9 +1,9 @@
-// Musher Dev Container — Batteries-included template.
-// Uncomment optional blocks as needed. Comment out what you don't use.
+// Dev container for musher-dev/engineering-conventions.
+// Which tier a tool belongs in: CONFIGURATION.md → "Runtimes & Tools".
 {
-  "name": "Musher Dev",
-  // Dockerfile bakes the tools whose Features cannot be relied on; the
-  // Features below layer on top of it. Context is emptied by .dockerignore.
+  "name": "Engineering Conventions",
+  // The Dockerfile bakes mise and nothing else; the Features below layer on
+  // top of it. Context is emptied by .dockerignore.
   "build": {
     "dockerfile": "Dockerfile",
     "context": "."
@@ -12,9 +12,7 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
-  // Which tier a tool belongs in: CONFIGURATION.md → "Runtimes & Tools".
   "features": {
-    // --- Platform ---
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": true,
@@ -23,39 +21,9 @@
       "upgradePackages": true
     },
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": { "version": "2.96.0" },
-    "ghcr.io/devcontainers/features/docker-in-docker:4": {},
-
-    // --- Runtimes ---
-    "ghcr.io/devcontainers/features/node:2": { "version": "24.18.0" },
-    "ghcr.io/devcontainers/features/python:1": { "version": "3.13.14" },
-    "ghcr.io/devcontainers/features/go:1": { "version": "1.26.5" },
-    "ghcr.io/devcontainers/features/java:1": {
-      // jdkDistro is pinned because the Feature's default ("ms", Microsoft
-      // OpenJDK) disappeared from SDKMAN's index: `sdk list java` returns no
-      // -ms builds at all, and the install fails with "Version 17 not found.
-      // Available versions:" followed by nothing. Temurin is the Eclipse
-      // Adoptium build and carries 17.
-      "version": "17",
-      "jdkDistro": "tem",
-      "installGradle": false,
-      "installMaven": false
-    },
-    // deno is safe as a Feature; bun, uv and task are not — do not re-add
-    // them. They are baked by the Dockerfile (TC-01 fails the build if they
-    // reappear here). Why: CONFIGURATION.md → "Runtimes & Tools".
-    "ghcr.io/devcontainers-extra/features/deno:1": { "version": "2.9.2" },
-
-    // --- Linting ---
-    "ghcr.io/lukewiwa/features/shellcheck:0": { "version": "v0.11.0" },
-
-    // --- Database tooling ---
-    "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": { "version": "16" }
-
-    // --- Optional infrastructure tooling (uncomment as needed) ---
-    // "ghcr.io/devcontainers-extra/features/opentofu:1": {},
-    // "ghcr.io/devcontainers-extra/features/digitalocean-cli:1": {},
-    // "ghcr.io/devcontainers-extra/features/cloudflared:1": {}
+    // gh is a Feature rather than a mise pin so it exists before post-create,
+    // and still exists in a container whose `mise install` failed.
+    "ghcr.io/devcontainers/features/github-cli:1": { "version": "2.101.0" }
   },
 
   "containerUser": "vscode",
@@ -64,32 +32,12 @@
   "init": true,
   "shutdownAction": "stopContainer",
 
-  // Allow debuggers (gdb, strace, delve) to attach to processes.
-  "capAdd": ["SYS_PTRACE"],
-
-  // Load .devcontainer/.env into the container at `docker run` time so
-  // processes inside the container (shells, runtimes, task runs) see the
-  // same vars Docker Compose interpolates into service configs.
-  "runArgs": ["--env-file", "${localWorkspaceFolder}/.devcontainer/.env"],
-
+  // Named volumes so a rebuild costs neither a re-auth nor agent history.
   "mounts": [
     "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
     "source=musher-${devcontainerId}-claude-config,target=/home/vscode/.claude,type=volume",
     "source=musher-${devcontainerId}-codex-config,target=/home/vscode/.codex,type=volume"
-    // Uncomment to persist Docker-in-Docker data across rebuilds:
-    // "source=musher-${devcontainerId}-dind-data,target=/var/lib/docker/volumes,type=volume"
-    // Product build output (e.g. Rust's target/), kept off the bind mount.
-    // Must sit under the declared product -- LAYOUT.md → "Ecosystem Adapters":
-    // "source=musher-${devcontainerId}-target,target=/workspaces/${localWorkspaceFolderBasename}/<product>/target,type=volume"
   ],
-
-  // Codespaces prompts for these at creation time. The block must list exactly
-  // the bindings declaring `source: host` in env.schema.yaml -- ENV-06 checks
-  // it, and initialize.sh fills the same keys from the host environment when
-  // you build locally.
-  // "secrets": {
-  //   "EXAMPLE_API_KEY": { "description": "...", "documentationUrl": "https://..." }
-  // },
 
   "containerEnv": {
     // Point mise at the workspace manifest (it lives under .devcontainer/, not
@@ -97,117 +45,73 @@
     "MISE_GLOBAL_CONFIG_FILE": "${containerWorkspaceFolder}/.devcontainer/mise.toml",
     "MISE_TRUSTED_CONFIG_PATHS": "${containerWorkspaceFolder}",
 
-    "PYTHONUNBUFFERED": "1",
     "PYTHONDONTWRITEBYTECODE": "1",
     "UV_LINK_MODE": "copy",
     "XDG_CACHE_HOME": "/home/vscode/.cache",
     "UV_CACHE_DIR": "/home/vscode/.cache/uv",
-    "RUFF_CACHE_DIR": "/home/vscode/.cache/ruff",
-    "PIP_CACHE_DIR": "/home/vscode/.cache/pip",
-    "MYPY_CACHE_DIR": "/home/vscode/.cache/mypy",
-    "NPM_CONFIG_CACHE": "/home/vscode/.cache/npm",
-    "DENO_DIR": "/home/vscode/.cache/deno",
-    "GOMODCACHE": "/home/vscode/.cache/go/mod",
-    "GOCACHE": "/home/vscode/.cache/go/build",
-    "BUN_INSTALL_CACHE_DIR": "/home/vscode/.cache/bun"
+    "NPM_CONFIG_CACHE": "/home/vscode/.cache/npm"
   },
 
   "remoteEnv": {
-    // mise shims (codex, lefthook) + ~/.local/bin (Claude Code). The baked
-    // tools live in /usr/local/bin and are already on PATH.
+    // mise shims (every pinned CLI) + ~/.local/bin (Claude Code). mise itself
+    // is baked into /usr/local/bin and is already on PATH.
     "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
   },
 
-  // Host-side bootstrap: creates .devcontainer/.env from the template (if
-  // missing) and strips CRLF from it, so --env-file above has a valid target
-  // even on a fresh clone. .env is gitignored, so .gitattributes cannot
-  // normalize it -- this guard is not redundant with that.
-  "initializeCommand": ["bash", ".devcontainer/scripts/initialize.sh"],
-
   "waitFor": "postCreateCommand",
   // Line endings are enforced repo-wide by .gitattributes (`* text=auto eol=lf`),
-  // so scripts arrive with LF on every platform. No CRLF fixup step is needed
-  // here; the one remaining guard lives in initialize.sh and covers the
-  // gitignored .env, which .gitattributes cannot reach.
+  // so scripts arrive with LF on every platform and need no CRLF fixup.
   "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
-  "postStartCommand": ["bash", ".devcontainer/scripts/startup.sh"],
-
-  "forwardPorts": [15432, 15433, 15434, 15435, 15436, 15440, 15441, 15442, 15443, 15444, 15445, 15446, 15447, 15448, 15460],
-  "portsAttributes": {
-    "15432": { "label": "PostgreSQL", "onAutoForward": "silent" },
-    "15433": { "label": "Redis", "onAutoForward": "silent" },
-    "15434": { "label": "MinIO API", "onAutoForward": "silent" },
-    "15435": { "label": "MinIO Console", "onAutoForward": "silent" },
-    "15436": { "label": "OCI Registry", "onAutoForward": "silent" },
-    "15440": { "label": "MinIO API (Observability)", "onAutoForward": "silent" },
-    "15441": { "label": "MinIO Console (Observability)", "onAutoForward": "silent" },
-    "15442": { "label": "Tempo", "onAutoForward": "silent" },
-    "15443": { "label": "Loki", "onAutoForward": "silent" },
-    "15444": { "label": "VictoriaMetrics", "onAutoForward": "silent" },
-    "15445": { "label": "OTel HTTP", "onAutoForward": "silent" },
-    "15446": { "label": "OTel gRPC", "onAutoForward": "silent" },
-    "15447": { "label": "Grafana", "onAutoForward": "silent" },
-    "15448": { "label": "Pyroscope", "onAutoForward": "silent" },
-    "15460": { "label": "Azimutt", "onAutoForward": "silent" }
-  },
 
   "customizations": {
     "vscode": {
       "extensions": [
-        // --- Core tooling ---
         "redhat.vscode-yaml",
+        "tsandall.opa",
+        "chrischinchilla.vale-vscode",
+        "DavidAnson.vscode-markdownlint",
         "tamasfe.even-better-toml",
-        "ms-azuretools.vscode-docker",
-        "esbenp.prettier-vscode",
-
-        // --- Language support ---
-        "golang.go",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        "dbaeumer.vscode-eslint",
-
-        // --- Shell linting ---
         "timonwong.shellcheck",
-
-        // --- Optional (comment out if not needed) ---
-        "eamodio.gitlens",
-        "github.copilot",
-        "github.copilot-chat",
-        "bierner.markdown-mermaid"
-
-        // --- Optional: SQL client (uncomment if using PostgreSQL) ---
-        // "mtxr.sqltools",
-        // "mtxr.sqltools-driver-pg",
-
-        // --- Optional: Additional extensions (uncomment as needed) ---
-        // "tomoki1207.pdf",
-        // "jebbs.plantuml",
-        // "contextmapper.context-mapper-vscode-extension",
-        // "ChaunceyKiwi.json-tree-view",
-        // "github.vscode-pull-request-github",
-        // "hashicorp.terraform",
-        // "wholroyd.jinja",
-        // "batisteo.vscode-django"
+        "github.vscode-github-actions",
+        "charliermarsh.ruff"
       ],
       "settings": {
-        // --- Editor ---
         "editor.formatOnSave": true,
         "editor.rulers": [80, 120],
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
 
-        // --- Terminal ---
         "terminal.integrated.defaultProfile.linux": "zsh",
         "terminal.integrated.profiles.linux": {
           "bash": { "path": "/bin/bash" },
           "zsh": { "path": "/bin/zsh" }
         },
 
-        // --- Go ---
-        "go.toolsManagement.autoUpdate": true,
+        // The same configs `task` passes by explicit path, so the editor and
+        // the gates agree.
+        "markdownlint.configFile": ".config/markdown/markdownlint.jsonc",
+        "vale.valeCLI.config": "${workspaceFolder}/.config/markdown/vale.ini",
+        "opa.dependency_paths.opa": "/home/vscode/.local/share/mise/shims/opa",
+        "opa.dependency_paths.regal": "/home/vscode/.local/share/mise/shims/regal",
 
-        // --- Python ---
+        // Authoring-time validation against the schemas the gates use
+        // (`task schemas:validate`).
+        "yaml.schemas": {
+          "./engineering-conventions/checks/schemas/terminology.schema.json": [
+            "engineering-conventions/terminology/**/*.yml"
+          ],
+          "./engineering-conventions/checks/schemas/profile.schema.json": [
+            "engineering-conventions/profiles/*.yml"
+          ],
+          "./engineering-conventions/checks/schemas/families.schema.json": [
+            "engineering-conventions/conventions/families.yml"
+          ],
+          "./engineering-conventions/checks/schemas/conventions-declaration.schema.json": [
+            ".repo/conventions.yaml",
+            "engineering-conventions/examples/consumer/.repo/conventions.yaml"
+          ]
+        },
+
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.codeActionsOnSave": {
@@ -215,16 +119,8 @@
             "source.organizeImports": "explicit"
           }
         },
-
-        // --- Prettier formatter overrides ---
-        "[javascript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[typescript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[json]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "[rego]": {
+          "editor.defaultFormatter": "tsandall.opa"
         }
       }
     }

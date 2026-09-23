@@ -1,0 +1,9 @@
+schema_version: 1
+conventions:
+  version: 0.1.0
+profile: base-repo
+waivers:
+  - requirement: GHA-07
+    reason: The legacy workflows are renamed with the deploy split.
+    tracking: see the issue tracker
+    expires: 2026-10-31

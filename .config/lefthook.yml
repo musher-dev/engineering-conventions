@@ -4,22 +4,23 @@
 # Location: this file lives in .config/, not the repo root. Lefthook
 # discovers it natively — `MainConfigNames` in internal/config/loader.go is
 # ["lefthook", ".lefthook", ".config/lefthook"] — so no flag, env var or
-# wrapper is involved. See CONFIGURATION.md → "Where configuration lives".
+# wrapper is involved. See .config/README.md → "A trap worth knowing".
 #
 # Search order is first-match-wins: a stray root lefthook.yml would silently
-# shadow this file. `repo config check` fails the build if one appears.
+# shadow this file.
 #
 # Local overrides: .config/lefthook-local.yml (gitignored) is auto-merged.
 # Debug: lefthook run pre-commit | lefthook dump | lefthook validate
 #
-# CI counterpart: .github/workflows/validate.yaml. Every job below must have
-# a CI equivalent (or an explicit allowlist entry) — `repo hooks check`.
+# Every job calls the same tool, with the same explicit config path, as the
+# task named in its fail_text; CI runs those tasks. The hooks are the early
+# copy of the gate, never a different gate.
 
 assert_lefthook_installed: true
 
-# Keep in lockstep with the "npm:lefthook" pin in .devcontainer/mise.toml.
-# v2 is required for the `jobs` API and the `validate` subcommand.
-min_version: "2.1.10"
+# Lockstep with "aqua:evilmartians/lefthook" in .devcontainer/mise.toml
+# (.claude/rules/toolchain-pins.md).
+min_version: "2.1.14"
 
 # doublestar makes ** match 0+ directory levels (the intuitive semantics).
 glob_matcher: doublestar
@@ -31,59 +32,133 @@ output:
   - execution_out
   - skips
 
-# =============================================================================
-# PRE-COMMIT — fast, deterministic checks on staged files
-# =============================================================================
-
 pre-commit:
   parallel: true
   skip:
     - merge
     - rebase
   jobs:
-    - name: block-devcontainer-env
-      # Defense-in-depth against committing .devcontainer/.env even if the
-      # .gitignore entry is accidentally removed. The file holds local dev
-      # secrets and should never enter version control.
-      run: |
-        if git diff --cached --name-only --diff-filter=A | grep -qx '\.devcontainer/\.env'; then
-          echo "Refusing to commit .devcontainer/.env (contains local secrets)." >&2
-          exit 1
-        fi
+    - name: gitleaks
+      # No glob: a secret can land in any file type.
+      run: gitleaks git --pre-commit --staged --redact --no-banner --config .config/security/gitleaks.toml
       fail_text: >-
-        Staged .devcontainer/.env — it holds local secrets. Run
-        'git restore --staged .devcontainer/.env'.
-
-    # ── Lint (configs in .config/, versions in .devcontainer/mise.toml) ──
-    # Each job passes its config path explicitly and runs only on the staged
-    # files matching its glob, so a commit touching one Markdown file does not
-    # relint the repo.
+        A staged change looks like a secret. Remove it from the commit; never
+        allowlist a real one. Full scan: 'task secrets:scan'.
 
     - name: markdown
-      glob: "*.md"
-      run: markdownlint-cli2 --config .config/markdown/markdownlint.jsonc {staged_files}
-      fail_text: "Markdown lint failed. Run 'task lint:md:fix', then re-stage."
+      glob: "**/*.md"
+      # Same exclusions, and reasons, as MD_PATHSPEC in taskfiles/lint.Taskfile.yml.
+      exclude:
+        - "CHANGELOG.md"
+        - ".github/pull_request_template.md"
+        - "engineering-conventions/tests/fixtures/**"
+      run: markdownlint-cli2 --config .config/markdown/markdownlint.jsonc --fix {staged_files}
+      stage_fixed: true
+      fail_text: "Markdown lint failed on what --fix cannot repair. Run 'task lint:md' for the report."
 
     - name: yaml
-      glob: "*.{yml,yaml}"
-      run: yamllint -c .config/yaml/yamllint.yaml {staged_files}
-      fail_text: "YAML lint failed. See .config/yaml/yamllint.yaml for the active rules."
-
-    - name: actions
-      glob: ".github/workflows/*.{yml,yaml}"
-      run: actionlint -config-file .config/actions/actionlint.yaml {staged_files}
-      fail_text: "Workflow lint failed. Run 'task lint:actions' for the full output."
-
-    - name: governance
-      # Structural policy (`repo check`). No glob: the layout policy reads
-      # every root entry and a product dir whose name the template cannot
-      # know. Cheap (pure Python, no network), so it runs on every commit.
-      run: repo check
-      fail_text: "Repo structure policy failed. Run 'task repo:check' for the full report."
+      glob: "**/*.{yml,yaml}"
+      # Same exclusion, and reason, as YAML_PATHSPEC in taskfiles/lint.Taskfile.yml.
+      exclude:
+        - "engineering-conventions/tests/fixtures/**"
+      run: yamllint -c .config/yaml/yamllint.yaml --strict {staged_files}
+      fail_text: "YAML lint failed. Run 'task lint:yaml'; the rules are in .config/yaml/yamllint.yaml."
 
     - name: spelling
-      # No glob: a typo can land in any file type.
-      run: codespell --config .config/spelling/codespell.cfg {staged_files}
+      # No glob: a typo can land in any file type. --force-exclude makes the
+      # config's excludes hold for files passed by name.
+      run: typos --config .config/spelling/typos.toml --force-exclude {staged_files}
       fail_text: >-
-        Spelling check failed. Run 'task lint:spelling:fix' and review the
-        diff, or add a justified entry to .config/spelling/codespell.cfg.
+        Spelling check failed. Fix the word, or add a reasoned entry to
+        .config/spelling/typos.toml. Run 'task lint:spelling'.
+
+    - name: shell
+      glob: "**/*.sh"
+      run: shellcheck -x -P SCRIPTDIR {staged_files}
+      fail_text: "ShellCheck failed. Run 'task lint:shell'."
+
+    - name: actions
+      # Whole-directory runs: actionlint and zizmor resolve composite actions
+      # and reusable workflows across files, so a staged-file subset misses
+      # the cross-file findings.
+      glob: ".github/**/*.{yml,yaml}"
+      run: task lint:actions lint:actions:security
+      fail_text: "Workflow lint failed. Run 'task lint:actions lint:actions:security'."
+
+    - name: rego-fmt
+      glob: "**/*.rego"
+      run: opa fmt --write {staged_files}
+      stage_fixed: true
+      fail_text: "opa fmt could not format a staged Rego file (a parse error). Run 'task checks:fmt:check'."
+
+    - name: rego-lint
+      glob: "**/*.rego"
+      run: task checks:lint checks:check
+      fail_text: "Rego lint or type-check failed. Run 'task checks:lint checks:check'."
+
+    - name: schemas
+      glob:
+        - "engineering-conventions/checks/schemas/*.json"
+        - "engineering-conventions/terminology/**/*.yml"
+        - "engineering-conventions/profiles/*.yml"
+        - "engineering-conventions/conventions/**/*.{md,yml}"
+        - "docs/decisions/*.md"
+        - ".repo/conventions.yaml"
+        - ".github/**/*.{yml,yaml}"
+        - "Taskfile.yml"
+        - "taskfiles/*.yml"
+      run: task schemas:check schemas:validate
+      fail_text: "Schema validation failed. Run 'task schemas:check schemas:validate'."
+
+    - name: generate
+      # The generated files are outputs, never staged inputs, so stage_fixed
+      # (which restages only the files lefthook passed in) cannot reach them;
+      # they are added by name instead. `task generate:check` in CI catches
+      # a commit made with --no-verify.
+      glob:
+        - "engineering-conventions/conventions/**/*.{md,yml}"
+        - "engineering-conventions/terminology/**/*.yml"
+        - "engineering-conventions/profiles/*.yml"
+        - "engineering-conventions/src/**/*.py"
+      exclude:
+        - "engineering-conventions/conventions/README.md"
+      run: >-
+        task generate &&
+        git add engineering-conventions/checks/data/index.json
+        engineering-conventions/checks/vale
+        engineering-conventions/conventions/README.md
+      fail_text: "Regenerating the committed artifacts failed. Run 'task generate' for the error."
+
+    - name: prose
+      glob:
+        - "README.md"
+        - "CONTRIBUTING.md"
+        - "docs/**/*.md"
+        - "engineering-conventions/conventions/**/*.md"
+      run: vale --config .config/markdown/vale.ini {staged_files}
+      fail_text: "Prose lint failed against the MusherConventions style. Run 'task prose:lint'."
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: bash .github/scripts/lint-commit-msg.sh {1}
+      fail_text: >-
+        The subject must be a Conventional Commit, type(scope): summary, with
+        the types and scopes in .github/conventional-commits.yaml.
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: checks-test
+      run: task checks:test
+      fail_text: "Rego unit tests or coverage failed. Run 'task checks:test'."
+
+    - name: cli-test
+      run: task cli:test
+      fail_text: "The conventions CLI tests (fixtures and invariants included) failed. Run 'task cli:test'."
+
+    - name: conventions
+      run: task conventions:self
+      fail_text: >-
+        This repository no longer passes its own conventions (warnings count).
+        Run 'task conventions:self' for the findings.

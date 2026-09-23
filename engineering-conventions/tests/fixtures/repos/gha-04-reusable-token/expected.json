@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-04",
+    "path": ".github/workflows/reusable-frobnicate.yml",
+    "severity": "warning"
+  }
+]

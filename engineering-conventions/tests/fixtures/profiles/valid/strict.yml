@@ -1,0 +1,9 @@
+schema_version: 1
+id: strict
+display_name: Strict
+description: Base repository with workflow names enforced and one extension rule relaxed.
+inherits: [base-repo]
+exclude:
+  requirements: [GHA-06]
+severity:
+  GHA-07: error

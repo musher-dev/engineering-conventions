@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-05",
+    "path": ".github/workflows/lint-docs.yml",
+    "severity": "warning"
+  }
+]

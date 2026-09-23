@@ -1,7 +1,7 @@
 # actionlint configuration.
-# Read by: actionlint, via an explicit -config-file path. Note that actionlint's
-# own default location is .github/actionlint.yaml -- this repo overrides it so
-# every tool config sits in one place.
+# Read by: actionlint, via an explicit -config-file path. actionlint's own
+# default location is .github/actionlint.yaml; this repo overrides it so every
+# tool config sits in one place.
 # Docs: https://github.com/rhysd/actionlint/blob/main/docs/config.md
 
 # Labels for self-hosted runners, if any are ever added. GitHub-hosted labels
@@ -9,8 +9,6 @@
 self-hosted-runner:
   labels: []
 
-# `null` disables configuration-variable checking, which is the right default
-# for a template: it does not know which `vars.*` a consuming repo will define.
-# Replace with an explicit list (e.g. [DEPLOY_ENV]) to make actionlint reject
-# any `vars.*` reference outside that list.
-config-variables: null
+# An empty list, not null: the workflows here read no `vars.*`, so actionlint
+# rejects any reference to one. Add a name here when a workflow first needs it.
+config-variables: []

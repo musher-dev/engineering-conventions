@@ -1,67 +1,124 @@
-# Branch Rulesets
+# Repository Rulesets
 
-Branch protection for this repository, committed as JSON so it is reviewable
-and restorable rather than living only in the GitHub UI.
+Version-controlled GitHub Repository Rulesets for
+`musher-dev/engineering-conventions`. The shape is the one musher-dev/host-agent
+and musher-dev/host-config commit; this file records what they protect here and
+how to apply them.
 
-| File | Applies to | Effect |
+| File | GitHub Ruleset | Scope |
 | --- | --- | --- |
-| `main-branch.json` | The default branch | No deletion, no force-push, PR with one approval and squash merge, every CI job green and up to date |
+| `main-branch.json` | `Main Branch` | The default branch: PR required, squash-only, linear history, code-owner review, the two required checks, deletion and force-push blocked |
+| `release-tags.json` | `Release Tags` | Release tags (`v*`): creation, deletion and non-fast-forward updates blocked for everyone but the musher-automation App |
 
-## Applying a ruleset
+Org-level rulesets may also apply. Every rule that actually binds this
+repository is listed at <https://github.com/musher-dev/engineering-conventions/checks>.
 
-These files are **not** applied automatically — nothing in CI has permission to
-change branch protection, by design. Import one from the repository settings
-(Settings → Rules → Rulesets → New ruleset → Import a ruleset), or with a token
-carrying `administration:write`:
+## Why not the org `pr-workflow` ruleset
+
+The org `pr-workflow` ruleset requires one approval on the repositories it
+includes, and rulesets aggregate most-restrictive. Including this repository
+would override `required_approving_review_count: 0` below and leave the
+steward's own PRs waiting for an approval nobody else is positioned to give.
+Keep this repository off its include list; the code-owner gate below is the
+review requirement.
+
+## The review gate
+
+`main-branch.json` pairs `required_approving_review_count: 0` with
+`require_code_owner_review: true`. `.github/CODEOWNERS` is a single `*` line, so
+every PR is codeowned: a PR from anyone other than the owner waits for the
+owner's approval, and the owner's own PRs merge on green checks, because GitHub
+waives the code-owner requirement for the PR author.
+`require_last_push_approval` MUST stay `false`: combined with zero approvals it
+makes a PR unmergeable.
+
+## Required checks
+
+There are two, and both are literal check-run names:
+
+- `Validate / Required`: the aggregate job in `.github/workflows/validate.yml`.
+  It needs every other `Validate` job and fails unless each succeeded, so a new
+  gate joins the aggregate rather than becoming a third context here (GHA-14,
+  GHA-16).
+- `Validate Pull Request / Title`: the PR-title job in
+  `.github/workflows/validate-pull-request.yml`. It is a workflow of its own
+  because it re-runs on an `edited` PR, which must not re-run or cancel
+  `Validate`.
+
+A job's `name:` must be the full context string. GitHub does not prefix a job's
+check-run name with its workflow's name, so a job named `Required` reports as
+`Required` and the context never resolves. GHA-15 checks that every context
+listed here is emitted by some job.
+
+`integration_id: 15368` is the GitHub Actions app.
+
+## Who may create a release tag
+
+A `vX.Y.Z` tag is what consumers pin, and what every diagnostic URL a released
+bundle prints points at, so a tag must never move or disappear.
+`release-tags.json` blocks tag creation as well as deletion and force-updates,
+and exempts exactly one actor:
+
+- `Integration` `4691573`, `bypass_mode: always`: the org-owned
+  **musher-automation** GitHub App. `release.yml` creates the tag and its GitHub
+  Release with that App's installation token when the release PR merges. A tag
+  created with the default `GITHUB_TOKEN` would start no workflow, so `Publish`
+  would never attach the bundle; that is why the App, and not GitHub Actions, is
+  the bypass actor.
+
+There is no `OrganizationAdmin` bypass: an administrator cannot push a `v*` tag
+by hand either. Cutting a release outside `release.yml` means changing this
+ruleset first.
+
+## Applying
+
+The default `GITHUB_TOKEN` cannot write rulesets, so there is no apply
+workflow. Use a fine-grained PAT with **Administration: Write** on this
+repository, or an org-admin `gh` login.
+
+First-time apply:
 
 ```bash
-gh api -X POST repos/musher-dev/development-container/rulesets \
+gh api --method POST /repos/musher-dev/engineering-conventions/rulesets \
+  --input .github/rulesets/main-branch.json
+
+gh api --method POST /repos/musher-dev/engineering-conventions/rulesets \
+  --input .github/rulesets/release-tags.json
+```
+
+Updating an existing ruleset:
+
+```bash
+RULESET_ID=$(gh api /repos/musher-dev/engineering-conventions/rulesets \
+  --jq '.[] | select(.name == "Main Branch") | .id')
+
+gh api --method PUT "/repos/musher-dev/engineering-conventions/rulesets/$RULESET_ID" \
   --input .github/rulesets/main-branch.json
 ```
 
-To update an existing ruleset, `PUT` to `.../rulesets/<id>` instead.
+After applying, confirm that no classic branch protection is left on `main`.
+Classic rules aggregate with rulesets. `404` is the answer you want:
+
+```bash
+gh api /repos/musher-dev/engineering-conventions/branches/main/protection
+```
 
 ## Detecting drift
 
-`repo rulesets check` validates the committed file's **shape** and its
-agreement with CI. It deliberately does not diff against live GitHub state:
-reading a repository's rulesets requires `administration:read`, which the
-default `GITHUB_TOKEN` does not have, so a workflow-based drift detector would
-need a long-lived personal access token or fail open. Compare manually when it
-matters:
+Nothing here detects drift automatically: the default token lacks
+`administration: read`. Compare each live ruleset with its committed file by
+hand:
 
 ```bash
-gh api repos/musher-dev/development-container/rulesets --jq '.[] | {id, name}'
-gh api repos/musher-dev/development-container/rulesets/<id> > /tmp/live.json
-diff <(jq -S . .github/rulesets/main-branch.json) <(jq -S . /tmp/live.json)
+for pair in "Main Branch=main-branch.json" "Release Tags=release-tags.json"; do
+  RULESET_ID=$(gh api /repos/musher-dev/engineering-conventions/rulesets \
+    --jq ".[] | select(.name == \"${pair%%=*}\") | .id")
+  diff -u \
+    <(jq -S . ".github/rulesets/${pair#*=}") \
+    <(gh api "/repos/musher-dev/engineering-conventions/rulesets/$RULESET_ID" \
+        --jq '{name, target, enforcement, bypass_actors, conditions, rules}' | jq -S .)
+done
 ```
 
-## What is enforced automatically
-
-`repo rulesets check` runs in pre-commit and in the `Repo Structure` CI job:
-
-| Code | Fails when |
-| --- | --- |
-| `RS-01` | A ruleset file is not valid JSON |
-| `RS-02` | A ruleset is missing a required top-level key |
-| `RS-03` | A required status check names a job no CI workflow produces |
-| `RS-04` | A CI job exists that no ruleset requires |
-
-`RS-03` is the one that matters most. A required status check is matched by the
-job's **display name**, so renaming a job in `validate.yaml` without updating
-this directory leaves every pull request waiting forever on a check that can
-never report — and unblocking it needs admin access at exactly the moment the
-repository has become unmergeable.
-
-`RS-04` is the mirror: a job that runs but is not required is advisory, and a
-red run can still merge. If a job is genuinely meant to be non-blocking, record
-it in `ADVISORY_JOBS` in
-[`check.py`](../../.repo/governance/policies/rulesets/check.py) with a
-reason instead of leaving the gap silent.
-
-## Consuming projects
-
-A repository scaffolded from this template gets these files but **not** the
-protection — rulesets are repository state, not repository content. Import the
-ruleset once after creating the repo, then adjust the required status checks to
-match whatever CI that project actually runs.
+A `GET` returns server fields (`id`, `node_id`, `source`, `_links`,
+timestamps). Never commit them back.

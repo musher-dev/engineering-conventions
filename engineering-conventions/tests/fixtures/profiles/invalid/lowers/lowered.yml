@@ -1,0 +1,7 @@
+schema_version: 1
+id: lowered
+display_name: Lowered
+description: Tries to lower the GHA-07 severity it inherits.
+inherits: [raised]
+severity:
+  GHA-07: warning

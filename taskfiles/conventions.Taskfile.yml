@@ -1,0 +1,12 @@
+version: '3'
+
+# Dogfooding: this repository run through its own rules, exactly as a consumer
+# would run them, against its own declaration (.repo/conventions.yaml).
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  conventions:self:
+    desc: Check this repository against its own conventions; any finding fails, warnings included.
+    cmds:
+      - '{{.UV_RUN}} conventions check . --fail-on warning'

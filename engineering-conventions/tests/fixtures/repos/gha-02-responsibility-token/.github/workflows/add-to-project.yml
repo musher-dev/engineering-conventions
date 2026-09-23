@@ -1,0 +1,13 @@
+name: Add To Project
+"on":
+  issues:
+    types: [opened]
+permissions: {}
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Publish the site
+        run: echo publish

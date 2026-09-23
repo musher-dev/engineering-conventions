@@ -1,0 +1,449 @@
+# The global terminology. Every convention uses these words with these
+# meanings; area overlays in areas/ may add to it but never redefine it.
+# `conventions generate` projects the gha.* tags, the identifier-scope
+# aliases and the display forms into checks/data/index.json, and the
+# prose-scope aliases into the MusherConventions Vale style.
+schema_version: 1
+area: global
+description: >-
+  Words the conventions themselves are written in, the GitHub Actions naming
+  vocabulary, and pointers to terms another repository defines.
+
+terms:
+  # Workflow responsibility tokens: the first filename token of an
+  # entry-point workflow (GHA-02).
+  - id: gha.responsibility.validate
+    display_name: validate
+    token: validate
+    definition: >-
+      Decides whether a change may merge. A validate workflow checks the
+      change and mutates nothing outside its own run.
+    tags: [gha.responsibility]
+    stability: provisional
+    aliases:
+      - text: ci
+        status: banned
+        scope: [identifier]
+        note: Names the practice, not the result the workflow reports.
+      - text: checks
+        status: banned
+        scope: [identifier]
+        note: Every workflow runs checks; the token says nothing.
+      - text: quality
+        status: banned
+        scope: [identifier]
+        note: A synonym; one responsibility has one token.
+      - text: lint
+        status: banned
+        scope: [identifier]
+        note: Names a tool category; put it in the scope or a job name.
+      - text: test
+        status: banned
+        scope: [identifier]
+        note: Names an activity; put it in the scope or a job name.
+      - text: tests
+        status: banned
+        scope: [identifier]
+        note: Names an activity; put it in the scope or a job name.
+      - text: gates
+        status: banned
+        scope: [identifier]
+        note: A synonym; one responsibility has one token.
+      - text: pr
+        status: banned
+        scope: [identifier]
+        note: >-
+          Names the trigger, not the responsibility. As a scope,
+          validate-pull-request spells it out.
+  - id: gha.responsibility.release
+    display_name: release
+    token: release
+    definition: >-
+      Versioning and changelog work: release pull requests, tags and GitHub
+      Releases. A release workflow builds nothing.
+    tags: [gha.responsibility]
+    stability: provisional
+  - id: gha.responsibility.publish
+    display_name: publish
+    token: publish
+    definition: >-
+      Pushes a versioned artifact to a registry or distribution channel.
+    tags: [gha.responsibility]
+    stability: provisional
+  - id: gha.responsibility.deploy
+    display_name: deploy
+    token: deploy
+    definition: >-
+      Changes what a running environment serves.
+    tags: [gha.responsibility]
+    stability: provisional
+    aliases:
+      - text: cd
+        status: banned
+        scope: [identifier]
+        note: Names the practice, not the result the workflow reports.
+      - text: rollout
+        status: banned
+        scope: [identifier]
+        note: A synonym; one responsibility has one token.
+      - text: ship
+        status: banned
+        scope: [identifier]
+        note: A synonym; one responsibility has one token.
+  - id: gha.responsibility.verify
+    display_name: verify
+    token: verify
+    definition: >-
+      Exercises a deployed environment to confirm it behaves as expected.
+      Checking a change before it merges is validate, not verify.
+    tags: [gha.responsibility]
+    stability: provisional
+  - id: gha.responsibility.monitor
+    display_name: monitor
+    token: monitor
+    definition: >-
+      A scheduled check for drift against something this repository does not
+      own, such as an upstream release or a live setting. It reports and
+      changes nothing.
+    tags: [gha.responsibility]
+    stability: provisional
+    aliases:
+      - text: drift
+        status: banned
+        scope: [identifier]
+        note: Names what is found, not the responsibility that looks for it.
+  - id: gha.responsibility.audit
+    display_name: audit
+    token: audit
+    definition: >-
+      A scheduled, report-only deep examination of this repository's own
+      contents, such as dependencies or history, that is too slow or too
+      broad to run on every change.
+    tags: [gha.responsibility]
+    stability: provisional
+    aliases:
+      - text: forensics
+        status: banned
+        scope: [identifier]
+        note: A synonym; one responsibility has one token.
+  - id: gha.responsibility.maintain
+    display_name: maintain
+    token: maintain
+    definition: >-
+      Changes non-product state the repository depends on, such as caches or
+      vendored copies.
+    tags: [gha.responsibility]
+    stability: provisional
+    aliases:
+      - text: maintenance
+        status: banned
+        scope: [identifier]
+        note: Tokens are verbs where a verb exists.
+      - text: cleanup
+        status: banned
+        scope: [identifier]
+        note: Names one activity of the responsibility.
+  - id: gha.responsibility.repository
+    display_name: repository
+    token: repository
+    definition: >-
+      Automates the collaboration surface: issue and pull-request intake,
+      labels, code-owner notices. It is a noun, which is why the first
+      filename token is called the responsibility rather than the verb.
+    tags: [gha.responsibility]
+    stability: provisional
+
+  # Capability tokens: what a reusable workflow provides (GHA-04).
+  - id: gha.capability.build
+    display_name: build
+    token: build
+    definition: >-
+      A reusable workflow that produces an artifact for its caller to
+      publish or deploy.
+    tags: [gha.capability]
+    stability: provisional
+  - id: gha.capability.promote
+    display_name: promote
+    token: promote
+    definition: >-
+      A reusable workflow that moves an already-built artifact from one
+      environment or channel to the next without rebuilding it.
+    tags: [gha.capability]
+    stability: provisional
+  - id: gha.capability.check
+    display_name: check
+    token: check
+    definition: >-
+      A reusable workflow that runs one self-contained check and reports a
+      result for its caller to aggregate.
+    tags: [gha.capability]
+    stability: provisional
+
+  # Action tokens: the first token of a composite action's directory (GHA-20).
+  - id: gha.action.setup
+    display_name: setup
+    token: setup
+    definition: >-
+      Prepares a toolchain or runtime and its cache so later steps can use
+      it.
+    tags: [gha.action]
+    stability: provisional
+  - id: gha.action.install
+    display_name: install
+    token: install
+    definition: >-
+      Installs one tool or dependency set without configuring a runtime
+      around it.
+    tags: [gha.action]
+    stability: provisional
+  - id: gha.action.authenticate
+    display_name: authenticate
+    token: authenticate
+    definition: >-
+      Obtains and exposes a credential for later steps, such as a registry
+      login or an app token.
+    tags: [gha.action]
+    stability: provisional
+  - id: gha.action.check
+    display_name: check
+    token: check
+    definition: >-
+      Asserts a precondition and fails the job when it does not hold,
+      changing nothing.
+    tags: [gha.action]
+    stability: provisional
+
+  # A trigger is not a responsibility (GHA-05, GHA-37): these tokens name
+  # when a workflow runs, not what it is for.
+  - id: gha.scheduled-workflow
+    display_name: scheduled workflow
+    definition: >-
+      A workflow that runs on a schedule. The schedule is not its
+      responsibility: name it for what the schedule serves -- audit for an
+      examination of this repository's own contents, monitor for drift
+      against something it does not own, maintain for changing non-product
+      state.
+    tags: [gha.concept]
+    stability: provisional
+    aliases:
+      - text: scheduled
+        status: banned
+        scope: [identifier]
+        suggest: audit, monitor or maintain
+        note: Names the trigger, not the responsibility.
+      - text: nightly
+        status: banned
+        scope: [identifier]
+        suggest: audit, monitor or maintain
+        note: Names the trigger, not the responsibility.
+      - text: cron
+        status: banned
+        scope: [identifier]
+        suggest: audit, monitor or maintain
+        note: Names the trigger, not the responsibility.
+      - text: weekly
+        status: banned
+        scope: [identifier]
+        suggest: audit, monitor or maintain
+        note: Names the trigger, not the responsibility.
+      - text: daily
+        status: banned
+        scope: [identifier]
+        suggest: audit, monitor or maintain
+        note: Names the trigger, not the responsibility.
+
+  # GitHub Actions concepts the conventions name.
+  - id: gha.entry-point-workflow
+    display_name: entry-point workflow
+    definition: >-
+      A workflow GitHub starts from an event other than workflow_call. Its
+      filename starts with a responsibility token.
+    tags: [gha.concept]
+    stability: stable
+  - id: gha.reusable-workflow
+    display_name: reusable workflow
+    definition: >-
+      A workflow triggered only by workflow_call. Its filename starts with
+      reusable- followed by a responsibility or capability token.
+    tags: [gha.concept]
+    stability: stable
+  - id: gha.composite-action
+    display_name: composite action
+    definition: >-
+      A local action under .github/actions/<action-token>-<object>/ that
+      bundles steps a job reuses.
+    tags: [gha.concept]
+    stability: stable
+  - id: gha.required-check
+    display_name: required check
+    definition: >-
+      A status-check context a ruleset requires before a pull request may
+      merge. Its name is an interface: renaming the job that emits it
+      breaks merging until the ruleset changes too.
+    tags: [gha.concept]
+    stability: stable
+  - id: gha.aggregate-check
+    display_name: aggregate check
+    definition: >-
+      A job named <Workflow> / Required that runs even when a dependency
+      fails (if: always() or !cancelled()), needs every other job in its
+      workflow, and fails unless each of them succeeded or was skipped as
+      its workflow's scope policy planned. It is the one context a ruleset
+      requires from that workflow.
+    tags: [gha.concept]
+    stability: stable
+
+  # The words this repository is written in.
+  - id: conventions.convention
+    display_name: convention
+    definition: >-
+      A document under conventions/<topic>/ with an EC- identifier that
+      states related requirements and explains them.
+    tags: [meta]
+    stability: stable
+  - id: conventions.requirement
+    display_name: requirement
+    definition: >-
+      One normative statement inside a convention, with a permanent ID such
+      as GHA-07, a status, a default severity and a validation engine.
+    tags: [meta]
+    stability: stable
+    aliases:
+      - text: rule id
+        status: banned
+        scope: [prose]
+        suggest: requirement ID
+        note: Rules are prose files elsewhere; a requirement has an ID.
+  - id: conventions.check
+    display_name: check
+    definition: >-
+      An implementation that finds violations of a requirement, such as a
+      Rego package here or an existing check in another repository.
+    tags: [meta]
+    stability: stable
+  - id: conventions.waiver
+    display_name: waiver
+    definition: >-
+      A time-boxed, tracked deviation from one requirement, declared in a
+      consuming repository's conventions declaration.
+    tags: [meta]
+    stability: stable
+    # Not "exception" (Conftest's exception rules, language exceptions) or
+    # "exemption". These are deliberately not shipped as Vale aliases: the
+    # style runs over consumers' prose, where "exception" is usually correct.
+  - id: conventions.topic
+    display_name: topic
+    definition: >-
+      A subdirectory of conventions/ grouping conventions about one subject,
+      such as github-actions.
+    tags: [meta]
+    stability: stable
+  - id: conventions.area
+    display_name: area
+    definition: >-
+      A terminology overlay for one bounded part of the organisation, adding
+      terms to the global terminology without redefining any.
+    tags: [meta]
+    stability: stable
+    aliases:
+      - text: domain overlay
+        status: banned
+        scope: [prose]
+        suggest: area overlay
+        note: Domain already means a DDD, DNS or company domain.
+  - id: conventions.convention-profile
+    display_name: convention profile
+    definition: >-
+      A named selection of requirements, with their severities, for one kind
+      of repository.
+    tags: [meta]
+    stability: stable
+    aliases:
+      - text: baseline profile
+        status: banned
+        scope: [prose]
+        note: Baseline reads as a Kubernetes Pod Security Standards level.
+  - id: conventions.conventions-declaration
+    display_name: conventions declaration
+    definition: >-
+      The file .repo/conventions.yaml in a consuming repository, which pins a
+      release, names a convention profile and lists waivers.
+    tags: [meta]
+    stability: stable
+    aliases:
+      - text: conventions manifest
+        status: banned
+        scope: [prose]
+        note: Manifest already names bundle and package metadata files.
+  - id: conventions.family
+    display_name: family
+    definition: >-
+      A registered requirement-ID prefix, such as GHA, listed in
+      conventions/families.yml.
+    tags: [meta]
+    stability: stable
+  - id: conventions.display-form
+    display_name: display form
+    definition: >-
+      How an identifier token is written when a display name is derived from
+      it, such as api written API.
+    tags: [meta]
+    stability: stable
+
+  # Defined upstream and deliberately not restated here. GitHub Actions
+  # uses audit and drift in a narrower, automation sense: see
+  # gha.responsibility.audit and the drift alias of gha.responsibility.monitor.
+  - id: governance.audit
+    display_name: audit
+    authority:
+      repo: musher-dev/platform
+      path: .claude/rules/terminology.md
+    tags: [governance]
+    stability: stable
+  - id: governance.drift
+    display_name: drift
+    authority:
+      repo: musher-dev/platform
+      path: .claude/rules/terminology.md
+    tags: [governance]
+    stability: stable
+  - id: governance.gate
+    display_name: gate
+    authority:
+      repo: musher-dev/platform
+      path: .claude/rules/terminology.md
+    tags: [governance]
+    stability: stable
+  - id: governance.conformance
+    display_name: conformance
+    authority:
+      repo: musher-dev/platform
+      path: .claude/rules/terminology.md
+    tags: [governance]
+    stability: stable
+
+display_forms:
+  - token: api
+    display: API
+  - token: ci
+    display: CI
+  - token: cli
+    display: CLI
+  - token: codeowners
+    display: CODEOWNERS
+  - token: dco
+    display: DCO
+  - token: devcontainer
+    display: Dev Container
+  - token: e2e
+    display: E2E
+  - token: hq
+    display: HQ
+  - token: oci
+    display: OCI
+  - token: pr
+    display: PR
+  - token: sast
+    display: SAST
+  - token: uv
+    display: uv

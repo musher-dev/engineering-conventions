@@ -1,0 +1,14 @@
+name: Setup Tools
+description: Install the pinned toolchain.
+inputs:
+  tool-version:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install the toolchain
+      id: install_toolchain
+      shell: bash
+      env:
+        TOOL_VERSION: ${{ inputs.tool-version }}
+      run: echo "installing $TOOL_VERSION"

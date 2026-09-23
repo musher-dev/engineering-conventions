@@ -1,0 +1,56 @@
+name: "Change a requirement"
+description: "Tighten, relax, clarify or retire an existing requirement, or report a false positive."
+title: "[Change]: "
+labels: ["needs-triage", "requirement"]
+type: "Feature"
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        This repository is public. Do not include secrets, internal hostnames or customer information.
+  - type: input
+    id: requirement
+    attributes:
+      label: Requirement ID
+      description: The ID from the diagnostic or the convention, e.g. GHA-07.
+      placeholder: GHA-07
+    validations:
+      required: true
+  - type: dropdown
+    id: change
+    attributes:
+      label: Kind of change
+      description: >-
+        Decides the version bump; see the change classification in
+        docs/decisions/0005-status-severity-and-versioning.md.
+      options:
+        - False positive (the check fires on something that meets the requirement)
+        - Relax (accept more than today)
+        - Tighten (reject something accepted today)
+        - Raise severity to error
+        - Clarify the text (no change to what is checked)
+        - Retire (the requirement no longer applies)
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: What the requirement or its check does today. Paste the diagnostic line if there is one.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behavior
+      description: What it should do instead, and why.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Consumer impact
+      description: Which repositories are affected, and whether any build that passes today would fail.
+    validations:
+      required: true

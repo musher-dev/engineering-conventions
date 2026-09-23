@@ -1,0 +1,29 @@
+# Regal configuration: the Rego linter for engineering-conventions/checks/rego.
+# Read by: regal, via an explicit --config-file path (`task checks:lint`).
+# Docs: https://docs.styra.com/regal
+#
+# Every rule stays at its default level unless listed here, and every entry
+# below carries its reason.
+
+rules:
+  idiomatic:
+    # Packages are namespaced `conventions.checks.<family>.<convention>` so
+    # they cannot collide with a consumer's own policies when both are loaded
+    # by one conftest run, while the files sit at checks/rego/<family>/ so the
+    # bundle's paths stay short. `package main` must stay `main` because it is
+    # conftest's default namespace. Both break this rule by design.
+    directory-package-mismatch:
+      level: ignore
+  imports:
+    # These three documents are JSON, not Rego: index.json (generated), the
+    # runtime clock the CLI passes with -d, and release.json, which exists only
+    # in a released bundle. Regal resolves references against Rego packages
+    # alone, so it cannot see them; every other data reference stays checked.
+    unresolved-reference:
+      except-paths:
+        - data.conventions.index
+        - data.conventions.index.**
+        - data.conventions.runtime
+        - data.conventions.runtime.**
+        - data.conventions.release
+        - data.conventions.release.**

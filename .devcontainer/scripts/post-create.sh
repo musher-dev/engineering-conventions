@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # post-create.sh — DevContainer post-create command hook.
 #
-# Runs once after the container is created. Sets up environment files,
-# invokes the base setup orchestrator, and configures shell customization.
+# Runs once after the container is created: installs the pinned toolchain,
+# then the git hooks.
 #
 # Usage: Called automatically by devcontainer.json postCreateCommand.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+readonly REPO_ROOT
 
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -29,63 +31,41 @@ on_error() {
 }
 trap 'on_error ${LINENO} "${BASH_COMMAND}"' ERR
 
-# Brings .devcontainer/.env up to date with the schema, and wires the shell
-# profiles to load it.
+# Installs the lefthook git hooks.
 #
-# `repo env sync` only adds bindings the schema has gained and mints local
-# secrets -- it never overwrites a live value, so it is safe on every create.
-# The profile line is what makes an edited .env reach new terminals without a
-# rebuild; see lib/env-load.sh for why it parses rather than sources.
+# The config is .config/lefthook.yml, which lefthook discovers on its own. The
+# template this repo came from tested for a root lefthook.yml instead, found
+# none, and silently installed no hooks at all; this checks the real path and
+# fails loudly, because a container without hooks passes every local commit
+# that CI then rejects.
 #
 # Globals:
-#   SCRIPT_DIR — read
+#   REPO_ROOT — read
 # Outputs:
 #   Writes progress to stderr via log()
-setup_env_file() {
-  local loader="${SCRIPT_DIR}/lib/env-load.sh"
-  local marker="# musher devcontainer env (post-create)"
-
-  if has_cmd repo; then
-    log "Syncing .devcontainer/.env with the schema..."
-    (cd "${SCRIPT_DIR}/../.." && repo env sync) || log "WARNING: repo env sync failed"
-  fi
-
-  local rc
-  for rc in "${HOME}/.zshrc" "${HOME}/.bashrc"; do
-    [[ -f "${rc}" ]] || continue
-    grep -qF "${marker}" "${rc}" && continue
-    {
-      echo ""
-      echo "${marker}"
-      echo "[ -f \"${loader}\" ] && . \"${loader}\" && env_load"
-    } >> "${rc}"
-  done
-}
-
-# Installs lefthook git hooks for this repo. Best-effort: silently
-# skips if lefthook isn't on PATH yet or no lefthook.yml exists.
-#
-# Outputs:
-#   Writes progress to stderr via log()
+# Returns:
+#   0 on success, 1 if lefthook is missing or the install fails
 install_lefthook_hooks() {
-  command -v lefthook >/dev/null 2>&1 || return 0
-  [[ -f "${SCRIPT_DIR}/../../lefthook.yml" ]] || return 0
+  if [[ ! -f "${REPO_ROOT}/.config/lefthook.yml" ]]; then
+    log "No .config/lefthook.yml; skipping git hooks"
+    return 0
+  fi
+  if ! has_cmd lefthook; then
+    log "ERROR: lefthook is not on PATH; run 'task tools:install', then 'task hooks:install'"
+    return 1
+  fi
   log "Installing lefthook git hooks..."
-  (cd "${SCRIPT_DIR}/../.." && lefthook install >/dev/null 2>&1) || true
+  (cd "${REPO_ROOT}" && lefthook install)
 }
 
 # Entry point: runs the full post-create setup sequence.
 #
-# Arguments:
-#   $@ — passed through (unused, reserved for future use)
 # Outputs:
 #   Writes progress to stderr via log()
 main() {
   log "Starting post-create setup..."
   base_setup
-  setup_env_file
   install_lefthook_hooks
-  # --- Add repo-specific setup below ---
   log "Post-create setup completed"
 }
 

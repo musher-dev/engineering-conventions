@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-06",
+    "path": ".github/workflows/validate-pull-request.yaml",
+    "severity": "warning"
+  }
+]

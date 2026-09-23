@@ -1,0 +1,32 @@
+name: Validate Pull Request
+
+# Decides whether the pull request title may become the squash commit. It is a
+# workflow of its own because it re-runs when the title is edited, an event the
+# Validate workflow should not re-run for.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  merge_group:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  title:
+    name: Validate Pull Request / Title
+    # A merge group has no title. The skip is reported to the ruleset as a
+    # skipped check, which satisfies it.
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: read  # read the title through the API
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the title is a Conventional Commit
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50  # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

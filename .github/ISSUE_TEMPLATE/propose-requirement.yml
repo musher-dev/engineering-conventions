@@ -1,0 +1,72 @@
+name: "Propose a requirement"
+description: "Propose a new normative requirement for a convention."
+title: "[Requirement]: "
+labels: ["needs-triage", "requirement"]
+type: "Feature"
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        This repository is public. Do not include secrets, internal hostnames or customer information.
+        See the [authoring guide](https://github.com/musher-dev/engineering-conventions/blob/main/docs/authoring.md)
+        for how requirements are written and numbered.
+  - type: input
+    id: convention
+    attributes:
+      label: Convention
+      description: >-
+        The convention the requirement belongs to (e.g. EC-0003 Jobs and steps), or "new" with a proposed title.
+    validations:
+      required: true
+  - type: input
+    id: statement
+    attributes:
+      label: Requirement
+      description: One declarative sentence, as it would appear as the requirement's title.
+      placeholder: A reusable workflow declares a type for every input
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: The failure this requirement prevents. Link or paste a real example.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Correct and incorrect examples
+      description: The smallest file shapes that pass and fail.
+      render: yaml
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: How it would be checked
+      options:
+        - conftest (Rego across files)
+        - jsonschema (the shape of one file)
+        - vale (prose)
+        - delegated (an existing tool)
+        - review (judgment; not mechanically checkable)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: authority
+    attributes:
+      label: Existing checks and authority
+      description: >-
+        Does another repository already have this rule or a check for it (e.g. platform CI-14)? If so, name it:
+        the rule is changed there first, then here.
+    validations:
+      required: false
+  - type: textarea
+    id: impact
+    attributes:
+      label: Consumer impact
+      description: Which repositories would get findings, roughly how many, and what the fix is.
+    validations:
+      required: true

@@ -1,15 +1,17 @@
-# Dev container local environment overrides
-.devcontainer/.env
+# Build outputs. `task bundle:build` writes the release bundle here; nothing
+# under dist/ is ever committed.
+/dist/
+.cache/
 
-# Personal git-hook overrides (auto-merged by lefthook)
-.config/lefthook-local.yml
-
-# Repo governance toolchain (.repo/) build artifacts
-.repo/.venv/
+# uv (engineering-conventions/ is a uv project)
+.venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+
+# Personal git-hook overrides (auto-merged by lefthook)
+.config/lefthook-local.yml
 
 # Claude local preferences and runtime state
 .claude/settings.local.json

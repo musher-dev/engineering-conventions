@@ -1,0 +1,7 @@
+schema_version: 1
+id: raised
+display_name: Raised
+description: Raises GHA-07 to error.
+inherits: [base-repo]
+severity:
+  GHA-07: error

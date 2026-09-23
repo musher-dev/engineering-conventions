@@ -1,0 +1,9 @@
+schema_version: 1
+area: responsibility-without-token
+description: A responsibility term with no token to project.
+terms:
+  - id: gha.responsibility.observe
+    display_name: observe
+    definition: Watches something.
+    tags: [gha.responsibility]
+    stability: provisional

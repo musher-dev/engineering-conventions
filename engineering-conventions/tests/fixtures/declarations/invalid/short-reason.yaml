@@ -1,0 +1,9 @@
+schema_version: 1
+conventions:
+  version: 0.1.0
+profile: base-repo
+waivers:
+  - requirement: GHA-07
+    reason: later
+    tracking: https://github.com/your-org/your-repo/issues/1
+    expires: 2026-10-31

@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# verify-toolchain.sh — Asserts the image-baked tools report their pinned versions.
+# verify-toolchain.sh — Asserts the container's toolchain matches its pins.
 #
-# The Dockerfile's own assertions are presence-only (`test -x`): executing a
-# binary in the same layer that installed it is a known BuildKit hazard, and the
-# pinned download URLs already guarantee the version -- a wrong one 404s. This
+# Two halves. mise is the one image-baked tool, so its version is read back
+# from the Dockerfile's ARG and compared with the binary. Every other CLI is
+# pinned in .devcontainer/mise.toml, and `mise ls --current --missing` lists
+# any pin that is not installed, so an empty listing means the container runs
+# exactly the versions CI does.
+#
+# The Dockerfile's own assertion is presence-only (`test -x`): executing a
+# binary in the same layer that installed it is a known BuildKit hazard. This
 # script is the runtime half of that split, run against the built container.
 #
-# The expected versions are read back out of .devcontainer/Dockerfile so the
-# ARGs stay the single source of truth. `repo toolchain check` separately
-# asserts those ARGs are concrete pins rather than floating tags.
-#
 # Usage: bash .devcontainer/scripts/verify-toolchain.sh
-#        (CI runs it as the devcontainers/ci `runCmd`.)
+#        (`task tools:doctor` and the Dev Container CI job run it.)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,7 +23,7 @@ readonly DOCKERFILE
 # Reads a pinned ARG default out of the Dockerfile.
 #
 # Arguments:
-#   $1 — the ARG name, e.g. BUN_VERSION
+#   $1 — the ARG name, e.g. MISE_VERSION
 # Outputs:
 #   The pinned value on stdout
 # Returns:
@@ -38,64 +39,62 @@ arg_pin() {
   printf '%s\n' "${value}"
 }
 
-# Asserts `<tool> --version` reports the expected version.
+# Asserts the running mise is the version the Dockerfile pins.
 #
-# Arguments:
-#   $1 — the binary name, which is also the human-readable tool name
-#   $2 — expected version (no leading 'v')
 # Outputs:
 #   Writes a pass/fail line to stdout
 # Returns:
 #   0 on match, 1 on mismatch or missing binary
-assert_version() {
-  local tool="${1}" expected="${2}"
-  local actual
-  if ! command -v "${tool}" >/dev/null 2>&1; then
-    echo "  FAIL ${tool}: not on PATH"
+assert_mise() {
+  local expected actual
+  # The ARG carries a leading 'v'; `mise --version` prints without one.
+  expected="$(arg_pin MISE_VERSION)"
+  expected="${expected#v}"
+  if ! command -v mise >/dev/null 2>&1; then
+    echo "  FAIL mise: not on PATH"
     return 1
   fi
-  # Tools disagree on output shape (`task` prints "Task version: v3.52.0", uv
-  # prints "uv 0.11.28"), so match the expected string anywhere in the first
-  # line rather than parsing four different formats.
-  actual="$("${tool}" --version 2>&1 | head -1)"
+  actual="$(mise --version 2>&1 | head -1)"
   if [[ "${actual}" != *"${expected}"* ]]; then
-    echo "  FAIL ${tool}: expected ${expected}, got '${actual}'"
+    echo "  FAIL mise: expected ${expected}, got '${actual}'"
     return 1
   fi
-  echo "  ok   ${tool} ${expected}"
+  echo "  ok   mise ${expected}"
 }
 
-# Entry point: checks every image-baked tool against its Dockerfile pin.
+# Asserts every tool pinned in mise.toml is installed at its pinned version.
+#
+# Globals:
+#   MISE_GLOBAL_CONFIG_FILE — read by mise to locate .devcontainer/mise.toml
+# Outputs:
+#   Writes a pass/fail line, and any missing pins, to stdout
+# Returns:
+#   0 when nothing is missing, 1 otherwise
+assert_mise_pins() {
+  local missing
+  if ! missing="$(mise ls --current --missing 2>&1)"; then
+    echo "  FAIL mise.toml: 'mise ls --current --missing' failed: ${missing}"
+    return 1
+  fi
+  if [[ -n "${missing}" ]]; then
+    echo "  FAIL mise.toml: pinned tools not installed (run 'task tools:install'):"
+    printf '%s\n' "${missing}" | sed 's/^/         /'
+    return 1
+  fi
+  echo "  ok   every mise.toml pin is installed"
+}
+
+# Entry point: checks the baked tool and every mise pin.
 #
 # Outputs:
-#   Writes per-tool results to stdout
+#   Writes per-check results to stdout
 # Returns:
-#   0 if all tools match, 1 otherwise
+#   0 if everything matches, 1 otherwise
 main() {
-  echo "Verifying image-baked toolchain against ${DOCKERFILE}..."
-
-  local bun_v uv_v task_v mise_v
-  bun_v="$(arg_pin BUN_VERSION)"
-  uv_v="$(arg_pin UV_VERSION)"
-  task_v="$(arg_pin TASK_VERSION)"
-  # MISE_VERSION is pinned with a leading 'v'; `mise --version` prints without.
-  mise_v="$(arg_pin MISE_VERSION)"
-  mise_v="${mise_v#v}"
-
+  echo "Verifying the toolchain against ${DOCKERFILE} and mise.toml..."
   local failed=0
-  assert_version bun  "${bun_v}"  || failed=1
-  assert_version uv   "${uv_v}"   || failed=1
-  assert_version task "${task_v}" || failed=1
-  assert_version mise "${mise_v}" || failed=1
-
-  # bunx is a symlink to bun; assert it survived rather than being overwritten.
-  if [[ ! -x /usr/local/bin/bunx ]]; then
-    echo "  FAIL bunx: /usr/local/bin/bunx missing or not executable"
-    failed=1
-  else
-    echo "  ok   bunx"
-  fi
-
+  assert_mise || failed=1
+  assert_mise_pins || failed=1
   if ((failed)); then
     echo "Toolchain verification FAILED" >&2
     return 1

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Authoring guide
+    url: https://github.com/musher-dev/engineering-conventions/blob/main/docs/authoring.md
+    about: How conventions, requirements and terms are written, numbered and released.
+  - name: Report a security vulnerability
+    url: https://github.com/musher-dev/engineering-conventions/security/advisories/new
+    about: Report privately. Do not open a public issue for a vulnerability.

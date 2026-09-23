@@ -1,0 +1,5 @@
+schema_version: 1
+conventions:
+  version: "0.1.0"
+profile: base-repository
+waivers: []

@@ -1,7 +1,7 @@
 // markdownlint rules for this repo's Markdown.
 // Read by: markdownlint-cli2, via an explicit --config path. Never
-// auto-discovered — see taskfiles/lint.Taskfile.yml and
-// .github/workflows/validate.yaml for the call sites.
+// auto-discovered; see taskfiles/lint.Taskfile.yml and .config/lefthook.yml
+// for the call sites.
 // Rule reference: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 {
   "default": true,
@@ -22,5 +22,13 @@
 
   // The docs deliberately reuse headings like "Configuration" under different
   // parents; siblings still must be unique, which is what this setting enforces.
-  "MD024": { "siblings_only": true }
+  "MD024": { "siblings_only": true },
+
+  // Conventions and decision records carry a `title:` in YAML frontmatter,
+  // which is catalog data, not the page heading. By default markdownlint
+  // counts it as a level-1 heading, so the body's own `# Title` would be a
+  // second one (MD025) and a page without it would pass MD041. An empty
+  // front_matter_title makes the body's heading the only one that counts.
+  "MD025": { "front_matter_title": "" },
+  "MD041": { "front_matter_title": "" }
 }

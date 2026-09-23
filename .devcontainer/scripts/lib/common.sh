@@ -4,8 +4,8 @@
 # This is a library file meant to be sourced, not executed directly.
 # Usage: source "path/to/common.sh"
 #
-# Provides logging, command helpers, directory setup, NVM/NPM utilities,
-# and tool verification functions used by all setup scripts.
+# Provides logging, command helpers, directory setup and tool verification
+# functions used by all setup scripts.
 set -euo pipefail
 
 # Logs a timestamped message to stderr.
@@ -101,34 +101,6 @@ setup_config_dirs() {
     log "Ensuring config dir: ${label} (${dir})"
     ensure_writable_dir "$dir" "$owner"
   done
-}
-
-# Fixes NVM directory ownership to the current user.
-#
-# Globals:
-#   NVM_DIR — read, defaults to /usr/local/share/nvm
-# Outputs:
-#   Writes progress to stderr via log()
-fix_nvm_permissions() {
-  local nvm_dir="${NVM_DIR:-/usr/local/share/nvm}"
-  if [[ -d "$nvm_dir" ]]; then
-    log "Fixing NVM permissions in ${nvm_dir}..."
-    maybe_sudo chown -R "$(id -un):$(id -gn)" "$nvm_dir"
-  fi
-}
-
-# Installs an npm package globally with retry logic.
-#
-# Arguments:
-#   $1 — package name
-#   $2 — max attempts (default: 3)
-# Outputs:
-#   Writes progress to stderr via log()
-install_npm_cli() {
-  local package="${1:?usage: install_npm_cli <package> [attempts]}"
-  local attempts="${2:-3}"
-  log "Installing npm CLI: ${package}..."
-  retry "$attempts" 5 npm install -g "$package"
 }
 
 # --- Verification ---

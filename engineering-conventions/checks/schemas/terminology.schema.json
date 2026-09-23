@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Terminology",
+  "description": "A terminology file: terminology/global.yml, or an area overlay in terminology/areas/<area>.yml. Terms define the words conventions use; aliases record the words to avoid and where; display forms say how a token is written in a Title-Cased name. An area overlay may add terms, aliases and display forms, but never redefine anything global.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "area", "description", "terms"],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "area": {
+      "description": "global for terminology/global.yml; otherwise the overlay's area slug, which matches its filename.",
+      "anyOf": [
+        { "const": "global" },
+        { "$ref": "common.schema.json#/definitions/slug" }
+      ]
+    },
+    "description": {
+      "description": "What this file covers.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "terms": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/term" }
+    },
+    "extend": {
+      "description": "Area overlays only: aliases added to a global term, which is otherwise left untouched.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["term", "aliases"],
+        "properties": {
+          "term": { "$ref": "common.schema.json#/definitions/termId" },
+          "aliases": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/definitions/alias" }
+          }
+        }
+      }
+    },
+    "display_forms": {
+      "description": "How identifier tokens are written when a name is derived from them, e.g. api is written API.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token", "display"],
+        "properties": {
+          "token": {
+            "description": "The lower-case token as it appears in a filename or directory name.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+$"
+          },
+          "display": {
+            "description": "How the token is written in a display name.",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\S(.*\\S)?$"
+          }
+        }
+      }
+    }
+  },
+  "if": {
+    "required": ["area"],
+    "properties": { "area": { "const": "global" } }
+  },
+  "then": {
+    "not": { "required": ["extend"] }
+  },
+  "definitions": {
+    "term": {
+      "description": "One term. It either defines itself (definition) or points at the upstream document that does (authority) -- never both, so a definition is never restated in two places.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "tags", "stability"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/definitions/termId" },
+        "display_name": {
+          "description": "How the term is written in prose.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "token": {
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability or gha.action.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*$"
+        },
+        "definition": {
+          "description": "What the term means here.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "authority": {
+          "description": "The upstream document that defines this term. The term is listed so it can be linked and found, not redefined.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repo", "path"],
+          "properties": {
+            "repo": { "$ref": "common.schema.json#/definitions/repository" },
+            "path": { "$ref": "common.schema.json#/definitions/repoPath" },
+            "anchor": {
+              "description": "The heading anchor within that document, without the leading #.",
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*$"
+            }
+          }
+        },
+        "tags": {
+          "description": "Groupings the tooling projects from, e.g. gha.responsibility builds the list of workflow responsibility tokens.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/termId" }
+        },
+        "stability": {
+          "description": "stable: changing it is a breaking change; provisional: may still change in a minor release.",
+          "type": "string",
+          "enum": ["stable", "provisional"]
+        },
+        "aliases": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/alias" }
+        },
+        "deprecated": {
+          "description": "Set when the term should no longer be used.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["note"],
+          "properties": {
+            "note": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+            "replaced_by": { "$ref": "common.schema.json#/definitions/termId" }
+          }
+        }
+      },
+      "oneOf": [
+        { "required": ["definition"] },
+        { "required": ["authority"] }
+      ],
+      "if": {
+        "required": ["tags"],
+        "properties": {
+          "tags": {
+            "contains": { "enum": ["gha.responsibility", "gha.capability", "gha.action"] }
+          }
+        }
+      },
+      "then": {
+        "required": ["token"]
+      }
+    },
+    "alias": {
+      "description": "A word to avoid in favour of the term. banned aliases fail; discouraged ones warn. scope says where: prose (checked by the MusherConventions Vale style) or identifier (filenames, IDs and other names, checked by the conventions that govern them).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "status", "scope"],
+      "properties": {
+        "text": {
+          "description": "The word or phrase to avoid, in lower case.",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9 ._-]*$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["banned", "discouraged"]
+        },
+        "scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["prose", "identifier"] }
+        },
+        "suggest": {
+          "description": "What to write instead, when that is not simply the term itself (its token in identifiers, its display name in prose).",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "note": {
+          "description": "Why the alias is avoided.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        }
+      }
+    }
+  }
+}

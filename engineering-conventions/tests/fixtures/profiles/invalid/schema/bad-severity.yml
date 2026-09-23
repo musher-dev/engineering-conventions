@@ -1,0 +1,8 @@
+schema_version: 1
+id: bad-severity
+display_name: Bad severity
+description: A severity that is neither warning nor error.
+include:
+  families: [GHA]
+severity:
+  GHA-07: fatal

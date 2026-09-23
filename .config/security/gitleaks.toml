@@ -1,0 +1,13 @@
+# gitleaks configuration: the secret scan (`task secrets:scan`, and the
+# lefthook `gitleaks` job on staged changes).
+# Read by: gitleaks, via an explicit --config path. Never auto-discovered.
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+#
+# The default ruleset, unchanged and with no allowlist: nothing in this public
+# repository legitimately looks like a secret, fixtures included. If a fixture
+# ever needs a secret-shaped string, add a path allowlist here with its reason
+# rather than an inline gitleaks:allow.
+title = "engineering-conventions"
+
+[extend]
+useDefault = true

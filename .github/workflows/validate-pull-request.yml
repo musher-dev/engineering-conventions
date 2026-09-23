@@ -1,0 +1,115 @@
+name: Validate Pull Request
+
+# Owns the pull request title, which becomes the squash commit that
+# release-please reads to choose the next version and write the changelog. The
+# author reads a failure here, as a sticky comment on the pull request.
+# `Validate Pull Request / Title` is a required context in
+# .github/rulesets/main-branch.json.
+#
+# It is a workflow of its own because it must re-run when a title is `edited`:
+# in validate.yml that event would re-run, or through the concurrency group
+# cancel, every other job.
+#
+# `merge_group` is declared so a merge queue sees the context. A merge group has
+# no title, so the job is skipped there, and a skipped job satisfies a required
+# check.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  merge_group:
+
+permissions: {}
+
+# A newer edit or push to a pull request supersedes the running title check; a
+# merge-queue run is never cancelled (GHA-30).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  title:
+    name: Validate Pull Request / Title
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write  # the sticky comment on a failing title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-tools
+        with:
+          install-args: aqua:mikefarah/yq
+
+      # .github/conventional-commits.yaml is the single list of types and
+      # scopes. The action takes newline-delimited lists; the comment below
+      # shows comma-delimited ones.
+      - name: Read the allowed types and scopes
+        id: allowed
+        run: |
+          set -euo pipefail
+          manifest=.github/conventional-commits.yaml
+          {
+            echo "types<<EOF"
+            yq '.types[]' "$manifest"
+            echo "EOF"
+            echo "scopes<<EOF"
+            yq '.scopes[]' "$manifest"
+            echo "EOF"
+            echo "types_csv=$(yq '.types | join(", ")' "$manifest")"
+            echo "scopes_csv=$(yq '.scopes | join(", ")' "$manifest")"
+          } >> "$GITHUB_OUTPUT"
+
+      # The title is read by the action from the event payload and never
+      # reaches a shell, so it cannot inject into one.
+      - name: Check the title is a Conventional Commit
+        id: title
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50  # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          types: ${{ steps.allowed.outputs.types }}
+          scopes: ${{ steps.allowed.outputs.scopes }}
+          subjectPattern: ^[a-z].+[^.]$
+          subjectPatternError: |
+            The subject "{subject}" must:
+            - Start with a lowercase letter
+            - Not end with a period
+
+            Example: "feat(checks): check that every job sets timeout-minutes"
+          wip: false
+
+      - name: Comment on the pull request with the error
+        if: always() && steps.title.outputs.error_message != null
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88  # v3.0.5
+        with:
+          header: pull-request-title-error
+          message: |
+            ## Pull request title does not follow Conventional Commits
+
+            This repository requires pull request titles to follow the
+            [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
+            **Error:** the reason is in the [check's log][run]; it is not
+            repeated here because it quotes the title verbatim.
+
+            **Expected format:** `type(scope): description`
+
+            **Allowed types:** ${{ steps.allowed.outputs.types_csv }}
+
+            **Allowed scopes:** ${{ steps.allowed.outputs.scopes_csv }}
+
+            **Source of truth:** [`.github/conventional-commits.yaml`][manifest]
+
+            [manifest]: https://github.com/${{ github.repository }}/blob/main/.github/conventional-commits.yaml
+            [run]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Remove the error comment
+        if: steps.title.outputs.error_message == null
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88  # v3.0.5
+        with:
+          header: pull-request-title-error
+          delete: true

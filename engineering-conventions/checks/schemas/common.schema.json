@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shared definitions",
+  "description": "Definitions shared by every engineering-conventions schema. Other schemas reference these with a relative $ref such as common.schema.json#/definitions/requirementId.",
+  "definitions": {
+    "conventionId": {
+      "description": "A convention (document) identifier: EC- and four digits, e.g. EC-0002. Monotonic and never reused.",
+      "type": "string",
+      "pattern": "^EC-[0-9]{4}$"
+    },
+    "requirementId": {
+      "description": "A requirement identifier: a registered family prefix, a hyphen and a two- or three-digit number, e.g. GHA-07. Append-only and never reused.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,7}-[0-9]{2,3}$"
+    },
+    "familyPrefix": {
+      "description": "A requirement-ID family prefix: an upper-case letter followed by one to seven upper-case letters or digits, e.g. GHA.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,7}$"
+    },
+    "slug": {
+      "description": "A lower-case kebab-case identifier, e.g. github-actions.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "termId": {
+      "description": "A terminology term identifier: dot-separated lower-case kebab-case segments, e.g. gha.responsibility.validate.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(\\.[a-z][a-z0-9]*(-[a-z0-9]+)*)*$"
+    },
+    "version": {
+      "description": "A release version in MAJOR.MINOR.PATCH form, without a leading v, e.g. 0.1.0.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "date": {
+      "description": "A calendar date in ISO 8601 form, YYYY-MM-DD.",
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "severity": {
+      "description": "How a finding is reported: warning is reported without failing by default; error fails the check.",
+      "type": "string",
+      "enum": ["warning", "error"]
+    },
+    "requirementStatus": {
+      "description": "Lifecycle of a requirement. proposed: published for comment and checked only by profiles that opt in; active: enforced; deprecated: still enforced, scheduled for retirement; retired: a tombstone that is never enforced and whose ID is never reused.",
+      "type": "string",
+      "enum": ["proposed", "active", "deprecated", "retired"]
+    },
+    "repository": {
+      "description": "A GitHub repository as owner/name, e.g. musher-dev/platform.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9._-]+$"
+    },
+    "owner": {
+      "description": "A GitHub user or team handle, e.g. @octocat or @musher-dev/platform.",
+      "type": "string",
+      "pattern": "^@[A-Za-z0-9][A-Za-z0-9-]*(/[A-Za-z0-9._-]+)?$"
+    },
+    "httpsUrl": {
+      "description": "An absolute https URL.",
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://[^\\s]+$"
+    },
+    "repoPath": {
+      "description": "A path relative to a repository root, written with forward slashes and no leading slash or ./ prefix.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^([^/.\\s]|\\.[^/\\s])[^\\s]*$"
+    },
+    "pathGlob": {
+      "description": "A repository-relative glob with forward slashes: * matches within one path segment, ** matches across segments.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^([^/.\\s]|\\.[^/\\s])[^\\s]*$"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "displayForms": {
+      "description": "Display forms keyed by lower-case identifier token: how the token is written in a Title-Cased name, e.g. api: API.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^\\S(.*\\S)?$"
+      }
+    }
+  }
+}

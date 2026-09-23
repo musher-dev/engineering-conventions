@@ -1,0 +1,90 @@
+name: Publish
+
+# Owns the release assets: it builds the conventions bundle from the release
+# tag, attests its provenance, and attaches it to the GitHub Release. A
+# maintainer reads a failure here; the release exists but consumers cannot
+# download it until this succeeds. There is no manual trigger on purpose: the
+# provenance must record the release event and the tag ref, so a failed upload
+# is recovered with "Re-run failed jobs" on the original run, after deleting
+# any assets the failed attempt did upload (the upload never overwrites).
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+# Queued, never cancelled: a cancelled upload leaves a release with some of its
+# assets, and the retry refuses to overwrite them.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    name: Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write  # upload the release assets
+      id-token: write  # sign the provenance attestation
+      attestations: write  # store the provenance attestation
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Check the tag is a release version
+        run: |
+          set -euo pipefail
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::tag '$TAG' is not a release version (vX.Y.Z)"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-tools
+        with:
+          install-args: >-
+            aqua:go-task/task aqua:astral-sh/uv aqua:open-policy-agent/conftest
+            aqua:open-policy-agent/opa aqua:vale-cli/vale aqua:jqlang/jq
+          cache: "false"
+
+      - name: Check the bundle version matches the tag
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < version.txt)"
+          if [[ "$version" != "${TAG#v}" ]]; then
+            echo "::error::version.txt says '$version' but the tag is '$TAG'"
+            exit 1
+          fi
+
+      - name: Build the release bundle and verify it
+        run: task bundle:build bundle:verify
+
+      - name: Attest the bundle's build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/*.zip
+
+      # No --clobber: assets already on a release are never replaced, so a
+      # published bundle cannot change under anyone who has verified it.
+      - name: Upload the bundle to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"
+
+      - name: Summarise the published assets
+        run: |
+          set -euo pipefail
+          {
+            echo "## Published $TAG"
+            echo
+            echo '```'
+            (cd dist && sha256sum -- *)
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

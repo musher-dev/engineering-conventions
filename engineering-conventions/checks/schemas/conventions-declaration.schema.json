@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Conventions declaration",
+  "description": "A consuming repository's .repo/conventions.yaml: the conventions release it pins, the convention profile that applies to it, and every waiver it holds. ADOPT-02 checks a declaration against this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "conventions", "profile"],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "conventions": {
+      "description": "Which release of musher-dev/engineering-conventions this repository is checked against.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "description": "The pinned release, without a leading v, e.g. 0.1.0.",
+          "$ref": "common.schema.json#/definitions/version"
+        }
+      }
+    },
+    "profile": {
+      "description": "The convention profile that applies, e.g. base-repo.",
+      "$ref": "common.schema.json#/definitions/slug"
+    },
+    "area": {
+      "description": "The terminology area this repository belongs to, when it has one.",
+      "$ref": "common.schema.json#/definitions/slug"
+    },
+    "vocabulary": {
+      "description": "Repository-specific vocabulary on top of the release's.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_forms": {
+          "description": "Extra display forms, keyed by lower-case token, e.g. grpc: gRPC. They add to the release's display forms.",
+          "$ref": "common.schema.json#/definitions/displayForms"
+        }
+      }
+    },
+    "waivers": {
+      "description": "Time-boxed, tracked deviations from a requirement. Requirements in the ADOPT family cannot be waived.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/waiver" }
+    }
+  },
+  "definitions": {
+    "waiver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement", "reason", "tracking", "expires"],
+      "properties": {
+        "requirement": {
+          "description": "The requirement waived. ADOPT requirements cannot be waived.",
+          "allOf": [
+            { "$ref": "common.schema.json#/definitions/requirementId" },
+            { "not": { "pattern": "^ADOPT-" } }
+          ]
+        },
+        "paths": {
+          "description": "Limit the waiver to findings on these paths (repository-relative globs). Omit to waive the requirement everywhere.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/pathGlob" }
+        },
+        "reason": {
+          "description": "Why the deviation is needed, in at least 20 characters.",
+          "type": "string",
+          "minLength": 20
+        },
+        "tracking": {
+          "description": "The issue that tracks removing the waiver.",
+          "$ref": "common.schema.json#/definitions/httpsUrl"
+        },
+        "expires": {
+          "description": "The last day the waiver applies (YYYY-MM-DD), at most 180 days ahead.",
+          "$ref": "common.schema.json#/definitions/date"
+        }
+      }
+    }
+  }
+}

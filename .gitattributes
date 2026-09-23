@@ -1,7 +1,17 @@
-# Normalize line endings for cross-platform development
+# Every tracked file checks out with LF, on every platform. The dev container's
+# scripts run as `bash <file>`, and a CRLF checkout on a Windows host fails them
+# with `$'\r': command not found`.
 * text=auto eol=lf
-
-# Keep shell scripts and configuration consistent
 *.sh text eol=lf
 *.toml text eol=lf
 *.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+# opa fmt and the bundle's checksums both assume LF.
+*.rego text eol=lf
+
+# Written by `task generate`, never by hand. Collapsed in diffs and left out
+# of language statistics; the source is terminology/ and the conventions.
+engineering-conventions/checks/data/index.json linguist-generated=true
+engineering-conventions/checks/vale/** linguist-generated=true
+engineering-conventions/conventions/README.md linguist-generated=true

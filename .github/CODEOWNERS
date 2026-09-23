@@ -1,0 +1,20 @@
+# CODEOWNERS
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# One owner for the whole repository. This departs from musher-dev/platform,
+# whose CODEOWNERS forbids a `*` catch-all so review stays selective across a
+# many-team monorepo. Here one steward owns one set of conventions, so every PR
+# is codeowned by design: `require_code_owner_review` in
+# .github/rulesets/main-branch.json makes a PR from anyone else wait for that
+# steward's approval. GitHub waives the requirement on the owner's own PRs, so
+# those merge on green checks alone.
+#
+# Syntax rules that bite:
+#   - LAST matching pattern wins — order from broad to specific.
+#   - ALL owners for a pattern go on ONE line.
+#   - Owners need EXPLICIT write access to this repo, or the entry is silently
+#     ignored and the path becomes unowned.
+#   - Individual @handles until GitHub teams (@musher-dev/<team>) exist.
+
+*    @justinmerrell

@@ -1,0 +1,16 @@
+# The profile every repository starts from, and the default when a
+# repository has no conventions declaration.
+schema_version: 1
+id: base-repo
+display_name: Base repository
+description: >-
+  Every repository in the organisation: declaring its conventions, and the
+  GitHub Actions naming, structure and hygiene every repository with
+  workflows shares.
+include:
+  families: [ADOPT, GHA]
+# Every requirement is proposed until the platform hands workflow naming over
+# to this repository (docs/decisions/0002). Opting in here reports them at
+# their warning severity now, so repositories see the migration they face
+# before anything can fail their build.
+include_proposed: true

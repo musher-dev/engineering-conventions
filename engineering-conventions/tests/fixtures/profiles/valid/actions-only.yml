@@ -1,0 +1,6 @@
+schema_version: 1
+id: actions-only
+display_name: Actions only
+description: Workflow-file requirements, without opting into proposed ones.
+include:
+  conventions: [EC-0002]

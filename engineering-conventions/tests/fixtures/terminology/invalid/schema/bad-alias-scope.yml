@@ -1,0 +1,13 @@
+schema_version: 1
+area: bad-alias-scope
+description: An alias with a scope that does not exist.
+terms:
+  - id: example.thing
+    display_name: thing
+    definition: A thing.
+    tags: [example]
+    stability: stable
+    aliases:
+      - text: stuff
+        status: banned
+        scope: [everywhere]

@@ -1,0 +1,59 @@
+name: "Propose a term"
+description: "Add or change a term, token, display form or alias in the terminology."
+title: "[Term]: "
+labels: ["needs-triage", "terminology"]
+type: "Feature"
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Terms owned by another repository (telemetry names, specification fields, positioning or customer vocabulary,
+        platform domain nouns) are not defined here. For those, propose a pointer to the upstream definition instead.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Responsibility token (workflow filename)
+        - Capability token (reusable workflow)
+        - Action token (composite action)
+        - Display form (e.g. api -> API)
+        - Banned or discouraged alias
+        - Meta-term (a word the conventions are written in)
+        - Pointer to an upstream definition
+    validations:
+      required: true
+  - type: input
+    id: term
+    attributes:
+      label: Term
+      description: The token or word, and its display form if it has one.
+      placeholder: "grpc -> gRPC"
+    validations:
+      required: true
+  - type: textarea
+    id: definition
+    attributes:
+      label: Definition or authority
+      description: >-
+        A definition of one or two sentences, with what the term is not. If another repository owns the meaning,
+        give its repository and path instead.
+    validations:
+      required: true
+  - type: textarea
+    id: usage
+    attributes:
+      label: Where it is needed
+      description: The repositories and names that would use it, and why the existing vocabulary does not fit.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Global (every repository)
+        - An area overlay (a group of repositories)
+        - One repository (use vocabulary.display_forms in its declaration instead)
+    validations:
+      required: true

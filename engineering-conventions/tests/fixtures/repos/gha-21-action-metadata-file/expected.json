@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-21",
+    "path": ".github/actions/setup-tools/action.yaml",
+    "severity": "warning"
+  }
+]

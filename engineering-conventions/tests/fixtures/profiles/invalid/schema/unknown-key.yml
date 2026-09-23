@@ -1,0 +1,5 @@
+schema_version: 1
+id: unknown-key
+display_name: Unknown key
+description: A key the schema does not define.
+requirements: [GHA-07]

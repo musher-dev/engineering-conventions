@@ -1,46 +1,69 @@
-# Dependabot keeps the dev container supply chain fresh.
-# Docs: https://containers.dev/guide/dependabot
+# Dependabot: weekly, grouped, with a cooldown, and with commit messages that
+# pass this repo's own PR-title check (.github/conventional-commits.yaml).
+# Docs: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 #
-# - devcontainers  : bumps Features in devcontainer.json AND refreshes
-#                    .devcontainer/devcontainer-lock.json (digest pins).
-# - github-actions : bumps the actions pinned in .github/workflows/.
-# - docker         : bumps the image tags in the compose files.
+# `include: scope` turns each prefix into `<type>(deps)`, or `<type>(deps-dev)`
+# for a development dependency, so no Dependabot PR needs a hand-edited title.
+#
+# The CLI pins in .devcontainer/mise.toml have no Dependabot ecosystem; bump
+# them by hand, with the lockstep pins in .claude/rules/toolchain-pins.md.
 version: 2
 updates:
+  # SHA pins in the workflows, plus the one composite action that installs
+  # the toolchain (Dependabot does not look inside .github/actions/ by itself),
+  # and the example consumer's workflows, which consumers copy pins from.
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/setup-tools"
+      - "/engineering-conventions/examples/consumer"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    # Seven days for a release to be yanked or flagged before it reaches CI.
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Features in devcontainer.json, and the digests in devcontainer-lock.json.
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      devcontainers:
+        patterns: ["*"]
     commit-message:
-      prefix: "devcontainer"
+      prefix: "chore"
+      include: "scope"
 
-  # A product's own ecosystem (cargo, npm, uv, gomod ...) scans the product
-  # directory, never "/" -- LAYOUT-08. See LAYOUT.md → "Ecosystem Adapters".
-  # - package-ecosystem: "cargo"
-  #   directory: "/<product>"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  # The authoring CLI's uv.lock. It lives in the product directory, never
+  # "/" (LAYOUT.md).
+  - package-ecosystem: "uv"
+    directory: "/engineering-conventions"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      uv:
+        patterns: ["*"]
     commit-message:
-      prefix: "ci"
-
-  # Docker images. /.devcontainer covers the Dockerfile's `FROM` base image;
-  # /.devcontainer/stacks/** covers each stack's own standard-named compose.yaml
-  # (pulled into stacks/compose.yaml via `include:`). The orchestrator itself
-  # declares no images. If Dependabot does not surface PRs for a stack, verify
-  # detection under Insights -> Dependency graph -> Dependabot and adjust these
-  # directories.
-  #
-  # Note: this does NOT cover the tool pins in the Dockerfile's ARGs (bun, uv,
-  # task, mise) -- Dependabot has no ecosystem for those. Bump them by hand;
-  # `repo toolchain check` keeps them exact and in step with CI.
-  - package-ecosystem: "docker"
-    directories:
-      - "/.devcontainer"
-      - "/.devcontainer/stacks/**"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "docker"
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"

@@ -1,0 +1,14 @@
+name: Deploy Docs
+on:
+  workflow_run:
+    workflows: [Build Docs]
+    types: [completed]
+permissions: {}
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Publish the site
+        run: echo publish

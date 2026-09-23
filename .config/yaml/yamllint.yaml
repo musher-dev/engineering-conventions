@@ -1,12 +1,13 @@
-# yamllint rules for this repo's YAML (compose stacks, workflows, taskfiles).
-# Read by: yamllint, via an explicit --config-file path. Never auto-discovered.
+# yamllint rules for this repo's YAML (workflows, taskfiles, terminology,
+# profiles, fixtures).
+# Read by: yamllint, via an explicit -c path. Never auto-discovered.
 # Rule reference: https://yamllint.readthedocs.io/en/stable/rules.html
 
 extends: default
 
 rules:
-  # Compose files and workflows routinely carry long image digests and
-  # single-line shell commands that cannot be wrapped without breaking them.
+  # Workflows carry SHA pins with a version comment, and single-line shell
+  # commands that cannot be wrapped without breaking them.
   line-length:
     max: 120
     allow-non-breakable-words: true
@@ -18,11 +19,11 @@ rules:
     check-keys: false
 
   # `---` is optional noise in single-document files; be consistent by not
-  # requiring it, rather than adding it to every stack.
+  # requiring it.
   document-start: disable
 
-  # Compose files nest sequences under mappings; both indent styles are
-  # readable and the ecosystem is split. Accept either, consistently.
+  # Both sequence-indent styles are readable and the ecosystem is split.
+  # Accept either, consistently within a file.
   indentation:
     spaces: 2
     indent-sequences: consistent
@@ -30,5 +31,4 @@ rules:
   comments:
     min-spaces-from-content: 1
 
-  # Long reference tables in comments occasionally exceed the default.
   comments-indentation: enable

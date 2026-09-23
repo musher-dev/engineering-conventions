@@ -1,0 +1,156 @@
+name: Validate
+
+# Decides whether a change may merge. The one context the ruleset requires is
+# `Validate / Required`, which fails unless every other job succeeded. Only it
+# leads with the workflow's name: a ruleset matches the job name alone, so a
+# required context must be unique across the repository, while GitHub already
+# shows every other job as `Validate / <job name>`.
+#
+# No workflow-level `paths:` filter: a filtered-out run reports nothing, and a
+# required context that never reports blocks the pull request (GHA-32).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  workflows:
+    name: Workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+      ZIZMOR_VERSION: 1.30.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install actionlint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          dest="$RUNNER_TEMP/actionlint"
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          gh release download "v${ACTIONLINT_VERSION}" -R rhysd/actionlint \
+            -p "$archive" -p "actionlint_${ACTIONLINT_VERSION}_checksums.txt" -D "$dest"
+          cd "$dest"
+          grep " ${archive}\$" "actionlint_${ACTIONLINT_VERSION}_checksums.txt" | sha256sum -c
+          tar -xzf "$archive" actionlint
+
+      - name: Check workflow syntax and expressions
+        run: '"$RUNNER_TEMP/actionlint/actionlint"'
+
+      - name: Check workflow security
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: pipx run "zizmor==${ZIZMOR_VERSION}" --min-severity medium --persona regular .github/
+
+  conventions:
+    name: Conventions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CONFTEST_VERSION: 0.70.1
+      CHECK_JSONSCHEMA_VERSION: 0.38.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download and verify the conventions bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(yq '.conventions.version' .repo/conventions.yaml)"
+          dest="$RUNNER_TEMP/conventions"
+          gh release download "v${version}" -R musher-dev/engineering-conventions -D "$dest"
+          (cd "$dest" && sha256sum -c SHA256SUMS)
+          gh attestation verify "$dest/engineering-conventions-${version}.tar.gz" \
+            -R musher-dev/engineering-conventions \
+            --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
+            --source-ref "refs/tags/v${version}"
+          tar -xzf "$dest/engineering-conventions-${version}.tar.gz" -C "$dest"
+
+      - name: Install conftest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          dest="$RUNNER_TEMP/conftest"
+          archive="conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          gh release download "v${CONFTEST_VERSION}" -R open-policy-agent/conftest \
+            -p "$archive" -p checksums.txt -D "$dest"
+          cd "$dest"
+          grep " ${archive}\$" checksums.txt | sha256sum -c
+          tar -xzf "$archive" conftest
+
+      - name: Validate the conventions declaration
+        run: |
+          set -euo pipefail
+          bundle="$RUNNER_TEMP/conventions/engineering-conventions"
+          pipx run "check-jsonschema==${CHECK_JSONSCHEMA_VERSION}" \
+            --schemafile "$bundle/checks/schemas/conventions-declaration.schema.json" \
+            .repo/conventions.yaml
+
+      - name: Check the repository against its conventions
+        run: |
+          set -euo pipefail
+          bundle="$RUNNER_TEMP/conventions/engineering-conventions"
+          inventory="$RUNNER_TEMP/inventory.json"
+          git ls-files | jq -R . | jq -s '{conventions_inventory: {files: .}}' > "$inventory"
+
+          shopt -s nullglob globstar
+          files=(
+            .github/workflows/*.yml .github/workflows/*.yaml
+            .github/actions/**/action.yml .github/actions/**/action.yaml
+            .github/rulesets/*.json
+          )
+          if [ -f .repo/conventions.yaml ]; then
+            files+=(.repo/conventions.yaml)
+          fi
+
+          # --fail-on-warn holds the repository to every finding, warnings
+          # included; drop it to report warnings without failing.
+          "$RUNNER_TEMP/conftest/conftest" test --combine --fail-on-warn \
+            -p "$bundle/checks/rego" \
+            -d "$bundle/checks/data/index.json" \
+            -d "$bundle/checks/data/release.json" \
+            "${files[@]}" "$inventory"
+
+  required:
+    name: Validate / Required
+    if: always()
+    needs:
+      - workflows
+      - conventions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Every job above is unconditional, so anything but success is a
+      # failure: a skipped job has proved nothing.
+      - name: Fail unless every job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          failed=0
+          while read -r job result; do
+            echo "${job}: ${result}"
+            if [ "$result" != "success" ]; then
+              echo "::error title=Validate / Required::job '${job}' reported '${result}'; only success passes"
+              failed=1
+            fi
+          done < <(jq -r 'to_entries[] | "\(.key) \(.value.result)"' <<<"$RESULTS")
+          exit "$failed"

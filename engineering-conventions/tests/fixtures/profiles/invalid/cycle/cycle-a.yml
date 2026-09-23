@@ -1,0 +1,5 @@
+schema_version: 1
+id: cycle-a
+display_name: Cycle A
+description: Inherits cycle-b, which inherits this.
+inherits: [cycle-b]

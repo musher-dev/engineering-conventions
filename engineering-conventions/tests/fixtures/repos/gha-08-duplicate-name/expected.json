@@ -1,0 +1,17 @@
+[
+  {
+    "id": "GHA-07",
+    "path": ".github/workflows/validate-docs.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "GHA-08",
+    "path": ".github/workflows/validate-docs.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "GHA-08",
+    "path": ".github/workflows/validate.yml",
+    "severity": "warning"
+  }
+]

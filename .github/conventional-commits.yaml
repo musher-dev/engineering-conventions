@@ -1,0 +1,53 @@
+# Single source of truth for Conventional Commits types and scopes.
+#
+# Consumed by:
+#   - .github/scripts/lint-commit-msg.sh           (lefthook commit-msg)
+#   - .github/workflows/validate-pull-request.yml  (Validate Pull Request / Title)
+#
+# Adding a type or scope: edit this file and only this file. Both consumers
+# read it at runtime.
+#
+# The type decides the version bump. Choose it from the change classification:
+# docs/decisions/0005-status-severity-and-versioning.md#change-classification
+
+types:
+  - feat
+  - fix
+  - perf
+  - docs
+  - chore
+  - refactor
+  - test
+  - ci
+  - build
+  - style
+
+# One scope per part of the product, plus the repository machinery.
+#   adr          docs/decisions/**
+#   checks       engineering-conventions/checks/rego/** — the conftest checks
+#   ci           .github/workflows/**, .github/actions/**
+#   cli          engineering-conventions/src/**, the authoring CLI
+#   conventions  engineering-conventions/conventions/** — the requirements
+#   deps / deps-dev  Dependabot (it picks deps-dev for dev-dependencies)
+#   docs         docs/** other than decisions, READMEs
+#   profiles     engineering-conventions/profiles/**
+#   release      release-please PRs
+#   repo         repo tooling: Taskfile, lefthook, .config/, .claude/, .devcontainer/
+#   schemas      engineering-conventions/checks/schemas/**
+#   terminology  engineering-conventions/terminology/**
+#   vale         the MusherConventions style and its generation
+scopes:
+  - adr
+  - checks
+  - ci
+  - cli
+  - conventions
+  - deps
+  - deps-dev
+  - docs
+  - profiles
+  - release
+  - repo
+  - schemas
+  - terminology
+  - vale

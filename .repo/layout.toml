@@ -1,9 +1,0 @@
-# The product level of this repo -- see LAYOUT.md "Declaring the Product".
-# One directory named after the repo, holding the ecosystem-native build root.
-# Empty is the template's state: no product. Product-dependent rules skip; the
-# rule that the root holds no product content still applies.
-product = ""
-
-# Root entries LAYOUT-05 would otherwise reject, each with a reason.
-# An entry whose path no longer exists fails LAYOUT-06.
-[root-exceptions]

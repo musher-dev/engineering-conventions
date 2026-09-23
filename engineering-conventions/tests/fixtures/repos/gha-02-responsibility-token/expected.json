@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-02",
+    "path": ".github/workflows/add-to-project.yml",
+    "severity": "warning"
+  }
+]

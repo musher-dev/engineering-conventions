@@ -1,0 +1,7 @@
+schema_version: 1
+id: strict-child
+display_name: Strict child
+description: Inherits strict and restates its raise, which is allowed.
+inherits: [strict]
+severity:
+  GHA-07: error

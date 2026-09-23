@@ -1,0 +1,12 @@
+schema_version: 1
+area: definition-and-authority
+description: A term that both defines itself and points upstream.
+terms:
+  - id: example.twice
+    display_name: twice
+    definition: Defined here.
+    authority:
+      repo: musher-dev/platform
+      path: .claude/rules/terminology.md
+    tags: [example]
+    stability: stable

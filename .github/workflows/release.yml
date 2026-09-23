@@ -1,0 +1,51 @@
+name: Release
+
+# Owns the release pull request and the release tag. release-please keeps one
+# open pull request on main that bumps version.txt and CHANGELOG.md; a human
+# merges it, and the next run here creates the `vX.Y.Z` tag and its GitHub
+# Release, whose `published` event starts publish.yml. Nothing here merges
+# anything. A maintainer reads a failure here: until it is fixed, no release
+# pull request is opened or updated.
+
+on:
+  push:
+    branches: [main]
+
+# Every write is made with the App installation token minted below; the default
+# token needs nothing.
+permissions: {}
+
+# Queued, never cancelled: a run cancelled between creating a tag and finishing
+# its release bookkeeping leaves release-please a half-made release to reconcile.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release_please:
+    name: Release PR and Tags
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # An App token, not the default token: GitHub starts no workflow for an
+      # event the default token raises, so a release pull request opened with it
+      # would never report its required contexts, and its release would never
+      # start publish.yml. The installation token is also scoped down here at
+      # mint time, expires within the hour and is revoked in the post step.
+      - name: Mint the release automation token
+        id: app_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
+        with:
+          app-id: ${{ secrets.AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open or update the release pull request
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
+        with:
+          token: ${{ steps.app_token.outputs.token }}
+          config-file: .github/release-please/config.json
+          manifest-file: .github/release-please/manifest.json

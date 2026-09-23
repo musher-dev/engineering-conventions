@@ -1,0 +1,21 @@
+name: Validate Pull Request
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+permissions:
+  contents: read
+  pull-requests: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  title:
+    name: Validate Pull Request / Title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the title is a Conventional Commit
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "$TITLE" | grep -Eq '^(feat|fix|chore)(\(.+\))?!?: '

@@ -1,0 +1,49 @@
+[project]
+name = "conventions-tools"
+# Never published as a package: the release version is version.txt at the
+# repository root, and consumers use the generated bundle, not this code.
+version = "0.0.0"
+description = "Authoring and checking tools for musher-dev/engineering-conventions."
+requires-python = ">=3.13"
+dependencies = [
+  "jsonschema>=4.26",
+  "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+conventions = "conventions_tools.cli:main"
+
+[dependency-groups]
+dev = [
+  "basedpyright==1.40.1",
+  "pytest==9.1.1",
+  "ruff==0.16.8",
+  "types-jsonschema",
+  "types-pyyaml",
+]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+  "A", "ARG", "B", "C4", "DTZ", "E", "ERA", "F", "FBT", "I", "N", "PERF", "PIE",
+  "PL", "PT", "PTH", "RET", "RUF", "SIM", "UP", "W",
+]
+# PLR2004 flags every literal in an assertion; the tests compare against
+# literal expectations on purpose.
+ignore = ["PLR2004"]
+
+[tool.basedpyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.13"
+include = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers", "--strict-config"]

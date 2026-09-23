@@ -1,0 +1,854 @@
+{
+  "conventions": {
+    "index": {
+      "conventions": {
+        "EC-0001": {
+          "authority": "self",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "status": "active",
+          "title": "Conventions declaration",
+          "topic": "adoption"
+        },
+        "EC-0002": {
+          "authority": {
+            "ref": "https://github.com/musher-dev/platform/issues/2892",
+            "repo": "musher-dev/platform"
+          },
+          "path": "conventions/github-actions/workflow-files.md",
+          "status": "draft",
+          "title": "Workflow files",
+          "topic": "github-actions"
+        },
+        "EC-0003": {
+          "authority": {
+            "ref": "https://github.com/musher-dev/platform/issues/2892",
+            "repo": "musher-dev/platform"
+          },
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "status": "draft",
+          "title": "Jobs and steps",
+          "topic": "github-actions"
+        },
+        "EC-0004": {
+          "authority": {
+            "ref": "https://github.com/musher-dev/platform/issues/2892",
+            "repo": "musher-dev/platform"
+          },
+          "path": "conventions/github-actions/composite-actions.md",
+          "status": "draft",
+          "title": "Composite actions",
+          "topic": "github-actions"
+        },
+        "EC-0005": {
+          "authority": {
+            "ref": "https://github.com/musher-dev/platform/issues/2892",
+            "repo": "musher-dev/platform"
+          },
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "status": "draft",
+          "title": "Execution hygiene",
+          "topic": "github-actions"
+        },
+        "EC-0006": {
+          "authority": {
+            "ref": "https://github.com/musher-dev/platform/issues/2892",
+            "repo": "musher-dev/platform"
+          },
+          "path": "conventions/github-actions/units-and-renames.md",
+          "status": "draft",
+          "title": "Units and renames",
+          "topic": "github-actions"
+        }
+      },
+      "product_dir": "engineering-conventions",
+      "profiles": {
+        "base-repo": {
+          "display_name": "Base repository",
+          "requirements": [
+            "ADOPT-01",
+            "ADOPT-02",
+            "ADOPT-03",
+            "ADOPT-04",
+            "ADOPT-05",
+            "ADOPT-06",
+            "ADOPT-07",
+            "ADOPT-08",
+            "GHA-01",
+            "GHA-02",
+            "GHA-03",
+            "GHA-04",
+            "GHA-05",
+            "GHA-06",
+            "GHA-07",
+            "GHA-08",
+            "GHA-09",
+            "GHA-10",
+            "GHA-11",
+            "GHA-12",
+            "GHA-13",
+            "GHA-14",
+            "GHA-15",
+            "GHA-16",
+            "GHA-17",
+            "GHA-18",
+            "GHA-19",
+            "GHA-20",
+            "GHA-21",
+            "GHA-22",
+            "GHA-23",
+            "GHA-24",
+            "GHA-25",
+            "GHA-26",
+            "GHA-27",
+            "GHA-28",
+            "GHA-29",
+            "GHA-30",
+            "GHA-31",
+            "GHA-32",
+            "GHA-33",
+            "GHA-34",
+            "GHA-35",
+            "GHA-36",
+            "GHA-37",
+            "GHA-38"
+          ],
+          "severity": {
+            "ADOPT-01": "warning",
+            "ADOPT-02": "warning",
+            "ADOPT-03": "warning",
+            "ADOPT-04": "warning",
+            "ADOPT-05": "warning",
+            "ADOPT-06": "warning",
+            "ADOPT-07": "warning",
+            "ADOPT-08": "warning",
+            "GHA-01": "warning",
+            "GHA-02": "warning",
+            "GHA-03": "warning",
+            "GHA-04": "warning",
+            "GHA-05": "warning",
+            "GHA-06": "warning",
+            "GHA-07": "warning",
+            "GHA-08": "warning",
+            "GHA-09": "warning",
+            "GHA-10": "warning",
+            "GHA-11": "warning",
+            "GHA-12": "warning",
+            "GHA-13": "warning",
+            "GHA-14": "warning",
+            "GHA-15": "warning",
+            "GHA-16": "warning",
+            "GHA-17": "warning",
+            "GHA-18": "warning",
+            "GHA-19": "warning",
+            "GHA-20": "warning",
+            "GHA-21": "warning",
+            "GHA-22": "warning",
+            "GHA-23": "warning",
+            "GHA-24": "warning",
+            "GHA-25": "warning",
+            "GHA-26": "warning",
+            "GHA-27": "warning",
+            "GHA-28": "warning",
+            "GHA-29": "warning",
+            "GHA-30": "warning",
+            "GHA-31": "warning",
+            "GHA-32": "warning",
+            "GHA-33": "warning",
+            "GHA-34": "warning",
+            "GHA-35": "warning",
+            "GHA-36": "warning",
+            "GHA-37": "warning",
+            "GHA-38": "warning"
+          }
+        }
+      },
+      "repository": "https://github.com/musher-dev/engineering-conventions",
+      "requirements": {
+        "ADOPT-01": {
+          "aliases": [],
+          "anchor": "adopt-01",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A repository declares its conventions in .repo/conventions.yaml",
+          "waivable": false
+        },
+        "ADOPT-02": {
+          "aliases": [],
+          "anchor": "adopt-02",
+          "convention": "EC-0001",
+          "engine": "jsonschema",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "schema": "checks/schemas/conventions-declaration.schema.json",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "The conventions declaration is valid against its schema",
+          "waivable": false
+        },
+        "ADOPT-03": {
+          "aliases": [],
+          "anchor": "adopt-03",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An expired waiver no longer suppresses its finding",
+          "waivable": false
+        },
+        "ADOPT-04": {
+          "aliases": [],
+          "anchor": "adopt-04",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A waiver names a requirement that exists and is not retired",
+          "waivable": false
+        },
+        "ADOPT-05": {
+          "aliases": [],
+          "anchor": "adopt-05",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A waiver expires within 180 days",
+          "waivable": false
+        },
+        "ADOPT-06": {
+          "aliases": [],
+          "anchor": "adopt-06",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A waiver that suppresses nothing is removed",
+          "waivable": false
+        },
+        "ADOPT-07": {
+          "aliases": [],
+          "anchor": "adopt-07",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "The declaration names a profile the release defines",
+          "waivable": false
+        },
+        "ADOPT-08": {
+          "aliases": [],
+          "anchor": "adopt-08",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "The declared version is the version of the bundle being run",
+          "waivable": false
+        },
+        "GHA-01": {
+          "aliases": [
+            "platform:CI-14"
+          ],
+          "anchor": "gha-01",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow filename follows [reusable-]<responsibility>[-<scope>].<ext>",
+          "waivable": true
+        },
+        "GHA-02": {
+          "aliases": [
+            "platform:CI-14"
+          ],
+          "anchor": "gha-02",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An entry-point workflow starts with a responsibility token",
+          "waivable": true
+        },
+        "GHA-03": {
+          "aliases": [
+            "platform:CI-14"
+          ],
+          "anchor": "gha-03",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "The reusable- prefix marks exactly the workflows triggered only by workflow_call",
+          "waivable": true
+        },
+        "GHA-04": {
+          "aliases": [
+            "platform:CI-14"
+          ],
+          "anchor": "gha-04",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A reusable workflow names a responsibility or capability token",
+          "waivable": true
+        },
+        "GHA-05": {
+          "aliases": [],
+          "anchor": "gha-05",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow filename carries no trigger, schedule, tool or synonym token",
+          "waivable": true
+        },
+        "GHA-06": {
+          "aliases": [],
+          "anchor": "gha-06",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A repository uses one workflow file extension",
+          "waivable": true
+        },
+        "GHA-07": {
+          "aliases": [
+            "platform:CI-15"
+          ],
+          "anchor": "gha-07",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow's name is its filename stem in Title Case",
+          "waivable": true
+        },
+        "GHA-08": {
+          "aliases": [],
+          "anchor": "gha-08",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Workflow names are unique within a repository",
+          "waivable": true
+        },
+        "GHA-09": {
+          "aliases": [],
+          "anchor": "gha-09",
+          "convention": "EC-0002",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.workflow_files",
+          "path": "conventions/github-actions/workflow-files.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow_run trigger names a workflow that exists",
+          "waivable": true
+        },
+        "GHA-10": {
+          "aliases": [
+            "platform:CI-16"
+          ],
+          "anchor": "gha-10",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Job IDs and step IDs are snake_case",
+          "waivable": true
+        },
+        "GHA-11": {
+          "aliases": [
+            "platform:CI-17"
+          ],
+          "anchor": "gha-11",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Every job declares a name, unique within its workflow",
+          "waivable": true
+        },
+        "GHA-12": {
+          "aliases": [
+            "platform:CI-17"
+          ],
+          "anchor": "gha-12",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An entry-point job is named <Subject>[ / <Check>]; only a required-check job leads with its workflow's name",
+          "waivable": true
+        },
+        "GHA-13": {
+          "aliases": [
+            "platform:CI-17"
+          ],
+          "anchor": "gha-13",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A job in a callable workflow has a bare name",
+          "waivable": true
+        },
+        "GHA-14": {
+          "aliases": [],
+          "anchor": "gha-14",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An aggregate job runs even when a dependency fails, and needs every other job",
+          "waivable": true
+        },
+        "GHA-15": {
+          "aliases": [
+            "platform:CI-19"
+          ],
+          "anchor": "gha-15",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Every required status check is a context exactly one job emits",
+          "waivable": true
+        },
+        "GHA-16": {
+          "aliases": [],
+          "anchor": "gha-16",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A multi-job workflow is required only through its aggregate",
+          "waivable": true
+        },
+        "GHA-17": {
+          "aliases": [],
+          "anchor": "gha-17",
+          "convention": "EC-0003",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.jobs_and_steps",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Every run step has a name",
+          "waivable": true
+        },
+        "GHA-18": {
+          "aliases": [],
+          "anchor": "gha-18",
+          "convention": "EC-0003",
+          "engine": "review",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A step name is an imperative verb phrase",
+          "waivable": true
+        },
+        "GHA-19": {
+          "aliases": [],
+          "anchor": "gha-19",
+          "convention": "EC-0003",
+          "engine": "review",
+          "path": "conventions/github-actions/jobs-and-steps.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A tool is named only when the tool is the subject",
+          "waivable": true
+        },
+        "GHA-20": {
+          "aliases": [
+            "platform:CI-18"
+          ],
+          "anchor": "gha-20",
+          "convention": "EC-0004",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.composite_actions",
+          "path": "conventions/github-actions/composite-actions.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An action directory is <action-token>-<object>",
+          "waivable": true
+        },
+        "GHA-21": {
+          "aliases": [
+            "platform:CI-18"
+          ],
+          "anchor": "gha-21",
+          "convention": "EC-0004",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.composite_actions",
+          "path": "conventions/github-actions/composite-actions.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An action's metadata is action.yml, one level below .github/actions",
+          "waivable": true
+        },
+        "GHA-22": {
+          "aliases": [],
+          "anchor": "gha-22",
+          "convention": "EC-0004",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.composite_actions",
+          "path": "conventions/github-actions/composite-actions.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An action's name is its directory in Title Case",
+          "waivable": true
+        },
+        "GHA-23": {
+          "aliases": [],
+          "anchor": "gha-23",
+          "convention": "EC-0004",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.composite_actions",
+          "path": "conventions/github-actions/composite-actions.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An action and each of its inputs have a description",
+          "waivable": true
+        },
+        "GHA-24": {
+          "aliases": [],
+          "anchor": "gha-24",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A third-party action is pinned to a full commit SHA",
+          "waivable": true
+        },
+        "GHA-25": {
+          "aliases": [],
+          "anchor": "gha-25",
+          "convention": "EC-0005",
+          "engine": "review",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A SHA pin carries the version it resolves to as a comment",
+          "waivable": true
+        },
+        "GHA-26": {
+          "aliases": [],
+          "anchor": "gha-26",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow declares permissions at the workflow level",
+          "waivable": true
+        },
+        "GHA-27": {
+          "aliases": [],
+          "anchor": "gha-27",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Workflow-level permissions grant no write access; jobs widen them",
+          "waivable": true
+        },
+        "GHA-28": {
+          "aliases": [],
+          "anchor": "gha-28",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "actions/checkout does not persist credentials",
+          "waivable": true
+        },
+        "GHA-29": {
+          "aliases": [],
+          "anchor": "gha-29",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Every job that runs steps sets timeout-minutes",
+          "waivable": true
+        },
+        "GHA-30": {
+          "aliases": [],
+          "anchor": "gha-30",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "An entry point on pull_request or merge_group uses the standard concurrency group",
+          "waivable": true
+        },
+        "GHA-31": {
+          "aliases": [
+            "platform:CI-06"
+          ],
+          "anchor": "gha-31",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow triggered only by workflow_call declares no concurrency",
+          "waivable": true
+        },
+        "GHA-32": {
+          "aliases": [],
+          "anchor": "gha-32",
+          "convention": "EC-0005",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.execution_hygiene",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A workflow that emits a required check has no paths filter",
+          "waivable": true
+        },
+        "GHA-33": {
+          "aliases": [],
+          "anchor": "gha-33",
+          "convention": "EC-0005",
+          "engine": "delegated",
+          "path": "conventions/github-actions/execution-hygiene.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Workflows pass actionlint and zizmor at medium severity",
+          "waivable": true
+        },
+        "GHA-34": {
+          "aliases": [],
+          "anchor": "gha-34",
+          "convention": "EC-0006",
+          "engine": "review",
+          "path": "conventions/github-actions/units-and-renames.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A new workflow, job, action or reusable workflow is chosen by the unit criteria",
+          "waivable": true
+        },
+        "GHA-35": {
+          "aliases": [],
+          "anchor": "gha-35",
+          "convention": "EC-0006",
+          "engine": "review",
+          "path": "conventions/github-actions/units-and-renames.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Validation is split into validate workflows by what they judge",
+          "waivable": true
+        },
+        "GHA-36": {
+          "aliases": [],
+          "anchor": "gha-36",
+          "convention": "EC-0006",
+          "engine": "review",
+          "path": "conventions/github-actions/units-and-renames.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A rename updates every reference to the renamed identity in the same change",
+          "waivable": true
+        },
+        "GHA-37": {
+          "aliases": [],
+          "anchor": "gha-37",
+          "convention": "EC-0006",
+          "engine": "review",
+          "path": "conventions/github-actions/units-and-renames.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "A name states the responsibility, result or capability, not the trigger or tool",
+          "waivable": true
+        },
+        "GHA-38": {
+          "aliases": [],
+          "anchor": "gha-38",
+          "convention": "EC-0004",
+          "engine": "conftest",
+          "package": "conventions.checks.github_actions.composite_actions",
+          "path": "conventions/github-actions/composite-actions.md",
+          "severity": "warning",
+          "since": "0.1.0",
+          "status": "proposed",
+          "title": "Inputs and outputs of actions and reusable workflows are kebab-case",
+          "waivable": true
+        }
+      },
+      "schema_version": 1,
+      "vocabulary": {
+        "action_tokens": [
+          "authenticate",
+          "check",
+          "install",
+          "setup"
+        ],
+        "banned_identifier_tokens": {
+          "cd": "deploy",
+          "checks": "validate",
+          "ci": "validate",
+          "cleanup": "maintain",
+          "cron": "audit, monitor or maintain",
+          "daily": "audit, monitor or maintain",
+          "drift": "monitor",
+          "forensics": "audit",
+          "gates": "validate",
+          "lint": "validate",
+          "maintenance": "maintain",
+          "nightly": "audit, monitor or maintain",
+          "pr": "validate",
+          "quality": "validate",
+          "rollout": "deploy",
+          "scheduled": "audit, monitor or maintain",
+          "ship": "deploy",
+          "test": "validate",
+          "tests": "validate",
+          "weekly": "audit, monitor or maintain"
+        },
+        "capability_tokens": [
+          "build",
+          "check",
+          "promote"
+        ],
+        "display_forms": {
+          "api": "API",
+          "ci": "CI",
+          "cli": "CLI",
+          "codeowners": "CODEOWNERS",
+          "dco": "DCO",
+          "devcontainer": "Dev Container",
+          "e2e": "E2E",
+          "hq": "HQ",
+          "oci": "OCI",
+          "pr": "PR",
+          "sast": "SAST",
+          "uv": "uv"
+        },
+        "responsibility_tokens": [
+          "audit",
+          "deploy",
+          "maintain",
+          "monitor",
+          "publish",
+          "release",
+          "repository",
+          "validate",
+          "verify"
+        ],
+        "schedule_tokens": [
+          "cron",
+          "daily",
+          "nightly",
+          "scheduled",
+          "weekly"
+        ]
+      }
+    }
+  }
+}

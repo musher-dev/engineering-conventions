@@ -50,30 +50,11 @@ base_setup_cache_dirs() {
   setup_config_dirs \
     "xdg cache:${_HOME}/.cache" \
     "uv cache:${_HOME}/.cache/uv" \
-    "ruff cache:${_HOME}/.cache/ruff" \
-    "pip cache:${_HOME}/.cache/pip" \
-    "mypy cache:${_HOME}/.cache/mypy" \
-    "npm cache:${_HOME}/.cache/npm" \
-    "deno cache:${_HOME}/.cache/deno" \
-    "go mod cache:${_HOME}/.cache/go/mod" \
-    "go build cache:${_HOME}/.cache/go/build" \
-    "bun cache:${_HOME}/.cache/bun"
+    "npm cache:${_HOME}/.cache/npm"
 }
 
-# --- NVM ---
+# --- mise (installs every CLI pinned in .devcontainer/mise.toml) ---
 
-# The Node feature installs Node via nvm; fix nvm's ownership so global npm
-# installs work. Delegates to fix_nvm_permissions from common.sh.
-base_fix_nvm_permissions() {
-  fix_nvm_permissions
-}
-
-# --- mise (pins the CLIs that have no devcontainer Feature) ---
-
-# Fallback only: the image bakes mise at /usr/local/bin/mise, which
-# `command -v` finds first. This path covers the base_install_mise fallback,
-# which installs per-user.
-readonly _MISE_BIN="${_HOME}/.local/bin/mise"
 readonly _MISE_SHIMS="${_HOME}/.local/share/mise/shims"
 
 # Puts the mise shims and ~/.local/bin on PATH for the rest of this script, so
@@ -86,30 +67,12 @@ base_setup_path() {
   export PATH="${_MISE_SHIMS}:${_HOME}/.local/bin:${PATH}"
 }
 
-# Installs mise if it is not already present.
+# Installs the CLIs pinned in .devcontainer/mise.toml, then regenerates shims.
 #
-# The dev container image bakes a pinned mise at /usr/local/bin/mise
-# (ARG MISE_VERSION in .devcontainer/Dockerfile), so this normally short-circuits.
-# The installer below is the fallback for a consuming repo that strips the
-# Dockerfile, and is deliberately unpinned because in that case there is no ARG
-# to read the pin from.
-#
-# Outputs:
-#   Writes progress to stderr via log()
-# Returns:
-#   0 on success, non-zero on failure
-base_install_mise() {
-  if has_cmd mise; then
-    log "mise already installed, skipping"
-    return 0
-  fi
-  log "mise not baked into the image; falling back to https://mise.run..."
-  retry 3 5 bash -c 'curl -fsSL https://mise.run | sh'
-}
-
-# Installs the CLIs pinned in .devcontainer/mise.toml (tools with no Feature),
-# then regenerates shims. MISE_GLOBAL_CONFIG_FILE (devcontainer.json →
-# containerEnv) points mise at that manifest.
+# mise itself is baked into the image (ARG MISE_VERSION in the Dockerfile).
+# There is deliberately no fallback installer: an unpinned mise would resolve
+# the pins with a different mise than CI uses, which is the drift the single
+# anchor exists to prevent. A missing mise means the image build is wrong.
 #
 # Globals:
 #   MISE_GLOBAL_CONFIG_FILE — read, path to the tool manifest
@@ -118,71 +81,57 @@ base_install_mise() {
 # Returns:
 #   0 on success, non-zero on failure
 base_install_tools() {
-  local mise
-  mise="$(command -v mise || echo "${_MISE_BIN}")"
+  if ! has_cmd mise; then
+    log "ERROR: mise is not on PATH; rebuild the container (it is baked by .devcontainer/Dockerfile)"
+    return 1
+  fi
   local config="${MISE_GLOBAL_CONFIG_FILE:-${_LIB_DIR}/../../mise.toml}"
   log "Installing pinned CLIs from ${config}..."
-  "${mise}" trust "${config}" >/dev/null 2>&1 || true
-  retry 3 5 "${mise}" install
-  "${mise}" reshim >/dev/null 2>&1 || true
+  mise trust "${config}" >/dev/null 2>&1 || true
+  retry 3 5 mise install
+  mise reshim >/dev/null 2>&1 || true
 }
 
 # --- Claude Code ---
 
 # Installs Claude Code via the native installer if not already present.
 #
+# Best-effort: nothing in the gates needs it, and the Dev Container CI job runs
+# this script with no network credentials, so a failed download is a warning
+# rather than a failed container.
+#
 # Outputs:
 #   Writes progress to stderr via log()
 # Returns:
-#   0 on success, non-zero on failure
+#   0 always
 base_install_claude() {
   if has_cmd claude; then
     log "Claude Code already installed, skipping"
     return 0
   fi
+  # CI builds the container only to prove the toolchain; it has no use for an
+  # unpinned installer running with the job's token in the environment.
+  if [[ -n "${CI:-}" ]]; then
+    log "CI is set; skipping the Claude Code install"
+    return 0
+  fi
   log "Installing Claude Code (native installer)..."
-  retry 3 5 bash -c 'curl -fsSL https://claude.ai/install.sh | bash'
-}
-
-# --- Repo governance CLI ---
-
-# Installs the `repo` CLI from .repo/ so structure policies run locally the
-# same way they run in CI.
-#
-# Sequenced after base_install_tools because it needs uv on PATH, and before
-# base_verify_tools because that call asserts `repo` resolves.
-#
-# Globals:
-#   _LIB_DIR — read, used to locate the repo root
-# Outputs:
-#   Writes progress to stderr via log()
-# Returns:
-#   0 on success, non-zero on failure
-base_install_repo_cli() {
-  local repo_dir="${_LIB_DIR}/../../../.repo"
-  if [[ ! -f "${repo_dir}/pyproject.toml" ]]; then
-    log "No .repo/ project found, skipping governance CLI"
-    return 0
+  if ! retry 3 5 bash -c 'curl -fsSL https://claude.ai/install.sh | bash'; then
+    log "WARNING: Claude Code install failed; re-run the installer by hand when online"
   fi
-  if ! has_cmd uv; then
-    log "uv not on PATH, skipping governance CLI"
-    return 0
-  fi
-  log "Installing the repo governance CLI from .repo/..."
-  retry 3 5 uv tool install --force --reinstall "${repo_dir}"
 }
 
 # --- Verify ---
 
-# Verifies the CLIs this script installs (plus a couple of key Feature tools)
-# are on PATH. Runtimes are validated by the container build itself.
+# Verifies the CLIs the gates depend on are on PATH. Exact versions are
+# asserted by verify-toolchain.sh; this only catches a failed install early.
 #
 # Outputs:
 #   Writes tool status to stderr via log()
 # Returns:
 #   0 if all tools found, 1 if any are missing
 base_verify_tools() {
-  verify_tools gh task codex lefthook claude repo
+  verify_tools gh task lefthook conftest opa vale uv
 }
 
 # --- Orchestrator ---
@@ -195,12 +144,9 @@ base_setup() {
   log "Running base setup..."
   base_setup_config_dirs
   base_setup_cache_dirs
-  base_fix_nvm_permissions
   base_setup_path
-  base_install_mise
   base_install_tools
   base_install_claude
-  base_install_repo_cli
   base_verify_tools
   log "Base setup complete"
 }

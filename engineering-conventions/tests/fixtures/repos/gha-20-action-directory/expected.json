@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-20",
+    "path": ".github/actions/tools",
+    "severity": "warning"
+  }
+]

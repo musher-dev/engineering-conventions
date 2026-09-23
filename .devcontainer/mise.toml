@@ -1,22 +1,46 @@
-# Developer CLIs that have no devcontainer Feature and are only needed at
-# runtime. Tools with a Feature are pinned in devcontainer.json; bun, uv, task
-# and mise are baked by the Dockerfile.
-# Tier rules: CONFIGURATION.md → "Runtimes & Tools".
+# The single anchor for every CLI this repository runs. The Dockerfile bakes
+# only mise itself; the dev container (post-create), local `task` runs and CI
+# (.github/actions/setup-tools, the one jdx/mise-action reference) all resolve
+# tools from this file, so a version exists in exactly one place.
 #
-# This file is the single source of these versions: post-create runs
-# `mise install` against it, and CI resolves the same pins via jdx/mise-action.
-# Edit a version here, then `task tools:install`.
+# Edit a version here, then `task tools:install`. Lockstep pins that cannot be
+# expressed here are listed in .claude/rules/toolchain-pins.md.
 #
 # Backends are fully qualified so resolution does not depend on mise's registry.
 
 [tools]
-# --- AI + git hooks ------------------------------------------------------
-"npm:@openai/codex" = "0.143.0"
-# Keep in lockstep with min_version in .config/lefthook.yml.
-"npm:lefthook"      = "2.1.10"
+# --- Runtimes ------------------------------------------------------------
+# Node exists only to run markdownlint-cli2.
+node = "24.21.0"
+"aqua:astral-sh/uv" = "0.12.18"
 
-# --- Linters (configs live in .config/; see .config/README.md) -----------
-"npm:markdownlint-cli2" = "0.22.1"
-"pipx:yamllint"         = "1.38.0"
-"pipx:codespell"        = "2.4.3"
+# --- Task runner + git hooks ---------------------------------------------
+"aqua:go-task/task" = "3.53.1"
+# Keep in lockstep with min_version in .config/lefthook.yml.
+"aqua:evilmartians/lefthook" = "2.1.14"
+
+# --- Rule engines ----------------------------------------------------------
+"aqua:open-policy-agent/conftest" = "0.70.1"
+# Lockstep with the OPA version conftest 0.70.1 embeds, so `opa test` and
+# `conftest test` evaluate the same language.
+"aqua:open-policy-agent/opa" = "1.20.2"
+"aqua:open-policy-agent/regal" = "0.42.0"
+"aqua:vale-cli/vale" = "3.22.0"
+"pipx:check-jsonschema" = "0.38.1"
+
+# --- Linters (configs live in .config/; see .config/README.md) -------------
+"npm:markdownlint-cli2" = "0.23.3"
+"pipx:yamllint" = "1.38.0"
 "aqua:rhysd/actionlint" = "1.7.12"
+"aqua:zizmorcore/zizmor" = "1.30.1"
+"aqua:crate-ci/typos" = "1.50.2"
+"aqua:gitleaks/gitleaks" = "8.30.1"
+"aqua:koalaman/shellcheck" = "0.11.0"
+
+# --- Plumbing --------------------------------------------------------------
+"aqua:mikefarah/yq" = "4.53.6"
+"aqua:jqlang/jq" = "1.8.2"
+
+[settings]
+# pipx tools install through uv rather than a system pipx.
+pipx.uvx = true

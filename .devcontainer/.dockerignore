@@ -1,10 +1,6 @@
 # The build context is `.devcontainer/` and the Dockerfile has no COPY
 # instruction, so the correct context is empty.
 #
-# Not just tidiness: `.env` is gitignored and holds POSTGRES_PASSWORD and the
-# MinIO root credentials. An un-ignored context still reaches the Docker daemon
-# and can land in the build cache.
-#
-# Context-root form, not a `Dockerfile.dockerignore` sibling — with Features
+# Context-root form, not a `Dockerfile.dockerignore` sibling: with Features
 # present the devcontainer CLI builds from a temp dir, so the sibling is missed.
 *

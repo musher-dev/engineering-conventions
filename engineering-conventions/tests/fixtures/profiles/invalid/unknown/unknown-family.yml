@@ -1,0 +1,6 @@
+schema_version: 1
+id: unknown-family
+display_name: Unknown family
+description: Includes a family nobody registered.
+include:
+  families: [NOPE]

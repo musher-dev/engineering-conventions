@@ -1,0 +1,244 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Convention frontmatter",
+  "description": "The YAML frontmatter of a convention document under conventions/<topic>/. It is the machine-readable catalog of the convention's requirements; the Markdown body below it explains each one under a '### <ID>' heading.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "title", "summary", "status", "topic", "applies_to", "created", "authority", "migration", "requirements"
+  ],
+  "properties": {
+    "id": { "$ref": "common.schema.json#/definitions/conventionId" },
+    "title": {
+      "description": "The convention's title, in sentence case.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "summary": {
+      "description": "One or two sentences stating what the convention asks for.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "status": {
+      "description": "Lifecycle of the document. draft: under discussion; active: in force; deprecated: being replaced; retired: kept only so its IDs stay resolvable.",
+      "type": "string",
+      "enum": ["draft", "active", "deprecated", "retired"]
+    },
+    "topic": {
+      "description": "The conventions/ subdirectory the document lives in, e.g. github-actions.",
+      "$ref": "common.schema.json#/definitions/slug"
+    },
+    "applies_to": {
+      "description": "Which files in a consuming repository the convention governs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paths"],
+      "properties": {
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/pathGlob" }
+        }
+      }
+    },
+    "created": { "$ref": "common.schema.json#/definitions/date" },
+    "updated": { "$ref": "common.schema.json#/definitions/date" },
+    "owners": {
+      "description": "Who reviews changes to this convention.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/owner" }
+    },
+    "authority": {
+      "description": "Who decides what this convention says. 'self' means this repository is the authority. An object names the repository that owns the decision and where it is recorded; this repository then mirrors or proposes, and never contradicts it.",
+      "oneOf": [
+        { "const": "self" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repo", "ref"],
+          "properties": {
+            "repo": { "$ref": "common.schema.json#/definitions/repository" },
+            "ref": {
+              "description": "Where in that repository the decision is recorded: a URL, or a path or ref within it.",
+              "$ref": "common.schema.json#/definitions/nonEmptyString"
+            }
+          }
+        }
+      ]
+    },
+    "migration": {
+      "description": "How this copy relates to the authority. proposed: drafted here, not yet adopted upstream; mirrored: tracks an upstream authority; authoritative: this repository is the source of truth.",
+      "type": "string",
+      "enum": ["proposed", "mirrored", "authoritative"]
+    },
+    "implementations": {
+      "description": "Existing checks elsewhere that enforce this convention today.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["repo", "check", "mode"],
+        "properties": {
+          "repo": { "$ref": "common.schema.json#/definitions/repository" },
+          "check": {
+            "description": "The check's identifier in that repository, e.g. CI-14.",
+            "$ref": "common.schema.json#/definitions/nonEmptyString"
+          },
+          "mode": {
+            "description": "blocking: fails that repository's build; warning: reported without failing; review: enforced by reviewers only.",
+            "type": "string",
+            "enum": ["blocking", "warning", "review"]
+          }
+        }
+      }
+    },
+    "references": {
+      "description": "External reading that supports the convention.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "url"],
+        "properties": {
+          "title": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+          "url": { "$ref": "common.schema.json#/definitions/httpsUrl" }
+        }
+      }
+    },
+    "supersedes": {
+      "description": "Conventions this one replaces.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/conventionId" }
+    },
+    "superseded_by": {
+      "description": "Conventions that replace this one.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/conventionId" }
+    },
+    "requirements": {
+      "description": "Every requirement the convention has ever held, retired ones included, in ID order.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/requirement" }
+    }
+  },
+  "definitions": {
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "severity", "since", "validation"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/definitions/requirementId" },
+        "title": {
+          "description": "The requirement stated as one declarative sentence; repeated in bold under its heading.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "status": { "$ref": "common.schema.json#/definitions/requirementStatus" },
+        "severity": {
+          "description": "Default severity of a finding. A convention profile may raise it, never lower it.",
+          "$ref": "common.schema.json#/definitions/severity"
+        },
+        "since": {
+          "description": "The release that introduced the requirement.",
+          "$ref": "common.schema.json#/definitions/version"
+        },
+        "validation": { "$ref": "#/definitions/validation" },
+        "aliases": {
+          "description": "Identifiers this requirement had elsewhere, as <repository-short-name>:<id>, e.g. platform:CI-14.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9]*-[0-9]+$"
+          }
+        },
+        "replaced_by": {
+          "description": "Requirements that take over from a retired one. Required once the status is retired.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/requirementId" }
+        }
+      },
+      "if": {
+        "required": ["status"],
+        "properties": { "status": { "const": "retired" } }
+      },
+      "then": {
+        "required": ["replaced_by"]
+      }
+    },
+    "validation": {
+      "description": "How the requirement is checked. conftest: a Rego package in this bundle; jsonschema: a schema in this bundle; vale: a Vale style; delegated: an external tool the consumer runs; review: judged by a reviewer, not a machine.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engine", "package"],
+          "properties": {
+            "engine": { "const": "conftest" },
+            "package": {
+              "description": "The Rego package that emits findings for this requirement.",
+              "type": "string",
+              "pattern": "^conventions\\.checks\\.[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engine", "schema"],
+          "properties": {
+            "engine": { "const": "jsonschema" },
+            "schema": {
+              "description": "Path of the JSON Schema, relative to the product directory.",
+              "type": "string",
+              "pattern": "^checks/schemas/[a-z0-9-]+\\.schema\\.json$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engine", "style"],
+          "properties": {
+            "engine": { "const": "vale" },
+            "style": {
+              "description": "The Vale rule, as <Style>.<Rule>, e.g. MusherConventions.Terms.",
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9]*\\.[A-Za-z][A-Za-z0-9]*$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engine", "tool", "check"],
+          "properties": {
+            "engine": { "const": "delegated" },
+            "tool": {
+              "description": "The external tool or tools that perform the check.",
+              "$ref": "common.schema.json#/definitions/nonEmptyString"
+            },
+            "check": {
+              "description": "The invocation or rule set that must pass.",
+              "$ref": "common.schema.json#/definitions/nonEmptyString"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engine"],
+          "properties": {
+            "engine": { "const": "review" }
+          }
+        }
+      ]
+    }
+  }
+}

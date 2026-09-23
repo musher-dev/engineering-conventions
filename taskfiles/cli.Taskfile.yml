@@ -1,0 +1,48 @@
+version: '3'
+
+# The conventions CLI (engineering-conventions/src/conventions_tools): the
+# authoring tool that generates the committed artifacts, checks invariants and
+# runs a repository through the rules. Consumers never need it: everything it
+# generates is committed, and the bundle excludes it.
+#
+# Lint and tests run with `dir: engineering-conventions` so ruff, basedpyright
+# and pytest find their configuration in the product's pyproject.toml. The dir
+# is relative on purpose: Task 3.53 joins an absolute `dir:` in an included
+# Taskfile onto the root (so '{{.PRODUCT_DIR}}' becomes a new, empty
+# directory), while a relative one resolves from the root as intended.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  cli:sync:
+    desc: Create the CLI's virtualenv from the committed uv.lock (fails if the lock is stale).
+    cmds:
+      - uv sync --project {{.PRODUCT_DIR}} --locked
+
+  cli:lint:
+    desc: Lint and format-check the CLI with ruff.
+    dir: engineering-conventions
+    cmds:
+      - '{{.UV_RUN}} ruff check .'
+      - '{{.UV_RUN}} ruff format --check .'
+
+  cli:typecheck:
+    desc: Type-check the CLI with basedpyright.
+    dir: engineering-conventions
+    cmds:
+      - '{{.UV_RUN}} basedpyright'
+
+  cli:test:
+    desc: Run the CLI's pytest suite, which covers the content invariants and every fixture repo.
+    dir: engineering-conventions
+    cmds:
+      - '{{.UV_RUN}} pytest'
+
+  invariants:
+    desc: Check the content invariants, with IDs append-only against BASELINE (a git ref; default HEAD).
+    vars:
+      # CI passes the merge base (e.g. BASELINE=origin/main), so a PR that
+      # renumbers or drops an ID fails against what main already published.
+      BASELINE: '{{.BASELINE | default "HEAD"}}'
+    cmds:
+      - '{{.UV_RUN}} conventions invariants --baseline {{.BASELINE}}'

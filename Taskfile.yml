@@ -1,14 +1,11 @@
 version: '3'
 
-# Task entry point. This file must stay at the repo root: Task only discovers
-# Taskfile.* there, and --taskfile would break bare `task <name>`. Tool config
-# lives in .config/ and every task names its config by explicit path; see
-# CONFIGURATION.md → "Where Configuration Lives".
-#
-# Two levels (LAYOUT.md): these tasks act from the repository level and reach
-# the product through PRODUCT_DIR. Environment tasks (setup, tools:*, hooks:*)
-# and the `check` aggregate live here; everything else is a module under
-# taskfiles/, flattened so a task's full name is written where it is defined.
+# Task entry point. It stays at the repository root because Task discovers
+# Taskfile.* only there. These tasks act from the repository level and reach
+# the product through PRODUCT_DIR; every tool gets its config by explicit path
+# (docs/repository.md). Environment tasks (setup, tools:*, hooks:*) and the
+# `check` aggregate live here; everything else is a module under taskfiles/,
+# flattened so a task's full name is written where it is defined.
 
 set: [errexit, nounset, pipefail]
 

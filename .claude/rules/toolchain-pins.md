@@ -8,10 +8,9 @@ paths:
 
 # Toolchain pins
 
-`.devcontainer/mise.toml` is the single anchor for every CLI this repository
-runs: the dev container, a local `task` run and CI (through
-`.github/actions/setup-tools`) all install from it. A version lives in exactly
-one place, except for the lockstep pairs below, which mise cannot express.
+`.devcontainer/mise.toml` pins every CLI this repository runs
+(docs/repository.md → "Toolchain"). The only exceptions are the lockstep
+pairs below, which mise cannot express.
 
 ## Rules
 

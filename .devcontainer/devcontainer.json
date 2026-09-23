@@ -1,5 +1,5 @@
 // Dev container for musher-dev/engineering-conventions.
-// Which tier a tool belongs in: CONFIGURATION.md → "Runtimes & Tools".
+// Which tier a tool belongs in: docs/repository.md → "Toolchain".
 {
   "name": "Engineering Conventions",
   // The Dockerfile bakes mise and nothing else; the Features below layer on

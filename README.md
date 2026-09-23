@@ -58,8 +58,8 @@ task check     # every gate CI runs, except the dev container build
 ```
 
 To add or change a requirement, read [Authoring conventions](docs/authoring.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
-The layout is described in [`LAYOUT.md`](LAYOUT.md): the repository machinery sits at the root, and the product that
-consumers pin is the nested `engineering-conventions/` directory.
+Where a file goes, including why the product sits in a nested `engineering-conventions/` directory, is in
+[How this repository is organized](docs/repository.md).
 
 ## Releases
 

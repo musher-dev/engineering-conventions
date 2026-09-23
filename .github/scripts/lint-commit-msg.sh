@@ -3,7 +3,7 @@
 #
 # Usage:
 #   .github/scripts/lint-commit-msg.sh <path-to-commit-msg-file>   # lefthook commit-msg
-#   .github/scripts/lint-commit-msg.sh --title "feat(agent): foo"  # ad-hoc title check
+#   .github/scripts/lint-commit-msg.sh --title "feat(checks): foo"  # ad-hoc title check
 #
 # Pure bash; no external dependencies. Must run in <100ms (commit-msg budget).
 

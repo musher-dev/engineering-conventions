@@ -9,7 +9,7 @@ set: [errexit, nounset, pipefail]
 vars:
   SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
   VALE_CONFIG: .config/markdown/vale.ini
-  PROSE_PATHS: README.md CONTRIBUTING.md docs engineering-conventions/conventions
+  PROSE_PATHS: README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs engineering-conventions/conventions
   WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
 
 tasks:

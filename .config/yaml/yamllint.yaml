@@ -1,0 +1,34 @@
+# yamllint rules for this repo's YAML (compose stacks, workflows, taskfiles).
+# Read by: yamllint, via an explicit --config-file path. Never auto-discovered.
+# Rule reference: https://yamllint.readthedocs.io/en/stable/rules.html
+
+extends: default
+
+rules:
+  # Compose files and workflows routinely carry long image digests and
+  # single-line shell commands that cannot be wrapped without breaking them.
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # GitHub Actions requires the key `on:`, which YAML 1.1 reads as boolean
+  # true. Every workflow would fail this rule for doing the only correct thing.
+  truthy:
+    check-keys: false
+
+  # `---` is optional noise in single-document files; be consistent by not
+  # requiring it, rather than adding it to every stack.
+  document-start: disable
+
+  # Compose files nest sequences under mappings; both indent styles are
+  # readable and the ecosystem is split. Accept either, consistently.
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+
+  comments:
+    min-spaces-from-content: 1
+
+  # Long reference tables in comments occasionally exceed the default.
+  comments-indentation: enable

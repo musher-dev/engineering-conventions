@@ -1,0 +1,26 @@
+# Musher dev container — Docker Compose orchestrator.
+#
+# One folder per stack, each holding its own compose.yaml plus any config it
+# needs. Services run inside Docker-in-Docker, started by scripts/startup.sh.
+# This is not the dev container itself — that is ../Dockerfile + ../devcontainer.json.
+#
+# Every caller must pass `--env-file ../.env`: this file is not a sibling of
+# .env, so Compose's positional discovery does not reach it and every value
+# would silently fall back to its default. `name` is explicit for the same
+# reason — Compose would otherwise derive the project name from this folder.
+#
+# Ports: CONFIGURATION.md → "Port Allocation" (parity enforced by `repo ports check`).
+
+name: musher-dev
+
+include:
+  - postgres/compose.yaml
+  - redis/compose.yaml
+  - minio/compose.yaml
+  - registry/compose.yaml
+  - azimutt/compose.yaml
+  - observability/compose.yaml
+
+networks:
+  default:
+    name: musher-dev

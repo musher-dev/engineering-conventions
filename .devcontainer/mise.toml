@@ -1,0 +1,22 @@
+# Developer CLIs that have no devcontainer Feature and are only needed at
+# runtime. Tools with a Feature are pinned in devcontainer.json; bun, uv, task
+# and mise are baked by the Dockerfile.
+# Tier rules: CONFIGURATION.md → "Runtimes & Tools".
+#
+# This file is the single source of these versions: post-create runs
+# `mise install` against it, and CI resolves the same pins via jdx/mise-action.
+# Edit a version here, then `task tools:install`.
+#
+# Backends are fully qualified so resolution does not depend on mise's registry.
+
+[tools]
+# --- AI + git hooks ------------------------------------------------------
+"npm:@openai/codex" = "0.143.0"
+# Keep in lockstep with min_version in .config/lefthook.yml.
+"npm:lefthook"      = "2.1.10"
+
+# --- Linters (configs live in .config/; see .config/README.md) -----------
+"npm:markdownlint-cli2" = "0.22.1"
+"pipx:yamllint"         = "1.38.0"
+"pipx:codespell"        = "2.4.3"
+"aqua:rhysd/actionlint" = "1.7.12"

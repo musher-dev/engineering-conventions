@@ -1,0 +1,84 @@
+version: '3'
+
+# Task entry point. This file must stay at the repo root: Task only discovers
+# Taskfile.* there, and --taskfile would break bare `task <name>`. Tool config
+# lives in .config/ instead -- see CONFIGURATION.md → "Where Configuration Lives".
+#
+# Environment tasks (tools:*, env:*) stay here because they orchestrate the dev
+# container itself. Everything else is a module under taskfiles/.
+#
+# The env:* tasks wrap `repo env`, whose source of truth is
+# .devcontainer/env.schema.yaml -- CONFIGURATION.md → "Environment Variables".
+#
+# Project-specific tasks belong in a Taskfile.yml inside the consuming repo.
+
+includes:
+  lint:
+    taskfile: taskfiles/lint.Taskfile.yml
+  repo:
+    taskfile: taskfiles/repo.Taskfile.yml
+
+vars:
+  # With a product declared in .repo/layout.toml, tasks reach its toolchain via
+  # `dir: '{{.PRODUCT_DIR}}'` (LAYOUT-09 checks it). See LAYOUT.md.
+  # PRODUCT_DIR: '{{.ROOT_DIR}}/<product>'
+  ENV_FILE: .devcontainer/.env
+  ENV_EXAMPLE: .devcontainer/.env.example
+
+tasks:
+  tools:install:
+    desc: Install every pinned CLI from .devcontainer/mise.toml (AI CLIs, lefthook, linters).
+    cmds:
+      - mise install
+
+  tools:doctor:
+    desc: Show mise-managed tool versions and diagnose the toolchain.
+    cmds:
+      - mise current
+      - mise doctor
+
+  stacks:restart:
+    desc: Bring the compose stacks up to match the current .env (skips stacks missing a value).
+    cmds:
+      - bash .devcontainer/scripts/startup.sh
+
+  env:setup:
+    desc: Fill in the values the enabled stacks need, interactively.
+    interactive: true
+    cmds:
+      - repo env setup
+
+  env:doctor:
+    desc: Report what the enabled stacks still need (profile-aware). Reads .env only.
+    cmds:
+      - repo env doctor
+
+  env:sync:
+    desc: Add bindings the schema has gained to .env, and mint local secrets. Never overwrites.
+    cmds:
+      - repo env sync
+
+  env:render:
+    desc: Re-render .devcontainer/.env.example from .devcontainer/env.schema.yaml.
+    cmds:
+      - repo env render
+
+  env:check:
+    desc: Alias of env:doctor, kept for muscle memory.
+    cmds:
+      - task: env:doctor
+
+  env:reset:
+    desc: Re-copy the generated .env.example over .env (destroys local values). Prompts first.
+    silent: true
+    cmds:
+      - |
+        if [[ -f "{{.ENV_FILE}}" ]]; then
+          read -r -p "Overwrite {{.ENV_FILE}} with the template? [y/N] " confirm
+          case "${confirm}" in
+            y|Y|yes|YES) ;;
+            *) echo "Aborted."; exit 1 ;;
+          esac
+        fi
+        cp "{{.ENV_EXAMPLE}}" "{{.ENV_FILE}}"
+        echo "Wrote {{.ENV_FILE}} from {{.ENV_EXAMPLE}}."

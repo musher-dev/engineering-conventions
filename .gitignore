@@ -1,0 +1,16 @@
+# Dev container local environment overrides
+.devcontainer/.env
+
+# Personal git-hook overrides (auto-merged by lefthook)
+.config/lefthook-local.yml
+
+# Repo governance toolchain (.repo/) build artifacts
+.repo/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Claude local preferences and runtime state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

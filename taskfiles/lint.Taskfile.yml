@@ -1,0 +1,55 @@
+version: '3'
+
+# Lint tasks. Every command names its config file explicitly with the tool's
+# own config flag -- default discovery is deliberately never relied upon, which
+# is what keeps the configs in .config/ instead of scattered at the repo root.
+#
+# Tool versions come from .devcontainer/mise.toml (the single source).
+# Policy: CONFIGURATION.md → "Where Configuration Lives".
+
+vars:
+  MD_CONFIG: .config/markdown/markdownlint.jsonc
+  YAML_CONFIG: .config/yaml/yamllint.yaml
+  ACTIONLINT_CONFIG: .config/actions/actionlint.yaml
+  CODESPELL_CONFIG: .config/spelling/codespell.cfg
+  # Directories that contain YAML this repo owns.
+  YAML_PATHS: .github .devcontainer .config taskfiles Taskfile.yml
+
+tasks:
+  all:
+    desc: Run every lint check (markdown, yaml, actions, spelling).
+    cmds:
+      - task: md
+      - task: yaml
+      - task: actions
+      - task: spelling
+
+  md:
+    desc: Lint Markdown against .config/markdown/markdownlint.jsonc.
+    cmds:
+      - markdownlint-cli2 --config {{.MD_CONFIG}} "**/*.md" "#node_modules" "#.repo/.venv"
+
+  md:fix:
+    desc: Auto-fix the Markdown issues markdownlint can repair.
+    cmds:
+      - markdownlint-cli2 --config {{.MD_CONFIG}} --fix "**/*.md" "#node_modules" "#.repo/.venv"
+
+  yaml:
+    desc: Lint YAML against .config/yaml/yamllint.yaml.
+    cmds:
+      - yamllint -c {{.YAML_CONFIG}} {{.YAML_PATHS}}
+
+  actions:
+    desc: Lint GitHub Actions workflows against .config/actions/actionlint.yaml.
+    cmds:
+      - actionlint -config-file {{.ACTIONLINT_CONFIG}}
+
+  spelling:
+    desc: Spellcheck the repo against .config/spelling/codespell.cfg.
+    cmds:
+      - codespell --config {{.CODESPELL_CONFIG}} .
+
+  spelling:fix:
+    desc: Apply codespell's suggested corrections in place (review the diff).
+    cmds:
+      - codespell --config {{.CODESPELL_CONFIG}} --write-changes .

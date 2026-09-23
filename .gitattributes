@@ -1,0 +1,7 @@
+# Normalize line endings for cross-platform development
+* text=auto eol=lf
+
+# Keep shell scripts and configuration consistent
+*.sh text eol=lf
+*.toml text eol=lf
+*.py text eol=lf

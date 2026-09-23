@@ -1,0 +1,89 @@
+# Lefthook — Git hook configuration.
+# Docs: https://lefthook.dev
+#
+# Location: this file lives in .config/, not the repo root. Lefthook
+# discovers it natively — `MainConfigNames` in internal/config/loader.go is
+# ["lefthook", ".lefthook", ".config/lefthook"] — so no flag, env var or
+# wrapper is involved. See CONFIGURATION.md → "Where configuration lives".
+#
+# Search order is first-match-wins: a stray root lefthook.yml would silently
+# shadow this file. `repo config check` fails the build if one appears.
+#
+# Local overrides: .config/lefthook-local.yml (gitignored) is auto-merged.
+# Debug: lefthook run pre-commit | lefthook dump | lefthook validate
+#
+# CI counterpart: .github/workflows/validate.yaml. Every job below must have
+# a CI equivalent (or an explicit allowlist entry) — `repo hooks check`.
+
+assert_lefthook_installed: true
+
+# Keep in lockstep with the "npm:lefthook" pin in .devcontainer/mise.toml.
+# v2 is required for the `jobs` API and the `validate` subcommand.
+min_version: "2.1.10"
+
+# doublestar makes ** match 0+ directory levels (the intuitive semantics).
+glob_matcher: doublestar
+
+output:
+  - meta
+  - summary
+  - failure
+  - execution_out
+  - skips
+
+# =============================================================================
+# PRE-COMMIT — fast, deterministic checks on staged files
+# =============================================================================
+
+pre-commit:
+  parallel: true
+  skip:
+    - merge
+    - rebase
+  jobs:
+    - name: block-devcontainer-env
+      # Defense-in-depth against committing .devcontainer/.env even if the
+      # .gitignore entry is accidentally removed. The file holds local dev
+      # secrets and should never enter version control.
+      run: |
+        if git diff --cached --name-only --diff-filter=A | grep -qx '\.devcontainer/\.env'; then
+          echo "Refusing to commit .devcontainer/.env (contains local secrets)." >&2
+          exit 1
+        fi
+      fail_text: >-
+        Staged .devcontainer/.env — it holds local secrets. Run
+        'git restore --staged .devcontainer/.env'.
+
+    # ── Lint (configs in .config/, versions in .devcontainer/mise.toml) ──
+    # Each job passes its config path explicitly and runs only on the staged
+    # files matching its glob, so a commit touching one Markdown file does not
+    # relint the repo.
+
+    - name: markdown
+      glob: "*.md"
+      run: markdownlint-cli2 --config .config/markdown/markdownlint.jsonc {staged_files}
+      fail_text: "Markdown lint failed. Run 'task lint:md:fix', then re-stage."
+
+    - name: yaml
+      glob: "*.{yml,yaml}"
+      run: yamllint -c .config/yaml/yamllint.yaml {staged_files}
+      fail_text: "YAML lint failed. See .config/yaml/yamllint.yaml for the active rules."
+
+    - name: actions
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: actionlint -config-file .config/actions/actionlint.yaml {staged_files}
+      fail_text: "Workflow lint failed. Run 'task lint:actions' for the full output."
+
+    - name: governance
+      # Structural policy (`repo check`). No glob: the layout policy reads
+      # every root entry and a product dir whose name the template cannot
+      # know. Cheap (pure Python, no network), so it runs on every commit.
+      run: repo check
+      fail_text: "Repo structure policy failed. Run 'task repo:check' for the full report."
+
+    - name: spelling
+      # No glob: a typo can land in any file type.
+      run: codespell --config .config/spelling/codespell.cfg {staged_files}
+      fail_text: >-
+        Spelling check failed. Run 'task lint:spelling:fix' and review the
+        diff, or add a justified entry to .config/spelling/codespell.cfg.

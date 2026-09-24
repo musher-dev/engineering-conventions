@@ -139,7 +139,7 @@ Pin a release in `mise.toml` and run one command, the same locally and in CI:
 
 ```toml
 [tools]
-"github:musher-dev/engineering-conventions" = "0.3.0"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.4.0"  # x-release-please-version
 ```
 
 ```sh
@@ -150,7 +150,7 @@ It prints a report grouped by requirement; `--output json` prints the findings f
 the release's checksum and build provenance, and Renovate raises the pin. To try it without changing anything:
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.3.0 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.4.0 -- conventions check  # x-release-please-version
 ```
 
 The details, and the path without mise, are in [Consuming the conventions](docs/consuming.md).

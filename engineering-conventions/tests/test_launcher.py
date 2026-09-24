@@ -104,3 +104,19 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     assert completed.returncode == 0, completed.stderr
     found = {finding_id for _, finding_id, _ in _found(completed.stdout)}
     assert found == {"GHA-07", "ADOPT-09"}
+
+
+def test_launcher_is_committed_executable() -> None:
+    # A checkout with core.fileMode=false (a WSL or Windows mount) keeps the
+    # working file executable while committing it as 100644, which only a
+    # fresh checkout, like CI's, would notice.
+    git = shutil.which("git")
+    if git is None or not (PRODUCT.parent / ".git").exists():
+        pytest.skip("not a git checkout of the repository")
+    staged = subprocess.run(
+        [git, "-C", str(PRODUCT), "ls-files", "--stage", "bin/conventions"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert staged.stdout.startswith("100755 "), "run: git update-index --chmod=+x bin/conventions"

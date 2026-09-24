@@ -282,6 +282,13 @@ caller's `with:` and every expression that reads it.
 A key a third-party action defines is its own API and is passed as that action spells it, even from inside a
 kebab-case action: `setup-tools` takes `install-args` and passes it to `jdx/mise-action` as `install_args`.
 
+A `workflow_call` secret is the callee's name for a value, not the repository secret itself. GitHub allows only
+letters, digits and `_` in a repository secret's name, so the repository secret keeps its name (`REGISTRY_TOKEN`) and
+each caller maps it explicitly (`registry-token: ${{ secrets.REGISTRY_TOKEN }}`). `secrets: inherit` passes
+repository secrets under their own names, so a caller that uses it cannot reach a kebab-case secret. A workflow that
+also runs on its own reads repository secrets directly on those runs; split its callable part into a reusable workflow
+(EC-0006), or waive GHA-38 for it.
+
 **Correct:**
 
 ```yaml

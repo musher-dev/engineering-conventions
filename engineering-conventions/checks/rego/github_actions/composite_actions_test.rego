@@ -106,6 +106,21 @@ test_gha_38_kebab_case_inputs_and_outputs if {
 		`output "cache_hit" is not kebab-case; rename it to "cache-hit" and update every outputs.cache_hit reference`,
 		`input "SERVICE" is not kebab-case; rename it to "service" and update every inputs.SERVICE reference`,
 		`output "commit_sha" is not kebab-case; rename it to "commit-sha" and update every outputs.commit_sha reference`,
-		`secret "app_key" is not kebab-case; rename it to "app-key" and update every secrets.app_key reference`,
+		concat(" ", [
+			`secret "app_key" is not kebab-case; declare it as "app-key" under on.workflow_call.secrets, read`,
+			"secrets.app-key, and have each caller pass app-key: ${{ secrets.app_key }} instead of secrets: inherit",
+			"(the repository secret keeps its name, since GitHub allows no - in one)",
+		]),
 	}
+}
+
+test_gha_38_secret_of_a_workflow_that_also_runs_on_its_own if {
+	both := {"on": {"push": null, "workflow_call": {"secrets": {"CF_TOKEN": {"required": true}}}}}
+	docs := [td.file(".github/workflows/deploy-production.yml", both)]
+	found := composite_actions.findings with input as docs with data.conventions.index as td.index
+	messages(found, "GHA-38") == {concat(" ", [
+		`secret "CF_TOKEN" is not kebab-case, but this workflow also runs on its own, where it reads the repository`,
+		"secret by that name and GitHub allows no - in one; split the callable part into a reusable workflow",
+		`that declares "cf-token" (EC-0006), or waive GHA-38 for this file`,
+	])}
 }

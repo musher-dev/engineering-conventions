@@ -4,7 +4,7 @@
 # the version. conftest and Vale come with the release, at the versions it
 # was tested with.
 [tools]
-"github:musher-dev/engineering-conventions" = "0.2.0"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.3.0"  # x-release-please-version
 
 # GHA-33 delegates workflow correctness and security to these two.
 "aqua:rhysd/actionlint" = "1.7.12"

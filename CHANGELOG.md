@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/musher-dev/engineering-conventions/compare/v0.2.0...v0.3.0) (2026-09-24)
+
+
+### Features
+
+* **conventions:** declare repository outputs, and separate definitions from checks ([#16](https://github.com/musher-dev/engineering-conventions/issues/16)) ([ad376ad](https://github.com/musher-dev/engineering-conventions/commit/ad376ad2c580921a5e5f60d60094a52874c8fd3d))
+
 ## [0.2.0](https://github.com/musher-dev/engineering-conventions/compare/v0.1.0...v0.2.0) (2026-09-24)
 
 

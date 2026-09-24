@@ -1,6 +1,7 @@
 import json
 import shutil
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -160,10 +161,6 @@ def test_render_json_is_an_array_of_findings() -> None:
         },
     ]
     assert run.render_json(run.Report([], [])) == "[]\n"
-    assert run.render_text(run.Report([WARNING], [parse_error])) == (
-        f"{WARNING.line()}\n"
-        "error [PARSE] .github/workflows/bad.yml — not valid YAML: line 1, column 1: x\n"
-    )
 
 
 def test_input_files(tmp_path: Path) -> None:
@@ -334,13 +331,16 @@ def test_cli_check_exit_codes_and_formats(
     _set_output(stub, warnings=[WARNING], failures=[])
 
     assert main(["check", str(repo), "--now", NOW]) == 0
-    assert capsys.readouterr().out == WARNING.line() + "\n"
+    text = capsys.readouterr().out
+    assert text.startswith("GHA-07  warning  1 finding\n")
+    assert f"  {WARNING.path}\n    {WARNING.message}\n" in text
 
     assert main(["check", str(repo), "--now", NOW, "--fail-on", "warning"]) == 1
     capsys.readouterr()
 
-    assert main(["check", str(repo), "--now", NOW, "--format", "json"]) == 0
-    assert as_map(json.loads(capsys.readouterr().out)[0])["id"] == "GHA-07"
+    for flag in ("--format", "--output"):
+        assert main(["check", str(repo), "--now", NOW, flag, "json"]) == 0
+        assert as_map(json.loads(capsys.readouterr().out)[0])["id"] == "GHA-07"
 
     assert main(["check", str(repo), "--now", "not-a-time"]) == 2
     assert "not an RFC 3339 timestamp" in capsys.readouterr().err
@@ -384,8 +384,9 @@ def test_unparsable_files_are_left_out_and_reported(
     monkeypatch.setenv(HOME_ENV, str(home))
     assert main(["check", str(repo), "--now", NOW]) == 2
     out = capsys.readouterr().out.splitlines()
-    assert out[0] == WARNING.line()
-    assert out[-1].startswith("error [PARSE] .github/workflows/broken.yml — not valid YAML")
+    assert out[0] == "PARSE  error  3 findings"
+    assert "  .github/workflows/broken.yml" in out
+    assert "GHA-07  warning  1 finding" in out
 
 
 def test_yaml_errors_without_a_mark_are_one_line() -> None:
@@ -426,3 +427,35 @@ def test_a_file_conftest_cannot_parse_is_left_out(
         )
     ]
     assert ".github/workflows/validate.yml" not in (stub / "args").read_text().splitlines()
+
+
+def test_render_text_groups_findings_by_requirement() -> None:
+    parse_error = run.ParseError(".github/workflows/bad.yml", "not valid YAML: line 1, column 1: x")
+    second = replace(WARNING, path=".github/workflows/a.yml")
+    titles = {"GHA-07": "A workflow's name is its filename stem in Title Case"}
+    assert run.render_text(run.Report([WARNING, second], [parse_error]), titles) == (
+        "PARSE  error  1 finding\n"
+        f"{run.PARSE_TITLE}\n"
+        "  .github/workflows/bad.yml\n"
+        "    not valid YAML: line 1, column 1: x\n"
+        "\n"
+        "GHA-07  warning  2 findings\n"
+        f"{titles['GHA-07']}\n"
+        f"{WARNING.url}\n"
+        "  .github/workflows/a.yml\n"
+        f"    {WARNING.message}\n"
+        "  .github/workflows/ci.yml\n"
+        f"    {WARNING.message}\n"
+        "\n"
+        "2 warnings, 1 error in 2 requirements.\n"
+    )
+
+
+def test_render_text_summary() -> None:
+    assert run.render_text(run.Report([], []), {}) == "No findings.\n"
+    only_warnings = run.render_text(run.Report([WARNING], []), {})
+    assert only_warnings.endswith(
+        "1 warning, 0 errors in 1 requirement.\n"
+        "Warnings do not fail the check; --fail-on warning makes them fail.\n"
+    )
+    assert "Warnings do not fail" not in run.render_text(run.Report([WARNING], []), {}, "warning")

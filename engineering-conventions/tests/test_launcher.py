@@ -12,6 +12,7 @@ import pytest
 from conventions_tools.fixtures import expected_findings, materialize
 from conventions_tools.loading import as_list, as_map, get_str
 from conventions_tools.paths import fixture_repos_dir, product_dir
+from conventions_tools.run import check, render_json, render_text, requirement_titles, utc_now
 
 PRODUCT = product_dir()
 LAUNCHER = PRODUCT / "bin" / "conventions"
@@ -35,15 +36,10 @@ def _launch(*arguments: str, cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 def _found(stdout: str) -> list[tuple[str, str, str]]:
-    results = [
-        as_map(result)
-        for entry in map(as_map, as_list(json.loads(stdout)))
-        for bucket in ("failures", "warnings")
-        for result in as_list(entry.get(bucket))
-    ]
+    findings = [as_map(finding) for finding in as_list(json.loads(stdout))]
     found = {
-        (get_str(meta, "path"), get_str(meta, "id"), get_str(meta, "severity"))
-        for meta in (as_map(result.get("metadata")) for result in results)
+        (get_str(finding, "path"), get_str(finding, "id"), get_str(finding, "severity"))
+        for finding in findings
     }
     return sorted(found)
 
@@ -91,6 +87,7 @@ def test_tool_versions_move_with_the_repository_pins() -> None:
     for variable, key in (
         ("CONFTEST_VERSION", "aqua:open-policy-agent/conftest"),
         ("VALE_VERSION", "aqua:vale-cli/vale"),
+        ("JQ_VERSION", "aqua:jqlang/jq"),
     ):
         declared = re.search(rf"^{variable}=(\S+)$", text, re.MULTILINE)
         assert declared, f"{variable} is not set in bin/conventions"
@@ -120,3 +117,21 @@ def test_launcher_is_committed_executable() -> None:
         check=True,
     )
     assert staged.stdout.startswith("100755 "), "run: git update-index --chmod=+x bin/conventions"
+
+
+@pytest.mark.parametrize("name", ["clean", "gha-07-display-name", "gha-15-required-context"])
+def test_launcher_prints_what_the_runner_prints(name: str, tmp_path: Path) -> None:
+    # Both renderers take the same findings to the same text and JSON, so a
+    # consumer and a contributor read one report.
+    repo = materialize(fixture_repos_dir(PRODUCT) / name, tmp_path / name)
+    report = check(PRODUCT, repo, utc_now())
+    text = _launch("check", cwd=repo)
+    assert text.stdout == render_text(report, requirement_titles(PRODUCT)), text.stderr
+    assert _launch("check", "--output", "json", cwd=repo).stdout == render_json(report)
+
+
+def test_conftest_formats_pass_through(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "gha-07-display-name", tmp_path / "repo")
+    completed = _launch("check", "--output", "github", cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert "::warning file=" in completed.stdout

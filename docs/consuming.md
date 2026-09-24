@@ -39,12 +39,23 @@ That is the whole adoption. What mise does with the line:
 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
   proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in `mise.lock`.
-- It puts `conventions` on PATH. The command runs conftest (and Vale for `prose`) through `mise exec` at the versions
-  the release was tested with, so the release pin is the only pin to maintain.
+- It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`) through `mise exec` at the
+  versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
 
 `conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. It needs only
-POSIX `sh` and `git`. `--output` takes any conftest format: `json`, or `github` for annotations in a workflow.
+POSIX `sh` and `git`.
+
+| `--output` | For | Prints |
+| --- | --- | --- |
+| `text` (default) | A person at a terminal | The report below, in colour on a terminal unless `NO_COLOR` is set |
+| `json` | A program, through a pipe | A JSON array of findings: `convention`, `id`, `message`, `path`, `severity`, `url` |
+| `github`, `sarif`, `junit`, `tap`, `table` | CI tools | conftest's own format, passed through |
+
+The report goes to stdout. The progress line, and mise's messages when it installs a tool, go to stderr, and the
+progress line only to a terminal, so `conventions check --output json | jq …` receives JSON alone. The exit status is
+the same for every format: `0` when nothing is at or above `--fail-on`, `1` when something is, and `2` when the check
+could not run.
 
 A Taskfile needs no more than one task:
 
@@ -130,24 +141,31 @@ actionlint
 zizmor --min-severity medium --persona regular .github/
 ```
 
-## Reading a diagnostic
+## Reading the report
 
-Each finding is one line:
+The report has one block per requirement, errors first, then a summary:
 
 ```text
-warning [GHA-07] .github/workflows/ci.yml — name "CI" should be "Validate Code": a workflow's name is its filename stem in Title Case. https://github.com/musher-dev/engineering-conventions/blob/v0.1.0/engineering-conventions/conventions/github-actions/workflow-files.md#gha-07
+GHA-07  warning  1 finding
+A workflow's name is its filename stem in Title Case
+https://github.com/musher-dev/engineering-conventions/blob/v0.3.0/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
+  .github/workflows/ci.yml
+    name "CI" should be "Validate Code": a workflow's name is its filename stem in Title Case
+
+1 warning, 0 errors in 1 requirement.
+Warnings do not fail the check; --fail-on warning makes them fail.
 ```
 
 | Part | Meaning |
 | --- | --- |
+| `GHA-07` | The requirement ID; search for it, or waive it by this ID |
 | `warning` | The effective severity under the repository's profile |
-| `[GHA-07]` | The requirement ID; search for it, or waive it by this ID |
-| `.github/workflows/ci.yml` | The file to change, relative to the repository root |
-| message | What to change. It is enough to act on without the link |
-| URL | The requirement's section in the pinned release, with the reasoning and examples |
+| The title | What the requirement asks for |
+| The URL | The requirement's section in the pinned release, with the reasoning and examples |
+| An indented path | A file to change, relative to the repository root |
+| A message under it | What to change in that file. It is enough to act on without the link |
 
-`conftest` prints the line after its own prefix (`WARN - Combined - main - ...`). With `--output json`, each result
-also carries `id`, `path`, `severity`, `url` and `convention` under `metadata`.
+With `--output json`, each finding is one object with the same parts.
 
 **A file that does not parse.** A workflow, action, ruleset, declaration or mise configuration that is not valid YAML,
 JSON or TOML cannot be checked at all: conftest stops with a parse error naming the file. Fix the syntax and run

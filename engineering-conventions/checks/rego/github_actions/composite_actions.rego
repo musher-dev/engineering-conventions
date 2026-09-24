@@ -89,13 +89,46 @@ findings contains lib.finding("GHA-23", path, message) if {
 }
 
 # GHA-38
-findings contains lib.finding("GHA-38", entry.path, message) if {
+findings contains lib.finding("GHA-38", entry.path, kebab_message(entry)) if {
 	some entry in interface_keys
 	not regex.match(names.kebab_pattern, entry.key)
-	message := sprintf(
-		"%s %q is not kebab-case; rename it to %q and update every %s.%s reference",
-		[entry.kind, entry.key, names.kebab_identifier(entry.key), entry.context, entry.key],
-	)
+}
+
+kebab_message(entry) := sprintf(
+	"%s %q is not kebab-case; rename it to %q and update every %s.%s reference",
+	[entry.kind, entry.key, names.kebab_identifier(entry.key), entry.context, entry.key],
+) if {
+	entry.kind != "secret"
+}
+
+# A repository secret's own name allows only letters, digits and `_`, so a
+# workflow_call secret is renamed on the callee's side and mapped by callers;
+# `secrets: inherit` passes repository secrets under their own names.
+kebab_message(entry) := sprintf(
+	concat(" ", [
+		"secret %q is not kebab-case; declare it as %q under on.workflow_call.secrets, read secrets.%s, and",
+		"have each caller pass %s: ${{ secrets.%s }} instead of secrets: inherit (the repository secret keeps its",
+		"name, since GitHub allows no - in one)",
+	]),
+	[entry.key, kebab, kebab, kebab, entry.key],
+) if {
+	entry.kind == "secret"
+	not files.is_entry_point(files.workflows[entry.path])
+	kebab := names.kebab_identifier(entry.key)
+}
+
+# A workflow that also runs on its own reads the repository secret by its
+# own name on those runs, so a kebab-case callee name cannot serve both.
+kebab_message(entry) := sprintf(
+	concat(" ", [
+		"secret %q is not kebab-case, but this workflow also runs on its own, where it reads the repository",
+		"secret by that name and GitHub allows no - in one; split the callable part into a reusable workflow",
+		"that declares %q (EC-0006), or waive GHA-38 for this file",
+	]),
+	[entry.key, names.kebab_identifier(entry.key)],
+) if {
+	entry.kind == "secret"
+	files.is_entry_point(files.workflows[entry.path])
 }
 
 actions_root := ".github/actions/"

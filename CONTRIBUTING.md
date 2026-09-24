@@ -43,6 +43,5 @@ A change to how the repository works, rather than to a convention, is recorded a
 
 ## Review
 
-Code owners review every pull request. Reviewers check that the requirement prevents a demonstrated failure, that its
-message is enough to act on, that the examples are realistic, and that nothing restates a definition owned by another
-repository.
+Code owners review every pull request, against the
+[review checklist](docs/authoring.md#review-checklist).

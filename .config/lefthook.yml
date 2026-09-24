@@ -4,7 +4,7 @@
 # Location: this file lives in .config/, not the repo root. Lefthook
 # discovers it natively — `MainConfigNames` in internal/config/loader.go is
 # ["lefthook", ".lefthook", ".config/lefthook"] — so no flag, env var or
-# wrapper is involved. See .config/README.md → "A trap worth knowing".
+# wrapper is involved.
 #
 # Search order is first-match-wins: a stray root lefthook.yml would silently
 # shadow this file.
@@ -73,7 +73,9 @@ pre-commit:
         .config/spelling/typos.toml. Run 'task lint:spelling'.
 
     - name: shell
-      glob: "**/*.sh"
+      glob:
+        - "**/*.sh"
+        - "engineering-conventions/bin/*"
       run: shellcheck -x -P SCRIPTDIR {staged_files}
       fail_text: "ShellCheck failed. Run 'task lint:shell'."
 
@@ -102,7 +104,7 @@ pre-commit:
         - "engineering-conventions/terminology/**/*.yml"
         - "engineering-conventions/profiles/*.yml"
         - "engineering-conventions/conventions/**/*.{md,yml}"
-        - "docs/decisions/*.md"
+        - "docs/decisions/*.{md,json}"
         - ".repo/conventions.yaml"
         - ".github/**/*.{yml,yaml}"
         - "Taskfile.yml"
@@ -133,6 +135,9 @@ pre-commit:
       glob:
         - "README.md"
         - "CONTRIBUTING.md"
+        - "SECURITY.md"
+        - "CLAUDE.md"
+        - "AGENTS.md"
         - "docs/**/*.md"
         - "engineering-conventions/conventions/**/*.md"
       run: vale --config .config/markdown/vale.ini {staged_files}

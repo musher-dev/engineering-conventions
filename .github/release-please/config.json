@@ -11,6 +11,10 @@
         {
           "type": "generic",
           "path": ".repo/conventions.yaml"
+        },
+        {
+          "type": "generic",
+          "path": "engineering-conventions/examples/consumer/mise.toml"
         }
       ]
     }
@@ -26,7 +30,9 @@
     { "type": "chore", "section": "Miscellaneous", "hidden": true },
     { "type": "refactor", "section": "Code Refactoring", "hidden": true },
     { "type": "test", "section": "Tests", "hidden": true },
-    { "type": "ci", "section": "Continuous Integration", "hidden": true }
+    { "type": "ci", "section": "Continuous Integration", "hidden": true },
+    { "type": "build", "section": "Build System", "hidden": true },
+    { "type": "style", "section": "Styles", "hidden": true }
   ],
   "bump-minor-pre-major": true
 }

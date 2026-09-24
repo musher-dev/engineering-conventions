@@ -6,11 +6,8 @@ Agent-facing contract for `musher-dev/engineering-conventions`. The imported
 README carries the orientation: what a convention is, how a consumer pins a
 release, and the commands. This file carries only what constrains a change.
 
-Two levels ([LAYOUT.md](LAYOUT.md)): the repository root builds, checks and
-releases the product; `engineering-conventions/` is the product a consumer
-pins. The policies for each part live in `.claude/rules/` and load when you
-read a file they govern: `conventions.md`, `terminology.md`, `rego.md`,
-`github-workflows.md`, `toolchain-pins.md`.
+Where a file goes: [docs/repository.md](docs/repository.md). The policy for
+each part lives in `.claude/rules/` and loads when you read a file it governs.
 
 ## Hard lines
 
@@ -18,9 +15,8 @@ read a file they govern: `conventions.md`, `terminology.md`, `rego.md`,
   `EC-0002`) is never renumbered, reused or deleted. A retired requirement stays
   as a tombstone; a legacy name goes in `aliases`. Consumers' waivers and every
   printed diagnostic resolve against these IDs.
-- **Generated files are never hand-edited.** `checks/data/index.json`,
-  `checks/vale/MusherConventions/**` and `conventions/README.md` are written by
-  `task generate` from the frontmatter and `terminology/`. Edit the source and
+- **Generated files are never hand-edited.** The files `.gitattributes` marks
+  `linguist-generated` are written by `task generate`. Edit the source and
   regenerate; `task generate:check` fails on drift.
 - **Every conftest requirement ships a fixture.** A fixture repo under
   `engineering-conventions/tests/fixtures/repos/` whose `expected.json` names

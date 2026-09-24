@@ -27,107 +27,41 @@ jobs:
     name: Workflows
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      ACTIONLINT_VERSION: 1.7.12
-      ZIZMOR_VERSION: 1.30.1
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Install actionlint
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          dest="$RUNNER_TEMP/actionlint"
-          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
-          gh release download "v${ACTIONLINT_VERSION}" -R rhysd/actionlint \
-            -p "$archive" -p "actionlint_${ACTIONLINT_VERSION}_checksums.txt" -D "$dest"
-          cd "$dest"
-          grep " ${archive}\$" "actionlint_${ACTIONLINT_VERSION}_checksums.txt" | sha256sum -c
-          tar -xzf "$archive" actionlint
+      # Installs the tools pinned in mise.toml, the same versions a local run uses.
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+        with:
+          version: 2026.9.12
 
       - name: Check workflow syntax and expressions
-        run: '"$RUNNER_TEMP/actionlint/actionlint"'
+        run: actionlint
 
       - name: Check workflow security
         env:
           GH_TOKEN: ${{ github.token }}
-        run: pipx run "zizmor==${ZIZMOR_VERSION}" --min-severity medium --persona regular .github/
+        run: zizmor --min-severity medium --persona regular .github/
 
   conventions:
     name: Conventions
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      CONFTEST_VERSION: 0.70.1
-      CHECK_JSONSCHEMA_VERSION: 0.38.1
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Download and verify the conventions bundle
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          version="$(yq '.conventions.version' .repo/conventions.yaml)"
-          dest="$RUNNER_TEMP/conventions"
-          gh release download "v${version}" -R musher-dev/engineering-conventions -D "$dest"
-          (cd "$dest" && sha256sum -c SHA256SUMS)
-          gh attestation verify "$dest/engineering-conventions-${version}.tar.gz" \
-            -R musher-dev/engineering-conventions \
-            --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
-            --source-ref "refs/tags/v${version}"
-          tar -xzf "$dest/engineering-conventions-${version}.tar.gz" -C "$dest"
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+        with:
+          version: 2026.9.12
 
-      - name: Install conftest
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          dest="$RUNNER_TEMP/conftest"
-          archive="conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
-          gh release download "v${CONFTEST_VERSION}" -R open-policy-agent/conftest \
-            -p "$archive" -p checksums.txt -D "$dest"
-          cd "$dest"
-          grep " ${archive}\$" checksums.txt | sha256sum -c
-          tar -xzf "$archive" conftest
-
-      - name: Validate the conventions declaration
-        run: |
-          set -euo pipefail
-          bundle="$RUNNER_TEMP/conventions/engineering-conventions"
-          pipx run "check-jsonschema==${CHECK_JSONSCHEMA_VERSION}" \
-            --schemafile "$bundle/checks/schemas/conventions-declaration.schema.json" \
-            .repo/conventions.yaml
-
+      # The same command a developer runs locally. --fail-on warning holds the
+      # repository to every finding; drop it to report warnings without failing.
       - name: Check the repository against its conventions
-        run: |
-          set -euo pipefail
-          bundle="$RUNNER_TEMP/conventions/engineering-conventions"
-          inventory="$RUNNER_TEMP/inventory.json"
-          git ls-files | jq -R . | jq -s '{conventions_inventory: {files: .}}' > "$inventory"
-
-          shopt -s nullglob globstar
-          files=(
-            .github/workflows/*.yml .github/workflows/*.yaml
-            .github/actions/**/action.yml .github/actions/**/action.yaml
-            .github/rulesets/*.json
-          )
-          if [ -f .repo/conventions.yaml ]; then
-            files+=(.repo/conventions.yaml)
-          fi
-
-          # --fail-on-warn holds the repository to every finding, warnings
-          # included; drop it to report warnings without failing.
-          "$RUNNER_TEMP/conftest/conftest" test --combine --fail-on-warn \
-            -p "$bundle/checks/rego" \
-            -d "$bundle/checks/data/index.json" \
-            -d "$bundle/checks/data/release.json" \
-            "${files[@]}" "$inventory"
+        run: conventions check --fail-on warning
 
   required:
     name: Validate / Required

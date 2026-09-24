@@ -58,7 +58,3 @@ def profiles_dir(product: Path) -> Path:
 
 def fixture_repos_dir(product: Path) -> Path:
     return product / "tests" / "fixtures" / "repos"
-
-
-def decisions_dir(product: Path) -> Path:
-    return product.parent / "docs" / "decisions"

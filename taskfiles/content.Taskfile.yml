@@ -9,14 +9,16 @@ set: [errexit, nounset, pipefail]
 vars:
   SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
   VALE_CONFIG: .config/markdown/vale.ini
-  PROSE_PATHS: README.md CONTRIBUTING.md docs engineering-conventions/conventions
+  PROSE_PATHS: README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs engineering-conventions/conventions
   WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
 
 tasks:
   schemas:check:
-    desc: Check every JSON Schema in checks/schemas against its metaschema.
+    desc: Check every JSON Schema (checks/schemas and the decision schema) against its metaschema.
     cmds:
-      - check-jsonschema --check-metaschema {{.SCHEMA_DIR}}/*.schema.json
+      - >-
+        check-jsonschema --check-metaschema
+        {{.SCHEMA_DIR}}/*.schema.json {{.ROOT_DIR}}/docs/decisions/decision.schema.json
 
   schemas:validate:
     desc: Validate content, frontmatter and GitHub/Task config against their JSON Schemas.
@@ -46,7 +48,7 @@ tasks:
       - task: schemas:validate:files
         vars:
           YQ_FLAGS: --front-matter=extract
-          SCHEMA: decision-frontmatter
+          SCHEMA_FILE: '{{.ROOT_DIR}}/docs/decisions/decision.schema.json'
           PATHSPEC: "'docs/decisions/[0-9]*.md'"
       - task: schemas:validate:builtin
         vars:
@@ -82,10 +84,13 @@ tasks:
     internal: true
     silent: true
     requires:
-      vars: [SCHEMA, PATHSPEC]
+      vars: [PATHSPEC]
     vars:
       # '--front-matter=extract' for Markdown; empty for plain YAML.
       YQ_FLAGS: '{{.YQ_FLAGS | default ""}}'
+      # A product schema by name, or any schema by path (the decision schema
+      # lives beside the decisions, outside the product).
+      SCHEMA_FILE: '{{.SCHEMA_FILE | default (printf "%s/%s.schema.json" .SCHEMA_DIR .SCHEMA)}}'
     cmds:
       # Through yq to JSON first, so YAML typing (a bare date becomes a string)
       # matches what the conventions CLI's loader sees, rather than
@@ -100,12 +105,12 @@ tasks:
           yq {{.YQ_FLAGS}} -o=json '.' "${file}" > "${out}/${file}.json" || exit 1
         done
         if [[ -z "$(ls -A "${out}")" ]]; then
-          echo "schemas:validate: nothing matches {{.PATHSPEC}} for {{.SCHEMA}}" >&2
+          echo "schemas:validate: nothing matches {{.PATHSPEC}} for {{.SCHEMA_FILE}}" >&2
           exit 1
         fi
         cd "${out}"
         find . -name '*.json' | LC_ALL=C sort | xargs check-jsonschema \
-          --schemafile {{.SCHEMA_DIR}}/{{.SCHEMA}}.schema.json
+          --schemafile {{.SCHEMA_FILE}}
 
   schemas:validate:builtin:
     internal: true

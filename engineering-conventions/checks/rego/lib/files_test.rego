@@ -15,7 +15,7 @@ test_classifies_and_normalises_paths if {
 	object.keys(files.workflows) == {".github/workflows/validate.yml"} with input as docs
 	object.keys(files.actions) == {".github/actions/setup-tools/action.yml"} with input as docs
 	object.keys(files.rulesets) == {".github/rulesets/main.json"} with input as docs
-	files.declaration == {"profile": "base-repo"} with input as docs
+	files.declaration == {"schema_version": 1, "profile": "base-repo"} with input as docs
 	files.declared with input as docs
 	".github/README.md" in files.repository_files with input as docs
 	not "/tmp/inventory.json" in files.repository_files with input as docs
@@ -110,4 +110,10 @@ test_step_label if {
 	files.step_label({"id": "build"}, 0) == `step "build"`
 	files.step_label({"name": "Build it"}, 0) == `step "Build it"`
 	files.step_label({"run": "x"}, 2) == "step 3"
+}
+
+test_mise_pins_are_read_from_mise_config_files_only if {
+	pinned := {"tools": {"github:musher-dev/engineering-conventions": "0.2.0"}}
+	docs := [td.file("mise.toml", pinned), td.file("other/mise.toml", pinned)]
+	files.mise_pins == {"mise.toml": "0.2.0"} with input as docs
 }

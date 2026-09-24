@@ -8,5 +8,4 @@ ignorecase: true
 swap:
   "baseline profile": "convention profile"
   "conventions manifest": "conventions declaration"
-  "domain overlay": "area overlay"
   "rule id": "requirement ID"

@@ -1,5 +1,4 @@
 ---
-id: "0004"
 title: Conventions and requirements have permanent IDs, and every diagnostic links to one
 date: 2026-09-23
 status: accepted
@@ -14,8 +13,7 @@ supersedes: []
 A requirement is referred to from many places: a check's output, a waiver in a consumer's declaration, a pull request
 discussion, another convention. Every one of those references breaks if the requirement's name changes, and a
 reference by title or by file path breaks the first time a document is reorganized. The organization already has ID
-families in use (`CI-14` in the platform, `LAYOUT-01` in the development-container template), all of the form
-`PREFIX-NN`.
+families in use, such as `CI-14` in the platform, of the form `PREFIX-NN`.
 
 A diagnostic also needs to lead somewhere. The platform's checks print `[CI-06] path — message`; that tells an
 engineer which rule fired but not where to read it.
@@ -33,8 +31,8 @@ engineer which rule fired but not where to read it.
   renamed.
 - A requirement is never deleted. A retired requirement stays in its convention as a tombstone with `status: retired`
   and `replaced_by` naming its successor.
-- Family prefixes are registered in `conventions/families.yml`. Prefixes for rules expected to migrate here are
-  reserved there so they arrive with their IDs unchanged (`LAYOUT`, `CFG`, `HOOK`, `TC`, `CMT`).
+- Family prefixes are registered in `conventions/families.yml` before first use. A prefix is registered when its
+  first requirement is written, never claimed in advance.
 - A requirement that ports an existing check records it in `aliases` as `<repo>:<ID>`, such as `platform:CI-14`.
 - The ID a check emits **is** the requirement ID. There is no mapping table between them to drift.
 

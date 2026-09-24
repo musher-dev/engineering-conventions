@@ -15,7 +15,6 @@ from conventions_tools.paths import schemas_dir
 COMMON = "common.schema.json"
 FAMILIES = "families.schema.json"
 CONVENTION = "convention-frontmatter.schema.json"
-DECISION = "decision-frontmatter.schema.json"
 TERMINOLOGY = "terminology.schema.json"
 PROFILE = "profile.schema.json"
 DECLARATION = "conventions-declaration.schema.json"
@@ -80,3 +79,63 @@ def problems(product: Path, name: str, instance: object, source: str) -> list[st
 def description_of(error: ValidationError) -> str | None:
     description = as_map(cast("object", error.schema)).get("description")
     return description if isinstance(description, str) else None
+
+
+_COMMON_REF = f"{COMMON}#/definitions/"
+_LOCAL_REF = "#/definitions/"
+_INLINED_PREFIX = "common_"
+
+
+def _rewrite_refs(node: object, rename: dict[str, str]) -> object:
+    """A copy of `node` with every $ref in `rename` replaced."""
+    if isinstance(node, dict):
+        mapping = cast("dict[str, object]", node)
+        return {
+            key: rename.get(value, value)
+            if key == "$ref" and isinstance(value, str)
+            else _rewrite_refs(value, rename)
+            for key, value in mapping.items()
+        }
+    if isinstance(node, list):
+        return [_rewrite_refs(item, rename) for item in cast("list[object]", node)]
+    return node
+
+
+def _refs(node: object) -> set[str]:
+    if isinstance(node, dict):
+        mapping = cast("dict[str, object]", node)
+        found = {mapping["$ref"]} if isinstance(mapping.get("$ref"), str) else set[object]()
+        return {str(ref) for ref in found} | {
+            ref for value in mapping.values() for ref in _refs(value)
+        }
+    if isinstance(node, list):
+        return {ref for item in cast("list[object]", node) for ref in _refs(item)}
+    return set()
+
+
+def self_contained(product: Path, name: str) -> dict[str, object]:
+    """Schema `name` with the common definitions it reaches inlined.
+
+    OPA's json.match_schema takes one schema and cannot resolve a $ref to a
+    sibling file, so the checks read this form from the index.
+    """
+    directory = schemas_dir(product)
+    schema = as_map(read_json(directory / name))
+    common = as_map(as_map(read_json(directory / COMMON)).get("definitions"))
+    # Common definitions refer to each other locally; after inlining they sit
+    # beside the schema's own definitions, so both kinds of ref are renamed.
+    local = {f"{_LOCAL_REF}{key}": f"{_LOCAL_REF}{_INLINED_PREFIX}{key}" for key in common}
+    shared = {f"{_COMMON_REF}{key}": f"{_LOCAL_REF}{_INLINED_PREFIX}{key}" for key in common}
+    reached: set[str] = set()
+    pending = {ref.removeprefix(_COMMON_REF) for ref in _refs(schema) if ref in shared}
+    while pending:
+        key = pending.pop()
+        reached.add(key)
+        pending |= {ref.removeprefix(_LOCAL_REF) for ref in _refs(common[key]) if ref in local}
+        pending -= reached
+    schema = as_map(_rewrite_refs(schema, shared))
+    definitions = dict(as_map(schema.get("definitions")))
+    definitions |= {
+        f"{_INLINED_PREFIX}{key}": _rewrite_refs(common[key], local) for key in sorted(reached)
+    }
+    return {**schema, "definitions": definitions}

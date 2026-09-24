@@ -14,7 +14,6 @@ applies them.
 | **check** | An implementation that validates a requirement: a Rego package, a schema, a Vale rule, a platform check such as CI-14 | |
 | **waiver** | A consumer's time-boxed, tracked deviation from a requirement | `exception` (Conftest and Python both use that word) |
 | **topic** | A subdirectory of `conventions/`, such as `github-actions` | |
-| **area** | A terminology overlay for a group of repositories | `domain` |
 | **convention profile** | A named selection of requirements for a kind of repository | `baseline` |
 | **conventions declaration** | A consumer's `.repo/conventions.yaml` | `manifest` |
 | **family** | A requirement-ID prefix registered in `conventions/families.yml` | |
@@ -30,7 +29,7 @@ repository, the proposal carries `authority` pointing there
 
 1. **Allocate the ID.** Take the next number in the family. Numbers are never reused, including numbers of retired
    requirements; `conventions/README.md` lists every ID ever issued. A new family needs an entry in
-   `conventions/families.yml`, and a prefix listed under `reserved` there is not available.
+   `conventions/families.yml`.
 2. **Add the frontmatter entry** to the convention's `requirements:` list:
 
    ```yaml
@@ -84,11 +83,15 @@ repository, the proposal carries `authority` pointing there
 4. **Implement the check** when the engine is `conftest`: add a `findings` rule to the package named in the
    frontmatter, emitting `{"id": "GHA-38", "path": ..., "message": ...}`. The message must say what to change without
    the link. Add Rego unit tests beside it (`*_test.rego`).
-5. **Add fixtures.** Every `conftest` requirement needs at least one fixture repository that produces its finding:
-   `engineering-conventions/tests/fixtures/repos/gha-38-<slug>/` holding the smallest tree that triggers it, plus an
-   `expected.json` listing the exact findings (`[{"id", "path", "severity"}]`, sorted). The `clean` fixture must still
-   produce no findings. A requirement with no fixture fails the invariants: a check that is never seen to fire could
-   be checking nothing.
+5. **Add fixtures.** Every `conftest` requirement needs at least one fixture repository that produces its finding,
+   under `engineering-conventions/tests/fixtures/repos/gha-38-<slug>/`. A case is an overlay on the `clean` case,
+   which conforms fully, so it holds only:
+   - the files that differ from `clean/`, the smallest change that triggers the finding;
+   - `removed.txt`, when the case needs a `clean/` file gone: one path per line;
+   - `expected.json`, listing the exact findings (`[{"id", "path", "severity"}]`, sorted).
+
+   `clean/` itself must still produce no findings. A requirement with no fixture fails the invariants: a check that
+   is never seen to fire could be checking nothing.
 6. **Regenerate and check.**
 
    ```sh
@@ -101,10 +104,9 @@ repository, the proposal carries `authority` pointing there
 
 ## Adding or changing a term
 
-Terms live in `engineering-conventions/terminology/global.yml` (or an area overlay under `terminology/areas/`). A term
-has either a `definition` or an `authority` pointing at the repository that defines it, never both. Do not restate a
-definition another repository owns. An area overlay may add terms and aliases; it may never redefine a global term.
-Run `task generate` afterward: tokens and display forms feed the Rego data, and prose aliases feed the Vale style.
+Terms live in `engineering-conventions/terminology/global.yml`. A term has either a `definition` or an `authority`
+pointing at the repository that defines it, never both. Do not restate a definition another repository owns. Run
+`task generate` afterward: tokens and display forms feed the Rego data, and prose aliases feed the Vale style.
 
 ## Retiring a requirement
 

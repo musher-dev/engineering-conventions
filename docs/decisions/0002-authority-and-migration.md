@@ -1,5 +1,4 @@
 ---
-id: "0002"
 title: A convention names its authority, and ownership moves in one change
 date: 2026-09-23
 status: accepted
@@ -13,8 +12,8 @@ supersedes: []
 
 The first conventions in this repository are not new. GitHub Actions naming was designed in `musher-dev/platform`
 (issue [#2892](https://github.com/musher-dev/platform/issues/2892)), where checks CI-14 to CI-19 already block merges.
-The layout and configuration rules of `musher-dev/development-container` carry their own IDs and checks. Moving such
-a rule here raises a question the rule itself cannot answer: while it exists in both places, which one is right?
+Moving such a rule here raises a question the rule itself cannot answer: while it exists in both places, which one is
+right?
 
 Two live authorities for one rule is the failure this repository exists to end. If the platform changes its grammar
 and this repository does not, or the reverse, every consumer is checked against a rule its neighbor does not follow,
@@ -50,10 +49,9 @@ period with two live authorities.
   section, and those differences are proposals the platform adopts at the handoff. The handoff is a platform pull
   request after #2892 lands. Until then the platform's checks govern, and a change to the shared grammar is made in
   the platform first.
-- **The development-container rules** (`LAYOUT-01..11`, `CFG-01..09`, `HOOK-01..04`, `TC-01..03`, `CMT-01..03`) are not
-  yet ported. Their prefixes are reserved in `families.yml` so they can arrive with their IDs unchanged. The template
-  remains the scaffold that creates a repository (company decision 0013); the rules it enforces can move here without
-  the scaffold moving.
+- **Rules local to another repository** are not claimed in advance. A local rule that proves useful to more than one
+  repository is authored here as a new requirement, with its old ID recorded in `aliases`, and the local copy is
+  retired ([the charter](0000-charter.md)).
 
 ## Consequences
 
@@ -95,7 +93,5 @@ period with two live authorities.
 ## References
 
 - [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
-- Company decision 0013, on how a repository lays out its editor settings, tool configuration and product
-  (`musher-dev/company`, private)
 - [Decision 0004: Identifiers and diagnostic URLs](0004-identifiers-and-diagnostic-urls.md)
 - [Decision 0005: Status, severity and versioning](0005-status-severity-and-versioning.md)

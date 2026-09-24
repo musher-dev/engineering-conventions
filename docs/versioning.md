@@ -42,8 +42,9 @@ The first release is 0.1.0. The first release that makes any requirement `error`
 ## How to upgrade
 
 1. Read the changelog entries between your pinned version and the target.
-2. In one pull request, change `conventions.version` in `.repo/conventions.yaml` and the version your CI downloads.
-   ADOPT-08 reports the two disagreeing.
+2. Change the version in `mise.toml`, or merge the pull request Renovate opened for it. A repository without mise
+   changes `conventions.version` in `.repo/conventions.yaml` and the version its CI downloads together; ADOPT-08
+   reports the two disagreeing.
 3. Run the checks. New warnings are the migration the release asks for; fix them, or add waivers with tracking issues.
 4. Remove waivers the new release makes stale (ADOPT-06 reports them).
 

@@ -1,5 +1,4 @@
 ---
-id: "0000"
 title: This repository is the home of shared engineering conventions, and owns nothing else
 date: 2026-09-23
 status: accepted
@@ -89,8 +88,7 @@ rules live here once and are read, not copied.
 
 ## Enforcement
 
-- `conventions invariants` fails when a convention or requirement ID is reused or removed, and when a terminology area
-  overlay redefines a global term.
+- `conventions invariants` fails when a convention or requirement ID is reused or removed.
 - The "does not own" table is `review-only`: a reviewer rejects a proposal that restates a definition owned upstream.
   Terminology entries that need such a word point at the upstream definition (`authority`) instead of copying it, which
   the terminology schema enforces.

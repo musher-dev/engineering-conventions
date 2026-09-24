@@ -12,7 +12,6 @@ from collections import Counter
 from collections.abc import Callable, Iterable
 from pathlib import Path
 
-from conventions_tools import schemas
 from conventions_tools.content import (
     Content,
     Convention,
@@ -26,16 +25,14 @@ from conventions_tools.loading import (
     as_map,
     get_str,
     parse_yaml,
-    split_frontmatter,
 )
-from conventions_tools.paths import PRODUCT_DIR_NAME, decisions_dir, index_file, rego_dir
+from conventions_tools.paths import PRODUCT_DIR_NAME, index_file, rego_dir
 from conventions_tools.profiles import ProfileError, resolve_all
 
 REQUIREMENT_ID = r"[A-Z][A-Z0-9]{1,7}-[0-9]{2,3}"
 _QUOTED_ID = re.compile(rf'"({REQUIREMENT_ID})"')
 _PACKAGE = re.compile(r"^package\s+([A-Za-z0-9_.]+)", re.MULTILINE)
 _HEADING = re.compile(rf"^###\s+({REQUIREMENT_ID})\s*$", re.MULTILINE)
-_DECISION_FILE = re.compile(r"^([0-9]{4})-[a-z0-9-]+\.md$")
 _WORD = re.compile(r"[a-z0-9]+")
 
 type Check = Callable[[Content], list[str]]
@@ -57,10 +54,6 @@ def ids_unique(content: Content) -> list[str]:
 def families_registered(content: Content) -> list[str]:
     families = {family.prefix: family for family in content.families}
     found = [
-        f"families.yml registers {prefix}, which is reserved for migrating rules"
-        for prefix in sorted(set(families) & set(content.reserved))
-    ]
-    found += [
         f"families.yml lists {prefix} more than once"
         for prefix in _duplicates(family.prefix for family in content.families)
     ]
@@ -190,6 +183,28 @@ def rego_ids(content: Content) -> list[str]:
     return found
 
 
+def waivers_see_every_family(content: Content) -> list[str]:
+    """ADOPT-06 reads each family's findings by name: Rego forbids it reading its own tree.
+
+    A family whose check directory it does not name would have every waiver on
+    it reported as stale, so a new family must be added there with its checks.
+    """
+    rego = rego_dir(content.product)
+    declaration = rego / "adoption" / "declaration.rego"
+    if not declaration.is_file():
+        return []
+    text = declaration.read_text(encoding="utf-8")
+    return [
+        f"{declaration.relative_to(content.product)} does not read "
+        f"data.conventions.checks.{family.name}, so ADOPT-06 cannot see the findings "
+        f"its waivers cover; add it to raw_findings"
+        for family in sorted(rego.iterdir())
+        if family.is_dir()
+        and family.name not in {"adoption", "lib"}
+        and f"data.conventions.checks.{family.name}[" not in text
+    ]
+
+
 def fixtures_cover(content: Content) -> list[str]:
     """Every conftest requirement has a fixture repository that expects it (anti-vacuity)."""
     cases = case_dirs(content.product)
@@ -217,25 +232,18 @@ def fixtures_cover(content: Content) -> list[str]:
     return found
 
 
-def _alias_owners(files: Iterable[Terminology]) -> dict[tuple[str, str], set[str]]:
+def _alias_owners(terminology: Terminology) -> dict[tuple[str, str], set[str]]:
     owners: dict[tuple[str, str], set[str]] = {}
-    for terminology in files:
-        entries = [(term.id, term.aliases) for term in terminology.terms] + list(terminology.extend)
-        for term_id, aliases in entries:
-            for alias in aliases:
-                for scope in alias.scope:
-                    owners.setdefault((alias.text, scope), set()).add(term_id)
+    for term in terminology.terms:
+        for alias in term.aliases:
+            for scope in alias.scope:
+                owners.setdefault((alias.text, scope), set()).add(term.id)
     return owners
 
 
 def terminology_consistent(content: Content) -> list[str]:
     glob = content.terminology
-    found: list[str] = []
-    if glob.area != "global":
-        found.append(f"{glob.path}: area must be 'global'")
-    global_ids = {term.id for term in glob.terms}
-    global_tokens = {token for token, _ in glob.display_forms}
-    found += [
+    found = [
         f"{glob.path}: term {tid} is defined more than once"
         for tid in _duplicates(t.id for t in glob.terms)
     ]
@@ -249,27 +257,9 @@ def terminology_consistent(content: Content) -> list[str]:
             f"{glob.path}: token {tok!r} is used by more than one {tag} term"
             for tok in _duplicates(tokens)
         ]
-    seen_ids = set(global_ids)
-    for area in content.areas:
-        if area.area == "global" or Path(area.path).stem != area.area:
-            found.append(f"{area.path}: area must be the file's name, {Path(area.path).stem!r}")
-        for term in area.terms:
-            if term.id in seen_ids:
-                found.append(f"{area.path}: term {term.id} redefines a term that already exists")
-            seen_ids.add(term.id)
-        found += [
-            f"{area.path}: extends unknown global term {term_id}"
-            for term_id, _ in area.extend
-            if term_id not in global_ids
-        ]
-        found += [
-            f"{area.path}: display form {token!r} redefines a global display form"
-            for token, _ in area.display_forms
-            if token in global_tokens
-        ]
     found += [
         f"alias {text!r} ({scope}) belongs to more than one term: {', '.join(sorted(owners))}"
-        for (text, scope), owners in sorted(_alias_owners([glob, *content.areas]).items())
+        for (text, scope), owners in sorted(_alias_owners(glob).items())
         if len(owners) > 1
     ]
     return found
@@ -288,25 +278,6 @@ def profiles_resolve(content: Content) -> list[str]:
         resolve_all(content.profiles, content.requirements, families)
     except ProfileError as error:
         found.append(str(error))
-    return found
-
-
-def decisions_valid(content: Content) -> list[str]:
-    directory = decisions_dir(content.product)
-    found: list[str] = []
-    for path in sorted(directory.glob("*.md")):
-        match = _DECISION_FILE.match(path.name)
-        if match is None:
-            continue
-        source = f"docs/decisions/{path.name}"
-        try:
-            frontmatter, _ = split_frontmatter(path.read_text(encoding="utf-8"), source)
-        except ContentError as error:
-            found += error.problems
-            continue
-        found += schemas.problems(content.product, schemas.DECISION, frontmatter, source)
-        if get_str(as_map(frontmatter), "id") not in {"", match.group(1)}:
-            found.append(f"{source}: id must be {match.group(1)!r}, the filename's number")
     return found
 
 
@@ -396,10 +367,10 @@ CHECKS: tuple[Check, ...] = (
     references_resolve,
     headings_present,
     rego_ids,
+    waivers_see_every_family,
     fixtures_cover,
     terminology_consistent,
     profiles_resolve,
-    decisions_valid,
 )
 
 

@@ -1,0 +1,11 @@
+# The consumer's whole adoption of the conventions is the first line: mise
+# installs that release, verifies its checksum and build-provenance
+# attestation, and puts `conventions` on PATH. Renovate's mise manager raises
+# the version. conftest and Vale come with the release, at the versions it
+# was tested with.
+[tools]
+"github:musher-dev/engineering-conventions" = "0.1.0"  # x-release-please-version
+
+# GHA-33 delegates workflow correctness and security to these two.
+"aqua:rhysd/actionlint" = "1.7.12"
+"aqua:zizmorcore/zizmor" = "1.30.1"

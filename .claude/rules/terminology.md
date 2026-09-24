@@ -15,8 +15,6 @@ conventions use. Change it here and regenerate; never edit an output.
 - **MUST NOT** hand-edit `checks/vale/MusherConventions/**`. `task generate`
   writes it from `terminology/`; `task generate:check` fails on drift.
 - **MUST** keep a term's `id` stable; it is referenced from outside this file.
-- **MUST NOT** redefine a global term in an area overlay. An area adds terms
-  and aliases only.
 - **MUST** point at the owner instead of restating a definition this
   repository does not own: an `authority` entry carries no `definition`.
 - **MUST NOT** mirror positioning vocabulary, a customer glossary, platform

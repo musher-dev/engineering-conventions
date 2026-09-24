@@ -1,5 +1,4 @@
 ---
-id: "0003"
 title: The repository is public, and consumers vendor a verified, tagged bundle
 date: 2026-09-23
 status: accepted
@@ -38,9 +37,20 @@ strategy material. Conventions describe how Musher builds software, not what it 
 | `SHA256SUMS` | Checksums of the three assets above, for `sha256sum -c` |
 
 Every tarball and Vale package carries a build-provenance attestation made by the `Publish` workflow, verifiable with
-`gh attestation verify`. Assets are uploaded without overwrite, so a published release never changes. A consumer pins a
-version in its conventions declaration, downloads and verifies that release, and runs the checks against the vendored
-copy. Nothing is fetched from `main` at check time.
+`gh attestation verify`. Assets are uploaded without overwrite, so a published release never changes. Nothing is
+fetched from `main` at check time.
+
+**Consumers pin a release as a tool.** A consumer adds one line to `mise.toml`,
+`"github:musher-dev/engineering-conventions" = "<version>"`. mise downloads that release, verifies its checksum and its
+build-provenance attestation, and puts the bundle's `bin/conventions` on PATH. That launcher is the whole recipe:
+it lists the repository's files, runs conftest with the bundled checks, and pins conftest and Vale to the versions
+the release was tested with, so the release version is the only pin a consumer keeps. Renovate raises it like any
+other mise tool. This follows the wrapper pattern of `gradlew`, Bazelisk and the trunk launcher: one version in a
+file, read by a thin launcher that rarely changes. A repository without mise downloads and verifies the tarball
+itself and runs the same launcher.
+
+The declaration becomes optional: a repository needs one only for a profile other than `base-repo`, its own display
+forms, or waivers. ADOPT-01, which asked for a declaration, is retired in favour of ADOPT-09, which asks for a pin.
 
 **Diagnostics are self-sufficient.** A finding's message must say what to change without the link. The URL points at
 the requirement's heading in the tagged release for the reader who wants the reasoning; it is never required to act.
@@ -57,12 +67,15 @@ the link says where authority lives, not where the rule is explained.
 - Anyone can read a requirement from a diagnostic link without an account.
 - A consumer's results change only when the consumer changes its pinned version.
 - Integrity is checkable end to end: checksums for accidental corruption, provenance for where the bundle was built.
+  With mise, both are checked on every install without the consumer writing a step.
+- Adoption is one line and one command, identical locally and in CI, and upgrades arrive as Renovate pull requests.
 - Free GitHub features for public repositories apply: secret scanning with push protection, and artifact attestations.
 
 ### Negative
 
 - Every contribution is public, including drafts and rejected proposals. Content that cannot be public cannot live here.
 - Links to private upstream repositories fail for outside readers.
+- The launcher is shell. It must stay POSIX and small, because every consumer runs it.
 
 ### Neutral
 
@@ -75,6 +88,8 @@ the link says where authority lives, not where the rule is explained.
 - `task bundle:verify` fails when the tarball holds anything but the allowed entries, lacks `release.json` for its
   version, or when any checksum does not match.
 - The `Publish` workflow attests provenance and uploads without `--clobber`.
+- `task bundle:verify` fails when `bin/conventions` is missing or not executable, and `task conventions:self` runs this
+  repository through it, so no release ships a launcher CI has not run.
 - Whether content is publishable is `review-only`: a reviewer rejects internal hostnames, customer names and strategy
   material.
 
@@ -85,7 +100,10 @@ the link says where authority lives, not where the rule is explained.
 | Private repository | Keep conventions internal | rejected: diagnostic links would not open for most readers, and every consumer's CI would need a credential to fetch the checks |
 | Read the checks from `main` at run time | Always current | rejected: a change here could fail any consumer's build without warning |
 | Git submodule | Pin a commit | rejected: pins the whole repository including authoring tooling, and submodules are easy to leave uninitialized |
-| Tagged bundle with checksums and provenance | Vendor what a release attaches | **chosen** |
+| Remote Taskfile include | `includes:` a Taskfile from this repository at a tag | rejected: Task fetches only the Taskfile, not the checks beside it, and it adds a second pin that Renovate does not manage |
+| A container image or a published GitHub Action | One line in CI | deferred: a second channel to maintain, and every Musher repository already has mise |
+| `curl \| sh` installer | One line anywhere | rejected: runs an unverified script; `mise exec` is the verified one-liner |
+| Tagged bundle with checksums and provenance, installed as a mise tool | One pin, verified on install, a launcher in the bundle | **chosen** |
 
 ## References
 

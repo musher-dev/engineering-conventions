@@ -2,7 +2,11 @@
 # post-create.sh — DevContainer post-create command hook.
 #
 # Runs once after the container is created: installs the pinned toolchain,
-# then the git hooks.
+# then the git hooks. `task setup` repeats the same steps outside a container.
+#
+#   post-create.sh           entry point (installs the hooks)
+#     └── lib/base-setup.sh  config and cache dirs, mise install, Claude Code
+#           └── lib/common.sh  log, retry, has_cmd, ensure_writable_dir
 #
 # Usage: Called automatically by devcontainer.json postCreateCommand.
 set -euo pipefail
@@ -33,11 +37,9 @@ trap 'on_error ${LINENO} "${BASH_COMMAND}"' ERR
 
 # Installs the lefthook git hooks.
 #
-# The config is .config/lefthook.yml, which lefthook discovers on its own. The
-# template this repo came from tested for a root lefthook.yml instead, found
-# none, and silently installed no hooks at all; this checks the real path and
-# fails loudly, because a container without hooks passes every local commit
-# that CI then rejects.
+# The config is .config/lefthook.yml, which lefthook discovers on its own.
+# A missing lefthook fails loudly, because a container without hooks passes
+# every local commit that CI then rejects.
 #
 # Globals:
 #   REPO_ROOT — read

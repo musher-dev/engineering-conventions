@@ -10,3 +10,6 @@ tasks:
     desc: Check this repository against its own conventions; any finding fails, warnings included.
     cmds:
       - '{{.UV_RUN}} conventions check . --fail-on warning'
+      # The same check through the launcher consumers run, so a release never
+      # ships a bin/conventions that this repository has not exercised.
+      - '{{.PRODUCT_DIR}}/bin/conventions check --fail-on warning'

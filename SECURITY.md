@@ -40,10 +40,10 @@ run on (conftest, OPA, Vale), which have their own security policies.
 - `task secrets:scan` runs [gitleaks](https://github.com/gitleaks/gitleaks) over
   the history on every change, and the pre-commit hook scans each staged change.
 - Every CLI the gates run is pinned once, in `.devcontainer/mise.toml`, and CI
-  installs from that file. The exceptions are mise itself (pinned in the
-  Dockerfile and the setup-tools action, in lockstep), the dev container CLI
-  (`@devcontainers/cli`, an exact version in the Dev Container job), and the
-  Claude Code installer, which the dev container runs only outside CI.
+  installs from that file
+  ([Toolchain](docs/repository.md#toolchain)). Beyond the pins listed there,
+  the dev container CLI is an exact version in the Dev Container job, and the
+  Claude Code installer runs only in the dev container, never in CI.
 - The release bundle is reproducible from its tag: `task bundle:build` produces
   the same bytes from the same commit with the same GNU tar, gzip and zip, which
   come from the runner image and are not pinned.

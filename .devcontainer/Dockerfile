@@ -1,13 +1,9 @@
 # syntax=docker/dockerfile:1
 # Dev container image for musher-dev/engineering-conventions.
 #
-# The image bakes exactly one tool, mise. Every other CLI (task, lefthook, the
-# rule engines, the linters, uv) is pinned in .devcontainer/mise.toml and
-# installed from it at post-create, from the same file CI installs from, so a
-# version lives in one place. mise cannot pin itself from that file, which is
-# why it alone is an ARG here.
-#
-# Full rationale: CONFIGURATION.md → "Runtimes & Tools"
+# The image bakes exactly one tool, mise, because mise cannot pin itself.
+# Every other CLI is pinned in .devcontainer/mise.toml (docs/repository.md →
+# "Toolchain").
 #
 # Pinned to the LTS tag: a floating `:ubuntu` rolls to interim releases.
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04

@@ -1,7 +1,6 @@
-# The single anchor for every CLI this repository runs. The Dockerfile bakes
-# only mise itself; the dev container (post-create), local `task` runs and CI
-# (.github/actions/setup-tools, the one jdx/mise-action reference) all resolve
-# tools from this file, so a version exists in exactly one place.
+# The single anchor for every CLI this repository runs: the dev container,
+# `task setup` and CI all install from this file (docs/repository.md →
+# "Toolchain").
 #
 # Edit a version here, then `task tools:install`. Lockstep pins that cannot be
 # expressed here are listed in .claude/rules/toolchain-pins.md.
@@ -28,7 +27,7 @@ node = "24.21.0"
 "aqua:vale-cli/vale" = "3.22.0"
 "pipx:check-jsonschema" = "0.38.1"
 
-# --- Linters (configs live in .config/; see .config/README.md) -------------
+# --- Linters (configs live in .config/; see docs/repository.md) -----------
 "npm:markdownlint-cli2" = "0.23.3"
 "pipx:yamllint" = "1.38.0"
 "aqua:rhysd/actionlint" = "1.7.12"

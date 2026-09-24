@@ -38,6 +38,7 @@ def test_index_top_level_shape(content: Content) -> None:
     index = _index(content)
     assert sorted(index) == [
         "conventions",
+        "declaration_schema",
         "product_dir",
         "profiles",
         "repository",
@@ -67,8 +68,18 @@ def test_requirement_entry(content: Content) -> None:
     }
     adopt = as_map(requirements["ADOPT-02"])
     assert adopt["waivable"] is False
-    assert adopt["schema"] == "checks/schemas/conventions-declaration.schema.json"
-    assert "package" not in adopt
+    assert adopt["package"] == "conventions.checks.adoption.declaration"
+    assert "schema" not in adopt
+    retired = as_map(requirements["ADOPT-01"])
+    assert retired["status"] == "retired"
+    assert retired["replaced_by"] == ["ADOPT-09"]
+
+
+def test_index_carries_a_self_contained_declaration_schema(content: Content) -> None:
+    schema = as_map(_index(content)["declaration_schema"])
+    refs = json.dumps(schema)
+    assert "common.schema.json" not in refs
+    assert schema["required"] == ["schema_version"]
 
 
 def test_convention_entry_keeps_authority(content: Content) -> None:
@@ -196,8 +207,13 @@ def test_invalid_profiles_are_rejected(
 
 def test_profile_cannot_lower_a_default_severity(content: Content) -> None:
     first = content.conventions[0]
-    raised = replace(first.requirements[0], severity="error")
-    changed = replace(first, requirements=(raised, *first.requirements[1:]))
+    index, active = next(
+        (i, req) for i, req in enumerate(first.requirements) if req.status != "retired"
+    )
+    raised = replace(active, severity="error")
+    requirements = list(first.requirements)
+    requirements[index] = raised
+    changed = replace(first, requirements=tuple(requirements))
     edited = replace(content, conventions=(changed, *content.conventions[1:]))
     lowering = replace(content.profiles[0], severity={raised.id: "warning"})
     with pytest.raises(ProfileError, match=f"lowers {raised.id} from error to warning"):
@@ -244,14 +260,12 @@ def test_vale_accepts_the_generated_styles(product: Path, tmp_path: Path) -> Non
     assert checks == ["MusherConventions.Terms"]
 
 
-def test_readme_lists_every_requirement_and_planned_topics(content: Content) -> None:
+def test_readme_lists_every_requirement(content: Content) -> None:
     readme = generate.render_readme(content)
     assert readme.startswith("# Conventions\n")
     assert "Do not edit" in readme
     for req in content.requirements:
         assert f"[{req.id}](" in readme
-    for topic in ("structure", "naming", "implementation"):
-        assert f"- `{topic}`" in readme
     assert "\\<Subject\\>" in readme
 
 

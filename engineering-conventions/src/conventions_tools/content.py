@@ -94,10 +94,8 @@ class Term:
 
 @dataclass(frozen=True)
 class Terminology:
-    area: str
     path: str
     terms: tuple[Term, ...]
-    extend: tuple[tuple[str, tuple[Alias, ...]], ...]
     display_forms: tuple[tuple[str, str], ...]
 
 
@@ -119,10 +117,8 @@ class Profile:
 class Content:
     product: Path
     families: tuple[Family, ...]
-    reserved: tuple[str, ...]
     conventions: tuple[Convention, ...]
     terminology: Terminology
-    areas: tuple[Terminology, ...]
     profiles: tuple[Profile, ...]
 
     @property
@@ -147,10 +143,10 @@ def _validated(product: Path, schema: str, data: object, path: Path) -> dict[str
     return as_map(data)
 
 
-def load_families(product: Path) -> tuple[tuple[Family, ...], tuple[str, ...]]:
+def load_families(product: Path) -> tuple[Family, ...]:
     path = families_file(product)
     data = _validated(product, schemas.FAMILIES, read_yaml(path), path)
-    families = tuple(
+    return tuple(
         Family(
             prefix=get_str(item, "prefix"),
             title=get_str(item, "title"),
@@ -158,8 +154,6 @@ def load_families(product: Path) -> tuple[tuple[Family, ...], tuple[str, ...]]:
         )
         for item in map(as_map, as_list(data.get("families")))
     )
-    reserved = tuple(get_str(as_map(item), "prefix") for item in as_list(data.get("reserved")))
-    return families, reserved
 
 
 def _requirement(data: dict[str, object], convention: str, path: str) -> Requirement:
@@ -238,25 +232,13 @@ def _term(data: dict[str, object]) -> Term:
 def load_terminology(product: Path, path: Path) -> Terminology:
     data = _validated(product, schemas.TERMINOLOGY, read_yaml(path), path)
     return Terminology(
-        area=get_str(data, "area"),
         path=_relative(product, path),
         terms=tuple(_term(as_map(item)) for item in as_list(data.get("terms"))),
-        extend=tuple(
-            (
-                get_str(entry, "term"),
-                tuple(_alias(as_map(item)) for item in as_list(entry.get("aliases"))),
-            )
-            for entry in map(as_map, as_list(data.get("extend")))
-        ),
         display_forms=tuple(
             (get_str(entry, "token"), get_str(entry, "display"))
             for entry in map(as_map, as_list(data.get("display_forms")))
         ),
     )
-
-
-def area_files(product: Path) -> list[Path]:
-    return sorted((terminology_dir(product) / "areas").glob("*.yml"))
 
 
 def load_profile(product: Path, path: Path) -> Profile:
@@ -309,13 +291,11 @@ def load_profiles(product: Path, directory: Path | None = None) -> tuple[Profile
 def load_content(product: Path) -> Content:
     found: list[str] = []
     families: tuple[Family, ...] = ()
-    reserved: tuple[str, ...] = ()
     conventions: tuple[Convention, ...] = ()
     terminology: Terminology | None = None
-    areas: tuple[Terminology, ...] = ()
     profiles: tuple[Profile, ...] = ()
     try:
-        families, reserved = load_families(product)
+        families = load_families(product)
     except ContentError as error:
         found.extend(error.problems)
     try:
@@ -327,10 +307,6 @@ def load_content(product: Path) -> Content:
     except ContentError as error:
         found.extend(error.problems)
     try:
-        areas = _collect(load_terminology, product, area_files(product))
-    except ContentError as error:
-        found.extend(error.problems)
-    try:
         profiles = load_profiles(product)
     except ContentError as error:
         found.extend(error.problems)
@@ -339,9 +315,7 @@ def load_content(product: Path) -> Content:
     return Content(
         product=product,
         families=families,
-        reserved=reserved,
         conventions=conventions,
         terminology=terminology,
-        areas=areas,
         profiles=profiles,
     )

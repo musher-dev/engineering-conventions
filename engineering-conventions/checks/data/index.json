@@ -60,12 +60,157 @@
           "topic": "github-actions"
         }
       },
+      "declaration_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "definitions": {
+          "common_date": {
+            "description": "A calendar date in ISO 8601 form, YYYY-MM-DD.",
+            "format": "date",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+            "type": "string"
+          },
+          "common_displayForms": {
+            "additionalProperties": {
+              "minLength": 1,
+              "pattern": "^\\S(.*\\S)?$",
+              "type": "string"
+            },
+            "description": "Display forms keyed by lower-case identifier token: how the token is written in a Title-Cased name, e.g. api: API.",
+            "propertyNames": {
+              "pattern": "^[a-z0-9]+$"
+            },
+            "type": "object"
+          },
+          "common_httpsUrl": {
+            "description": "An absolute https URL.",
+            "format": "uri",
+            "pattern": "^https://[^\\s]+$",
+            "type": "string"
+          },
+          "common_pathGlob": {
+            "description": "A repository-relative glob with forward slashes: * matches within one path segment, ** matches across segments.",
+            "minLength": 1,
+            "pattern": "^([^/.\\s]|\\.[^/\\s])[^\\s]*$",
+            "type": "string"
+          },
+          "common_requirementId": {
+            "description": "A requirement identifier: a registered family prefix, a hyphen and a two- or three-digit number, e.g. GHA-07. Append-only and never reused.",
+            "pattern": "^[A-Z][A-Z0-9]{1,7}-[0-9]{2,3}$",
+            "type": "string"
+          },
+          "common_slug": {
+            "description": "A lower-case kebab-case identifier, e.g. github-actions.",
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "common_version": {
+            "description": "A release version in MAJOR.MINOR.PATCH form, without a leading v, e.g. 0.1.0.",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+            "type": "string"
+          },
+          "waiver": {
+            "additionalProperties": false,
+            "properties": {
+              "expires": {
+                "$ref": "#/definitions/common_date",
+                "description": "The last day the waiver applies (YYYY-MM-DD), at most 180 days ahead."
+              },
+              "paths": {
+                "description": "Limit the waiver to findings on these paths (repository-relative globs). Omit to waive the requirement everywhere.",
+                "items": {
+                  "$ref": "#/definitions/common_pathGlob"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reason": {
+                "description": "Why the deviation is needed, in at least 20 characters.",
+                "minLength": 20,
+                "type": "string"
+              },
+              "requirement": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/common_requirementId"
+                  },
+                  {
+                    "not": {
+                      "pattern": "^ADOPT-"
+                    }
+                  }
+                ],
+                "description": "The requirement waived. ADOPT requirements cannot be waived."
+              },
+              "tracking": {
+                "$ref": "#/definitions/common_httpsUrl",
+                "description": "The issue that tracks removing the waiver."
+              }
+            },
+            "required": [
+              "requirement",
+              "reason",
+              "tracking",
+              "expires"
+            ],
+            "type": "object"
+          }
+        },
+        "description": "A consuming repository's optional .repo/conventions.yaml: the convention profile that applies to it and every waiver it holds, and, for a repository that does not pin the release in mise, the release it is checked against. ADOPT-02 checks a declaration against this schema.",
+        "properties": {
+          "conventions": {
+            "additionalProperties": false,
+            "description": "Which release of musher-dev/engineering-conventions this repository is checked against. Optional when mise pins the release (github:musher-dev/engineering-conventions).",
+            "properties": {
+              "version": {
+                "$ref": "#/definitions/common_version",
+                "description": "The pinned release, without a leading v, e.g. 0.1.0."
+              }
+            },
+            "required": [
+              "version"
+            ],
+            "type": "object"
+          },
+          "profile": {
+            "$ref": "#/definitions/common_slug",
+            "description": "The convention profile that applies, e.g. base-repo. Defaults to base-repo."
+          },
+          "schema_version": {
+            "const": 1,
+            "description": "Version of this file's shape. Always 1."
+          },
+          "vocabulary": {
+            "additionalProperties": false,
+            "description": "Repository-specific vocabulary on top of the release's.",
+            "properties": {
+              "display_forms": {
+                "$ref": "#/definitions/common_displayForms",
+                "description": "Extra display forms, keyed by lower-case token, e.g. grpc: gRPC. They add to the release's display forms."
+              }
+            },
+            "type": "object"
+          },
+          "waivers": {
+            "description": "Time-boxed, tracked deviations from a requirement. Requirements in the ADOPT family cannot be waived.",
+            "items": {
+              "$ref": "#/definitions/waiver"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version"
+        ],
+        "title": "Conventions declaration",
+        "type": "object"
+      },
       "product_dir": "engineering-conventions",
       "profiles": {
         "base-repo": {
           "display_name": "Base repository",
           "requirements": [
-            "ADOPT-01",
             "ADOPT-02",
             "ADOPT-03",
             "ADOPT-04",
@@ -73,6 +218,7 @@
             "ADOPT-06",
             "ADOPT-07",
             "ADOPT-08",
+            "ADOPT-09",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -113,7 +259,6 @@
             "GHA-38"
           ],
           "severity": {
-            "ADOPT-01": "warning",
             "ADOPT-02": "warning",
             "ADOPT-03": "warning",
             "ADOPT-04": "warning",
@@ -121,6 +266,7 @@
             "ADOPT-06": "warning",
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
+            "ADOPT-09": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -171,9 +317,12 @@
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
           "path": "conventions/adoption/conventions-declaration.md",
+          "replaced_by": [
+            "ADOPT-09"
+          ],
           "severity": "warning",
           "since": "0.1.0",
-          "status": "proposed",
+          "status": "retired",
           "title": "A repository declares its conventions in .repo/conventions.yaml",
           "waivable": false
         },
@@ -181,9 +330,9 @@
           "aliases": [],
           "anchor": "adopt-02",
           "convention": "EC-0001",
-          "engine": "jsonschema",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
           "path": "conventions/adoption/conventions-declaration.md",
-          "schema": "checks/schemas/conventions-declaration.schema.json",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -266,6 +415,19 @@
           "since": "0.1.0",
           "status": "proposed",
           "title": "The declared version is the version of the bundle being run",
+          "waivable": false
+        },
+        "ADOPT-09": {
+          "aliases": [],
+          "anchor": "adopt-09",
+          "convention": "EC-0001",
+          "engine": "conftest",
+          "package": "conventions.checks.adoption.declaration",
+          "path": "conventions/adoption/conventions-declaration.md",
+          "severity": "warning",
+          "since": "0.2.0",
+          "status": "proposed",
+          "title": "A repository pins the conventions release it is checked against",
           "waivable": false
         },
         "GHA-01": {

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "OUT-02",
+    "path": ".repo/outputs.yaml",
+    "severity": "warning"
+  }
+]

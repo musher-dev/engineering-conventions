@@ -4,7 +4,7 @@
       "conventions": {
         "EC-0001": {
           "authority": "self",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "status": "active",
           "title": "Conventions declaration",
           "topic": "adoption"
@@ -14,7 +14,7 @@
             "ref": "https://github.com/musher-dev/platform/issues/2892",
             "repo": "musher-dev/platform"
           },
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "status": "draft",
           "title": "Workflow files",
           "topic": "github-actions"
@@ -24,7 +24,7 @@
             "ref": "https://github.com/musher-dev/platform/issues/2892",
             "repo": "musher-dev/platform"
           },
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "status": "draft",
           "title": "Jobs and steps",
           "topic": "github-actions"
@@ -34,7 +34,7 @@
             "ref": "https://github.com/musher-dev/platform/issues/2892",
             "repo": "musher-dev/platform"
           },
-          "path": "conventions/github-actions/composite-actions.md",
+          "path": "definitions/conventions/github-actions/composite-actions.md",
           "status": "draft",
           "title": "Composite actions",
           "topic": "github-actions"
@@ -44,7 +44,7 @@
             "ref": "https://github.com/musher-dev/platform/issues/2892",
             "repo": "musher-dev/platform"
           },
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "status": "draft",
           "title": "Execution hygiene",
           "topic": "github-actions"
@@ -54,10 +54,24 @@
             "ref": "https://github.com/musher-dev/platform/issues/2892",
             "repo": "musher-dev/platform"
           },
-          "path": "conventions/github-actions/units-and-renames.md",
+          "path": "definitions/conventions/github-actions/units-and-renames.md",
           "status": "draft",
           "title": "Units and renames",
           "topic": "github-actions"
+        },
+        "EC-0007": {
+          "authority": "self",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "status": "draft",
+          "title": "Outputs declaration",
+          "topic": "outputs"
+        },
+        "EC-0008": {
+          "authority": "self",
+          "path": "definitions/conventions/outputs/publishing-and-consuming.md",
+          "status": "draft",
+          "title": "Publishing and consuming outputs",
+          "topic": "outputs"
         }
       },
       "declaration_schema": {
@@ -206,6 +220,101 @@
         "title": "Conventions declaration",
         "type": "object"
       },
+      "outputs_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "definitions": {
+          "common_nonEmptyString": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "common_repoPath": {
+            "description": "A path relative to a repository root, written with forward slashes and no leading slash or ./ prefix.",
+            "minLength": 1,
+            "pattern": "^([^/.\\s]|\\.[^/\\s])[^\\s]*$",
+            "type": "string"
+          },
+          "common_slug": {
+            "description": "A lower-case kebab-case identifier, e.g. github-actions.",
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "output": {
+            "additionalProperties": false,
+            "properties": {
+              "definition": {
+                "$ref": "#/definitions/common_repoPath",
+                "description": "A contract's machine-readable definition file, relative to the repository root, e.g. api/openapi.yaml. Required when kind is contract (OUT-07)."
+              },
+              "description": {
+                "$ref": "#/definitions/common_nonEmptyString",
+                "description": "One line on what the output is for."
+              },
+              "docs": {
+                "$ref": "#/definitions/common_repoPath",
+                "description": "The document that says how to consume it, relative to the repository root, with an optional #anchor, e.g. api/README.md#consuming."
+              },
+              "format": {
+                "$ref": "#/definitions/common_slug",
+                "description": "A contract's interface format, e.g. openapi, asyncapi, protobuf or json-schema. Required when kind is contract (OUT-07)."
+              },
+              "id": {
+                "$ref": "#/definitions/common_slug",
+                "description": "The output's name within this repository, unique, e.g. api-image."
+              },
+              "kind": {
+                "description": "What kind of output it is: an output-kind token from the terminology, e.g. image, library, cli, contract or bundle. OUT-03 checks the token.",
+                "pattern": "^[a-z][a-z0-9]*$",
+                "type": "string"
+              },
+              "location": {
+                "$ref": "#/definitions/common_nonEmptyString",
+                "description": "Where a consumer gets it: an image repository, a package name in its registry, or a release URL, e.g. ghcr.io/musher-dev/api."
+              },
+              "publish_workflow": {
+                "description": "The filename of the workflow under .github/workflows that publishes it, e.g. publish-api.yml.",
+                "pattern": "^[^/\\s]+\\.(yml|yaml)$",
+                "type": "string"
+              },
+              "source": {
+                "$ref": "#/definitions/common_repoPath",
+                "description": "The file or directory it is built from, relative to the repository root, e.g. api/ or engineering-conventions/."
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "source",
+              "publish_workflow",
+              "location",
+              "docs"
+            ],
+            "type": "object"
+          }
+        },
+        "description": "A repository's .repo/outputs.yaml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented. OUT-02 checks a declaration against this schema.",
+        "properties": {
+          "outputs": {
+            "description": "The outputs this repository publishes, at least one.",
+            "items": {
+              "$ref": "#/definitions/output"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "description": "Version of this file's shape. Always 1."
+          }
+        },
+        "required": [
+          "schema_version",
+          "outputs"
+        ],
+        "title": "Outputs declaration",
+        "type": "object"
+      },
       "product_dir": "engineering-conventions",
       "profiles": {
         "base-repo": {
@@ -256,7 +365,18 @@
             "GHA-35",
             "GHA-36",
             "GHA-37",
-            "GHA-38"
+            "GHA-38",
+            "OUT-01",
+            "OUT-02",
+            "OUT-03",
+            "OUT-04",
+            "OUT-05",
+            "OUT-06",
+            "OUT-07",
+            "OUT-08",
+            "OUT-09",
+            "OUT-10",
+            "OUT-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -304,7 +424,18 @@
             "GHA-35": "warning",
             "GHA-36": "warning",
             "GHA-37": "warning",
-            "GHA-38": "warning"
+            "GHA-38": "warning",
+            "OUT-01": "warning",
+            "OUT-02": "warning",
+            "OUT-03": "warning",
+            "OUT-04": "warning",
+            "OUT-05": "warning",
+            "OUT-06": "warning",
+            "OUT-07": "warning",
+            "OUT-08": "warning",
+            "OUT-09": "warning",
+            "OUT-10": "warning",
+            "OUT-11": "warning"
           }
         }
       },
@@ -316,7 +447,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "replaced_by": [
             "ADOPT-09"
           ],
@@ -332,7 +463,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -345,7 +476,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -358,7 +489,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -371,7 +502,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -384,7 +515,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -397,7 +528,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -410,7 +541,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -423,7 +554,7 @@
           "convention": "EC-0001",
           "engine": "conftest",
           "package": "conventions.checks.adoption.declaration",
-          "path": "conventions/adoption/conventions-declaration.md",
+          "path": "definitions/conventions/adoption/conventions-declaration.md",
           "severity": "warning",
           "since": "0.2.0",
           "status": "proposed",
@@ -438,7 +569,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -453,7 +584,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -468,7 +599,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -483,7 +614,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -496,7 +627,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -509,7 +640,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -524,7 +655,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -537,7 +668,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -550,7 +681,7 @@
           "convention": "EC-0002",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.workflow_files",
-          "path": "conventions/github-actions/workflow-files.md",
+          "path": "definitions/conventions/github-actions/workflow-files.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -565,7 +696,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -580,7 +711,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -595,7 +726,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -610,7 +741,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -623,7 +754,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -638,7 +769,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -651,7 +782,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -664,7 +795,7 @@
           "convention": "EC-0003",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.jobs_and_steps",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -676,7 +807,7 @@
           "anchor": "gha-18",
           "convention": "EC-0003",
           "engine": "review",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -688,7 +819,7 @@
           "anchor": "gha-19",
           "convention": "EC-0003",
           "engine": "review",
-          "path": "conventions/github-actions/jobs-and-steps.md",
+          "path": "definitions/conventions/github-actions/jobs-and-steps.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -703,7 +834,7 @@
           "convention": "EC-0004",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.composite_actions",
-          "path": "conventions/github-actions/composite-actions.md",
+          "path": "definitions/conventions/github-actions/composite-actions.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -718,7 +849,7 @@
           "convention": "EC-0004",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.composite_actions",
-          "path": "conventions/github-actions/composite-actions.md",
+          "path": "definitions/conventions/github-actions/composite-actions.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -731,7 +862,7 @@
           "convention": "EC-0004",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.composite_actions",
-          "path": "conventions/github-actions/composite-actions.md",
+          "path": "definitions/conventions/github-actions/composite-actions.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -744,7 +875,7 @@
           "convention": "EC-0004",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.composite_actions",
-          "path": "conventions/github-actions/composite-actions.md",
+          "path": "definitions/conventions/github-actions/composite-actions.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -757,7 +888,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -769,7 +900,7 @@
           "anchor": "gha-25",
           "convention": "EC-0005",
           "engine": "review",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -782,7 +913,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -795,7 +926,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -808,7 +939,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -821,7 +952,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -834,7 +965,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -849,7 +980,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -862,7 +993,7 @@
           "convention": "EC-0005",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.execution_hygiene",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -874,7 +1005,7 @@
           "anchor": "gha-33",
           "convention": "EC-0005",
           "engine": "delegated",
-          "path": "conventions/github-actions/execution-hygiene.md",
+          "path": "definitions/conventions/github-actions/execution-hygiene.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -886,7 +1017,7 @@
           "anchor": "gha-34",
           "convention": "EC-0006",
           "engine": "review",
-          "path": "conventions/github-actions/units-and-renames.md",
+          "path": "definitions/conventions/github-actions/units-and-renames.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -898,7 +1029,7 @@
           "anchor": "gha-35",
           "convention": "EC-0006",
           "engine": "review",
-          "path": "conventions/github-actions/units-and-renames.md",
+          "path": "definitions/conventions/github-actions/units-and-renames.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -910,7 +1041,7 @@
           "anchor": "gha-36",
           "convention": "EC-0006",
           "engine": "review",
-          "path": "conventions/github-actions/units-and-renames.md",
+          "path": "definitions/conventions/github-actions/units-and-renames.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -922,7 +1053,7 @@
           "anchor": "gha-37",
           "convention": "EC-0006",
           "engine": "review",
-          "path": "conventions/github-actions/units-and-renames.md",
+          "path": "definitions/conventions/github-actions/units-and-renames.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
@@ -935,11 +1066,150 @@
           "convention": "EC-0004",
           "engine": "conftest",
           "package": "conventions.checks.github_actions.composite_actions",
-          "path": "conventions/github-actions/composite-actions.md",
+          "path": "definitions/conventions/github-actions/composite-actions.md",
           "severity": "warning",
           "since": "0.1.0",
           "status": "proposed",
           "title": "Inputs and outputs of actions and reusable workflows are kebab-case",
+          "waivable": true
+        },
+        "OUT-01": {
+          "aliases": [],
+          "anchor": "out-01",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "A repository with a publish workflow declares its outputs in .repo/outputs.yaml",
+          "waivable": true
+        },
+        "OUT-02": {
+          "aliases": [],
+          "anchor": "out-02",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "The outputs declaration is valid against its schema",
+          "waivable": true
+        },
+        "OUT-03": {
+          "aliases": [],
+          "anchor": "out-03",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "An output's kind is a registered output kind",
+          "waivable": true
+        },
+        "OUT-04": {
+          "aliases": [],
+          "anchor": "out-04",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "Output IDs are unique within a repository",
+          "waivable": true
+        },
+        "OUT-05": {
+          "aliases": [],
+          "anchor": "out-05",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "Every path an output names exists",
+          "waivable": true
+        },
+        "OUT-06": {
+          "aliases": [],
+          "anchor": "out-06",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "An output names a publish workflow that exists",
+          "waivable": true
+        },
+        "OUT-07": {
+          "aliases": [],
+          "anchor": "out-07",
+          "convention": "EC-0007",
+          "engine": "conftest",
+          "package": "conventions.checks.outputs.declaration",
+          "path": "definitions/conventions/outputs/outputs-declaration.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "A contract output names its format and its definition file",
+          "waivable": true
+        },
+        "OUT-08": {
+          "aliases": [],
+          "anchor": "out-08",
+          "convention": "EC-0008",
+          "engine": "review",
+          "path": "definitions/conventions/outputs/publishing-and-consuming.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "An output's docs say how to consume it",
+          "waivable": true
+        },
+        "OUT-09": {
+          "aliases": [],
+          "anchor": "out-09",
+          "convention": "EC-0008",
+          "engine": "review",
+          "path": "definitions/conventions/outputs/publishing-and-consuming.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "A version is published only from a release tag and is never overwritten",
+          "waivable": true
+        },
+        "OUT-10": {
+          "aliases": [],
+          "anchor": "out-10",
+          "convention": "EC-0008",
+          "engine": "review",
+          "path": "definitions/conventions/outputs/publishing-and-consuming.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "A container image carries the OCI source, revision and version annotations",
+          "waivable": true
+        },
+        "OUT-11": {
+          "aliases": [],
+          "anchor": "out-11",
+          "convention": "EC-0008",
+          "engine": "review",
+          "path": "definitions/conventions/outputs/publishing-and-consuming.md",
+          "severity": "warning",
+          "since": "0.3.0",
+          "status": "proposed",
+          "title": "A repository consumes another repository's output by an exact version",
           "waivable": true
         }
       },
@@ -992,6 +1262,13 @@
           "sast": "SAST",
           "uv": "uv"
         },
+        "output_kinds": [
+          "bundle",
+          "cli",
+          "contract",
+          "image",
+          "library"
+        ],
         "responsibility_tokens": [
           "audit",
           "deploy",

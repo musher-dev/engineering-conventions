@@ -33,6 +33,7 @@ from conventions_tools.paths import (
 )
 
 DECLARATION = ".repo/conventions.yaml"
+OUTPUTS = ".repo/outputs.yaml"
 # Where ADOPT-09 looks for the mise entry that pins the release; the same
 # list as mise_config_paths in checks/rego/lib/files.rego.
 MISE_CONFIGS = (
@@ -125,7 +126,7 @@ def input_files(repo: Path) -> list[str]:
         for path in (repo / WORKFLOW_DIR).glob("*")
         if path.is_file() and path.suffix.lower() in WORKFLOW_SUFFIXES
     }
-    found |= {name for name in (DECLARATION, *MISE_CONFIGS) if (repo / name).is_file()}
+    found |= {name for name in (DECLARATION, OUTPUTS, *MISE_CONFIGS) if (repo / name).is_file()}
     return sorted(found)
 
 

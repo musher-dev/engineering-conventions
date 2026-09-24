@@ -101,9 +101,9 @@ pre-commit:
     - name: schemas
       glob:
         - "engineering-conventions/checks/schemas/*.json"
-        - "engineering-conventions/terminology/**/*.yml"
-        - "engineering-conventions/profiles/*.yml"
-        - "engineering-conventions/conventions/**/*.{md,yml}"
+        - "engineering-conventions/definitions/terminology/**/*.yml"
+        - "engineering-conventions/definitions/profiles/*.yml"
+        - "engineering-conventions/definitions/conventions/**/*.{md,yml}"
         - "docs/decisions/*.{md,json}"
         - ".repo/conventions.yaml"
         - ".github/**/*.{yml,yaml}"
@@ -118,17 +118,17 @@ pre-commit:
       # they are added by name instead. `task generate:check` in CI catches
       # a commit made with --no-verify.
       glob:
-        - "engineering-conventions/conventions/**/*.{md,yml}"
-        - "engineering-conventions/terminology/**/*.yml"
-        - "engineering-conventions/profiles/*.yml"
+        - "engineering-conventions/definitions/conventions/**/*.{md,yml}"
+        - "engineering-conventions/definitions/terminology/**/*.yml"
+        - "engineering-conventions/definitions/profiles/*.yml"
         - "engineering-conventions/src/**/*.py"
       exclude:
-        - "engineering-conventions/conventions/README.md"
+        - "engineering-conventions/definitions/conventions/README.md"
       run: >-
         task generate &&
         git add engineering-conventions/checks/data/index.json
         engineering-conventions/checks/vale
-        engineering-conventions/conventions/README.md
+        engineering-conventions/definitions/conventions/README.md
       fail_text: "Regenerating the committed artifacts failed. Run 'task generate' for the error."
 
     - name: prose
@@ -139,7 +139,7 @@ pre-commit:
         - "CLAUDE.md"
         - "AGENTS.md"
         - "docs/**/*.md"
-        - "engineering-conventions/conventions/**/*.md"
+        - "engineering-conventions/definitions/conventions/**/*.md"
       run: vale --config .config/markdown/vale.ini {staged_files}
       fail_text: "Prose lint failed against the MusherConventions style. Run 'task prose:lint'."
 

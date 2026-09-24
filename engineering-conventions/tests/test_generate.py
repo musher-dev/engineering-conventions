@@ -39,6 +39,7 @@ def test_index_top_level_shape(content: Content) -> None:
     assert sorted(index) == [
         "conventions",
         "declaration_schema",
+        "outputs_schema",
         "product_dir",
         "profiles",
         "repository",
@@ -59,7 +60,7 @@ def test_requirement_entry(content: Content) -> None:
         "convention": "EC-0002",
         "engine": "conftest",
         "package": "conventions.checks.github_actions.workflow_files",
-        "path": "conventions/github-actions/workflow-files.md",
+        "path": "definitions/conventions/github-actions/workflow-files.md",
         "severity": "warning",
         "since": "0.1.0",
         "status": "proposed",
@@ -106,6 +107,7 @@ def test_vocabulary_projection(content: Content) -> None:
     ]
     assert projected["capability_tokens"] == ["build", "check", "promote"]
     assert projected["action_tokens"] == ["authenticate", "check", "install", "setup"]
+    assert projected["output_kinds"] == ["bundle", "cli", "contract", "image", "library"]
     assert projected["display_forms"] == {
         "api": "API",
         "ci": "CI",
@@ -217,7 +219,7 @@ def test_profile_cannot_lower_a_default_severity(content: Content) -> None:
     edited = replace(content, conventions=(changed, *content.conventions[1:]))
     lowering = replace(content.profiles[0], severity={raised.id: "warning"})
     with pytest.raises(ProfileError, match=f"lowers {raised.id} from error to warning"):
-        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA"})
+        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA", "OUT"})
 
 
 def test_vale_styles_are_substitutions(content: Content) -> None:
@@ -271,7 +273,7 @@ def test_readme_lists_every_requirement(content: Content) -> None:
 
 def _copy_product(product: Path, tmp_path: Path) -> Path:
     copy = tmp_path / "product"
-    for name in ("conventions", "profiles", "terminology", "checks"):
+    for name in ("definitions", "checks"):
         shutil.copytree(product / name, copy / name)
     return copy
 

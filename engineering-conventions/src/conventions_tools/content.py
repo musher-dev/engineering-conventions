@@ -203,7 +203,7 @@ def load_convention(product: Path, path: Path) -> Convention:
 
 
 def convention_files(product: Path) -> list[Path]:
-    """Every convention document: conventions/<topic>/*.md except topic READMEs."""
+    """Every convention document: definitions/conventions/<topic>/*.md except topic READMEs."""
     return sorted(
         path for path in conventions_dir(product).glob("*/*.md") if path.name != "README.md"
     )

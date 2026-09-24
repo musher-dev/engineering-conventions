@@ -20,12 +20,17 @@ def product_dir() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def definitions_dir(product: Path) -> Path:
+    """What is decided: conventions, terminology and profiles. checks/ holds what validates it."""
+    return product / "definitions"
+
+
 def conventions_dir(product: Path) -> Path:
-    return product / "conventions"
+    return definitions_dir(product) / "conventions"
 
 
 def families_file(product: Path) -> Path:
-    return product / "conventions" / "families.yml"
+    return conventions_dir(product) / "families.yml"
 
 
 def schemas_dir(product: Path) -> Path:
@@ -49,11 +54,11 @@ def vale_style_dir(product: Path) -> Path:
 
 
 def terminology_dir(product: Path) -> Path:
-    return product / "terminology"
+    return definitions_dir(product) / "terminology"
 
 
 def profiles_dir(product: Path) -> Path:
-    return product / "profiles"
+    return definitions_dir(product) / "profiles"
 
 
 def fixture_repos_dir(product: Path) -> Path:

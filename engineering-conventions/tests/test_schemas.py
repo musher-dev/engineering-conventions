@@ -15,6 +15,7 @@ FIXTURES = PRODUCT / "tests" / "fixtures"
 
 KINDS = {
     "declarations": (schemas.DECLARATION, "valid", "invalid"),
+    "outputs": (schemas.OUTPUTS, "valid", "invalid"),
     "profiles": (schemas.PROFILE, "valid", "invalid/schema"),
     "terminology": (schemas.TERMINOLOGY, "valid", "invalid/schema"),
     "conventions": (schemas.CONVENTION, "valid", "invalid"),
@@ -79,8 +80,8 @@ def test_families_schema_rejects_bad_prefix() -> None:
 
 
 def test_global_terminology_and_base_profile_are_valid() -> None:
-    terminology = read_yaml(PRODUCT / "terminology" / "global.yml")
-    profile = read_yaml(PRODUCT / "profiles" / "base-repo.yml")
+    terminology = read_yaml(PRODUCT / "definitions" / "terminology" / "global.yml")
+    profile = read_yaml(PRODUCT / "definitions" / "profiles" / "base-repo.yml")
     assert schemas.problems(PRODUCT, schemas.TERMINOLOGY, terminology, "global") == []
     assert schemas.problems(PRODUCT, schemas.PROFILE, profile, "base-repo") == []
 

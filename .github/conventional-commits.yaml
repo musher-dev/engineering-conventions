@@ -27,14 +27,14 @@ types:
 #   checks       engineering-conventions/checks/rego/** — the conftest checks
 #   ci           .github/workflows/**, .github/actions/**
 #   cli          engineering-conventions/src/**, the authoring CLI
-#   conventions  engineering-conventions/conventions/** — the requirements
+#   conventions  engineering-conventions/definitions/conventions/** — the requirements
 #   deps / deps-dev  Dependabot (it picks deps-dev for dev-dependencies)
 #   docs         docs/** other than decisions, READMEs
-#   profiles     engineering-conventions/profiles/**
+#   profiles     engineering-conventions/definitions/profiles/**
 #   release      release-please PRs
 #   repo         repo tooling: Taskfile, lefthook, .config/, .claude/, .devcontainer/
 #   schemas      engineering-conventions/checks/schemas/**
-#   terminology  engineering-conventions/terminology/**
+#   terminology  engineering-conventions/definitions/terminology/**
 #   vale         the MusherConventions style and its generation
 scopes:
   - adr

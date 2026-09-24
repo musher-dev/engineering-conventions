@@ -1,0 +1,9 @@
+schema_version: 1
+outputs:
+  - id: api-image
+    name: api-image
+    kind: image
+    source: api/
+    publish_workflow: publish-api.yml
+    location: ghcr.io/example/api
+    docs: api/README.md

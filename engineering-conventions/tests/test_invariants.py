@@ -92,7 +92,7 @@ def test_heading_title_may_be_formatted(content: Content) -> None:
 
 def _product_copy(product: Path, tmp_path: Path) -> Path:
     copy = tmp_path / "product"
-    for name in ("conventions", "profiles", "terminology", "checks", "tests/fixtures/repos"):
+    for name in ("definitions", "checks", "tests/fixtures/repos"):
         if (product / name).exists():
             shutil.copytree(product / name, copy / name)
     return copy

@@ -26,8 +26,8 @@ platform adopts at the handoff ([decision 0002](0002-authority-and-migration.md)
 
 **Name workflows after the responsibility they own, jobs after the result they produce, and actions after the
 capability they provide.** Keep triggers, tools and execution order out of names. The requirements are GHA-01 to
-GHA-38 in [EC-0002](../../engineering-conventions/conventions/github-actions/workflow-files.md) to
-[EC-0006](../../engineering-conventions/conventions/github-actions/units-and-renames.md).
+GHA-38 in [EC-0002](../../engineering-conventions/definitions/conventions/github-actions/workflow-files.md) to
+[EC-0006](../../engineering-conventions/definitions/conventions/github-actions/units-and-renames.md).
 
 **Closed token sets.**
 
@@ -112,7 +112,7 @@ alternative, splitting it into a `reusable-` workflow and a thin dispatch wrappe
 ### Negative
 
 - Every existing repository has renames to make, and renames of required checks need an administrator
-  ([EC-0006](../../engineering-conventions/conventions/github-actions/units-and-renames.md) orders them safely).
+  ([EC-0006](../../engineering-conventions/definitions/conventions/github-actions/units-and-renames.md) orders them safely).
 - The vocabulary adds `publish` to #2892's set; the platform adopts it at the handoff.
 
 ### Neutral
@@ -143,6 +143,6 @@ alternative, splitting it into a `reusable-` workflow and a thin dispatch wrappe
 ## References
 
 - [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
-- [GitHub Actions conventions](../../engineering-conventions/conventions/github-actions/README.md)
+- [GitHub Actions conventions](../../engineering-conventions/definitions/conventions/github-actions/README.md)
 - [Decision 0002: Authority and migration](0002-authority-and-migration.md)
 - [Decision 0007: Terminology model and committed generated artifacts](0007-terminology-and-generated-artifacts.md)

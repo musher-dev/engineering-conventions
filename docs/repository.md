@@ -1,7 +1,7 @@
 # How this repository is organized
 
-Where a file goes, and why. The reasoning behind the two levels is
-[decision 0008](decisions/0008-repository-layout.md); this page is the working reference.
+Where a file goes, and why. The reasoning behind the layout is
+[decision 0009](decisions/0009-definitions-and-checks.md); this page is the working reference.
 
 ## Two levels
 
@@ -19,13 +19,14 @@ engineering-conventions/               repository level: acts on the product
 ├── docs/                              contributor documentation and decisions
 ├── README.md  CONTRIBUTING.md  SECURITY.md  CHANGELOG.md  version.txt
 └── engineering-conventions/           product level: what a consumer pins
-    ├── bin/conventions                the launcher a consumer runs (mise puts it on PATH)
-    ├── conventions/                   EC-NNNN documents by topic, families.yml
-    ├── terminology/                   global.yml
-    ├── profiles/                      convention profiles
-    ├── checks/                        rego/, schemas/, data/ (generated), vale/ (generated)
-    ├── examples/                      a worked, conforming consumer
-    ├── src/  tests/                   the authoring CLI and its tests (not shipped)
+    ├── definitions/                   DEFINED: what is decided, the source of truth
+    │   ├── conventions/               EC-NNNN documents by topic, families.yml
+    │   ├── terminology/               global.yml
+    │   └── profiles/                  convention profiles
+    ├── checks/                        CHECKED: rego/, schemas/, data/ (generated), vale/ (generated)
+    ├── examples/                      SHOWN: a worked, conforming consumer
+    ├── bin/conventions                TOOLING: the launcher a consumer runs (mise puts bin/ on PATH)
+    ├── src/  tests/                   TOOLING: the authoring CLI and its tests (not shipped)
     └── pyproject.toml  uv.lock  .python-version
 ```
 
@@ -45,6 +46,18 @@ Ask in order and stop at the first "yes":
 When the answer is genuinely both, the file goes up a level and points down. Repository machinery may name product
 paths, but the product never references a path above `engineering-conventions/`, so a consumer can vendor the
 directory on its own.
+
+Within the product, one more question places a file:
+
+| Question | Home |
+| --- | --- |
+| Does it state what is decided: a requirement, a term, a profile? | `definitions/` |
+| Does it find violations of a definition: a Rego policy, a schema, generated check data? | `checks/` |
+| Does it show a conforming repository? | `examples/` |
+| Does it run the checks or build the generated files? | `bin/` (shipped) or `src/` (not shipped) |
+
+`bin/` and `src/` stay where their tools look for them: mise puts a released tool's `bin/` on PATH, and `src/` is the
+standard Python layout that uv and pytest expect beside `pyproject.toml`.
 
 ## Where configuration goes
 
@@ -88,9 +101,9 @@ run `task tools:install` and `task tools:doctor`.
 
 ## Generated files and the bundle
 
-Some product files are written by `task generate` from the conventions' frontmatter, `families.yml`, `profiles/` and
-`terminology/`. They are committed, so a consumer never needs the authoring CLI, and are never edited by hand:
-`task generate:check` fails when one is stale. [`.gitattributes`](../.gitattributes) lists them, marked
+Some product files are written by `task generate` from `definitions/`: the conventions' frontmatter, `families.yml`,
+the profiles and the terminology. They are committed, so a consumer never needs the authoring CLI, and are never
+edited by hand: `task generate:check` fails when one is stale. [`.gitattributes`](../.gitattributes) lists them, marked
 `linguist-generated`.
 
 A release is the product directory as a consumer runs it. `task bundle:build` writes it to `dist/`: the tarball

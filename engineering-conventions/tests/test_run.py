@@ -32,7 +32,7 @@ WARNING = Finding(
     path=".github/workflows/ci.yml",
     message='name "CI" should be "Validate": a name is its filename stem in Title Case.',
     severity="warning",
-    url=f"{BASE_URL}/main/engineering-conventions/conventions/github-actions/"
+    url=f"{BASE_URL}/main/engineering-conventions/definitions/conventions/github-actions/"
     "workflow-files.md#gha-07",
     convention="EC-0002",
 )
@@ -176,6 +176,7 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/actions/nested/deeper/action.yaml",
         ".github/rulesets/main-branch.json",
         ".repo/conventions.yaml",
+        ".repo/outputs.yaml",
         "mise.toml",
         ".devcontainer/mise.toml",
         "nested/mise.toml",
@@ -192,6 +193,7 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/workflows/release.yaml",
         ".github/workflows/validate.yml",
         ".repo/conventions.yaml",
+        ".repo/outputs.yaml",
         "mise.toml",
     ]
 

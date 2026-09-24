@@ -1,0 +1,11 @@
+schema_version: 1
+outputs:
+  - id: api-contract
+    kind: contract
+    description: The public HTTP API.
+    format: openapi
+    definition: api/openapi.yaml
+    source: api/
+    publish_workflow: publish-api.yml
+    location: https://github.com/example/repo/releases
+    docs: api/README.md#the-contract

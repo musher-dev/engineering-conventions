@@ -30,7 +30,7 @@ test_result_object_shape if {
 		with data.conventions.runtime.now as td.now
 	url := concat("", [
 		"https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/",
-		"conventions/github-actions/workflow-files.md#gha-07",
+		"definitions/conventions/github-actions/workflow-files.md#gha-07",
 	])
 	message := `name "CI" should be "Validate": a workflow's name is its filename stem in Title Case`
 	some result in warnings

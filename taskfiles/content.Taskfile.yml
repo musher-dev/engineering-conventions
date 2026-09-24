@@ -9,7 +9,9 @@ set: [errexit, nounset, pipefail]
 vars:
   SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
   VALE_CONFIG: .config/markdown/vale.ini
-  PROSE_PATHS: README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs engineering-conventions/conventions
+  PROSE_PATHS: >-
+    README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs
+    engineering-conventions/definitions/conventions
   WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
 
 tasks:
@@ -26,25 +28,31 @@ tasks:
       - task: schemas:validate:files
         vars:
           SCHEMA: terminology
-          PATHSPEC: "'engineering-conventions/terminology/**/*.yml'"
+          PATHSPEC: "'engineering-conventions/definitions/terminology/**/*.yml'"
       - task: schemas:validate:files
         vars:
           SCHEMA: profile
-          PATHSPEC: "'engineering-conventions/profiles/*.yml'"
+          PATHSPEC: "'engineering-conventions/definitions/profiles/*.yml'"
       - task: schemas:validate:files
         vars:
           SCHEMA: families
-          PATHSPEC: "'engineering-conventions/conventions/families.yml'"
+          PATHSPEC: "'engineering-conventions/definitions/conventions/families.yml'"
       - task: schemas:validate:files
         vars:
           SCHEMA: conventions-declaration
           PATHSPEC: "'.repo/conventions.yaml' 'engineering-conventions/examples/**/.repo/conventions.yaml'"
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: outputs
+          PATHSPEC: "'.repo/outputs.yaml' 'engineering-conventions/examples/**/.repo/outputs.yaml'"
       # Topic READMEs and the generated index carry no frontmatter.
       - task: schemas:validate:files
         vars:
           YQ_FLAGS: --front-matter=extract
           SCHEMA: convention-frontmatter
-          PATHSPEC: "'engineering-conventions/conventions/*/*.md' ':!:engineering-conventions/conventions/*/README.md'"
+          PATHSPEC: >-
+            'engineering-conventions/definitions/conventions/*/*.md'
+            ':!:engineering-conventions/definitions/conventions/*/README.md'
       - task: schemas:validate:files
         vars:
           YQ_FLAGS: --front-matter=extract
@@ -120,7 +128,7 @@ tasks:
       - '{{.LIST_FILES}} {{.PATHSPEC}} | xargs -0 -r check-jsonschema --builtin-schema {{.SCHEMA}}'
 
   generate:
-    desc: Regenerate index.json, the MusherConventions Vale style and conventions/README.md.
+    desc: Regenerate index.json, the MusherConventions Vale style and definitions/conventions/README.md.
     cmds:
       - '{{.UV_RUN}} conventions generate'
 
@@ -139,6 +147,6 @@ tasks:
         alerts="$(vale --config {{.VALE_CONFIG}} --output=line {{.PROSE_PATHS}})"
         if [[ -n "${alerts}" ]]; then
           printf '%s\n' "${alerts}"
-          echo "prose:lint: fix the alerts above; the terms come from engineering-conventions/terminology/" >&2
+          echo "prose:lint: fix the alerts above; the terms come from definitions/terminology/" >&2
           exit 1
         fi

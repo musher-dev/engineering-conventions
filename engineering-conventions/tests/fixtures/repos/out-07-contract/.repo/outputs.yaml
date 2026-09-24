@@ -1,0 +1,8 @@
+schema_version: 1
+outputs:
+  - id: api-image
+    kind: contract
+    source: api/
+    publish_workflow: publish.yml
+    location: ghcr.io/example/api
+    docs: api/README.md#run-the-image

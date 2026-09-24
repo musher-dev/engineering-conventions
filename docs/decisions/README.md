@@ -5,8 +5,8 @@ consumed, and why the vocabulary is what it is. Each record follows [MADR](https
 frontmatter validated by [`decision.schema.json`](decision.schema.json).
 
 These records govern this repository. The conventions it publishes are in
-[`engineering-conventions/conventions/`](../../engineering-conventions/conventions/); decisions about how the company
-operates are in `musher-dev/company`.
+[`engineering-conventions/definitions/conventions/`](../../engineering-conventions/definitions/conventions/);
+decisions about how the company operates are in `musher-dev/company`.
 
 | ID | Decision | Status |
 | --- | --- | --- |
@@ -18,7 +18,9 @@ operates are in `musher-dev/company`.
 | [0005](0005-status-severity-and-versioning.md) | Requirements start as warnings, and a release's version says what it can break | accepted |
 | [0006](0006-github-actions-naming-vocabulary.md) | GitHub Actions units are named for responsibility, result and capability | accepted |
 | [0007](0007-terminology-and-generated-artifacts.md) | Terminology is structured data, and generated artifacts are committed | accepted |
-| [0008](0008-repository-layout.md) | The product lives in a nested directory, and that directory is the bundle | accepted |
+| [0008](0008-repository-layout.md) | The product lives in a nested directory, and that directory is the bundle | superseded by 0009 |
+| [0009](0009-definitions-and-checks.md) | The product separates what is defined from what checks it | accepted |
+| [0010](0010-outputs-declaration.md) | A repository declares the outputs it publishes in .repo/outputs.yaml | accepted |
 
 ## Writing a decision
 

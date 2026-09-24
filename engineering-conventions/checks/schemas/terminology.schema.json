@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Terminology",
-  "description": "The terminology file, terminology/global.yml. Terms define the words conventions use; aliases record the words to avoid and where; display forms say how a token is written in a Title-Cased name.",
+  "description": "The terminology file, definitions/terminology/global.yml. Terms define the words conventions use; aliases record the words to avoid and where; display forms say how a token is written in a Title-Cased name.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "description", "terms"],
@@ -54,7 +54,7 @@
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "token": {
-          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability or gha.action.",
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action or outputs.kind.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*$"
         },
@@ -112,7 +112,7 @@
         "required": ["tags"],
         "properties": {
           "tags": {
-            "contains": { "enum": ["gha.responsibility", "gha.capability", "gha.action"] }
+            "contains": { "enum": ["gha.responsibility", "gha.capability", "gha.action", "outputs.kind"] }
           }
         }
       },

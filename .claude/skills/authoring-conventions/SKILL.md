@@ -3,10 +3,10 @@ name: authoring-conventions
 description: >-
   Add, change or retire a convention, requirement or term in this repository, with its ID, frontmatter,
   `### <ID>` section, Rego check, fixture repositories, regenerated artifacts and the right Conventional Commit type.
-  Use when writing or editing anything under engineering-conventions/conventions/, terminology/, profiles/ or
-  checks/rego/. Triggered by: new requirement, add requirement, GHA-, ADOPT-, EC-, convention, requirement ID,
-  retire requirement, tombstone, waiver, terminology, display form, banned alias, profile, fixture, expected.json,
-  task generate, change class, feat!.
+  Use when writing or editing anything under engineering-conventions/definitions/ (conventions/, terminology/,
+  profiles/) or checks/rego/. Triggered by: new requirement, add requirement, GHA-, ADOPT-, OUT-, EC-, convention,
+  requirement ID, retire requirement, tombstone, waiver, terminology, display form, banned alias, profile, fixture,
+  expected.json, outputs declaration, task generate, change class, feat!.
 ---
 
 # Authoring conventions

@@ -94,6 +94,6 @@ to the tag.
 
 ## References
 
-- `engineering-conventions/conventions/families.yml`
+- `engineering-conventions/definitions/conventions/families.yml`
 - [Decision 0003: Public visibility and consumption](0003-public-visibility-and-consumption.md)
 - [Decision 0005: Status, severity and versioning](0005-status-severity-and-versioning.md)

@@ -15,6 +15,14 @@
         {
           "type": "generic",
           "path": "engineering-conventions/examples/consumer/mise.toml"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        },
+        {
+          "type": "generic",
+          "path": "docs/consuming.md"
         }
       ]
     }

@@ -6,11 +6,16 @@ one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@latest -- conventions check
+mise exec github:musher-dev/engineering-conventions@0.3.0 -- conventions check  # x-release-please-version
 ```
 
-mise downloads the newest release, verifies it and runs it against the repository you are in. Nothing is written to
-the repository. The run reports ADOPT-09, because nothing pins a release yet.
+mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
+repository. The run reports ADOPT-09, because nothing pins a release yet.
+
+Name a version rather than `@latest`. mise hides a release younger than its `minimum_release_age` setting, so for a
+while after each release `@latest` resolves to an older one, and 0.1.0, the oldest, predates the `conventions`
+launcher: mise then fails with `"conventions" couldn't exec process: Permission denied`. To see every release, run
+`MISE_MINIMUM_RELEASE_AGE=0 mise ls-remote github:musher-dev/engineering-conventions`.
 
 ## Adopt it
 
@@ -18,7 +23,7 @@ Pin the release in `mise.toml` (or `.devcontainer/mise.toml`):
 
 ```toml
 [tools]
-"github:musher-dev/engineering-conventions" = "0.2.0"
+"github:musher-dev/engineering-conventions" = "0.3.0"  # x-release-please-version
 ```
 
 Then run it:

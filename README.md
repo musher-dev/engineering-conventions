@@ -139,7 +139,7 @@ Pin a release in `mise.toml` and run one command, the same locally and in CI:
 
 ```toml
 [tools]
-"github:musher-dev/engineering-conventions" = "0.2.0"
+"github:musher-dev/engineering-conventions" = "0.3.0"  # x-release-please-version
 ```
 
 ```sh
@@ -147,8 +147,13 @@ conventions check
 ```
 
 mise verifies the release's checksum and build provenance, and Renovate raises the pin. To try it without changing
-anything: `mise exec github:musher-dev/engineering-conventions@latest -- conventions check`. The details, and the path
-without mise, are in [Consuming the conventions](docs/consuming.md).
+anything:
+
+```sh
+mise exec github:musher-dev/engineering-conventions@0.3.0 -- conventions check  # x-release-please-version
+```
+
+The details, and the path without mise, are in [Consuming the conventions](docs/consuming.md).
 
 ## Documentation
 

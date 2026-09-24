@@ -7,7 +7,7 @@ import pytest
 
 from conventions_tools import run
 from conventions_tools.cli import main
-from conventions_tools.loading import as_list, as_map, read_json, yaml_problem
+from conventions_tools.loading import as_map, read_json, yaml_problem
 from conventions_tools.paths import HOME_ENV
 from conventions_tools.run import Finding, RunnerError
 
@@ -176,11 +176,15 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/actions/nested/deeper/action.yaml",
         ".github/rulesets/main-branch.json",
         ".repo/conventions.yaml",
+        "mise.toml",
+        ".devcontainer/mise.toml",
+        "nested/mise.toml",
         "README.md",
     ):
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).write_text("{}\n")
     assert run.input_files(tmp_path) == [
+        ".devcontainer/mise.toml",
         ".github/actions/nested/deeper/action.yaml",
         ".github/actions/setup-tools/action.yml",
         ".github/rulesets/main-branch.json",
@@ -188,6 +192,7 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/workflows/release.yaml",
         ".github/workflows/validate.yml",
         ".repo/conventions.yaml",
+        "mise.toml",
     ]
 
 
@@ -245,88 +250,26 @@ def test_release_data_is_optional(stub: Path, home: Path, repo: Path) -> None:
     assert args.count("-d") == 2
 
 
-def test_invalid_declaration_is_one_adopt_02_line(stub: Path, home: Path, repo: Path) -> None:
-    _write_declaration(
-        repo,
-        "schema_version: 1\nconventions: {version: 0.1.0}\nprofile: base-repo\n"
-        "waivers:\n  - requirement: ADOPT-01\n    reason: short\n"
-        "    tracking: https://github.com/your-org/your-repo/issues/1\n    expires: 2026-10-01\n",
-    )
-    findings = run.check(home, repo, NOW).findings
-    assert [f.id for f in findings] == ["ADOPT-02"]
-    assert findings[0].message == (
-        "`waivers[0].reason`: 'short' is too short "
-        "(Why the deviation is needed, in at least 20 characters). "
-        "(1 more problem in the declaration)"
-    )
-    assert findings[0].severity == "warning"
-    assert findings[0].path == ".repo/conventions.yaml"
-    assert findings[0].url == (
-        f"{BASE_URL}/main/engineering-conventions/conventions/adoption/"
-        "conventions-declaration.md#adopt-02"
-    )
-    assert findings[0].convention == "EC-0001"
+def test_declaration_is_passed_to_conftest(stub: Path, home: Path, repo: Path) -> None:
+    # ADOPT-02 is decided in Rego like every other requirement.
+    _write_declaration(repo, "schema_version: 1\nprofile: no-such-profile\n")
+    assert run.check(home, repo, NOW).findings == []
     assert ".repo/conventions.yaml" in (stub / "args").read_text().splitlines()
 
 
-def test_unknown_profile_is_left_to_adopt_07(stub: Path, home: Path, repo: Path) -> None:
-    _write_declaration(
-        repo, "schema_version: 1\nconventions: {version: 0.1.0}\nprofile: no-such-profile\n"
-    )
-    assert run.check(home, repo, NOW).findings == []
-    assert stub.is_dir()
-
-
-def test_display_form_override_is_adopt_02(stub: Path, home: Path, repo: Path) -> None:
-    _write_declaration(
-        repo,
-        "schema_version: 1\nconventions: {version: 0.1.0}\nprofile: base-repo\n"
-        "vocabulary:\n  display_forms: {api: Api, grpc: gRPC, uv: uv}\n",
-    )
-    findings = run.check(home, repo, NOW).findings
-    assert [f.message for f in findings] == [
-        'declares display form "Api" for token "api", which the release defines as "API"; '
-        "a declaration may only add forms"
-    ]
-    assert stub.is_dir()
-
-
-def test_display_forms_in_list_form_are_read_too() -> None:
-    index: dict[str, object] = {"vocabulary": {"display_forms": {"api": "API"}}}
-    declaration = {
-        "vocabulary": {
-            "display_forms": [{"token": "api", "display": "Api"}, {"token": "x"}, "junk"]
-        }
-    }
-    assert run.display_form_overrides(index, declaration) == [
-        'declares display form "Api" for token "api", which the release defines as "API"; '
-        "a declaration may only add forms"
-    ]
-
-
-def test_summarise_counts_the_rest() -> None:
-    assert run.summarise(["a"]) == "a"
-    assert run.summarise(["a", "b", "c"]) == "a (2 more problems in the declaration)"
-
-
-def test_unparsable_declaration_is_not_passed_to_conftest(
-    stub: Path, home: Path, repo: Path
-) -> None:
+def test_unparsable_declaration_is_a_parse_error(stub: Path, home: Path, repo: Path) -> None:
     _write_declaration(repo, "profile: [unterminated\n")
-    findings = run.check(home, repo, NOW).findings
-    assert [f.id for f in findings] == ["ADOPT-02"]
-    assert findings[0].message.startswith("the declaration is not valid YAML")
+    report = run.check(home, repo, NOW)
+    assert [error.path for error in report.errors] == [".repo/conventions.yaml"]
     assert ".repo/conventions.yaml" not in (stub / "args").read_text().splitlines()
 
 
-def test_adopt_02_follows_the_profile(stub: Path, home: Path, repo: Path) -> None:
-    index_path = home / "checks" / "data" / "index.json"
-    index = as_map(read_json(index_path))
-    base = as_map(as_map(as_map(as_map(index["conventions"])["index"])["profiles"])["base-repo"])
-    base["requirements"] = [r for r in as_list(base["requirements"]) if r != "ADOPT-02"]
-    index_path.write_text(json.dumps(index))
-    _write_declaration(repo, "schema_version: 2\n")
-    assert run.check(home, repo, NOW).findings == []
+def test_unparsable_mise_config_is_a_parse_error(stub: Path, home: Path, repo: Path) -> None:
+    (repo / "mise.toml").write_text("[tools\n")
+    report = run.check(home, repo, NOW)
+    assert [(error.path, error.reason[:15]) for error in report.errors] == [
+        ("mise.toml", "not valid TOML:")
+    ]
     assert stub.is_dir()
 
 

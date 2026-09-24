@@ -25,7 +25,7 @@ The current conventions:
 
 | ID | Convention | Requirements |
 | --- | --- | --- |
-| EC-0001 | [Conventions declaration](engineering-conventions/conventions/adoption/conventions-declaration.md) | ADOPT-01 – ADOPT-08 |
+| EC-0001 | [Conventions declaration](engineering-conventions/conventions/adoption/conventions-declaration.md) | ADOPT-01 – ADOPT-09 |
 | EC-0002 | [Workflow files](engineering-conventions/conventions/github-actions/workflow-files.md) | GHA-01 – GHA-09 |
 | EC-0003 | [Jobs and steps](engineering-conventions/conventions/github-actions/jobs-and-steps.md) | GHA-10 – GHA-19 |
 | EC-0004 | [Composite actions](engineering-conventions/conventions/github-actions/composite-actions.md) | GHA-20 – GHA-23, GHA-38 |
@@ -45,8 +45,20 @@ The current conventions:
 
 ## Using the conventions in another repository
 
-Add `.repo/conventions.yaml`, download and verify a release bundle, and run `conftest` against it. No Python is
-needed. The steps are in [Consuming the conventions](docs/consuming.md).
+Pin a release in `mise.toml` and run one command, the same locally and in CI:
+
+```toml
+[tools]
+"github:musher-dev/engineering-conventions" = "0.2.0"
+```
+
+```sh
+conventions check
+```
+
+mise verifies the release's checksum and build provenance, and Renovate raises the pin. To try it without changing
+anything: `mise exec github:musher-dev/engineering-conventions@latest -- conventions check`. The details, and the path
+without mise, are in [Consuming the conventions](docs/consuming.md).
 
 ## Working on this repository
 

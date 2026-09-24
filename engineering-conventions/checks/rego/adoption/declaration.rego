@@ -1,9 +1,9 @@
 # METADATA
 # title: Conventions declaration
 # description: >-
-#   A repository declares its conventions in .repo/conventions.yaml, and every
-#   waiver there is known, time-boxed, in force and still needed. ADOPT-02
-#   (schema validity) is checked by the runner, not here.
+#   A repository pins the release it is checked against (ADOPT-09), and its
+#   optional .repo/conventions.yaml is valid (ADOPT-02) with every waiver
+#   known, time-boxed, in force and still needed.
 # scope: package
 # custom:
 #   convention: EC-0001
@@ -15,15 +15,24 @@ import data.conventions.lib.names
 import data.conventions.lib.profile
 import data.conventions.lib.waivers
 
-# ADOPT-01
-findings contains lib.finding("ADOPT-01", files.declaration_path, message) if {
-	not files.declared
+# ADOPT-02. One finding per declaration: the first problem, and how many more.
+findings contains lib.finding("ADOPT-02", files.declaration_path, message) if {
+	count(problems) > 0
+	first := problems[0]
+	rest := count(problems) - 1
+	message := summary(first, rest)
+}
+
+# ADOPT-09. The pin is a mise tool entry or, for a repository without mise,
+# the declared version; "latest" pins nothing.
+findings contains lib.finding("ADOPT-09", "mise.toml", message) if {
+	not pinned
 	message := sprintf(
 		concat(" ", [
-			"the repository has no %s; add one naming the release it pins and its profile, e.g.",
-			"schema_version: 1, conventions: {version: \"<release>\"}, profile: base-repo, waivers: []",
+			"nothing pins the conventions release this repository is checked against; add",
+			"%q = \"<release>\" under [tools] in mise.toml, or conventions.version to %s",
 		]),
-		[files.declaration_path],
+		[files.conventions_tool, files.declaration_path],
 	)
 }
 
@@ -76,8 +85,7 @@ findings contains lib.finding("ADOPT-05", files.declaration_path, message) if {
 }
 
 # ADOPT-06. Expired and unknown waivers are already reported above, and a
-# waiver of an ADOPT requirement is a schema error the runner reports as
-# ADOPT-02.
+# waiver of an ADOPT requirement is a schema error, reported as ADOPT-02.
 findings contains lib.finding("ADOPT-06", files.declaration_path, message) if {
 	some index, waiver in waivers.declared
 	known(waiver.requirement)
@@ -164,3 +172,85 @@ covers_a_finding(waiver) if {
 stale_reason(waiver) := "names a requirement that cannot be waived" if not waivers.waivable(waiver.requirement)
 
 stale_reason(waiver) := "matches no finding, so it suppresses nothing" if waivers.waivable(waiver.requirement)
+
+# Helpers for ADOPT-02 and ADOPT-09.
+summary(first, 0) := first
+
+summary(first, rest) := sprintf("%s (%d more problem%s in the declaration)", [first, rest, plural(rest)]) if rest > 0
+
+plural(1) := ""
+
+plural(n) := "s" if n != 1
+
+problems := array.concat(schema_problems, override_problems)
+
+# A waiver of an ADOPT requirement fails the schema's `not` clause, whose
+# generic wording says nothing useful; it gets its own message instead.
+schema_problems := [problem |
+	some contents in files.declaration_documents
+	[_, errors] := json.match_schema(contents, data.conventions.index.declaration_schema)
+	some error in sort_errors(errors)
+	problem := schema_message(error, contents)
+]
+
+sort_errors(errors) := [error |
+	some key in sort({sprintf("%s\u0000%s", [e.field, e.desc]) | some e in errors})
+	some error in errors
+	sprintf("%s\u0000%s", [error.field, error.desc]) == key
+]
+
+schema_message(error, contents) := sprintf(
+	"`%s` names %s; ADOPT requirements cannot be waived.",
+	[error.field, name],
+) if {
+	regex.match(`^waivers\.[0-9]+\.requirement$`, error.field)
+	name := object.get(contents, field_path(error.field), "")
+	startswith(name, "ADOPT-")
+}
+
+else := sprintf("the declaration: %s.", [trim_suffix(error.desc, ".")]) if error.field == "(Root)"
+
+else := sprintf("`%s`: %s.", [error.field, trim_suffix(error.desc, ".")])
+
+# The release's display forms win over a declaration's, so a declared form
+# that contradicts one is a mistake to report, not a silent no-op.
+override_problems := [sprintf(
+	"declares display form %q for token %q, which the release defines as %q; a declaration may only add forms",
+	[form, token, shipped],
+) |
+	some token, form in declared_display_forms
+	shipped := data.conventions.index.vocabulary.display_forms[token]
+	form != shipped
+]
+
+default declared_display_forms := {}
+
+declared_display_forms := forms if {
+	forms := files.declaration.vocabulary.display_forms
+	is_object(forms)
+}
+
+pinned if {
+	some version in files.mise_pins
+	pinned_version(version)
+}
+
+pinned if is_string(files.declaration.conventions.version)
+
+pinned_version(version) if {
+	is_string(version)
+	version != "latest"
+}
+
+# A table entry: `"github:…" = { version = "0.2.0" }`.
+pinned_version(version) if {
+	is_string(version.version)
+	version.version != "latest"
+}
+
+# gojsonschema names a field as dotted segments, array indices included.
+field_path(field) := [segment(part) | some part in split(field, ".")]
+
+segment(part) := to_number(part) if regex.match(`^[0-9]+$`, part)
+
+else := part

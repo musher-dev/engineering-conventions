@@ -2,9 +2,9 @@
 id: EC-0001
 title: Conventions declaration
 summary: >-
-  Every consuming repository declares, in .repo/conventions.yaml, which
-  release it pins, which convention profile applies, and every time-boxed
-  waiver it holds.
+  Every consuming repository pins the release it is checked against, and
+  declares in an optional .repo/conventions.yaml any convention profile other
+  than the default and every time-boxed waiver it holds.
 status: active
 topic: adoption
 applies_to:
@@ -18,9 +18,10 @@ migration: authoritative
 requirements:
   - id: ADOPT-01
     title: A repository declares its conventions in .repo/conventions.yaml
-    status: proposed
+    status: retired
     severity: warning
     since: 0.1.0
+    replaced_by: [ADOPT-09]
     validation:
       engine: conftest
       package: conventions.checks.adoption.declaration
@@ -30,8 +31,8 @@ requirements:
     severity: warning
     since: 0.1.0
     validation:
-      engine: jsonschema
-      schema: checks/schemas/conventions-declaration.schema.json
+      engine: conftest
+      package: conventions.checks.adoption.declaration
   - id: ADOPT-03
     title: An expired waiver no longer suppresses its finding
     status: proposed
@@ -80,14 +81,23 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.adoption.declaration
+  - id: ADOPT-09
+    title: A repository pins the conventions release it is checked against
+    status: proposed
+    severity: warning
+    since: 0.2.0
+    validation:
+      engine: conftest
+      package: conventions.checks.adoption.declaration
 ---
 
 # Conventions declaration
 
-A repository that adopts these conventions says so in one file, `.repo/conventions.yaml`: which release it is checked
-against, which convention profile applies to it, any repository-specific vocabulary, and every waiver it holds. The
-declaration makes a repository's position explicit and reviewable. A deviation is a dated, tracked line in a file,
-not a silent gap in a check.
+A repository that adopts these conventions pins the release it is checked against, usually as one line in
+`mise.toml` (ADOPT-09). Anything else it needs to say goes in an optional `.repo/conventions.yaml`: a convention
+profile other than `base-repo`, repository-specific vocabulary, and every waiver it holds. The declaration makes a
+repository's position explicit and reviewable. A deviation is a dated, tracked line in a file, not a silent gap in a
+check.
 
 ## Scope
 
@@ -114,11 +124,12 @@ waived without making every waiver meaningless.
 # .repo/conventions.yaml
 schema_version: 1
 
+# Optional: the release this repository is checked against, without the leading v.
+# Leave it out when mise pins the release (github:musher-dev/engineering-conventions).
 conventions:
-  # The release this repository is checked against, without the leading v.
   version: "0.1.0"
 
-# The convention profile that applies. base-repo is the default for every repository.
+# Optional: the convention profile that applies. base-repo is the default.
 profile: base-repo
 
 # Optional: display forms for this repository's own filename tokens. They add to
@@ -143,8 +154,8 @@ waivers:
 | Field | Required | Meaning |
 | --- | --- | --- |
 | `schema_version` | yes | The file format version. Always `1`. |
-| `conventions.version` | yes | The release pinned, such as `0.1.0`. Upgrade by changing this value and the vendored bundle together; ADOPT-08 reports a mismatch. |
-| `profile` | yes | The convention profile that selects which requirements apply and at what severity. It must be one the pinned release defines (ADOPT-07). |
+| `conventions.version` | no | The release pinned, such as `0.1.0`, for a repository that does not pin it in mise. Upgrade by changing this value and the downloaded bundle together; ADOPT-08 reports a mismatch. |
+| `profile` | no | The convention profile that selects which requirements apply and at what severity; `base-repo` when absent. It must be one the pinned release defines (ADOPT-07). |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
 | `waivers` | no | A list of waivers, described below. |
 
@@ -175,9 +186,9 @@ requirement's severity from `warning` to `error`. A profile can never lower a se
 
 | Situation | Profile used |
 | --- | --- |
-| The declaration exists and names a profile the release defines | That profile |
+| The declaration names a profile the release defines | That profile |
 | The declaration names a profile the release does not define | `base-repo`, plus an ADOPT-07 finding |
-| No declaration | `base-repo`, plus an ADOPT-01 finding |
+| No declaration, or no `profile` in it | `base-repo` |
 
 An unknown profile falls back to `base-repo` rather than to nothing, so a typo in `profile` never switches every
 check off.
@@ -192,24 +203,10 @@ them can fail its build.
 
 **A repository declares its conventions in `.repo/conventions.yaml`.**
 
-Without a declaration, nobody can tell which release a repository was meant to meet, and every waiver it needs has
-nowhere to live. The check still runs against a repository without one, using the `base-repo` profile, so the first
-run shows what adoption involves. The finding is reported on `.repo/conventions.yaml`, the path to create.
+Retired in 0.2.0 and replaced by [ADOPT-09](#adopt-09). The declaration became optional when the release pin moved
+to `mise.toml`, so a repository without one is no longer a finding; what adoption needs is a pin, not a file.
 
-**Correct:**
-
-```text
-.repo/conventions.yaml    # present, naming a version and a profile
-```
-
-**Incorrect:**
-
-```text
-.repo/                    # no conventions.yaml
-conventions.yaml          # at the repository root, where the check does not look
-```
-
-Checked by: conftest · Severity: warning · Since: 0.1.0
+Checked by: nothing (retired) · Severity: warning · Since: 0.1.0
 
 ### ADOPT-02
 
@@ -217,9 +214,10 @@ Checked by: conftest · Severity: warning · Since: 0.1.0
 
 The declaration is read by a policy engine, so a typo in a key is not an error the engine would notice by itself: an
 unknown key is ignored, and a misspelled `waivers` waives nothing. Validating the file against
-`conventions-declaration.schema.json` turns those mistakes into findings. The schema rejects unknown keys, a `reason`
-under 20 characters, a `tracking` value that is not an `https` URL, a malformed date, and any waiver of an `ADOPT`
-requirement.
+`conventions-declaration.schema.json`, which the release carries in its index, turns those mistakes into findings.
+The schema rejects unknown keys, a `reason` under 20 characters, a `tracking` value that is not an `https` URL, a
+malformed date, and any waiver of an `ADOPT` requirement. A display form that redefines one the release ships is
+reported here too.
 
 **Correct:**
 
@@ -241,7 +239,7 @@ waiver:                  # unknown key; should be waivers
   - requirement: ADOPT-01
 ```
 
-Checked by: JSON Schema · Severity: warning · Since: 0.1.0
+Checked by: conftest · Severity: warning · Since: 0.1.0
 
 ### ADOPT-03
 
@@ -401,6 +399,34 @@ conventions:
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
+
+### ADOPT-09
+
+**A repository pins the conventions release it is checked against.**
+
+A repository that runs whatever release is newest is checked against rules nobody reviewed, and an upgrade happens
+to it rather than through a pull request. A pin makes the release a line in a diff that Renovate can raise and a
+reviewer can read. The usual pin is the tool entry that installs the release through mise; for a repository that
+does not use mise, `conventions.version` in the declaration is the pin. The check reads `mise.toml`, `.mise.toml`,
+`.config/mise.toml`, `.config/mise/config.toml`, `mise/config.toml` and `.devcontainer/mise.toml`. The finding is
+reported on `mise.toml`, the file to add the pin to.
+
+**Correct:**
+
+```toml
+# mise.toml
+[tools]
+"github:musher-dev/engineering-conventions" = "0.2.0"
+```
+
+**Incorrect:**
+
+```sh
+# no pin: each run checks against whichever release is newest
+mise exec github:musher-dev/engineering-conventions@latest -- conventions check
+```
+
+Checked by: conftest · Severity: warning · Since: 0.2.0
 
 ## References
 

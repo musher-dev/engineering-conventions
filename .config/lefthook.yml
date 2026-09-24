@@ -73,7 +73,9 @@ pre-commit:
         .config/spelling/typos.toml. Run 'task lint:spelling'.
 
     - name: shell
-      glob: "**/*.sh"
+      glob:
+        - "**/*.sh"
+        - "engineering-conventions/bin/*"
       run: shellcheck -x -P SCRIPTDIR {staged_files}
       fail_text: "ShellCheck failed. Run 'task lint:shell'."
 

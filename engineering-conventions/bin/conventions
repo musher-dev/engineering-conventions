@@ -1,0 +1,175 @@
+#!/bin/sh
+# conventions: check a repository against this release of
+# musher-dev/engineering-conventions.
+#
+# Shipped in the release bundle, so installing a release with mise puts it on
+# PATH:
+#
+#   mise.toml   [tools] "github:musher-dev/engineering-conventions" = "0.2.0"
+#   then        conventions check
+#
+# It needs only POSIX sh and git. conftest and Vale come through `mise exec`
+# at the versions below, which move with this release, so the bundle pin is
+# the only pin. Without mise it uses conftest and vale from PATH.
+#
+# Usage:
+#   conventions check [--fail-on error|warning] [--output FORMAT] [-C DIR]
+#   conventions prose [-C DIR] [PATH...]
+#   conventions version
+set -eu
+
+# Lockstep with .devcontainer/mise.toml (.claude/rules/toolchain-pins.md).
+CONFTEST_VERSION=0.70.1
+VALE_VERSION=3.22.0
+
+bundle=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+
+die() {
+  printf 'conventions: %s\n' "$*" >&2
+  exit 2
+}
+
+usage() {
+  sed -n 's/^#   conventions/conventions/p' "$0" >&2
+  exit 2
+}
+
+# tool NAME BACKEND VERSION ARGS...: run NAME at VERSION through mise, or the
+# NAME on PATH when mise is absent or CONVENTIONS_NO_MISE is set.
+tool() {
+  name=$1 backend=$2 version=$3
+  shift 3
+  if [ -z "${CONVENTIONS_NO_MISE:-}" ] && command -v mise > /dev/null 2>&1; then
+    mise exec "${backend}@${version}" -- "${name}" "$@"
+  elif command -v "${name}" > /dev/null 2>&1; then
+    "${name}" "$@"
+  else
+    die "${name} is not installed: install mise (https://mise.jdx.dev), or put ${name} ${version} on PATH"
+  fi
+}
+
+# The repository to check: the -C directory exactly, or else the work tree
+# the current directory is in, so the command works from any subdirectory.
+find_root() {
+  if [ -n "${given}" ]; then
+    root=$(pwd)
+  else
+    root=$(git rev-parse --show-toplevel 2> /dev/null || pwd)
+  fi
+}
+
+# The repository's files: tracked and untracked-but-not-ignored when it is a
+# git work tree, every file otherwise. One path per line, sorted.
+list_files() {
+  if [ "$(git -C "${root}" rev-parse --show-toplevel 2> /dev/null || true)" = "${root}" ]; then
+    git -C "${root}" -c core.quotePath=false ls-files --cached --others --exclude-standard
+  else
+    (cd "${root}" && find . -type f ! -path './.git/*' | sed 's|^\./||')
+  fi | while IFS= read -r file; do
+    # The index still lists a file deleted from the work tree.
+    if [ -f "${root}/${file}" ]; then printf '%s\n' "${file}"; fi
+  done | LC_ALL=C sort -u
+}
+
+# What conftest reads: workflows, actions, rulesets, the declaration and the
+# mise configuration ADOPT-09 looks for a pin in (lib/files.rego).
+INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
+INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
+INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
+INPUTS="${INPUTS}|"'^\.repo/conventions\.yaml$'
+INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
+INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'
+
+check() {
+  fail_on=error output=stdout given=''
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --fail-on) fail_on=${2:?--fail-on needs error or warning}; shift 2 ;;
+      --output | -o) output=${2:?--output needs a format}; shift 2 ;;
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  case ${fail_on} in
+    error) strict='' ;;
+    warning) strict=--fail-on-warn ;;
+    *) die "--fail-on must be error or warning, not ${fail_on}" ;;
+  esac
+
+  find_root
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+  files=$(list_files)
+
+  # The inventory lets the checks see files whose contents are not passed.
+  # git quotes a name holding a quote, backslash or control character, so
+  # escaping backslashes and quotes is all JSON needs.
+  {
+    printf '{"conventions_inventory": {"files": ['
+    printf '%s\n' "${files}" | sed '/^$/d; s/\\/\\\\/g; s/"/\\"/g; s/.*/"&"/' | paste -sd, -
+    printf ']}}\n'
+  } > "${scratch}/inventory.json"
+
+  set --
+  while IFS= read -r file; do
+    if [ -n "${file}" ]; then set -- "$@" "${file}"; fi
+  done << EOF
+$(printf '%s\n' "${files}" | grep -E "${INPUTS}" || true)
+EOF
+
+  set -- -d "${bundle}/checks/data/index.json" "$@"
+  if [ -f "${bundle}/checks/data/release.json" ]; then
+    set -- -d "${bundle}/checks/data/release.json" "$@"
+  fi
+  cd "${root}"
+  # shellcheck disable=SC2086 # strict is empty or one flag
+  tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" test --combine --no-color \
+    ${strict} -o "${output}" -p "${bundle}/checks/rego" "$@" "${scratch}/inventory.json"
+}
+
+prose() {
+  given=''
+  if [ "${1:-}" = -C ]; then
+    cd -- "${2:?-C needs a directory}"
+    given=1
+    shift 2
+  fi
+  find_root
+  cd "${root}"
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+  cat > "${scratch}/vale.ini" << EOF
+StylesPath = ${bundle}/checks/vale
+MinAlertLevel = suggestion
+
+[*.md]
+BasedOnStyles = MusherConventions
+EOF
+  if [ $# -eq 0 ]; then
+    while IFS= read -r file; do
+      if [ -n "${file}" ]; then set -- "$@" "${file}"; fi
+    done << EOF
+$(list_files | grep -E '\.md$' || true)
+EOF
+    [ $# -gt 0 ] || { echo "conventions: no Markdown files to check" >&2; return 0; }
+  fi
+  tool vale aqua:vale-cli/vale "${VALE_VERSION}" --config "${scratch}/vale.ini" "$@"
+}
+
+version() {
+  release="${bundle}/checks/data/release.json"
+  if [ -f "${release}" ]; then
+    sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "${release}"
+  else
+    echo "unreleased (a checkout of musher-dev/engineering-conventions)"
+  fi
+}
+
+command=${1:-}
+[ $# -gt 0 ] && shift
+case ${command} in
+  check) check "$@" ;;
+  prose) prose "$@" ;;
+  version | --version) version ;;
+  *) usage ;;
+esac

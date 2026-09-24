@@ -1,134 +1,103 @@
 # Consuming the conventions
 
-How to check a repository against a release of these conventions. A consumer needs `conftest`, optionally `vale` and a
-JSON Schema validator, and the release bundle. No Python is required.
+How to check a repository against a release of these conventions. The short version is one line in `mise.toml` and
+one command, the same locally and in CI.
 
-## 1. Declare the conventions
+## Try it without adopting anything
 
-Create `.repo/conventions.yaml` at the root of the repository:
+```sh
+mise exec github:musher-dev/engineering-conventions@latest -- conventions check
+```
+
+mise downloads the newest release, verifies it and runs it against the repository you are in. Nothing is written to
+the repository. The run reports ADOPT-09, because nothing pins a release yet.
+
+## Adopt it
+
+Pin the release in `mise.toml` (or `.devcontainer/mise.toml`):
+
+```toml
+[tools]
+"github:musher-dev/engineering-conventions" = "0.2.0"
+```
+
+Then run it:
+
+```sh
+mise install
+conventions check                      # report findings; fail only on errors
+conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
+conventions prose                      # lint Markdown with the MusherConventions Vale style
+```
+
+That is the whole adoption. What mise does with the line:
+
+- It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
+  proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in `mise.lock`.
+- It puts `conventions` on PATH. The command runs conftest (and Vale for `prose`) through `mise exec` at the versions
+  the release was tested with, so the release pin is the only pin to maintain.
+- Renovate's mise manager raises the version like any other tool.
+
+`conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. It needs only
+POSIX `sh` and `git`. `--output` takes any conftest format: `json`, or `github` for annotations in a workflow.
+
+A Taskfile needs no more than one task:
+
+```yaml
+tasks:
+  conventions:
+    desc: Check the repository against the pinned engineering conventions.
+    cmds: [conventions check --fail-on warning]
+```
+
+## In CI
+
+```yaml
+- uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+- name: Check the repository against its conventions
+  run: conventions check --fail-on warning
+```
+
+[`examples/consumer`](../engineering-conventions/examples/consumer/) is a complete, conforming repository: the
+`mise.toml`, a `Validate` workflow that runs the step above as its `Conventions` job, a pull-request-title workflow,
+and a ruleset that requires only the aggregate.
+
+## Declare only what differs
+
+A repository that uses the `base-repo` profile and holds no waivers needs no other file. Add `.repo/conventions.yaml`
+when it needs a different profile, its own display forms, or a waiver:
 
 ```yaml
 schema_version: 1
-conventions:
-  version: "0.1.0"
 profile: base-repo
 waivers: []
 ```
 
-`conventions.version` is the release the repository is checked against. `profile` selects which requirements apply;
-`base-repo` is the default for every repository. The full format, including repository-specific display forms and
-waivers, is [EC-0001](../engineering-conventions/conventions/adoption/conventions-declaration.md).
+The full format is [EC-0001](../engineering-conventions/conventions/adoption/conventions-declaration.md). ADOPT-02
+checks the file against its schema as part of `conventions check`; no separate validator is needed.
 
-A repository without a declaration is still checked, against `base-repo`, and gets an ADOPT-01 finding.
+## Without mise
 
-## 2. Download and verify the bundle
-
-Each release attaches a tarball, a Vale package, a manifest and `SHA256SUMS`. Download them for the pinned version,
-check the checksums, and verify that the assets were built by this repository's `Publish` workflow:
+Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:
 
 ```sh
-version=0.1.0
-mkdir -p .conventions && cd .conventions
-
-gh release download "v${version}" -R musher-dev/engineering-conventions
-sha256sum -c SHA256SUMS
-
-for asset in "engineering-conventions-${version}.tar.gz" MusherConventions.zip; do
-  gh attestation verify "$asset" -R musher-dev/engineering-conventions \
-    --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
-    --source-ref "refs/tags/v${version}"
-done
-
+version=0.2.0
+gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
+gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
+  --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
+  --source-ref "refs/tags/v${version}"
 tar -xzf "engineering-conventions-${version}.tar.gz"
+CONVENTIONS_NO_MISE=1 engineering-conventions/bin/conventions check
 ```
 
-`sha256sum -c` catches a corrupted or truncated download. `gh attestation verify` checks the signed provenance: that
-the file was built by this repository's `publish.yml` from the `v<version>` tag, not uploaded by hand or built from
-another ref. Pinning `--source-ref` also rejects an older release's `MusherConventions.zip`, whose name carries no
-version. Keep `.conventions/` out of
-version control (add it to `.gitignore`), or commit the extracted tree if the repository prefers vendored files.
+With no mise pin, the pin is `conventions.version` in the declaration; ADOPT-08 reports a declaration that names a
+different release from the one being run. The release also attaches the Vale style alone, as `MusherConventions.zip`,
+for a repository that runs Vale itself.
 
-The extracted tree is `.conventions/engineering-conventions/`, with `checks/rego/`, `checks/data/index.json`,
-`checks/data/release.json`, `checks/schemas/`, the conventions, and a worked example in `examples/consumer/`.
+## Delegated checks
 
-## 3. Run the structural checks
-
-The Rego checks read the workflow, action, ruleset and declaration files together, plus an inventory of every file in
-the repository (so they can see files that were not passed, such as a missing declaration). Run from the repository
-root:
-
-```sh
-bundle=.conventions/engineering-conventions
-
-git ls-files | jq -R . | jq -s '{conventions_inventory: {files: .}}' > "${RUNNER_TEMP:-/tmp}/inventory.json"
-
-shopt -s nullglob globstar
-files=(
-  .github/workflows/*.yml .github/workflows/*.yaml
-  .github/actions/**/action.yml .github/actions/**/action.yaml
-  .github/rulesets/*.json
-)
-[ -f .repo/conventions.yaml ] && files+=(.repo/conventions.yaml)
-
-conftest test --combine \
-  -p "${bundle}/checks/rego" \
-  -d "${bundle}/checks/data/index.json" \
-  -d "${bundle}/checks/data/release.json" \
-  "${files[@]}" "${RUNNER_TEMP:-/tmp}/inventory.json"
-```
-
-| Option | Why |
-| --- | --- |
-| `--combine` | Every file is evaluated in one query, so checks can relate files to each other (a ruleset to the jobs that emit its contexts) |
-| `-p checks/rego` | The checks and the router |
-| `-d checks/data/index.json` | Requirements, profiles and vocabulary, generated from the conventions |
-| `-d checks/data/release.json` | The release version, so diagnostic links point at the immutable tag, and ADOPT-08 can confirm it is the version the declaration pins |
-
-Findings at severity `error` are reported as failures and make `conftest` exit nonzero. Findings at `warning` are
-reported as warnings; add `--fail-on-warn` to fail on them too. In the 0.x series every requirement is a warning.
-
-The date used to decide whether a waiver has expired is the current time. To pin it (in a test, say), pass one more
-data file: `-d runtime.json` containing `{"conventions": {"runtime": {"now": "2026-09-23T00:00:00Z"}}}`.
-
-## 4. Validate the declaration
-
-ADOPT-02 is a JSON Schema check. Any draft-07 validator works:
-
-```sh
-check-jsonschema \
-  --schemafile .conventions/engineering-conventions/checks/schemas/conventions-declaration.schema.json \
-  .repo/conventions.yaml
-```
-
-## 5. Check prose with Vale (optional)
-
-The `MusherConventions` Vale style flags banned and discouraged terms in Markdown. Extract the verified package into
-the repository's Vale styles directory and enable it:
-
-```sh
-mkdir -p .vale/styles
-unzip -o .conventions/MusherConventions.zip -d .vale/styles
-```
-
-```ini
-# .vale.ini
-StylesPath = .vale/styles
-
-[*.md]
-BasedOnStyles = MusherConventions
-```
-
-```sh
-vale .
-```
-
-Vale can also download the package itself (`Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherConventions.zip`
-and `vale sync`), but that skips the checksum and attestation verification above.
-
-## 6. Delegated checks
-
-GHA-33 is delegated to actionlint and zizmor, which the bundle does not run. Run them in the repository's own
-validation:
+GHA-33 is delegated to actionlint and zizmor, which `conventions check` does not run. Pin them in `mise.toml` beside
+the conventions and run them in the repository's own validation:
 
 ```sh
 actionlint
@@ -154,15 +123,9 @@ warning [GHA-07] .github/workflows/ci.yml — name "CI" should be "Validate Code
 `conftest` prints the line after its own prefix (`WARN - Combined - main - ...`). With `--output json`, each result
 also carries `id`, `path`, `severity`, `url` and `convention` under `metadata`.
 
-**A file that does not parse.** A workflow, action or ruleset that is not valid YAML or JSON cannot be checked at all.
-The conventions runner reports it with the pseudo-ID `PARSE` and exits with status 2, whatever `--fail-on` says:
-
-```text
-error [PARSE] .github/workflows/validate.yml — <what the parser rejected, and where>
-```
-
-Fix the syntax and run again. Run with `conftest` directly, the same file makes `conftest` itself fail with a parse
-error.
+**A file that does not parse.** A workflow, action, ruleset, declaration or mise configuration that is not valid YAML,
+JSON or TOML cannot be checked at all: conftest stops with a parse error naming the file. Fix the syntax and run
+again.
 
 **Fix filenames before names.** A workflow's `name:` (GHA-07), the workflow prefix of a required-check job (GHA-12) and
 an action's `name:` (GHA-22) are derived from a filename or directory. While GHA-01, GHA-05, GHA-20 or GHA-21 asks for a
@@ -194,14 +157,7 @@ suppresses matching findings until the expiry date; after that, the findings ret
 A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
 are in [EC-0001](../engineering-conventions/conventions/adoption/conventions-declaration.md).
 
-## In CI
-
-[`examples/consumer`](../engineering-conventions/examples/consumer/) is a complete, conforming consumer: a declaration,
-a `Validate` workflow that runs the steps above as a `Conventions` job, a pull-request-title workflow, and a ruleset
-that requires only the aggregate and the single-job title workflow.
-
 ## Upgrading
 
-Change `conventions.version` in the declaration and the version you download, together, in one pull request; ADOPT-08
-reports a declaration that names a different version from the bundle being run. Read the release notes: what each
-kind of release can change is in [versioning](versioning.md).
+Change the version in `mise.toml`, or accept Renovate's pull request that does. Read the release notes first: what
+each kind of release can change is in [versioning](versioning.md).

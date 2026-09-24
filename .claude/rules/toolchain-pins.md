@@ -1,6 +1,7 @@
 ---
 paths:
   - ".devcontainer/mise.toml"
+  - "engineering-conventions/bin/conventions"
   - ".devcontainer/Dockerfile"
   - ".github/actions/setup-tools/**"
   - ".config/lefthook.yml"
@@ -25,6 +26,7 @@ pairs below, which mise cannot express.
 | `ARG MISE_VERSION` in `.devcontainer/Dockerfile` | `version:` of `jdx/mise-action` in `.github/actions/setup-tools/action.yml` | The container and CI must resolve pins with the same mise |
 | `aqua:open-policy-agent/opa` | The OPA version the pinned conftest embeds (`conftest --version`) | `opa test` locally and `conftest` for consumers must evaluate the same language |
 | `aqua:evilmartians/lefthook` | `min_version` in `.config/lefthook.yml` | The hook config uses what that version supports |
+| `aqua:open-policy-agent/conftest`, `aqua:vale-cli/vale` | `CONFTEST_VERSION`, `VALE_VERSION` in `engineering-conventions/bin/conventions` | Consumers run the checks with the versions this repository tested them with (`tests/test_launcher.py` fails otherwise) |
 
 - **MUST** run `task tools:install`, then `task tools:doctor`, after changing a
   pin.

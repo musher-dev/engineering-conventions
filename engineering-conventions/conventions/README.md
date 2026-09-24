@@ -21,14 +21,15 @@ ID is permanent: it is never renumbered or reused.
 
 | ID | Title | Convention | Status | Severity | Engine |
 | --- | --- | --- | --- | --- | --- |
-| [ADOPT-01](adoption/conventions-declaration.md#adopt-01) | A repository declares its conventions in .repo/conventions.yaml | EC-0001 | proposed | warning | conftest |
-| [ADOPT-02](adoption/conventions-declaration.md#adopt-02) | The conventions declaration is valid against its schema | EC-0001 | proposed | warning | jsonschema |
+| [ADOPT-01](adoption/conventions-declaration.md#adopt-01) | A repository declares its conventions in .repo/conventions.yaml | EC-0001 | retired | warning | conftest |
+| [ADOPT-02](adoption/conventions-declaration.md#adopt-02) | The conventions declaration is valid against its schema | EC-0001 | proposed | warning | conftest |
 | [ADOPT-03](adoption/conventions-declaration.md#adopt-03) | An expired waiver no longer suppresses its finding | EC-0001 | proposed | warning | conftest |
 | [ADOPT-04](adoption/conventions-declaration.md#adopt-04) | A waiver names a requirement that exists and is not retired | EC-0001 | proposed | warning | conftest |
 | [ADOPT-05](adoption/conventions-declaration.md#adopt-05) | A waiver expires within 180 days | EC-0001 | proposed | warning | conftest |
 | [ADOPT-06](adoption/conventions-declaration.md#adopt-06) | A waiver that suppresses nothing is removed | EC-0001 | proposed | warning | conftest |
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
+| [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |

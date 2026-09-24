@@ -12,7 +12,7 @@ declaration(extra) := td.declaration(object.union({"profile": "base-repo", "waiv
 waiver(requirement, expires) := {"requirement": requirement, "reason": "r", "tracking": "t", "expires": expires}
 
 test_warn_at_warning_severity if {
-	docs := [misnamed, declaration({})]
+	docs := [misnamed, td.pin, declaration({})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
@@ -24,7 +24,7 @@ test_warn_at_warning_severity if {
 }
 
 test_result_object_shape if {
-	docs := [misnamed, declaration({})]
+	docs := [misnamed, td.pin, declaration({})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
@@ -46,7 +46,7 @@ test_result_object_shape if {
 }
 
 test_deny_at_error_severity if {
-	docs := [misnamed, declaration({"profile": "strict"})]
+	docs := [misnamed, td.pin, declaration({"profile": "strict"})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
@@ -59,7 +59,7 @@ test_deny_at_error_severity if {
 
 test_profile_filters_requirements if {
 	extra := td.file(".github/workflows/validate-x.yml", object.union(td.validate, {"name": "CI"}))
-	docs := [misnamed, extra, declaration({"profile": "narrow"})]
+	docs := [misnamed, extra, td.pin, declaration({"profile": "narrow"})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
@@ -67,7 +67,7 @@ test_profile_filters_requirements if {
 }
 
 test_active_waiver_suppresses if {
-	docs := [misnamed, declaration({"waivers": [waiver("GHA-07", "2026-12-01")]})]
+	docs := [misnamed, td.pin, declaration({"waivers": [waiver("GHA-07", "2026-12-01")]})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
@@ -75,7 +75,7 @@ test_active_waiver_suppresses if {
 }
 
 test_expired_waiver_reports_finding_and_adopt_03 if {
-	docs := [misnamed, declaration({"waivers": [waiver("GHA-07", "2026-09-01")]})]
+	docs := [misnamed, td.pin, declaration({"waivers": [waiver("GHA-07", "2026-09-01")]})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
@@ -86,17 +86,12 @@ test_expired_waiver_reports_finding_and_adopt_03 if {
 }
 
 test_adopt_findings_are_never_waived if {
-	bare := [td.inventory([])]
-	warnings := main.warn with input as bare
-		with data.conventions.index as td.index
-		with data.conventions.runtime.now as td.now
-	pairs(warnings) == {["ADOPT-01", ".repo/conventions.yaml", "warning"]}
-}
-
-test_waiving_an_adopt_requirement_is_left_to_the_schema if {
-	docs := [td.inventory([]), td.declaration({"waivers": [waiver("ADOPT-01", "2026-12-01")]})]
+	docs := [td.inventory([]), td.declaration({"waivers": [waiver("ADOPT-09", "2026-12-01")]})]
 	warnings := main.warn with input as docs
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
-	pairs(warnings) == set()
+	pairs(warnings) == {
+		["ADOPT-09", "mise.toml", "warning"],
+		["ADOPT-02", ".repo/conventions.yaml", "warning"],
+	}
 }

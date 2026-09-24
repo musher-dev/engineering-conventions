@@ -8,7 +8,7 @@ package conventions.lib.testdata_test
 now := "2026-09-23T00:00:00Z"
 
 requirement_ids := [
-	"ADOPT-01", "ADOPT-02", "ADOPT-03", "ADOPT-04", "ADOPT-05", "ADOPT-06", "ADOPT-07", "ADOPT-08",
+	"ADOPT-02", "ADOPT-03", "ADOPT-04", "ADOPT-05", "ADOPT-06", "ADOPT-07", "ADOPT-08", "ADOPT-09",
 	"GHA-01", "GHA-02", "GHA-03", "GHA-04", "GHA-05", "GHA-06", "GHA-07", "GHA-08", "GHA-09",
 	"GHA-10", "GHA-11", "GHA-12", "GHA-13", "GHA-14", "GHA-15", "GHA-16", "GHA-17",
 	"GHA-20", "GHA-21", "GHA-22", "GHA-23",
@@ -65,6 +65,25 @@ index := {
 		"schedule_tokens": ["nightly", "scheduled"],
 		"display_forms": {"api": "API", "pr": "PR", "devcontainer": "Dev Container"},
 	},
+	"declaration_schema": declaration_schema,
+}
+
+# A cut-down declaration schema with the shapes ADOPT-02's messages depend on:
+# an unknown key, a wrong type, and a waiver of an ADOPT requirement.
+declaration_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["schema_version"],
+	"properties": {
+		"schema_version": {"const": 1},
+		"conventions": {"type": "object", "properties": {"version": {"type": "string"}}},
+		"profile": {"type": "string"},
+		"vocabulary": {"type": "object"},
+		"waivers": {"type": "array", "items": {
+			"type": "object",
+			"properties": {"requirement": {"type": "string", "not": {"pattern": "^ADOPT-"}}},
+		}},
+	},
 }
 
 default waivable(_) := true
@@ -83,7 +102,11 @@ file(path, contents) := {"path": path, "contents": contents}
 
 inventory(paths) := file("/tmp/inventory.json", {"conventions_inventory": {"files": paths}})
 
-declaration(contents) := file(".repo/conventions.yaml", contents)
+# schema_version is filled in so a test states only what it is about.
+declaration(contents) := file(".repo/conventions.yaml", object.union({"schema_version": 1}, contents))
+
+# The mise entry that pins the release (ADOPT-09).
+pin := file("mise.toml", {"tools": {"github:musher-dev/engineering-conventions": "0.2.0"}})
 
 pinned_checkout := {
 	"name": "Check out the repository",

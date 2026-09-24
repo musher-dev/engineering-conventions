@@ -71,13 +71,39 @@ workflow_files contains path if {
 declared if declaration_path in repository_files
 
 # An empty or non-mapping declaration reads as an empty one; ADOPT-02 (the
-# schema check the runner performs) is what reports its shape.
+# schema check) is what reports its shape.
 default declaration := {}
 
 declaration := doc.contents if {
 	some doc in documents
 	doc.path == declaration_path
 	is_object(doc.contents)
+}
+
+# The raw declaration, whatever its shape, for the schema check (ADOPT-02).
+declaration_documents := [doc.contents |
+	some doc in documents
+	doc.path == declaration_path
+]
+
+# Where mise reads project configuration (its config search), plus the dev
+# container's manifest, which Musher repositories point mise at.
+mise_config_paths := {
+	"mise.toml",
+	".mise.toml",
+	".config/mise.toml",
+	".config/mise/config.toml",
+	"mise/config.toml",
+	".devcontainer/mise.toml",
+}
+
+conventions_tool := "github:musher-dev/engineering-conventions"
+
+# The release a mise configuration pins, keyed by the file that pins it.
+mise_pins[doc.path] := version if {
+	some doc in documents
+	doc.path in mise_config_paths
+	version := doc.contents.tools[conventions_tool]
 }
 
 basename(path) := regex.replace(path, `^.*/`, "")

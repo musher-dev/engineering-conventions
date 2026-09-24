@@ -1,9 +1,9 @@
 """The runner: check a repository against the conventions with conftest.
 
-Rego decides every conftest-engine finding, including profile selection,
-severity and waivers (the `main` router). This module only gathers input,
-invokes conftest, validates the conventions declaration against its JSON
-Schema (ADOPT-02, which Rego cannot do portably), and renders findings.
+Rego decides every finding, including profile selection, severity and
+waivers (the `main` router). This module only gathers input, invokes conftest,
+reports files that cannot be parsed, and renders findings. `bin/conventions`
+is the consumer's equivalent, with no Python.
 """
 
 import json
@@ -11,35 +11,38 @@ import re
 import shutil
 import subprocess
 import tempfile
+import tomllib
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
-from conventions_tools import schemas
 from conventions_tools.content import SEVERITY_RANK
 from conventions_tools.loading import (
-    ContentError,
     as_list,
     as_map,
     get_str,
     json_problem,
-    parse_yaml,
-    read_json,
     yaml_problem,
 )
 from conventions_tools.paths import (
-    PRODUCT_DIR_NAME,
-    REPOSITORY_URL,
     index_file,
     rego_dir,
     release_file,
 )
 
 DECLARATION = ".repo/conventions.yaml"
-DEFAULT_PROFILE = "base-repo"
-SCHEMA_REQUIREMENT = "ADOPT-02"
+# Where ADOPT-09 looks for the mise entry that pins the release; the same
+# list as mise_config_paths in checks/rego/lib/files.rego.
+MISE_CONFIGS = (
+    "mise.toml",
+    ".mise.toml",
+    ".config/mise.toml",
+    ".config/mise/config.toml",
+    "mise/config.toml",
+    ".devcontainer/mise.toml",
+)
 PARSE_ID = "PARSE"
 WORKFLOW_DIR = ".github/workflows"
 # Matched case-insensitively, so a `.YML` workflow is checked (and GHA-01
@@ -122,8 +125,7 @@ def input_files(repo: Path) -> list[str]:
         for path in (repo / WORKFLOW_DIR).glob("*")
         if path.is_file() and path.suffix.lower() in WORKFLOW_SUFFIXES
     }
-    if (repo / DECLARATION).is_file():
-        found.add(DECLARATION)
+    found |= {name for name in (DECLARATION, *MISE_CONFIGS) if (repo / name).is_file()}
     return sorted(found)
 
 
@@ -184,7 +186,17 @@ def parse_problem(repo: Path, relative: str) -> str | None:
         text = (repo / relative).read_text(encoding="utf-8")
     except UnicodeDecodeError as error:
         return f"not UTF-8 text: {error.reason} at byte {error.start}"
+    if relative.endswith(".toml"):
+        return toml_problem(text)
     return json_problem(text) if relative.endswith(".json") else yaml_problem(text)
+
+
+def toml_problem(text: str) -> str | None:
+    try:
+        tomllib.loads(text)
+    except tomllib.TOMLDecodeError as error:
+        return f"not valid TOML: {' '.join(str(error).split())}"
+    return None
 
 
 def conftest_command(
@@ -281,121 +293,6 @@ def run_conftest(
     return parse_conftest_output(completed.stdout)
 
 
-def _index(product: Path) -> dict[str, object]:
-    return as_map(as_map(as_map(read_json(index_file(product))).get("conventions")).get("index"))
-
-
-def requirement_url(index: dict[str, object], requirement_id: str, release: Path | None) -> str:
-    requirement = as_map(as_map(index.get("requirements")).get(requirement_id))
-    ref = "main"
-    if release is not None:
-        data = as_map(as_map(read_json(release)).get("conventions"))
-        version = get_str(as_map(data.get("release")), "version")
-        if version:
-            ref = f"v{version}"
-    return (
-        f"{REPOSITORY_URL}/blob/{ref}/{PRODUCT_DIR_NAME}/"
-        f"{get_str(requirement, 'path')}#{get_str(requirement, 'anchor')}"
-    )
-
-
-def _one_line(text: str) -> str:
-    return " ".join(text.split())
-
-
-def _schema_message(error_location: str, message: str, description: str | None) -> str:
-    subject = "the declaration" if error_location == "(top level)" else f"`{error_location}`"
-    text = f"{subject}: {_one_line(message)}"
-    return f"{text} ({description.rstrip('.')})." if description else f"{text}."
-
-
-def declaration_problems(product: Path, declaration: object) -> list[str]:
-    """Human-readable reasons the declaration is invalid, in a stable order.
-
-    An unknown profile is not one of them: the schema cannot know the
-    release's profiles, and ADOPT-07 reports it.
-    """
-    found: list[str] = []
-    for error in schemas.iter_errors(product, schemas.DECLARATION, declaration):
-        place = schemas.location(error)
-        if error.validator == "not" and place.endswith(".requirement"):
-            found.append(f"`{place}` names {error.instance}; ADOPT requirements cannot be waived.")
-            continue
-        found.append(_schema_message(place, error.message, schemas.description_of(error)))
-    return found
-
-
-def _declared_display_forms(declaration: object) -> dict[str, str]:
-    forms = as_map(as_map(declaration).get("vocabulary")).get("display_forms")
-    listed = as_list(forms)
-    if listed:
-        entries = [as_map(entry) for entry in listed]
-        return {
-            get_str(entry, "token"): get_str(entry, "display")
-            for entry in entries
-            if get_str(entry, "token") and get_str(entry, "display")
-        }
-    return {token: form for token, form in as_map(forms).items() if isinstance(form, str)}
-
-
-def display_form_overrides(index: dict[str, object], declaration: object) -> list[str]:
-    """Declared display forms that contradict the release's; the release's wins."""
-    release_forms = as_map(as_map(index.get("vocabulary")).get("display_forms"))
-    return [
-        f'declares display form "{form}" for token "{token}", which the release defines as '
-        f'"{release_forms[token]}"; a declaration may only add forms'
-        for token, form in sorted(_declared_display_forms(declaration).items())
-        if token in release_forms and release_forms[token] != form
-    ]
-
-
-def summarise(problems: list[str]) -> str:
-    """One line: the first problem, and how many more there are."""
-    first = problems[0]
-    rest = len(problems) - 1
-    if rest == 0:
-        return first
-    return f"{first} ({rest} more problem{'s' if rest > 1 else ''} in the declaration)"
-
-
-def _effective_profile(index: dict[str, object], declaration: object) -> dict[str, object]:
-    profiles = as_map(index.get("profiles"))
-    requested = as_map(declaration).get("profile")
-    name = requested if isinstance(requested, str) and requested in profiles else DEFAULT_PROFILE
-    return as_map(profiles.get(name))
-
-
-def check_declaration(
-    product: Path, repo: Path, release: Path | None = None
-) -> tuple[list[Finding], bool]:
-    """The ADOPT-02 finding, and whether conftest can read the declaration at all."""
-    path = repo / DECLARATION
-    if not path.is_file():
-        return [], True
-    index = _index(product)
-    try:
-        declaration = parse_yaml(path.read_text(encoding="utf-8"), DECLARATION)
-        problems = declaration_problems(product, declaration)
-        problems += display_form_overrides(index, declaration)
-        parseable = True
-    except ContentError as error:
-        declaration = None
-        problems = [f"the declaration is not valid YAML: {_one_line(error.problems[0])}."]
-        parseable = False
-    profile = _effective_profile(index, declaration)
-    if not problems or SCHEMA_REQUIREMENT not in as_list(profile.get("requirements")):
-        return [], parseable
-    severity = get_str(as_map(profile.get("severity")), SCHEMA_REQUIREMENT) or "error"
-    url = requirement_url(index, SCHEMA_REQUIREMENT, release)
-    convention = get_str(
-        as_map(as_map(index.get("requirements")).get(SCHEMA_REQUIREMENT)), "convention"
-    )
-    finding = Finding(
-        SCHEMA_REQUIREMENT, DECLARATION, summarise(problems), severity, url, convention
-    )
-    return [finding], parseable
-
-
 def _release(product: Path, release: Path | None) -> Path | None:
     # conftest runs from the checked repository, so the path must be absolute.
     if release is not None:
@@ -409,21 +306,16 @@ def check(product: Path, repo: Path, now: str, release: Path | None = None) -> R
     if not repo.is_dir():
         raise RunnerError(f"{repo} is not a directory")
     release = _release(product, release)
-    declaration_findings, parseable = check_declaration(product, repo, release)
     files = input_files(repo)
-    if not parseable:
-        # conftest aborts on a YAML syntax error; checking the rest of the
-        # repository is still worth doing, and ADOPT-02 already reports it.
-        files.remove(DECLARATION)
     errors = [
         ParseError(relative, problem)
         for relative in files
-        if relative != DECLARATION and (problem := parse_problem(repo, relative)) is not None
+        if (problem := parse_problem(repo, relative)) is not None
     ]
     unparsed = {error.path for error in errors}
     files = [relative for relative in files if relative not in unparsed]
     findings, skipped = _conftest_findings(product, repo, files, now, release)
-    return Report(sort_findings(findings + declaration_findings), sorted(errors + skipped))
+    return Report(sort_findings(findings), sorted(errors + skipped))
 
 
 def _conftest_findings(

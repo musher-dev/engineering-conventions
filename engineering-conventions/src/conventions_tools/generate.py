@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from conventions_tools import vocabulary
+from conventions_tools import schemas, vocabulary
 from conventions_tools.content import Content, Convention, Requirement, requirement_sort_key
 from conventions_tools.paths import (
     PRODUCT_DIR_NAME,
@@ -87,6 +87,9 @@ def build_index(content: Content) -> dict[str, object]:
             for profile in resolved.values()
         },
         "vocabulary": vocabulary.project(content.terminology),
+        # ADOPT-02 validates the declaration in Rego, which reads one
+        # self-contained schema rather than resolving sibling files.
+        "declaration_schema": schemas.self_contained(content.product, schemas.DECLARATION),
     }
     return {"conventions": {"index": index}}
 

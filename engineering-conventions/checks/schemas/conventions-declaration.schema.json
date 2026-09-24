@@ -1,17 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Conventions declaration",
-  "description": "A consuming repository's .repo/conventions.yaml: the conventions release it pins, the convention profile that applies to it, and every waiver it holds. ADOPT-02 checks a declaration against this schema.",
+  "description": "A consuming repository's optional .repo/conventions.yaml: the convention profile that applies to it and every waiver it holds, and, for a repository that does not pin the release in mise, the release it is checked against. ADOPT-02 checks a declaration against this schema.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "conventions", "profile"],
+  "required": ["schema_version"],
   "properties": {
     "schema_version": {
       "description": "Version of this file's shape. Always 1.",
       "const": 1
     },
     "conventions": {
-      "description": "Which release of musher-dev/engineering-conventions this repository is checked against.",
+      "description": "Which release of musher-dev/engineering-conventions this repository is checked against. Optional when mise pins the release (github:musher-dev/engineering-conventions).",
       "type": "object",
       "additionalProperties": false,
       "required": ["version"],
@@ -23,7 +23,7 @@
       }
     },
     "profile": {
-      "description": "The convention profile that applies, e.g. base-repo.",
+      "description": "The convention profile that applies, e.g. base-repo. Defaults to base-repo.",
       "$ref": "common.schema.json#/definitions/slug"
     },
     "vocabulary": {

@@ -19,6 +19,7 @@ engineering-conventions/               repository level: acts on the product
 ├── docs/                              contributor documentation and decisions
 ├── README.md  CONTRIBUTING.md  SECURITY.md  CHANGELOG.md  version.txt
 └── engineering-conventions/           product level: what a consumer pins
+    ├── bin/conventions                the launcher a consumer runs (mise puts it on PATH)
     ├── conventions/                   EC-NNNN documents by topic, families.yml
     ├── terminology/                   global.yml
     ├── profiles/                      convention profiles

@@ -28,7 +28,7 @@ vars:
   # authoring side (src/, tests/, pyproject.toml, uv.lock, .python-version)
   # is excluded because consumers run the rules with conftest and Vale alone.
   # So are the Rego unit tests: conftest would load them as policy.
-  BUNDLE_ENTRIES: README.md checks conventions examples profiles terminology
+  BUNDLE_ENTRIES: README.md bin checks conventions examples profiles terminology
 
 tasks:
   bundle:build:
@@ -115,6 +115,11 @@ tasks:
           NF > 1 && $2 != "" && index(allowed, " " $2 " ") == 0 { print $2 }' | sort -u)"
         [[ -z "${unexpected}" ]] \
           || fail "not bundle entries: ${unexpected} (allowed: {{.BUNDLE_ENTRIES}})"
+
+        # mise puts bin/ on PATH; a launcher without its executable bit is a
+        # command that is found and then refuses to run.
+        tar -tvzf "{{.TARBALL}}" engineering-conventions/bin/conventions | grep -q '^-rwxr-xr-x ' \
+          || fail "engineering-conventions/bin/conventions is missing or not executable"
 
         rego_tests="$(tar -tzf "{{.TARBALL}}" | grep '_test\.rego$' || true)"
         [[ -z "${rego_tests}" ]] || fail "the bundle carries Rego unit tests: ${rego_tests}"

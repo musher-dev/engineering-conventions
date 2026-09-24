@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Convention profile",
-  "description": "A convention profile (profiles/<id>.yml): the set of requirements that applies to one kind of repository, and the severity each is reported at. A consuming repository names its profile in .repo/conventions.yaml.",
+  "description": "A convention profile (definitions/profiles/<id>.yml): the set of requirements that applies to one kind of repository, and the severity each is reported at. A consuming repository names its profile in .repo/conventions.yaml.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "id", "display_name", "description"],

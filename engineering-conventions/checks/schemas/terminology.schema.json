@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Terminology",
-  "description": "The terminology file, terminology/global.yml. Terms define the words conventions use; aliases record the words to avoid and where; display forms say how a token is written in a Title-Cased name.",
+  "description": "The terminology file, definitions/terminology/global.yml. Terms define the words conventions use; aliases record the words to avoid and where; display forms say how a token is written in a Title-Cased name.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "description", "terms"],

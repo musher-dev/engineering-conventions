@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Convention frontmatter",
-  "description": "The YAML frontmatter of a convention document under conventions/<topic>/. It is the machine-readable catalog of the convention's requirements; the Markdown body below it explains each one under a '### <ID>' heading.",
+  "description": "The YAML frontmatter of a convention document under definitions/conventions/<topic>/. It is the machine-readable catalog of the convention's requirements; the Markdown body below it explains each one under a '### <ID>' heading.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -23,7 +23,7 @@
       "enum": ["draft", "active", "deprecated", "retired"]
     },
     "topic": {
-      "description": "The conventions/ subdirectory the document lives in, e.g. github-actions.",
+      "description": "The definitions/conventions/ subdirectory the document lives in, e.g. github-actions.",
       "$ref": "common.schema.json#/definitions/slug"
     },
     "applies_to": {

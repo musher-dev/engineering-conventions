@@ -9,11 +9,11 @@ paths:
 This repository publishes the GitHub Actions conventions, so its own workflows
 are held to them first. This file routes; it restates none of them.
 
-- **The conventions**: `engineering-conventions/conventions/github-actions/`,
+- **The conventions**: `engineering-conventions/definitions/conventions/github-actions/`,
   one document per concern (workflow files, jobs and steps, composite actions,
   execution hygiene, units and renames). Every `GHA-NN` a check prints links to
   its heading there.
-- **The vocabulary**: `engineering-conventions/terminology/global.yml`, which
+- **The vocabulary**: `engineering-conventions/definitions/terminology/global.yml`, which
   holds the responsibility, capability and action tokens and the display forms.
 - **The proof**: `task conventions:self` runs this repository through its own
   conventions and MUST report zero findings, warnings included. There are no waivers

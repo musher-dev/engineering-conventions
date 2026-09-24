@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Requirement-ID families",
-  "description": "The registry of requirement-ID prefixes (conventions/families.yml). Every requirement ID's prefix is a registered family.",
+  "description": "The registry of requirement-ID prefixes (definitions/conventions/families.yml). Every requirement ID's prefix is a registered family.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "families"],
@@ -25,7 +25,7 @@
             "$ref": "common.schema.json#/definitions/nonEmptyString"
           },
           "topic": {
-            "description": "The conventions/ subdirectory whose conventions hold this family's requirements.",
+            "description": "The definitions/conventions/ subdirectory whose conventions hold this family's requirements.",
             "$ref": "common.schema.json#/definitions/slug"
           },
           "owner": {

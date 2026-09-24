@@ -14,9 +14,9 @@ host CI for other repositories.
 
 | Part | What it is | Where |
 | --- | --- | --- |
-| Conventions | Documents with an `EC-NNNN` ID, each holding requirements with IDs such as `GHA-07` | [`engineering-conventions/conventions/`](engineering-conventions/conventions/) |
-| Terminology | The words the conventions use, their display forms and their banned aliases | `engineering-conventions/terminology/` |
-| Profiles | Named selections of requirements for a kind of repository | `engineering-conventions/profiles/` |
+| Conventions | Documents with an `EC-NNNN` ID, each holding requirements with IDs such as `GHA-07` | [`engineering-conventions/definitions/conventions/`](engineering-conventions/definitions/conventions/) |
+| Terminology | The words the conventions use, their display forms and their banned aliases | `engineering-conventions/definitions/terminology/` |
+| Profiles | Named selections of requirements for a kind of repository | `engineering-conventions/definitions/profiles/` |
 | Checks | Conftest/Rego policies, JSON Schemas and a Vale style | `engineering-conventions/checks/` |
 | Example | A complete repository that meets every check | [`engineering-conventions/examples/consumer/`](engineering-conventions/examples/consumer/) |
 | Decisions | Why the repository works the way it does | [`docs/decisions/`](docs/decisions/README.md) |
@@ -25,21 +25,21 @@ The current conventions:
 
 | ID | Convention | Requirements |
 | --- | --- | --- |
-| EC-0001 | [Conventions declaration](engineering-conventions/conventions/adoption/conventions-declaration.md) | ADOPT-01 – ADOPT-09 |
-| EC-0002 | [Workflow files](engineering-conventions/conventions/github-actions/workflow-files.md) | GHA-01 – GHA-09 |
-| EC-0003 | [Jobs and steps](engineering-conventions/conventions/github-actions/jobs-and-steps.md) | GHA-10 – GHA-19 |
-| EC-0004 | [Composite actions](engineering-conventions/conventions/github-actions/composite-actions.md) | GHA-20 – GHA-23, GHA-38 |
-| EC-0005 | [Execution hygiene](engineering-conventions/conventions/github-actions/execution-hygiene.md) | GHA-24 – GHA-33 |
-| EC-0006 | [Units and renames](engineering-conventions/conventions/github-actions/units-and-renames.md) | GHA-34 – GHA-37 |
+| EC-0001 | [Conventions declaration](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | ADOPT-01 – ADOPT-09 |
+| EC-0002 | [Workflow files](engineering-conventions/definitions/conventions/github-actions/workflow-files.md) | GHA-01 – GHA-09 |
+| EC-0003 | [Jobs and steps](engineering-conventions/definitions/conventions/github-actions/jobs-and-steps.md) | GHA-10 – GHA-19 |
+| EC-0004 | [Composite actions](engineering-conventions/definitions/conventions/github-actions/composite-actions.md) | GHA-20 – GHA-23, GHA-38 |
+| EC-0005 | [Execution hygiene](engineering-conventions/definitions/conventions/github-actions/execution-hygiene.md) | GHA-24 – GHA-33 |
+| EC-0006 | [Units and renames](engineering-conventions/definitions/conventions/github-actions/units-and-renames.md) | GHA-34 – GHA-37 |
 
 ## Finding a requirement
 
 - **By ID.** A diagnostic names the requirement (`[GHA-07]`) and links to its heading. In a convention, each
   requirement is the heading `### <ID>`, so `workflow-files.md#gha-07` is its permanent address. The generated
-  [`conventions/README.md`](engineering-conventions/conventions/README.md) lists every ID ever issued, retired ones
-  included.
+  [`conventions/README.md`](engineering-conventions/definitions/conventions/README.md) lists every ID ever issued,
+  retired ones included.
 - **By topic.** Start at a topic's README, such as
-  [GitHub Actions](engineering-conventions/conventions/github-actions/README.md), which gives the reading order.
+  [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md), which gives the reading order.
 - **By machine.** `engineering-conventions/checks/data/index.json` holds every requirement with its title, status,
   severity, convention, path and anchor, plus the profiles and the vocabulary. It is generated and committed.
 

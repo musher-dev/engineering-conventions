@@ -32,7 +32,7 @@ WARNING = Finding(
     path=".github/workflows/ci.yml",
     message='name "CI" should be "Validate": a name is its filename stem in Title Case.',
     severity="warning",
-    url=f"{BASE_URL}/main/engineering-conventions/conventions/github-actions/"
+    url=f"{BASE_URL}/main/engineering-conventions/definitions/conventions/github-actions/"
     "workflow-files.md#gha-07",
     convention="EC-0002",
 )

@@ -16,7 +16,7 @@ applies them.
 | **topic** | A subdirectory of `conventions/`, such as `github-actions` | |
 | **convention profile** | A named selection of requirements for a kind of repository | `baseline` |
 | **conventions declaration** | A consumer's `.repo/conventions.yaml` | `manifest` |
-| **family** | A requirement-ID prefix registered in `conventions/families.yml` | |
+| **family** | A requirement-ID prefix registered in `definitions/conventions/families.yml` | |
 
 ## Before you write
 
@@ -28,8 +28,8 @@ repository, the proposal carries `authority` pointing there
 ## Adding a requirement
 
 1. **Allocate the ID.** Take the next number in the family. Numbers are never reused, including numbers of retired
-   requirements; `conventions/README.md` lists every ID ever issued. A new family needs an entry in
-   `conventions/families.yml`.
+   requirements; `definitions/conventions/README.md` lists every ID ever issued. A new family needs an entry in
+   `definitions/conventions/families.yml`.
 2. **Add the frontmatter entry** to the convention's `requirements:` list:
 
    ```yaml
@@ -99,12 +99,12 @@ repository, the proposal carries `authority` pointing there
    task check
    ```
 
-   `task generate` rewrites `checks/data/index.json`, the Vale style and `conventions/README.md`; commit them with the
-   change. `task check` runs every gate CI runs except the dev container build.
+   `task generate` rewrites `checks/data/index.json`, the Vale style and `definitions/conventions/README.md`; commit
+   them with the change. `task check` runs every gate CI runs except the dev container build.
 
 ## Adding or changing a term
 
-Terms live in `engineering-conventions/terminology/global.yml`. A term has either a `definition` or an `authority`
+Terms live in `engineering-conventions/definitions/terminology/global.yml`. A term has either a `definition` or an `authority`
 pointing at the repository that defines it, never both. Do not restate a definition another repository owns. Run
 `task generate` afterward: tokens and display forms feed the Rego data, and prose aliases feed the Vale style.
 

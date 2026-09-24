@@ -59,7 +59,7 @@ def test_requirement_entry(content: Content) -> None:
         "convention": "EC-0002",
         "engine": "conftest",
         "package": "conventions.checks.github_actions.workflow_files",
-        "path": "conventions/github-actions/workflow-files.md",
+        "path": "definitions/conventions/github-actions/workflow-files.md",
         "severity": "warning",
         "since": "0.1.0",
         "status": "proposed",
@@ -271,7 +271,7 @@ def test_readme_lists_every_requirement(content: Content) -> None:
 
 def _copy_product(product: Path, tmp_path: Path) -> Path:
     copy = tmp_path / "product"
-    for name in ("conventions", "profiles", "terminology", "checks"):
+    for name in ("definitions", "checks"):
         shutil.copytree(product / name, copy / name)
     return copy
 

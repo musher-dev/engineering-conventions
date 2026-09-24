@@ -1,7 +1,8 @@
 ---
 title: The product lives in a nested engineering-conventions directory, and that directory is the bundle
 date: 2026-09-23
-status: accepted
+status: superseded
+superseded_by: ["0009"]
 deciders: ["@justinmerrell"]
 supersedes: []
 ---

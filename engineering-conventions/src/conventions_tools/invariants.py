@@ -272,7 +272,7 @@ def profiles_resolve(content: Content) -> list[str]:
         if Path(profile.path).stem != profile.id
     ]
     if "base-repo" not in {profile.id for profile in content.profiles}:
-        found.append("profiles/base-repo.yml is missing; it is the default profile")
+        found.append("definitions/profiles/base-repo.yml is missing; it is the default profile")
     families = {family.prefix for family in content.families}
     try:
         resolve_all(content.profiles, content.requirements, families)

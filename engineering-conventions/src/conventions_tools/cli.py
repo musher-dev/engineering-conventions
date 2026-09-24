@@ -81,7 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     generate_parser = commands.add_parser(
         "generate",
-        help="write checks/data/index.json, the Vale styles and conventions/README.md",
+        help="write checks/data/index.json, the Vale styles and definitions/conventions/README.md",
     )
     generate_parser.add_argument(
         "--check",

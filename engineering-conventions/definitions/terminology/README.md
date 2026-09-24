@@ -9,7 +9,7 @@ Vale style and this documentation; nothing restates it by hand.
 | [`global.yml`](global.yml) | Every term the conventions use |
 
 It is validated against
-[`terminology.schema.json`](../checks/schemas/terminology.schema.json).
+[`terminology.schema.json`](../../checks/schemas/terminology.schema.json).
 
 ## The model
 

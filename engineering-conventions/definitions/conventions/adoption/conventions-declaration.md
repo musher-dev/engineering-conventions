@@ -193,9 +193,9 @@ requirement's severity from `warning` to `error`. A profile can never lower a se
 An unknown profile falls back to `base-repo` rather than to nothing, so a typo in `profile` never switches every
 check off.
 
-The shipped profiles are documented in `profiles/README.md`. In the 0.x series `base-repo` includes the `ADOPT` and
-`GHA` families with proposed requirements reported, so a repository sees every finding it would face before any of
-them can fail its build.
+The shipped profiles are documented in `definitions/profiles/README.md`. In the 0.x series `base-repo` includes the
+`ADOPT` and `GHA` families with proposed requirements reported, so a repository sees every finding it would face
+before any of them can fail its build.
 
 ## Requirements
 
@@ -355,7 +355,7 @@ The profile decides which requirements apply, so a profile name the pinned relea
 repository checked against something it did not choose. It usually means a typo (`base_repo` for `base-repo`), or a
 profile that a newer release adds and this one lacks. The check falls back to `base-repo`, so the repository is still
 checked, and reports the unknown name so it can be corrected. The profiles a release defines are listed in
-`profiles/README.md`.
+`definitions/profiles/README.md`.
 
 **Correct:**
 
@@ -433,4 +433,4 @@ Checked by: conftest · Severity: warning · Since: 0.2.0
 - [Consuming the conventions](https://github.com/musher-dev/engineering-conventions/blob/main/docs/consuming.md)
 - [Decision 0005: Status, severity and versioning](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0005-status-severity-and-versioning.md)
 - `checks/schemas/conventions-declaration.schema.json`
-- `profiles/README.md`
+- `definitions/profiles/README.md`

@@ -11,7 +11,7 @@
 *.rego text eol=lf
 
 # Written by `task generate`, never by hand. Collapsed in diffs and left out
-# of language statistics; the source is terminology/ and the conventions.
+# of language statistics; the source is definitions/.
 engineering-conventions/checks/data/index.json linguist-generated=true
 engineering-conventions/checks/vale/** linguist-generated=true
-engineering-conventions/conventions/README.md linguist-generated=true
+engineering-conventions/definitions/conventions/README.md linguist-generated=true

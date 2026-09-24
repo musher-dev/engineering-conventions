@@ -19,13 +19,16 @@ index := {
 	"schema_version": 1,
 	"repository": "https://github.com/musher-dev/engineering-conventions",
 	"product_dir": "engineering-conventions",
-	"conventions": {"EC-0002": {"title": "Workflow files", "path": "conventions/github-actions/workflow-files.md"}},
+	"conventions": {"EC-0002": {
+		"title": "Workflow files",
+		"path": "definitions/conventions/github-actions/workflow-files.md",
+	}},
 	"requirements": object.union(
 		{id: {
 			"convention": "EC-0002",
 			"status": "proposed",
 			"severity": "warning",
-			"path": "conventions/github-actions/workflow-files.md",
+			"path": "definitions/conventions/github-actions/workflow-files.md",
 			"anchor": lower(id),
 			"aliases": aliases(id),
 			"waivable": waivable(id),
@@ -36,7 +39,7 @@ index := {
 			"convention": "EC-0002",
 			"status": "retired",
 			"severity": "warning",
-			"path": "conventions/github-actions/workflow-files.md",
+			"path": "definitions/conventions/github-actions/workflow-files.md",
 			"anchor": "gha-99",
 			"waivable": true,
 		}},

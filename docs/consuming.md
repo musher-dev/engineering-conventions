@@ -73,7 +73,7 @@ profile: base-repo
 waivers: []
 ```
 
-The full format is [EC-0001](../engineering-conventions/conventions/adoption/conventions-declaration.md). ADOPT-02
+The full format is [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md). ADOPT-02
 checks the file against its schema as part of `conventions check`; no separate validator is needed.
 
 ## Without mise
@@ -155,7 +155,7 @@ waivers:
 A waiver needs a reason of at least 20 characters, a tracking issue URL and an expiry at most 180 days away. It
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.
 A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
-are in [EC-0001](../engineering-conventions/conventions/adoption/conventions-declaration.md).
+are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
 
 ## Upgrading
 

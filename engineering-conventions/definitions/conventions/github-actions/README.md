@@ -46,7 +46,7 @@ Read them in this order. Each builds on the vocabulary of the one before.
 
 The vocabulary and its reasoning are recorded in
 [decision 0006](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0006-github-actions-naming-vocabulary.md).
-A worked, conforming example is in [`examples/consumer`](../../examples/consumer/).
+A worked, conforming example is in [`examples/consumer`](../../../examples/consumer/).
 
 ## Quick reference
 

@@ -28,7 +28,7 @@ vars:
   # authoring side (src/, tests/, pyproject.toml, uv.lock, .python-version)
   # is excluded because consumers run the rules with conftest and Vale alone.
   # So are the Rego unit tests: conftest would load them as policy.
-  BUNDLE_ENTRIES: README.md bin checks conventions examples profiles terminology
+  BUNDLE_ENTRIES: README.md bin checks definitions examples
 
 tasks:
   bundle:build:

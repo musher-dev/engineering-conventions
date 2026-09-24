@@ -7,7 +7,7 @@ f := findings.finding("GHA-07", ".github/workflows/ci.yml", `name "CI" should be
 
 url := concat("", [
 	"https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/",
-	"conventions/github-actions/workflow-files.md#gha-07",
+	"definitions/conventions/github-actions/workflow-files.md#gha-07",
 ])
 
 test_url_points_at_main_without_release if {

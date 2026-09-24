@@ -296,8 +296,8 @@ terms:
   - id: conventions.convention
     display_name: convention
     definition: >-
-      A document under conventions/<topic>/ with an EC- identifier that
-      states related requirements and explains them.
+      A document under definitions/conventions/<topic>/ with an EC-
+      identifier that states related requirements and explains them.
     tags: [meta]
     stability: stable
   - id: conventions.requirement
@@ -333,8 +333,9 @@ terms:
   - id: conventions.topic
     display_name: topic
     definition: >-
-      A subdirectory of conventions/ grouping conventions about one subject,
-      such as github-actions.
+      The part of a repository a group of conventions governs, named for its
+      file surface or tool, such as github-actions; a subdirectory of
+      definitions/conventions/.
     tags: [meta]
     stability: stable
   - id: conventions.convention-profile
@@ -365,7 +366,7 @@ terms:
     display_name: family
     definition: >-
       A registered requirement-ID prefix, such as GHA, listed in
-      conventions/families.yml.
+      definitions/conventions/families.yml.
     tags: [meta]
     stability: stable
   - id: conventions.display-form

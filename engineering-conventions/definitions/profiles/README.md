@@ -10,7 +10,7 @@ checks use `base-repo`.
 | [`base-repo`](base-repo.yml) | Every repository |
 
 Profiles are validated against
-[`profile.schema.json`](../checks/schemas/profile.schema.json).
+[`profile.schema.json`](../../checks/schemas/profile.schema.json).
 
 ## How a profile resolves
 
@@ -33,7 +33,7 @@ so the checks never evaluate inheritance themselves:
 
 ## Adding a profile
 
-Add `profiles/<id>.yml` whose `id` matches the filename, usually inheriting
-`base-repo` and raising or adding requirements. How a profile change is
+Add `definitions/profiles/<id>.yml` whose `id` matches the filename, usually
+inheriting `base-repo` and raising or adding requirements. How a profile change is
 released is the change-classification table in
 [decision 0005](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0005-status-severity-and-versioning.md#change-classification).

@@ -1,19 +1,19 @@
 ---
 paths:
-  - "engineering-conventions/terminology/**"
+  - "engineering-conventions/definitions/terminology/**"
   - "engineering-conventions/checks/vale/**"
 ---
 
 # Terminology
 
-`terminology/` is the source for three things at once: the vocabulary the Rego
-checks read (`index.json`), the MusherConventions Vale style, and the words the
-conventions use. Change it here and regenerate; never edit an output.
+`definitions/terminology/` is the source for three things at once: the
+vocabulary the Rego checks read (`index.json`), the MusherConventions Vale
+style, and the words the conventions use. Change it here and regenerate; never edit an output.
 
 ## Rules
 
 - **MUST NOT** hand-edit `checks/vale/MusherConventions/**`. `task generate`
-  writes it from `terminology/`; `task generate:check` fails on drift.
+  writes it from `definitions/terminology/`; `task generate:check` fails on drift.
 - **MUST** keep a term's `id` stable; it is referenced from outside this file.
 - **MUST** point at the owner instead of restating a definition this
   repository does not own: an `authority` entry carries no `definition`.

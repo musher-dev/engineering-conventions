@@ -2,7 +2,7 @@
 
 Documentation for people who write conventions, people who consume them, and anyone who wants to know why the
 repository works the way it does. The conventions themselves are in
-[`engineering-conventions/conventions/`](../engineering-conventions/conventions/).
+[`engineering-conventions/definitions/conventions/`](../engineering-conventions/definitions/conventions/).
 
 | Document | Read it when you want to |
 | --- | --- |

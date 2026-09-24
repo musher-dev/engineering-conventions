@@ -98,13 +98,13 @@
         // (`task schemas:validate`).
         "yaml.schemas": {
           "./engineering-conventions/checks/schemas/terminology.schema.json": [
-            "engineering-conventions/terminology/**/*.yml"
+            "engineering-conventions/definitions/terminology/**/*.yml"
           ],
           "./engineering-conventions/checks/schemas/profile.schema.json": [
-            "engineering-conventions/profiles/*.yml"
+            "engineering-conventions/definitions/profiles/*.yml"
           ],
           "./engineering-conventions/checks/schemas/families.schema.json": [
-            "engineering-conventions/conventions/families.yml"
+            "engineering-conventions/definitions/conventions/families.yml"
           ],
           "./engineering-conventions/checks/schemas/conventions-declaration.schema.json": [
             ".repo/conventions.yaml"

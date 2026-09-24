@@ -85,7 +85,7 @@ tooling; a consumer uses the committed output and never runs it.
 
 ## References
 
-- `engineering-conventions/terminology/README.md`
+- `engineering-conventions/definitions/terminology/README.md`
 - `engineering-conventions/checks/schemas/terminology.schema.json`
 - [Decision 0001: Validation engines](0001-validation-engines.md)
 - [Decision 0006: GitHub Actions naming vocabulary](0006-github-actions-naming-vocabulary.md)

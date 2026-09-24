@@ -39,6 +39,7 @@ def test_index_top_level_shape(content: Content) -> None:
     assert sorted(index) == [
         "conventions",
         "declaration_schema",
+        "outputs_schema",
         "product_dir",
         "profiles",
         "repository",
@@ -106,6 +107,7 @@ def test_vocabulary_projection(content: Content) -> None:
     ]
     assert projected["capability_tokens"] == ["build", "check", "promote"]
     assert projected["action_tokens"] == ["authenticate", "check", "install", "setup"]
+    assert projected["output_kinds"] == ["bundle", "cli", "contract", "image", "library"]
     assert projected["display_forms"] == {
         "api": "API",
         "ci": "CI",
@@ -217,7 +219,7 @@ def test_profile_cannot_lower_a_default_severity(content: Content) -> None:
     edited = replace(content, conventions=(changed, *content.conventions[1:]))
     lowering = replace(content.profiles[0], severity={raised.id: "warning"})
     with pytest.raises(ProfileError, match=f"lowers {raised.id} from error to warning"):
-        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA"})
+        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA", "OUT"})
 
 
 def test_vale_styles_are_substitutions(content: Content) -> None:

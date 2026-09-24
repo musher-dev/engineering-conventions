@@ -13,6 +13,7 @@ requirement_ids := [
 	"GHA-10", "GHA-11", "GHA-12", "GHA-13", "GHA-14", "GHA-15", "GHA-16", "GHA-17",
 	"GHA-20", "GHA-21", "GHA-22", "GHA-23",
 	"GHA-24", "GHA-26", "GHA-27", "GHA-28", "GHA-29", "GHA-30", "GHA-31", "GHA-32", "GHA-38",
+	"OUT-01", "OUT-02", "OUT-03", "OUT-04", "OUT-05", "OUT-06", "OUT-07",
 ]
 
 index := {
@@ -67,8 +68,10 @@ index := {
 		},
 		"schedule_tokens": ["nightly", "scheduled"],
 		"display_forms": {"api": "API", "pr": "PR", "devcontainer": "Dev Container"},
+		"output_kinds": ["bundle", "cli", "contract", "image", "library"],
 	},
 	"declaration_schema": declaration_schema,
+	"outputs_schema": outputs_schema,
 }
 
 # A cut-down declaration schema with the shapes ADOPT-02's messages depend on:
@@ -161,3 +164,42 @@ ruleset(contexts) := {"rules": [
 pairs(findings) := {[f.id, f.path] | some f in findings}
 
 ids(findings) := {f.id | some f in findings}
+
+# A cut-down outputs schema with the shapes OUT-02's messages depend on: a
+# missing required key and an unknown key.
+outputs_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["schema_version", "outputs"],
+	"properties": {
+		"schema_version": {"const": 1},
+		"outputs": {"type": "array", "items": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["id", "kind"],
+			"properties": {
+				"id": {"type": "string"},
+				"kind": {"type": "string"},
+				"source": {"type": "string"},
+				"publish_workflow": {"type": "string"},
+				"location": {"type": "string"},
+				"docs": {"type": "string"},
+				"format": {"type": "string"},
+				"definition": {"type": "string"},
+			},
+		}},
+	},
+}
+
+# schema_version is filled in so a test states only what it is about.
+outputs(entries) := file(".repo/outputs.yaml", {"schema_version": 1, "outputs": entries})
+
+# A conforming image output published by publish.yml.
+image_output := {
+	"id": "api-image",
+	"kind": "image",
+	"source": "api",
+	"publish_workflow": "publish.yml",
+	"location": "ghcr.io/example/api",
+	"docs": "api/README.md#run",
+}

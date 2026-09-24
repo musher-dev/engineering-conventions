@@ -90,6 +90,8 @@ def build_index(content: Content) -> dict[str, object]:
         # ADOPT-02 validates the declaration in Rego, which reads one
         # self-contained schema rather than resolving sibling files.
         "declaration_schema": schemas.self_contained(content.product, schemas.DECLARATION),
+        # OUT-02 validates the outputs declaration the same way.
+        "outputs_schema": schemas.self_contained(content.product, schemas.OUTPUTS),
     }
     return {"conventions": {"index": index}}
 

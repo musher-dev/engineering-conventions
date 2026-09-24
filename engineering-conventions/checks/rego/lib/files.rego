@@ -2,7 +2,7 @@
 # title: Input classification
 # description: >-
 #   Sorts the combined conftest input into the workflows, actions, rulesets,
-#   conventions declaration and inventory that the checks read, and gives
+#   declarations and inventory that the checks read, and gives
 #   every workflow the same view of its triggers and jobs.
 package conventions.lib.files
 
@@ -84,6 +84,25 @@ declaration := doc.contents if {
 declaration_documents := [doc.contents |
 	some doc in documents
 	doc.path == declaration_path
+]
+
+outputs_path := ".repo/outputs.yaml"
+
+outputs_declared if outputs_path in repository_files
+
+# The outputs declaration (EC-0007), read like the conventions declaration:
+# a non-mapping reads as empty, and OUT-02 reports its shape.
+default outputs_declaration := {}
+
+outputs_declaration := doc.contents if {
+	some doc in documents
+	doc.path == outputs_path
+	is_object(doc.contents)
+}
+
+outputs_documents := [doc.contents |
+	some doc in documents
+	doc.path == outputs_path
 ]
 
 # Where mise reads project configuration (its config search), plus the dev

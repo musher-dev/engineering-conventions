@@ -20,6 +20,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0007](0007-terminology-and-generated-artifacts.md) | Terminology is structured data, and generated artifacts are committed | accepted |
 | [0008](0008-repository-layout.md) | The product lives in a nested directory, and that directory is the bundle | superseded by 0009 |
 | [0009](0009-definitions-and-checks.md) | The product separates what is defined from what checks it | accepted |
+| [0010](0010-outputs-declaration.md) | A repository declares the outputs it publishes in .repo/outputs.yaml | accepted |
 
 ## Writing a decision
 

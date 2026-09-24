@@ -292,6 +292,51 @@ terms:
     tags: [gha.concept]
     stability: stable
 
+  # Output kinds: what a repository publishes, named in the kind field of
+  # .repo/outputs.yaml (OUT-03). The formats they carry (OCI, OpenAPI and
+  # the rest) are defined by their own specifications, not here.
+  - id: outputs.kind.image
+    display_name: container image
+    token: image
+    definition: >-
+      An OCI container image pushed to a registry, consumed by pulling a
+      tag or digest.
+    tags: [outputs.kind]
+    stability: provisional
+  - id: outputs.kind.library
+    display_name: library
+    token: library
+    definition: >-
+      A package published to a language registry, such as npm, PyPI or a Go
+      module proxy, consumed as a dependency.
+    tags: [outputs.kind]
+    stability: provisional
+  - id: outputs.kind.cli
+    display_name: command-line tool
+    token: cli
+    definition: >-
+      An executable released as downloadable assets, consumed by pinning a
+      version in a tool manager such as mise.
+    tags: [outputs.kind]
+    stability: provisional
+  - id: outputs.kind.contract
+    display_name: contract
+    token: contract
+    definition: >-
+      A machine-readable interface definition other repositories build
+      against, such as an OpenAPI, AsyncAPI, protobuf or JSON Schema
+      document.
+    tags: [outputs.kind]
+    stability: provisional
+  - id: outputs.kind.bundle
+    display_name: bundle
+    token: bundle
+    definition: >-
+      A versioned archive of files released as assets and consumed by
+      pinning, such as this repository's release.
+    tags: [outputs.kind]
+    stability: provisional
+
   # The words this repository is written in.
   - id: conventions.convention
     display_name: convention
@@ -376,6 +421,22 @@ terms:
       it, such as api written API.
     tags: [meta]
     stability: stable
+  - id: conventions.output
+    display_name: output
+    definition: >-
+      Something a repository publishes for other repositories or people to
+      consume, such as a container image, a library, a command-line tool, a
+      contract or a bundle.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.outputs-declaration
+    display_name: outputs declaration
+    definition: >-
+      The file .repo/outputs.yaml in a repository that publishes, which
+      lists each output with its kind, source, publishing workflow, location
+      and consumption docs.
+    tags: [meta]
+    stability: provisional
 
   # Defined upstream and deliberately not restated here. GitHub Actions
   # uses audit and drift in a narrower, automation sense: see

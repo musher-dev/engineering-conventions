@@ -194,7 +194,7 @@ An unknown profile falls back to `base-repo` rather than to nothing, so a typo i
 check off.
 
 The shipped profiles are documented in `definitions/profiles/README.md`. In the 0.x series `base-repo` includes the
-`ADOPT` and `GHA` families with proposed requirements reported, so a repository sees every finding it would face
+`ADOPT`, `GHA` and `OUT` families with proposed requirements reported, so a repository sees every finding it would face
 before any of them can fail its build.
 
 ## Requirements

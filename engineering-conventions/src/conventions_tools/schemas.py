@@ -18,6 +18,7 @@ CONVENTION = "convention-frontmatter.schema.json"
 TERMINOLOGY = "terminology.schema.json"
 PROFILE = "profile.schema.json"
 DECLARATION = "conventions-declaration.schema.json"
+OUTPUTS = "outputs.schema.json"
 
 
 class Validator(Protocol):

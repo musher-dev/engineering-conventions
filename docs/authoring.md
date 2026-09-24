@@ -13,9 +13,11 @@ applies them.
 | **requirement** | One normative statement with a `<FAMILY>-<NN>` ID | `rule` (`.claude/rules` already means prose) |
 | **check** | An implementation that validates a requirement: a Rego package, a schema, a Vale rule, a platform check such as CI-14 | |
 | **waiver** | A consumer's time-boxed, tracked deviation from a requirement | `exception` (Conftest and Python both use that word) |
-| **topic** | A subdirectory of `conventions/`, such as `github-actions` | |
+| **topic** | The part of a repository a group of conventions governs, named for its file surface or tool, such as `github-actions`; a subdirectory of `definitions/conventions/` | `domain` (the platform's bounded contexts) |
 | **convention profile** | A named selection of requirements for a kind of repository | `baseline` |
 | **conventions declaration** | A consumer's `.repo/conventions.yaml` | `manifest` |
+| **output** | Something a repository publishes for others to consume: an image, library, command-line tool, contract or bundle | `artifact` (GitHub Actions already means a workflow's upload) |
+| **outputs declaration** | A publishing repository's `.repo/outputs.yaml` | |
 | **family** | A requirement-ID prefix registered in `definitions/conventions/families.yml` | |
 
 ## Before you write

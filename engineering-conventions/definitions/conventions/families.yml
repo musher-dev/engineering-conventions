@@ -12,3 +12,7 @@ families:
     title: GitHub Actions
     topic: github-actions
     owner: "@justinmerrell"
+  - prefix: OUT
+    title: Outputs
+    topic: outputs
+    owner: "@justinmerrell"

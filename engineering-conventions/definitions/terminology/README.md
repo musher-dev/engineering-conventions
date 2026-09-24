@@ -46,7 +46,7 @@ from it: `api` is written `API`, so `deploy-api.yml` is named `Deploy API`.
 
 | Source | Generated |
 | --- | --- |
-| Terms tagged `gha.responsibility`, `gha.capability`, `gha.action` | the token lists in `checks/data/index.json` |
+| Terms tagged `gha.responsibility`, `gha.capability`, `gha.action`, `outputs.kind` | the token lists in `checks/data/index.json` |
 | Banned `identifier` aliases | `banned_identifier_tokens` in `checks/data/index.json` |
 | `display_forms` | `display_forms` in `checks/data/index.json` |
 | Banned `prose` aliases | `checks/vale/MusherConventions/Terms.yml` (error) |

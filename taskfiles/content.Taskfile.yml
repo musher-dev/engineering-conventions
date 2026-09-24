@@ -41,6 +41,10 @@ tasks:
         vars:
           SCHEMA: conventions-declaration
           PATHSPEC: "'.repo/conventions.yaml' 'engineering-conventions/examples/**/.repo/conventions.yaml'"
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: outputs
+          PATHSPEC: "'.repo/outputs.yaml' 'engineering-conventions/examples/**/.repo/outputs.yaml'"
       # Topic READMEs and the generated index carry no frontmatter.
       - task: schemas:validate:files
         vars:

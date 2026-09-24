@@ -76,6 +76,27 @@ waivers: []
 The full format is [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md). ADOPT-02
 checks the file against its schema as part of `conventions check`; no separate validator is needed.
 
+## Declare what you publish
+
+A repository with a `publish` workflow lists what it publishes in `.repo/outputs.yaml`, one entry per container image,
+library, command-line tool, contract or bundle:
+
+```yaml
+schema_version: 1
+outputs:
+  - id: api-image
+    kind: image
+    source: api/
+    publish_workflow: publish-api.yml
+    location: ghcr.io/your-org/api
+    docs: api/README.md#run-the-image
+```
+
+`conventions check` reports OUT-01 on a publish workflow until the file exists, and checks that each kind is known and
+each path and workflow it names exists. The format is
+[EC-0007](../engineering-conventions/definitions/conventions/outputs/outputs-declaration.md); what a published output
+promises its consumers is [EC-0008](../engineering-conventions/definitions/conventions/outputs/publishing-and-consuming.md).
+
 ## Without mise
 
 Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:

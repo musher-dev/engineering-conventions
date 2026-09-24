@@ -1,0 +1,7 @@
+[
+  {
+    "id": "OUT-01",
+    "path": ".github/workflows/publish.yml",
+    "severity": "warning"
+  }
+]

@@ -54,7 +54,7 @@
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "token": {
-          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability or gha.action.",
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action or outputs.kind.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*$"
         },
@@ -112,7 +112,7 @@
         "required": ["tags"],
         "properties": {
           "tags": {
-            "contains": { "enum": ["gha.responsibility", "gha.capability", "gha.action"] }
+            "contains": { "enum": ["gha.responsibility", "gha.capability", "gha.action", "outputs.kind"] }
           }
         }
       },

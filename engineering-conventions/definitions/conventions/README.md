@@ -16,6 +16,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0004](github-actions/composite-actions.md) | Composite actions | github-actions | draft |
 | [EC-0005](github-actions/execution-hygiene.md) | Execution hygiene | github-actions | draft |
 | [EC-0006](github-actions/units-and-renames.md) | Units and renames | github-actions | draft |
+| [EC-0007](outputs/outputs-declaration.md) | Outputs declaration | outputs | draft |
+| [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 
 ## Requirements
 
@@ -68,6 +70,17 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-36](github-actions/units-and-renames.md#gha-36) | A rename updates every reference to the renamed identity in the same change | EC-0006 | proposed | warning | review |
 | [GHA-37](github-actions/units-and-renames.md#gha-37) | A name states the responsibility, result or capability, not the trigger or tool | EC-0006 | proposed | warning | review |
 | [GHA-38](github-actions/composite-actions.md#gha-38) | Inputs and outputs of actions and reusable workflows are kebab-case | EC-0004 | proposed | warning | conftest |
+| [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.yaml | EC-0007 | proposed | warning | conftest |
+| [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
+| [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
+| [OUT-04](outputs/outputs-declaration.md#out-04) | Output IDs are unique within a repository | EC-0007 | proposed | warning | conftest |
+| [OUT-05](outputs/outputs-declaration.md#out-05) | Every path an output names exists | EC-0007 | proposed | warning | conftest |
+| [OUT-06](outputs/outputs-declaration.md#out-06) | An output names a publish workflow that exists | EC-0007 | proposed | warning | conftest |
+| [OUT-07](outputs/outputs-declaration.md#out-07) | A contract output names its format and its definition file | EC-0007 | proposed | warning | conftest |
+| [OUT-08](outputs/publishing-and-consuming.md#out-08) | An output's docs say how to consume it | EC-0008 | proposed | warning | review |
+| [OUT-09](outputs/publishing-and-consuming.md#out-09) | A version is published only from a release tag and is never overwritten | EC-0008 | proposed | warning | review |
+| [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
+| [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
 
 ## Families
 
@@ -75,3 +88,4 @@ ID is permanent: it is never renumbered or reused.
 | --- | --- | --- |
 | ADOPT | Adopting the conventions | adoption |
 | GHA | GitHub Actions | github-actions |
+| OUT | Outputs | outputs |

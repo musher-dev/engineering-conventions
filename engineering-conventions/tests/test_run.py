@@ -176,6 +176,7 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/actions/nested/deeper/action.yaml",
         ".github/rulesets/main-branch.json",
         ".repo/conventions.yaml",
+        ".repo/outputs.yaml",
         "mise.toml",
         ".devcontainer/mise.toml",
         "nested/mise.toml",
@@ -192,6 +193,7 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/workflows/release.yaml",
         ".github/workflows/validate.yml",
         ".repo/conventions.yaml",
+        ".repo/outputs.yaml",
         "mise.toml",
     ]
 

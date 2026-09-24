@@ -71,12 +71,14 @@ list_files() {
   done | LC_ALL=C sort -u
 }
 
-# What conftest reads: workflows, actions, rulesets, the declaration and the
-# mise configuration ADOPT-09 looks for a pin in (lib/files.rego).
+# What conftest reads: workflows, actions, rulesets, the conventions and
+# outputs declarations, and the mise configuration ADOPT-09 looks for a pin in
+# (lib/files.rego).
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
 INPUTS="${INPUTS}|"'^\.repo/conventions\.yaml$'
+INPUTS="${INPUTS}|"'^\.repo/outputs\.yaml$'
 INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
 INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'
 

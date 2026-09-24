@@ -8,6 +8,7 @@ from conventions_tools.loading import ContentError
 RESPONSIBILITY_TAG = "gha.responsibility"
 CAPABILITY_TAG = "gha.capability"
 ACTION_TAG = "gha.action"
+OUTPUT_KIND_TAG = "outputs.kind"
 # The term whose identifier aliases name when a workflow runs. They are banned
 # anywhere in a filename, unlike the other banned tokens, which are synonyms
 # banned only where the responsibility goes (GHA-05).
@@ -85,6 +86,7 @@ def project(terminology: Terminology) -> dict[str, object]:
         "banned_identifier_tokens": banned_identifier_tokens(terminology),
         "capability_tokens": tokens(terminology, CAPABILITY_TAG),
         "display_forms": display_forms(terminology),
+        "output_kinds": tokens(terminology, OUTPUT_KIND_TAG),
         "responsibility_tokens": tokens(terminology, RESPONSIBILITY_TAG),
         "schedule_tokens": schedule_tokens(terminology),
     }

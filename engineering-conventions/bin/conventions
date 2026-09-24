@@ -8,12 +8,16 @@
 #   mise.toml   [tools] "github:musher-dev/engineering-conventions" = "0.2.0"
 #   then        conventions check
 #
-# It needs only POSIX sh and git. conftest and Vale come through `mise exec`
-# at the versions below, which move with this release, so the bundle pin is
-# the only pin. Without mise it uses conftest and vale from PATH.
+# It needs only POSIX sh and git. conftest, jq and Vale come through
+# `mise exec` at the versions below, which move with this release, so the
+# bundle pin is the only pin. Without mise it uses them from PATH.
+#
+# `check` prints a report for a person by default and a JSON array of
+# findings with --output json; any other format is conftest's own. The report
+# goes to stdout; progress goes to stderr, and only on a terminal.
 #
 # Usage:
-#   conventions check [--fail-on error|warning] [--output FORMAT] [-C DIR]
+#   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [-C DIR]
 #   conventions prose [-C DIR] [PATH...]
 #   conventions version
 set -eu
@@ -21,6 +25,7 @@ set -eu
 # Lockstep with .devcontainer/mise.toml (.claude/rules/toolchain-pins.md).
 CONFTEST_VERSION=0.70.1
 VALE_VERSION=3.22.0
+JQ_VERSION=1.8.2
 
 bundle=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 
@@ -82,8 +87,15 @@ INPUTS="${INPUTS}|"'^\.repo/outputs\.yaml$'
 INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
 INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'
 
+# report JQ_FLAG FORMAT: render conftest's results with bin/report.jq.
+report() {
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" "$1" --arg format "$2" --arg fail_on "${fail_on}" \
+    --argjson colour "${colour:-false}" --slurpfile index "${bundle}/checks/data/index.json" \
+    -f "${bundle}/bin/report.jq" "${scratch}/results.json"
+}
+
 check() {
-  fail_on=error output=stdout given=''
+  fail_on=error output=text given=''
   while [ $# -gt 0 ]; do
     case $1 in
       --fail-on) fail_on=${2:?--fail-on needs error or warning}; shift 2 ;;
@@ -99,6 +111,11 @@ check() {
   esac
 
   find_root
+  # Progress goes to stderr, and only to a terminal, so piped output and CI
+  # logs carry the report alone.
+  if [ -t 2 ]; then
+    printf 'conventions %s: checking %s…\n\n' "$(version)" "${root}" >&2
+  fi
   scratch=$(mktemp -d)
   trap 'rm -rf "${scratch}"' EXIT
   files=$(list_files)
@@ -124,9 +141,39 @@ EOF
     set -- -d "${bundle}/checks/data/release.json" "$@"
   fi
   cd "${root}"
-  # shellcheck disable=SC2086 # strict is empty or one flag
+
+  # Any other format is conftest's own (github, sarif, junit, tap, table),
+  # passed through with conftest's exit status.
+  case ${output} in
+    text | json) ;;
+    *)
+      # shellcheck disable=SC2086 # strict is empty or one flag
+      tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" test --combine --no-color \
+        ${strict} -o "${output}" -p "${bundle}/checks/rego" "$@" "${scratch}/inventory.json"
+      return
+      ;;
+  esac
+
+  status=0
   tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" test --combine --no-color \
-    ${strict} -o "${output}" -p "${bundle}/checks/rego" "$@" "${scratch}/inventory.json"
+    -o json -p "${bundle}/checks/rego" "$@" "${scratch}/inventory.json" > "${scratch}/results.json" || status=$?
+  # conftest exits 1 for failures and writes its report; anything else, or no
+  # report, means it could not check (a parse error, a bad policy).
+  if [ "${status}" -gt 1 ] || [ ! -s "${scratch}/results.json" ]; then
+    cat "${scratch}/results.json" >&2
+    die "conftest could not check the repository (exit ${status})"
+  fi
+
+  colour=false
+  if [ "${output}" = text ] && [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != dumb ]; then
+    colour=true
+  fi
+  flags=-r
+  if [ "${output}" = json ]; then flags=-Sa; fi
+  report "${flags}" "${output}"
+  if report -e fails > /dev/null; then
+    return 1
+  fi
 }
 
 prose() {

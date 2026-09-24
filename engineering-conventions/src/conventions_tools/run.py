@@ -24,6 +24,7 @@ from conventions_tools.loading import (
     as_map,
     get_str,
     json_problem,
+    read_json,
     yaml_problem,
 )
 from conventions_tools.paths import (
@@ -342,10 +343,58 @@ def fails(findings: list[Finding], fail_on: str) -> bool:
     return any(SEVERITY_RANK.get(finding.severity, 0) >= threshold for finding in findings)
 
 
-def render_text(report: Report) -> str:
-    lines = [finding.line() for finding in report.findings]
-    lines += [error.line() for error in report.errors]
-    return "".join(f"{line}\n" for line in lines)
+PARSE_TITLE = "A file that does not parse cannot be checked"
+
+
+def requirement_titles(product: Path) -> dict[str, str]:
+    """Each requirement's title, from the index the checks read."""
+    index = as_map(as_map(as_map(read_json(index_file(product))).get("conventions")).get("index"))
+    return {
+        requirement_id: get_str(as_map(entry), "title")
+        for requirement_id, entry in as_map(index.get("requirements")).items()
+    }
+
+
+def _plural(count: int, word: str) -> str:
+    return f"{count} {word}" if count == 1 else f"{count} {word}s"
+
+
+def render_text(report: Report, titles: dict[str, str], fail_on: str = "error") -> str:
+    """The report for a person: one block per requirement, then a summary.
+
+    bin/conventions renders the same text with jq; tests/test_launcher.py
+    holds the two to the same output.
+    """
+    findings = [*report.findings, *(error.as_finding() for error in report.errors)]
+    if not findings:
+        return "No findings.\n"
+    by_id: dict[str, list[Finding]] = {}
+    for finding in findings:
+        by_id.setdefault(finding.id, []).append(finding)
+    blocks: list[str] = []
+    for requirement_id, group in sorted(
+        by_id.items(), key=lambda item: (-SEVERITY_RANK.get(item[1][0].severity, 0), item[0])
+    ):
+        group.sort(key=lambda item: (item.path, item.message))
+        title = PARSE_TITLE if requirement_id == PARSE_ID else titles.get(requirement_id, "")
+        lines = [f"{requirement_id}  {group[0].severity}  {_plural(len(group), 'finding')}"]
+        lines += [text for text in (title, group[0].url) if text]
+        path = None
+        for finding in group:
+            if finding.path != path:
+                path = finding.path
+                lines.append(f"  {path}")
+            lines.append(f"    {finding.message}")
+        blocks.append("\n".join(lines))
+    errors = sum(1 for finding in findings if finding.severity == "error")
+    warnings = len(findings) - errors
+    summary = (
+        f"{_plural(warnings, 'warning')}, {_plural(errors, 'error')} "
+        f"in {_plural(len(by_id), 'requirement')}."
+    )
+    if fail_on == "error" and errors == 0:
+        summary += "\nWarnings do not fail the check; --fail-on warning makes them fail."
+    return "\n\n".join([*blocks, summary]) + "\n"
 
 
 def render_json(report: Report) -> str:

@@ -50,7 +50,8 @@ def _check(arguments: argparse.Namespace) -> int:
     if arguments.format == "json":
         sys.stdout.write(run.render_json(report))
     else:
-        sys.stdout.write(run.render_text(report))
+        titles = run.requirement_titles(product_dir())
+        sys.stdout.write(run.render_text(report, titles, arguments.fail_on))
     if report.errors:
         return EXIT_ERROR
     return EXIT_FINDINGS if run.fails(report.findings, arguments.fail_on) else EXIT_OK
@@ -119,7 +120,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     check_parser.add_argument("repo_dir", help="root of the repository to check")
-    check_parser.add_argument("--format", choices=("text", "json"), default="text")
+    check_parser.add_argument(
+        "--output",
+        "--format",
+        "-o",
+        dest="format",
+        choices=("text", "json"),
+        default="text",
+        help="text for a person (default), json for a program; the same as bin/conventions",
+    )
     check_parser.add_argument(
         "--fail-on",
         choices=("warning", "error"),

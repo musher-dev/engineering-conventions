@@ -146,8 +146,8 @@ Pin a release in `mise.toml` and run one command, the same locally and in CI:
 conventions check
 ```
 
-mise verifies the release's checksum and build provenance, and Renovate raises the pin. To try it without changing
-anything:
+It prints a report grouped by requirement; `--output json` prints the findings for a program to read. mise verifies
+the release's checksum and build provenance, and Renovate raises the pin. To try it without changing anything:
 
 ```sh
 mise exec github:musher-dev/engineering-conventions@0.3.0 -- conventions check  # x-release-please-version

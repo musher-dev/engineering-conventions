@@ -59,7 +59,10 @@ tasks:
   lint:shell:
     desc: Run ShellCheck on every shell script, following sourced libraries.
     cmds:
-      - "{{.LIST_FILES}} '**/*.sh' 'engineering-conventions/bin/*' | xargs -0 -r shellcheck -x -P SCRIPTDIR"
+      # bin/ holds the launcher and the jq program it renders with (report.jq).
+      - >-
+        {{.LIST_FILES}} '**/*.sh' 'engineering-conventions/bin/*' ':!:engineering-conventions/bin/*.jq'
+        | xargs -0 -r shellcheck -x -P SCRIPTDIR
 
   lint:actions:
     desc: Lint the workflows with actionlint (.config/actions/actionlint.yaml).

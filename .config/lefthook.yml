@@ -76,6 +76,9 @@ pre-commit:
       glob:
         - "**/*.sh"
         - "engineering-conventions/bin/*"
+      # report.jq is the launcher's jq program, not a shell script.
+      exclude:
+        - "engineering-conventions/bin/*.jq"
       run: shellcheck -x -P SCRIPTDIR {staged_files}
       fail_text: "ShellCheck failed. Run 'task lint:shell'."
 

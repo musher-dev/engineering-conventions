@@ -24,6 +24,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0011](0011-declarations-are-toml.md) | The .repo/ declarations are TOML | accepted |
 | [0012](0012-repository-names.md) | A repository is named `<system>-<component>`, from a registered system | accepted |
 | [0013](0013-identity-declaration.md) | A repository declares its identity in .repo/repository.toml, and its kind selects its profile | accepted |
+| [0014](0014-release-workflows-may-publish.md) | A release workflow may publish what it releases | accepted |
 
 ## Writing a decision
 

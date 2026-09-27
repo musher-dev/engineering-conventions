@@ -80,9 +80,9 @@ findings contains lib.finding("OUT-06", files.outputs_path, message) if {
 	files.has_string(output, "publish_workflow")
 	path := workflow_path(output.publish_workflow)
 	path in files.workflow_files
-	not path in publish_workflows
+	not path in publishing_workflows
 	message := sprintf(
-		"%s names %q, whose responsibility is not publish; name the workflow that publishes it",
+		"%s names %q, whose responsibility is neither publish nor release; name the workflow that publishes it",
 		[label(output, index), output.publish_workflow],
 	)
 }
@@ -103,6 +103,15 @@ findings contains lib.finding("OUT-07", files.outputs_path, message) if {
 publish_workflows contains path if {
 	some path in files.workflow_files
 	filenames.slot(lower(files.stem(path))) == "publish"
+}
+
+# The workflows an output may name (OUT-06): a publish workflow, or a release
+# workflow, which may publish the artifacts of the release it cuts. Only a
+# publish workflow is taken to publish something (OUT-01): a release workflow
+# may cut releases that publish nothing.
+publishing_workflows := publish_workflows | {path |
+	some path in files.workflow_files
+	filenames.slot(lower(files.stem(path))) == "release"
 }
 
 output_kinds := {kind | some kind in data.conventions.index.vocabulary.output_kinds}

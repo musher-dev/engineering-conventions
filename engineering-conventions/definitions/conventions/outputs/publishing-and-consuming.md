@@ -107,7 +107,10 @@ Checked by: review · Severity: warning · Since: 0.3.0
 
 A consumer pins a version because it means the same bytes every time. A version published from a branch, or
 republished after a fix, breaks that promise without any change on the consumer's side. A fix is a new version.
-Moving aliases such as `latest` or a major-version tag may move; a full version may not.
+Moving aliases such as `latest` or a major-version tag may move; a full version may not. A release workflow that
+publishes in the run that creates the tag, as release-please does, publishes from that tag: it checks out the tag it
+just created and publishes only when a release was created
+([decision 0014](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0014-release-workflows-may-publish.md)).
 
 **Correct:**
 
@@ -115,6 +118,16 @@ Moving aliases such as `latest` or a major-version tag may move; a full version 
 on:
   push:
     tags: ["v*"]
+```
+
+```yaml
+# release.yml, on push to main
+- id: release
+  uses: googleapis/release-please-action@<sha>
+- if: ${{ steps.release.outputs.release_created }}
+  uses: actions/checkout@<sha>
+  with:
+    ref: ${{ steps.release.outputs.tag_name }}   # publishes the tag it just cut
 ```
 
 **Incorrect:**

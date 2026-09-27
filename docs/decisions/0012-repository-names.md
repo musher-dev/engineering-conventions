@@ -70,7 +70,7 @@ new `repository` topic, with every requirement `proposed` at `warning`.
 ### Neutral
 
 - Package, image and binary names are declared in the outputs declaration and do not change with the repository's
-  name: the command-line tool can stay `musher` in a repository called `sdk-cli`.
+  name: a command-line tool keeps its binary name whatever its repository is called.
 - Which repository is in which system, and the name each existing repository moves to, is organization data kept by
   the repository that manages the organization, not a convention here.
 

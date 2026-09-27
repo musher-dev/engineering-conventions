@@ -311,16 +311,16 @@ repository with the old name exists, and every consumer still using them is sile
 **Correct:**
 
 ```text
-Rename python-sdk to sdk-python: one plan covering the declaration, the workflows that
+Rename gateway-api to platform-gateway: one plan covering the declaration, the workflows that
 use its actions, its image paths and the pins in every consuming repository.
-The name python-sdk is retired.
+The name gateway-api is retired.
 ```
 
 **Incorrect:**
 
 ```text
-Rename python-sdk to sdk-python in the settings; fix the builds that break as they are noticed.
-Create a new python-sdk repository for the next major version.
+Rename gateway-api to platform-gateway in the settings; fix the builds that break as they are noticed.
+Create a new gateway-api repository for the next major version.
 ```
 
 Checked by: review · Severity: warning · Since: 0.5.0

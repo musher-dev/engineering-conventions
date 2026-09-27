@@ -64,6 +64,15 @@ pre-commit:
       run: yamllint -c .config/yaml/yamllint.yaml --strict {staged_files}
       fail_text: "YAML lint failed. Run 'task lint:yaml'; the rules are in .config/yaml/yamllint.yaml."
 
+    - name: toml
+      glob: "**/*.toml"
+      # Same exclusion, and reason, as TOML_PATHSPEC in taskfiles/lint.Taskfile.yml.
+      exclude:
+        - "engineering-conventions/tests/fixtures/**"
+      run: taplo fmt --config .config/toml/taplo.toml {staged_files}
+      stage_fixed: true
+      fail_text: "taplo could not format a staged TOML file (a parse error). Run 'task lint:toml'."
+
     - name: spelling
       # No glob: a typo can land in any file type. --force-exclude makes the
       # config's excludes hold for files passed by name.

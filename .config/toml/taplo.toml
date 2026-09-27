@@ -1,0 +1,17 @@
+# Taplo: formats every TOML file in the repository. Formatting only; the
+# declarations' shapes are validated against their JSON Schemas by
+# `task schemas:validate`, not here.
+#
+# Callers name this file explicitly (`taplo fmt --config`, and
+# `evenBetterToml.taplo.configFile.path` in devcontainer.json), as every
+# config under .config/ is (docs/repository.md → "Where configuration goes").
+
+# Fixture repositories are data for the checks under test, and some carry
+# deliberate faults; formatting them could change what a check sees.
+exclude = ["engineering-conventions/tests/fixtures/**"]
+
+[formatting]
+# Keep hand-aligned comments and tables as written, the way the pins in
+# .devcontainer/mise.toml group their tools.
+align_comments = false
+array_auto_collapse = false

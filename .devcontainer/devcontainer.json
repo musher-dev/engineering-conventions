@@ -90,6 +90,7 @@
         // The same configs `task` passes by explicit path, so the editor and
         // the gates agree.
         "markdownlint.configFile": ".config/markdown/markdownlint.jsonc",
+        "evenBetterToml.taplo.configFile.path": ".config/toml/taplo.toml",
         "vale.valeCLI.config": "${workspaceFolder}/.config/markdown/vale.ini",
         "opa.dependency_paths.opa": "/home/vscode/.local/share/mise/shims/opa",
         "opa.dependency_paths.regal": "/home/vscode/.local/share/mise/shims/regal",

@@ -1,0 +1,9 @@
+schema_version = 1
+name = "platform-organization-membership-reconciler"
+system = "platform"
+component = "organization-membership-reconciler"
+kind = "service"
+owner = "@musher-dev/platform"
+lifecycle = "production"
+audience = "internal"
+tier = 1

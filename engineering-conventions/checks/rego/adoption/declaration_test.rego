@@ -158,6 +158,15 @@ test_adopt_06_stale_waivers if {
 	}
 }
 
+test_adopt_06_sees_repository_findings if {
+	# No identity declaration, so REPO-01 fires and its waiver is in use.
+	docs := with_waivers([waiver("REPO-01", "2026-12-01")])
+	found := declaration.findings with input as docs
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	messages(found, "ADOPT-06") == set()
+}
+
 test_adopt_07_unknown_profile if {
 	docs := [td.pin, td.declaration({"profile": "strcit"})]
 	found := declaration.findings with input as docs
@@ -165,7 +174,7 @@ test_adopt_07_unknown_profile if {
 		with data.conventions.runtime.now as td.now
 	messages(found, "ADOPT-07") == {concat(" ", [
 		`profile "strcit" is not defined by this release, so base-repo applies instead;`,
-		`use one of "base-repo", "narrow", "strict"`,
+		`use one of "base-repo", "narrow", "service", "strict"`,
 	])}
 	known := [td.pin, td.declaration({"profile": "strict"})]
 	count(declaration.findings) == 0 with input as known

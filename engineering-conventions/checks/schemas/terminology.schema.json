@@ -54,7 +54,7 @@
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "token": {
-          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action or outputs.kind.",
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle or repository.audience.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*$"
         },
@@ -112,7 +112,18 @@
         "required": ["tags"],
         "properties": {
           "tags": {
-            "contains": { "enum": ["gha.responsibility", "gha.capability", "gha.action", "outputs.kind"] }
+            "contains": {
+              "enum": [
+                "gha.responsibility",
+                "gha.capability",
+                "gha.action",
+                "outputs.kind",
+                "repository.system",
+                "repository.kind",
+                "repository.lifecycle",
+                "repository.audience"
+              ]
+            }
           }
         }
       },
@@ -121,7 +132,7 @@
       }
     },
     "alias": {
-      "description": "A word to avoid in favour of the term. banned aliases fail; discouraged ones warn. scope says where: prose (checked by the MusherConventions Vale style) or identifier (filenames, IDs and other names, checked by the conventions that govern them).",
+      "description": "A word to avoid in favour of the term. banned aliases fail; discouraged ones warn. scope says where: prose (checked by the MusherConventions Vale style), identifier (filenames, IDs and other names inside a repository, checked by the conventions that govern them) or repository-name (a token of a repository's own name, checked by REPO-10).",
       "type": "object",
       "additionalProperties": false,
       "required": ["text", "status", "scope"],
@@ -140,16 +151,25 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "enum": ["prose", "identifier"] }
+          "items": { "enum": ["prose", "identifier", "repository-name"] }
         },
         "suggest": {
           "description": "What to write instead, when that is not simply the term itself (its token in identifiers, its display name in prose).",
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "note": {
-          "description": "Why the alias is avoided.",
+          "description": "Why the alias is avoided, and what to do instead. Required for a repository-name alias, whose check prints it as the advice.",
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         }
+      },
+      "if": {
+        "required": ["scope"],
+        "properties": {
+          "scope": { "contains": { "const": "repository-name" } }
+        }
+      },
+      "then": {
+        "required": ["note"]
       }
     }
   }

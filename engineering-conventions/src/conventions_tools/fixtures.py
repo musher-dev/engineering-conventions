@@ -69,13 +69,16 @@ def expected_findings(case: Path) -> list[Expectation]:
 # A case that needs release data (ADOPT-08, say) carries it next to its
 # expected.json, in the shape bundle:build writes into a release.
 RELEASE_FILE = "release.json"
+# A case whose repository has a known actual name (REPO-07, say) gives it as
+# {"name": ...}, as bin/conventions would learn it from the origin remote.
+REPOSITORY_FILE = "repository.json"
 
 # Every case is an overlay on the clean case, which conforms fully: the case
 # directory holds only the files that differ, and removed.txt lists the clean
 # files the case lacks, one repository-relative path per line.
 BASE_CASE = "clean"
 REMOVED_FILE = "removed.txt"
-CASE_FILES = frozenset({"expected.json", RELEASE_FILE, REMOVED_FILE})
+CASE_FILES = frozenset({"expected.json", RELEASE_FILE, REMOVED_FILE, REPOSITORY_FILE})
 
 
 def _repository_files(directory: Path) -> list[Path]:
@@ -113,11 +116,23 @@ def materialize(case: Path, target: Path) -> Path:
     return target
 
 
+def repository_of(case: Path) -> str | None:
+    """The actual repository name a case gives in repository.json, if any."""
+    path = case / REPOSITORY_FILE
+    return get_str(as_map(read_json(path)), "name") or None if path.is_file() else None
+
+
 def run_case(product: Path, case: Path) -> CaseResult:
     release = case / RELEASE_FILE
     with tempfile.TemporaryDirectory() as directory:
         repo = materialize(case, Path(directory) / case.name)
-        report = check(product, repo, FIXTURE_NOW, release if release.is_file() else None)
+        report = check(
+            product,
+            repo,
+            FIXTURE_NOW,
+            release if release.is_file() else None,
+            repository_of(case),
+        )
     findings = [*report.findings, *(error.as_finding() for error in report.errors)]
     return CaseResult(
         name=case.name,

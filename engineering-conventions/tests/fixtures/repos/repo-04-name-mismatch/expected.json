@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REPO-04",
+    "path": ".repo/repository.toml",
+    "severity": "warning"
+  }
+]

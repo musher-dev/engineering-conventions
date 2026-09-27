@@ -1,0 +1,12 @@
+# This repository's own identity declaration (EC-0009). Its kind selects the
+# specification profile, and `task conventions:self` checks its name against
+# the origin remote (EC-0010).
+schema_version = 1
+name = "engineering-conventions"
+system = "engineering"
+component = "conventions"
+kind = "specification"
+owner = "@musher-dev/engineering"
+lifecycle = "experimental"
+audience = "public"
+tier = 2

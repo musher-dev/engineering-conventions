@@ -117,3 +117,18 @@ test_mise_pins_are_read_from_mise_config_files_only if {
 	docs := [td.file("mise.toml", pinned), td.file("other/mise.toml", pinned)]
 	files.mise_pins == {"mise.toml": "0.2.0"} with input as docs
 }
+
+test_repository_declaration_is_read_like_the_others if {
+	docs := [td.repository({"name": "platform-api"}), td.inventory([])]
+	files.repository_declaration == {"schema_version": 1, "name": "platform-api"} with input as docs
+	files.repository_declared with input as docs
+	files.repository_documents == [{"schema_version": 1, "name": "platform-api"}] with input as docs
+	files.repository_declaration == {} with input as [td.file(".repo/repository.toml", "junk")]
+	not files.repository_declared with input as [td.inventory([])]
+}
+
+test_actual_repository_name_comes_from_the_inventory if {
+	files.actual_repository_name == "platform-api" with input as [td.named_inventory([], "platform-api")]
+	not files.actual_repository_name with input as [td.inventory([])]
+	not files.actual_repository_name with input as [td.named_inventory([], "")]
+}

@@ -7,6 +7,7 @@ is the consumer's equivalent, with no Python.
 """
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -57,6 +58,9 @@ INPUT_GLOBS = (
     ".github/actions/**/action.yaml",
     ".github/rulesets/*.json",
 )
+# A repository name the runner passes on; anything else is treated as unknown,
+# as bin/conventions does.
+REPOSITORY_NAME = re.compile(r"[A-Za-z0-9._-]+")
 # How conftest names the file it could not parse when it aborts.
 CONFTEST_PARSE_ERROR = re.compile(r"parse configurations: (?P<reason>.*), path: (?P<path>\S+)\s*$")
 
@@ -137,6 +141,56 @@ def input_files(repo: Path) -> list[str]:
     return sorted(found)
 
 
+def _git(repo: Path, *arguments: str) -> subprocess.CompletedProcess[str] | None:
+    git = shutil.which("git")
+    if git is None:
+        return None
+    return subprocess.run(
+        [git, "-C", str(repo), *arguments], capture_output=True, text=True, check=False
+    )
+
+
+def is_work_tree_root(repo: Path) -> bool:
+    """Whether repo is the top of a git work tree, not a directory inside one."""
+    top = _git(repo, "rev-parse", "--show-toplevel")
+    return (
+        top is not None
+        and top.returncode == 0
+        and Path(top.stdout.strip()).resolve() == repo.resolve()
+    )
+
+
+def remote_name(url: str) -> str:
+    """The last path segment of a remote URL: https://, git@host:owner/x.git or ssh://."""
+    last = url.strip().removesuffix("/").removesuffix(".git").rsplit("/", 1)[-1]
+    return last.rsplit(":", 1)[-1]
+
+
+def _valid_name(name: str | None) -> str | None:
+    if name and name not in {".", ".."} and REPOSITORY_NAME.fullmatch(name):
+        return name
+    return None
+
+
+def repository_name(repo: Path, given: str | None = None) -> str | None:
+    """The repository's actual name, found the way bin/conventions finds it (EC-0010).
+
+    `given` (--repository), else CONVENTIONS_REPOSITORY, else GITHUB_REPOSITORY
+    when repo is GITHUB_WORKSPACE, else the origin remote when repo is a work
+    tree root. Only the command line calls this: `check` never reads the
+    environment, so fixtures and tests see only the name they pass.
+    """
+    name = given or os.environ.get("CONVENTIONS_REPOSITORY")
+    github, workspace = os.environ.get("GITHUB_REPOSITORY"), os.environ.get("GITHUB_WORKSPACE")
+    if not name and github and workspace and Path(workspace).resolve() == repo.resolve():
+        name = github.rsplit("/", 1)[-1]
+    if not name and is_work_tree_root(repo):
+        origin = _git(repo, "remote", "get-url", "origin")
+        if origin is not None and origin.returncode == 0:
+            name = remote_name(origin.stdout)
+    return _valid_name(name)
+
+
 def _git_files(repo: Path) -> list[str] | None:
     """Tracked and untracked-but-not-ignored files, when repo is a git work tree root.
 
@@ -144,15 +198,7 @@ def _git_files(repo: Path) -> list[str] | None:
     instead: its files are relative to itself, not to that repository.
     """
     git = shutil.which("git")
-    if git is None:
-        return None
-    top = subprocess.run(
-        [git, "-C", str(repo), "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if top.returncode != 0 or Path(top.stdout.strip()).resolve() != repo.resolve():
+    if git is None or not is_work_tree_root(repo):
         return None
     listed = subprocess.run(
         [git, "-C", str(repo), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
@@ -265,21 +311,31 @@ class UnparsableInputError(RunnerError):
         self.error = error
 
 
-def run_conftest(
-    product: Path, repo: Path, files: list[str], now: str, release: Path | None = None
-) -> list[Finding]:
+@dataclass(frozen=True)
+class RunData:
+    """What a run passes to conftest besides the files: the time, the release, the name."""
+
+    now: str
+    release: Path | None = None
+    repository: str | None = None
+
+
+def run_conftest(product: Path, repo: Path, files: list[str], data: RunData) -> list[Finding]:
     if not index_file(product).is_file():
         raise RunnerError(f"{index_file(product)} is missing; run `conventions generate`")
     if not rego_dir(product).is_dir():
         raise RunnerError(f"{rego_dir(product)} is missing")
     with tempfile.TemporaryDirectory(prefix="conventions-") as temp:
         scratch = Path(temp)
-        runtime = {"conventions": {"runtime": {"now": now}}}
+        runtime = {"conventions": {"runtime": {"now": data.now}}}
         (scratch / "runtime.json").write_text(json.dumps(runtime), encoding="utf-8")
-        listing = {"conventions_inventory": {"files": inventory(repo)}}
-        (scratch / "inventory.json").write_text(json.dumps(listing), encoding="utf-8")
+        listing: dict[str, object] = {"files": inventory(repo)}
+        if data.repository is not None:
+            listing["repository"] = {"name": data.repository}
+        document = {"conventions_inventory": listing}
+        (scratch / "inventory.json").write_text(json.dumps(document), encoding="utf-8")
         completed = subprocess.run(
-            conftest_command(product, scratch, files, release),
+            conftest_command(product, scratch, files, data.release),
             cwd=repo,
             capture_output=True,
             text=True,
@@ -308,8 +364,19 @@ def _release(product: Path, release: Path | None) -> Path | None:
     return release_file(product) if release_file(product).is_file() else None
 
 
-def check(product: Path, repo: Path, now: str, release: Path | None = None) -> Report:
-    """Check `repo`; `release` overrides the bundle's release data (fixtures use it)."""
+def check(
+    product: Path,
+    repo: Path,
+    now: str,
+    release: Path | None = None,
+    repository: str | None = None,
+) -> Report:
+    """Check `repo`; `release` overrides the bundle's release data (fixtures use it).
+
+    `repository` is the repository's actual name, which REPO-07 compares with
+    the declared one; None leaves it unknown. It is never read from the
+    environment here (see `repository_name`).
+    """
     repo = repo.resolve()
     if not repo.is_dir():
         raise RunnerError(f"{repo} is not a directory")
@@ -322,12 +389,13 @@ def check(product: Path, repo: Path, now: str, release: Path | None = None) -> R
     ]
     unparsed = {error.path for error in errors}
     files = [relative for relative in files if relative not in unparsed]
-    findings, skipped = _conftest_findings(product, repo, files, now, release)
+    data = RunData(now, release, _valid_name(repository))
+    findings, skipped = _conftest_findings(product, repo, files, data)
     return Report(sort_findings(findings), sorted(errors + skipped))
 
 
 def _conftest_findings(
-    product: Path, repo: Path, files: list[str], now: str, release: Path | None
+    product: Path, repo: Path, files: list[str], data: RunData
 ) -> tuple[list[Finding], list[ParseError]]:
     """Run conftest, leaving out any file it refuses to parse.
 
@@ -338,7 +406,7 @@ def _conftest_findings(
     skipped: list[ParseError] = []
     while True:
         try:
-            return run_conftest(product, repo, remaining, now, release), skipped
+            return run_conftest(product, repo, remaining, data), skipped
         except UnparsableInputError as unparsable:
             skipped.append(unparsable.error)
             remaining.remove(unparsable.error.path)

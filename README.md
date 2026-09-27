@@ -66,7 +66,7 @@ flowchart LR
   release[["Release vX.Y.Z<br/>bundle, checksums, attestation"]]
   subgraph yours["Your repository"]
     pin["mise.toml pin"]
-    declarations[".repo/conventions.toml<br/>.repo/outputs.toml"]
+    declarations[".repo/conventions.toml<br/>.repo/outputs.toml<br/>.repo/repository.toml"]
     check["conventions check"]
   end
   upstream["Defined elsewhere<br/>platform, specifications,<br/>observability-schema-registry"]
@@ -96,6 +96,7 @@ Start from the part of your repository you are working on:
 | [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `mise.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-09 |
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006 | GHA-01 – GHA-38 |
 | [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-11 |
+| [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name | EC-0009, EC-0010 | REPO-01 – REPO-13 |
 
 A topic's README gives the reading order. Two other ways in:
 
@@ -115,6 +116,7 @@ or format another repository defines gets a pointer, not a copy.
 | --- | --- |
 | That a workflow that publishes is named `publish[-<scope>].yml` (GHA-02) | Your publish workflow, what it builds, when it runs |
 | The format of `.repo/outputs.toml` and what each output states (EC-0007) | The image, its registry, or a catalog that collects declarations |
+| The repository-name grammar `<system>-<component>`, the registered systems, and `.repo/repository.toml` (EC-0009, EC-0010) | Which teams exist and who is in them; applying names and properties to the organization |
 | `validate` as a workflow token, and its banned synonyms `ci` and `checks` | Platform domain nouns, telemetry names, the customer glossary |
 | The checks, and the release that ships them | Running them: your CI runs `conventions check` |
 | What a waiver must state and how long it may last | Whether your repository needs one |
@@ -128,6 +130,8 @@ Where the rest lives:
 | Document specifications: the component, blueprint and catalog formats | `musher-dev/specifications` |
 | Positioning, product vocabulary, the customer glossary, platform domain nouns | `musher-dev/platform` and `musher-dev/company` |
 | The development-container scaffold: the container, its toolchain setup, its stacks | `musher-dev/development-container` |
+| Teams and their membership | `musher-dev/company`, applied by `musher-dev/infra-github` |
+| Applying repository names, custom properties and rulesets to the organization | `musher-dev/infra-github` |
 | Rules local to one repository | That repository |
 
 A repository's own rule may be stricter than a convention here, never contradictory. The

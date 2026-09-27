@@ -22,6 +22,8 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0009](0009-definitions-and-checks.md) | The product separates what is defined from what checks it | accepted |
 | [0010](0010-outputs-declaration.md) | A repository declares the outputs it publishes in .repo/outputs.yaml | accepted |
 | [0011](0011-declarations-are-toml.md) | The .repo/ declarations are TOML | accepted |
+| [0012](0012-repository-names.md) | A repository is named `<system>-<component>`, from a registered system | accepted |
+| [0013](0013-identity-declaration.md) | A repository declares its identity in .repo/repository.toml, and its kind selects its profile | accepted |
 
 ## Writing a decision
 

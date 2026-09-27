@@ -1,0 +1,12 @@
+schema_version: 1
+description: A banned repository-name token must say what to do instead.
+terms:
+  - id: example.repository-name
+    display_name: repository name
+    definition: The name of a repository.
+    tags: [meta]
+    stability: provisional
+    aliases:
+      - text: utils
+        status: banned
+        scope: [repository-name]

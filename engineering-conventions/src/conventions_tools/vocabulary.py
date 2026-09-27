@@ -9,6 +9,23 @@ RESPONSIBILITY_TAG = "gha.responsibility"
 CAPABILITY_TAG = "gha.capability"
 ACTION_TAG = "gha.action"
 OUTPUT_KIND_TAG = "outputs.kind"
+SYSTEM_TAG = "repository.system"
+KIND_TAG = "repository.kind"
+LIFECYCLE_TAG = "repository.lifecycle"
+AUDIENCE_TAG = "repository.audience"
+# Every tag whose terms carry a token the checks read; a token is unique
+# within each (invariants.terminology_consistent).
+TOKEN_TAGS = (
+    RESPONSIBILITY_TAG,
+    CAPABILITY_TAG,
+    ACTION_TAG,
+    OUTPUT_KIND_TAG,
+    SYSTEM_TAG,
+    KIND_TAG,
+    LIFECYCLE_TAG,
+    AUDIENCE_TAG,
+)
+REPOSITORY_NAME_SCOPE = "repository-name"
 # The term whose identifier aliases name when a workflow runs. They are banned
 # anywhere in a filename, unlike the other banned tokens, which are synonyms
 # banned only where the responsibility goes (GHA-05).
@@ -58,6 +75,25 @@ def banned_identifier_tokens(terminology: Terminology) -> dict[str, str]:
     return banned
 
 
+def banned_repository_tokens(terminology: Terminology) -> dict[str, str]:
+    """Tokens banned anywhere in a repository name, each with the advice REPO-10 prints."""
+    banned: dict[str, str] = {}
+    missing: list[str] = []
+    for term, alias in _terms_with_aliases(terminology):
+        if alias.status != "banned" or REPOSITORY_NAME_SCOPE not in alias.scope:
+            continue
+        if alias.note is None:
+            missing.append(
+                f"{terminology.path}: alias {alias.text!r} of {term.id} is banned in repository "
+                "names but has no note to say what to do instead"
+            )
+            continue
+        banned[alias.text] = alias.note
+    if missing:
+        raise ContentError(missing)
+    return banned
+
+
 def schedule_tokens(terminology: Terminology) -> list[str]:
     return sorted(
         alias.text
@@ -84,9 +120,14 @@ def project(terminology: Terminology) -> dict[str, object]:
     return {
         "action_tokens": tokens(terminology, ACTION_TAG),
         "banned_identifier_tokens": banned_identifier_tokens(terminology),
+        "banned_repository_tokens": banned_repository_tokens(terminology),
         "capability_tokens": tokens(terminology, CAPABILITY_TAG),
         "display_forms": display_forms(terminology),
         "output_kinds": tokens(terminology, OUTPUT_KIND_TAG),
+        "repository_audiences": tokens(terminology, AUDIENCE_TAG),
+        "repository_kinds": tokens(terminology, KIND_TAG),
+        "repository_lifecycles": tokens(terminology, LIFECYCLE_TAG),
+        "repository_systems": tokens(terminology, SYSTEM_TAG),
         "responsibility_tokens": tokens(terminology, RESPONSIBILITY_TAG),
         "schedule_tokens": schedule_tokens(terminology),
     }

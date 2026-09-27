@@ -19,6 +19,7 @@ TERMINOLOGY = "terminology.schema.json"
 PROFILE = "profile.schema.json"
 DECLARATION = "conventions-declaration.schema.json"
 OUTPUTS = "outputs.schema.json"
+REPOSITORY = "repository.schema.json"
 
 
 class Validator(Protocol):

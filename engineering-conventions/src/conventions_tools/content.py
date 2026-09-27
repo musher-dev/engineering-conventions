@@ -80,6 +80,7 @@ class Alias:
     status: str
     scope: tuple[str, ...]
     suggest: str | None
+    note: str | None
 
 
 @dataclass(frozen=True)
@@ -215,6 +216,7 @@ def _alias(data: dict[str, object]) -> Alias:
         status=get_str(data, "status"),
         scope=get_str_list(data, "scope"),
         suggest=get_opt_str(data, "suggest"),
+        note=get_opt_str(data, "note"),
     )
 
 

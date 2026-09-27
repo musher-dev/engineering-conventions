@@ -1,0 +1,9 @@
+# The profile the identity declaration selects for kind = "tool"
+# (EC-0009). It is base-repo until requirements specific to the kind exist.
+schema_version: 1
+id: tool
+display_name: Tool
+description: >-
+  Repositories whose kind is tool. Until requirements specific to the kind
+  exist, it applies exactly what base-repo does.
+inherits: [base-repo]

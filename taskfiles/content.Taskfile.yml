@@ -47,6 +47,11 @@ tasks:
           YQ_FLAGS: -p toml
           SCHEMA: outputs
           PATHSPEC: "'.repo/outputs.toml' 'engineering-conventions/examples/**/.repo/outputs.toml'"
+      - task: schemas:validate:files
+        vars:
+          YQ_FLAGS: -p toml
+          SCHEMA: repository
+          PATHSPEC: "'.repo/repository.toml' 'engineering-conventions/examples/**/.repo/repository.toml'"
       # Topic READMEs and the generated index carry no frontmatter.
       - task: schemas:validate:files
         vars:

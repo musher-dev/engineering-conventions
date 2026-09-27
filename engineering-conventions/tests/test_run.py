@@ -245,6 +245,58 @@ def test_check_plumbs_runtime_inventory_and_release(stub: Path, home: Path, repo
     assert inventory["files"] == [".github/workflows/validate.yml"]
 
 
+def test_the_inventory_carries_a_known_repository_name(stub: Path, home: Path, repo: Path) -> None:
+    run.check(home, repo, NOW)
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert "repository" not in inventory
+    run.check(home, repo, NOW, repository="platform-api")
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert inventory["repository"] == {"name": "platform-api"}
+    # A name the launcher would not pass on is treated as unknown here too.
+    run.check(home, repo, NOW, repository="not a name")
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert "repository" not in inventory
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/musher-dev/platform-api.git",
+        "https://github.com/musher-dev/platform-api",
+        "git@github.com:musher-dev/platform-api.git",
+        "ssh://git@github.com/musher-dev/platform-api.git/",
+        "git@example.com:platform-api.git\n",
+    ],
+)
+def test_remote_name(url: str) -> None:
+    assert run.remote_name(url) == "platform-api"
+
+
+def test_repository_name_sources_in_order(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    for variable in ("CONVENTIONS_REPOSITORY", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE"):
+        monkeypatch.delenv(variable, raising=False)
+    assert run.repository_name(tmp_path) is None
+    monkeypatch.setenv("GITHUB_REPOSITORY", "musher-dev/sdk-python")
+    monkeypatch.setenv("GITHUB_WORKSPACE", str(tmp_path / "elsewhere"))
+    assert run.repository_name(tmp_path) is None
+    monkeypatch.setenv("GITHUB_WORKSPACE", str(tmp_path))
+    assert run.repository_name(tmp_path) == "sdk-python"
+    monkeypatch.setenv("CONVENTIONS_REPOSITORY", "sdk-typescript")
+    assert run.repository_name(tmp_path) == "sdk-typescript"
+    assert run.repository_name(tmp_path, "sdk-cli") == "sdk-cli"
+    assert run.repository_name(tmp_path, "..") is None
+
+
+def test_cli_check_passes_the_repository_name(
+    stub: Path, home: Path, repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(HOME_ENV, str(home))
+    monkeypatch.delenv("CONVENTIONS_REPOSITORY", raising=False)
+    assert main(["check", str(repo), "--now", NOW, "--repository", "platform-api"]) == 0
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert inventory["repository"] == {"name": "platform-api"}
+
+
 def test_release_data_is_optional(stub: Path, home: Path, repo: Path) -> None:
     run.check(home, repo, NOW)
     args = (stub / "args").read_text().splitlines()

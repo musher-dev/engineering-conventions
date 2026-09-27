@@ -1,0 +1,19 @@
+schema_version: 1
+description: A registered system, and a banned repository-name token with its advice.
+terms:
+  - id: example.system.widgets
+    display_name: widgets
+    token: widgets
+    definition: The repositories that build widgets.
+    tags: [repository.system]
+    stability: provisional
+  - id: example.repository-name
+    display_name: repository name
+    definition: The name of a repository.
+    tags: [meta]
+    stability: provisional
+    aliases:
+      - text: utils
+        status: banned
+        scope: [repository-name]
+        note: Name what the repository holds.

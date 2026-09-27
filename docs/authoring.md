@@ -18,6 +18,9 @@ applies them.
 | **conventions declaration** | A consumer's `.repo/conventions.toml` | `manifest` |
 | **output** | Something a repository publishes for others to consume: an image, library, command-line tool, contract or bundle | `artifact` (GitHub Actions already means a workflow's upload) |
 | **outputs declaration** | A publishing repository's `.repo/outputs.toml` | |
+| **identity declaration** | Every repository's `.repo/repository.toml`: its name, system, component, kind, owner, lifecycle, audience and tier | `manifest`, `catalog-info` |
+| **system** | A registered grouping of repositories, the first token of each of their names, such as `platform` | `team`, `domain` |
+| **component** | What one repository holds within its system, the rest of its name, such as `api` in `platform-api` | |
 | **family** | A requirement-ID prefix registered in `definitions/conventions/families.yml` | |
 
 ## Before you write

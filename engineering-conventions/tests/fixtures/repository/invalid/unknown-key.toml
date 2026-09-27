@@ -1,0 +1,10 @@
+schema_version = 1
+name = "platform-api"
+system = "platform"
+component = "api"
+kind = "service"
+owner = "@musher-dev/platform"
+team = "platform"
+lifecycle = "production"
+audience = "internal"
+tier = 1

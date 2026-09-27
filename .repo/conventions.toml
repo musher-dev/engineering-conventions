@@ -1,12 +1,12 @@
 # This repository's own conventions declaration: it is held to the rules it
-# publishes (`task conventions:self`), and must report zero findings.
+# publishes (`task conventions:self`), and must report zero findings. It names
+# no profile: the kind in .repo/repository.toml selects it.
 #
 # conventions.version tracks this repository's own release. release-please
 # rewrites the marked line on every release (extra-files in
 # .github/release-please/config.json), so never bump it by hand. The marker
 # comment is what its generic updater finds.
 schema_version = 1
-profile = "base-repo"
 waivers = []
 
 [conventions]

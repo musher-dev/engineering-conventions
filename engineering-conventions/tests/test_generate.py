@@ -43,6 +43,7 @@ def test_index_top_level_shape(content: Content) -> None:
         "product_dir",
         "profiles",
         "repository",
+        "repository_schema",
         "requirements",
         "schema_version",
         "vocabulary",
@@ -140,6 +141,62 @@ def test_vocabulary_projection(content: Content) -> None:
     assert projected["schedule_tokens"] == ["cron", "daily", "nightly", "scheduled", "weekly"]
 
 
+def test_repository_vocabulary_projection(content: Content) -> None:
+    projected = as_map(_index(content)["vocabulary"])
+    assert projected["repository_systems"] == [
+        "brand",
+        "catalog",
+        "company",
+        "engineering",
+        "host",
+        "infra",
+        "observability",
+        "platform",
+        "sdk",
+    ]
+    assert projected["repository_kinds"] == [
+        "content",
+        "documentation",
+        "infrastructure",
+        "library",
+        "service",
+        "specification",
+        "template",
+        "tool",
+        "website",
+    ]
+    assert projected["repository_lifecycles"] == ["deprecated", "experimental", "production"]
+    assert projected["repository_audiences"] == ["internal", "public"]
+    banned = as_map(projected["banned_repository_tokens"])
+    assert sorted(banned) == [
+        "common",
+        "legacy",
+        "misc",
+        "musher",
+        "new",
+        "old",
+        "repo",
+        "shared",
+        "util",
+        "utils",
+    ]
+    assert 'lifecycle = "experimental"' in str(banned["new"])
+
+
+def test_repository_name_tokens_do_not_leak_into_other_scopes(content: Content) -> None:
+    identifiers = vocabulary.banned_identifier_tokens(content.terminology)
+    prose = {swap.text for swap in vocabulary.prose_swaps(content.terminology, "banned")}
+    for token in ("musher", "repo", "shared", "utils", "new", "old"):
+        assert token not in identifiers
+        assert token not in prose
+
+
+def test_index_carries_a_self_contained_repository_schema(content: Content) -> None:
+    schema = as_map(_index(content)["repository_schema"])
+    assert "common.schema.json" not in json.dumps(schema)
+    assert "tier" in as_list(schema["required"])
+
+
 def test_prose_aliases_do_not_leak_into_identifier_tokens(content: Content) -> None:
     banned = vocabulary.banned_identifier_tokens(content.terminology)
     assert "conventions manifest" not in banned
@@ -219,7 +276,7 @@ def test_profile_cannot_lower_a_default_severity(content: Content) -> None:
     edited = replace(content, conventions=(changed, *content.conventions[1:]))
     lowering = replace(content.profiles[0], severity={raised.id: "warning"})
     with pytest.raises(ProfileError, match=f"lowers {raised.id} from error to warning"):
-        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA", "OUT"})
+        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA", "OUT", "REPO"})
 
 
 def test_vale_styles_are_substitutions(content: Content) -> None:

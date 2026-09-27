@@ -1,0 +1,9 @@
+# The profile the identity declaration selects for kind = "library"
+# (EC-0009). It is base-repo until requirements specific to the kind exist.
+schema_version: 1
+id: library
+display_name: Library
+description: >-
+  Repositories whose kind is library. Until requirements specific to the kind
+  exist, it applies exactly what base-repo does.
+inherits: [base-repo]

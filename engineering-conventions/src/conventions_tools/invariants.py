@@ -12,6 +12,7 @@ from collections import Counter
 from collections.abc import Callable, Iterable
 from pathlib import Path
 
+from conventions_tools import vocabulary
 from conventions_tools.content import (
     Content,
     Convention,
@@ -251,7 +252,7 @@ def terminology_consistent(content: Content) -> list[str]:
         f"{glob.path}: display form {tok} is listed more than once"
         for tok in _duplicates(t for t, _ in glob.display_forms)
     ]
-    for tag in ("gha.responsibility", "gha.capability", "gha.action"):
+    for tag in vocabulary.TOKEN_TAGS:
         tokens = [term.token for term in glob.terms if tag in term.tags and term.token]
         found += [
             f"{glob.path}: token {tok!r} is used by more than one {tag} term"
@@ -279,6 +280,22 @@ def profiles_resolve(content: Content) -> list[str]:
     except ProfileError as error:
         found.append(str(error))
     return found
+
+
+def kinds_have_profiles(content: Content) -> list[str]:
+    """Every repository kind has a profile of the same name, which its kind selects.
+
+    Without one, a repository that declares the kind silently falls back to
+    base-repo, and a later profile for the kind would change what it is
+    checked against without anyone choosing it.
+    """
+    profiles = {profile.id for profile in content.profiles}
+    return [
+        f"repository kind {kind!r} has no profile; add definitions/profiles/{kind}.yml "
+        "inheriting base-repo"
+        for kind in vocabulary.tokens(content.terminology, vocabulary.KIND_TAG)
+        if kind not in profiles
+    ]
 
 
 # CI passes the push event's `before` SHA, which is all zeros on a branch's
@@ -371,6 +388,7 @@ CHECKS: tuple[Check, ...] = (
     fixtures_cover,
     terminology_consistent,
     profiles_resolve,
+    kinds_have_profiles,
 )
 
 

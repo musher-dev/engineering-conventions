@@ -16,8 +16,13 @@
 # findings with --output json; any other format is conftest's own. The report
 # goes to stdout; progress goes to stderr, and only on a terminal.
 #
+# The repository's actual name, which REPO-07 compares with the declared one,
+# comes from --repository or CONVENTIONS_REPOSITORY, else GITHUB_REPOSITORY
+# when the checked directory is GITHUB_WORKSPACE, else the origin remote
+# when it is a work-tree root, else nowhere (EC-0010).
+#
 # Usage:
-#   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [-C DIR]
+#   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [--repository NAME] [-C DIR]
 #   conventions prose [-C DIR] [PATH...]
 #   conventions version
 set -eu
@@ -63,10 +68,16 @@ find_root() {
   fi
 }
 
+# Whether the checked directory is the top of a git work tree, rather than a
+# directory inside one (a fixture, a vendored copy) or no work tree at all.
+is_work_tree_root() {
+  [ "$(git -C "${root}" rev-parse --show-toplevel 2> /dev/null || true)" = "${root}" ]
+}
+
 # The repository's files: tracked and untracked-but-not-ignored when it is a
 # git work tree, every file otherwise. One path per line, sorted.
 list_files() {
-  if [ "$(git -C "${root}" rev-parse --show-toplevel 2> /dev/null || true)" = "${root}" ]; then
+  if is_work_tree_root; then
     git -C "${root}" -c core.quotePath=false ls-files --cached --others --exclude-standard
   else
     (cd "${root}" && find . -type f ! -path './.git/*' | sed 's|^\./||')
@@ -74,6 +85,34 @@ list_files() {
     # The index still lists a file deleted from the work tree.
     if [ -f "${root}/${file}" ]; then printf '%s\n' "${file}"; fi
   done | LC_ALL=C sort -u
+}
+
+# The last path segment of a remote URL, in any of its forms:
+# https://host/owner/name.git, git@host:owner/name.git, ssh://git@host/owner/name.
+remote_name() {
+  url=${1%/}
+  url=${url%.git}
+  url=${url##*/}
+  printf '%s\n' "${url##*:}"
+}
+
+# The repository's actual name (EC-0010), or empty when nothing says it. The
+# GitHub and origin sources are trusted only for the directory they describe,
+# so checking a fixture or a subdirectory never borrows the enclosing name.
+repository_name() {
+  name=${repository:-${CONVENTIONS_REPOSITORY:-}}
+  if [ -z "${name}" ] && [ -n "${GITHUB_REPOSITORY:-}" ] && [ -n "${GITHUB_WORKSPACE:-}" ] &&
+    [ "$(cd -- "${GITHUB_WORKSPACE}" 2> /dev/null && pwd -P)" = "$(cd -- "${root}" && pwd -P)" ]; then
+    name=${GITHUB_REPOSITORY##*/}
+  fi
+  if [ -z "${name}" ] && is_work_tree_root; then
+    name=$(remote_name "$(git -C "${root}" remote get-url origin 2> /dev/null || true)")
+  fi
+  # Only a plain GitHub name is passed on, so it needs no JSON escaping.
+  case ${name} in
+    '' | . | .. | *[!A-Za-z0-9._-]*) ;;
+    *) printf '%s\n' "${name}" ;;
+  esac
 }
 
 # What conftest reads: workflows, actions, rulesets, the TOML declarations
@@ -94,11 +133,12 @@ report() {
 }
 
 check() {
-  fail_on=error output=text given=''
+  fail_on=error output=text given='' repository=''
   while [ $# -gt 0 ]; do
     case $1 in
       --fail-on) fail_on=${2:?--fail-on needs error or warning}; shift 2 ;;
       --output | -o) output=${2:?--output needs a format}; shift 2 ;;
+      --repository) repository=${2:?--repository needs a name}; shift 2 ;;
       -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
       *) usage ;;
     esac
@@ -119,13 +159,18 @@ check() {
   trap 'rm -rf "${scratch}"' EXIT
   files=$(list_files)
 
-  # The inventory lets the checks see files whose contents are not passed.
-  # git quotes a name holding a quote, backslash or control character, so
-  # escaping backslashes and quotes is all JSON needs.
+  name=$(repository_name)
+
+  # The inventory lets the checks see files whose contents are not passed,
+  # and the repository's actual name when it is known. git quotes a file name
+  # holding a quote, backslash or control character, so escaping backslashes
+  # and quotes is all JSON needs.
   {
     printf '{"conventions_inventory": {"files": ['
     printf '%s\n' "${files}" | sed '/^$/d; s/\\/\\\\/g; s/"/\\"/g; s/.*/"&"/' | paste -sd, -
-    printf ']}}\n'
+    printf ']'
+    if [ -n "${name}" ]; then printf ', "repository": {"name": "%s"}' "${name}"; fi
+    printf '}}\n'
   } > "${scratch}/inventory.json"
 
   set --

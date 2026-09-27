@@ -14,7 +14,7 @@ engineering-conventions/               repository level: acts on the product
 ├── .devcontainer/  .github/           integration homes whose location the tool mandates
 ├── .config/                           tool configuration (linters, hooks), passed by explicit path
 ├── .claude/  CLAUDE.md  AGENTS.md     agent contract and path-scoped rules
-├── .repo/                             this repository's own declarations (conventions.toml, outputs.toml)
+├── .repo/                             this repository's own declarations (conventions, outputs, repository)
 ├── Taskfile.yml  taskfiles/           orchestration; reaches the product through PRODUCT_DIR
 ├── docs/                              contributor documentation and decisions
 ├── README.md  CONTRIBUTING.md  SECURITY.md  CHANGELOG.md  version.txt

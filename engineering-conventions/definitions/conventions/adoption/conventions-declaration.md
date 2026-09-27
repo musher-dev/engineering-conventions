@@ -93,9 +93,9 @@ requirements:
 
 # Conventions declaration
 
-A repository that adopts these conventions pins the release it is checked against, usually as one line in
-`mise.toml` (ADOPT-09). Anything else it needs to say goes in an optional `.repo/conventions.toml`: a convention
-profile other than `base-repo`, repository-specific vocabulary, and every waiver it holds. The declaration makes a
+A repository that adopts these conventions pins the release it is checked against, usually as one line in `mise.toml`
+(ADOPT-09). Anything else it needs to say goes in an optional `.repo/conventions.toml`: a convention profile other than
+the one its kind selects, repository-specific vocabulary, and every waiver it holds. The declaration makes a
 repository's position explicit and reviewable. A deviation is a dated, tracked line in a file, not a silent gap in a
 check.
 
@@ -124,7 +124,8 @@ waived without making every waiver meaningless.
 # .repo/conventions.toml
 schema_version = 1
 
-# Optional: the convention profile that applies. base-repo is the default.
+# Optional: the convention profile that applies, overriding the one the kind in
+# .repo/repository.toml selects.
 profile = "base-repo"
 
 # Optional: the release this repository is checked against, without the leading v.
@@ -159,7 +160,7 @@ ADOPT-02 reports.
 | --- | --- | --- |
 | `schema_version` | yes | The file format version. Always `1`. |
 | `conventions.version` | no | The release pinned, such as `0.1.0`, for a repository that does not pin it in mise. Upgrade by changing this value and the downloaded bundle together; ADOPT-08 reports a mismatch. |
-| `profile` | no | The convention profile that selects which requirements apply and at what severity; `base-repo` when absent. It must be one the pinned release defines (ADOPT-07). |
+| `profile` | no | The convention profile that selects which requirements apply and at what severity. It overrides the profile of the repository's kind ([EC-0009](../repository/identity-declaration.md)); without either, `base-repo` applies. It must be one the pinned release defines (ADOPT-07). |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
 | `waivers` | no | A list of waivers, described below. |
 
@@ -184,22 +185,24 @@ pull request why the fix slipped.
 
 ### Profile selection
 
-The profile named in `profile` decides which requirements apply and at which severity. A profile can include
+The profile decides which requirements apply and at which severity. A profile can include
 requirements by family, by convention or by ID, exclude requirements, inherit from other profiles, and **raise** a
 requirement's severity from `warning` to `error`. A profile can never lower a severity.
 
 | Situation | Profile used |
 | --- | --- |
 | The declaration names a profile the release defines | That profile |
-| The declaration names a profile the release does not define | `base-repo`, plus an ADOPT-07 finding |
-| No declaration, or no `profile` in it | `base-repo` |
+| The declaration names a profile the release does not define | The kind's profile, else `base-repo`, plus an ADOPT-07 finding |
+| No declaration, or no `profile` in it, and `.repo/repository.toml` declares a registered `kind` | The profile named for the kind |
+| Neither | `base-repo` |
 
-An unknown profile falls back to `base-repo` rather than to nothing, so a typo in `profile` never switches every
+`profile` is an override: most repositories leave it out and let their kind select the profile. An unknown profile
+falls back to the kind's profile or `base-repo` rather than to nothing, so a typo in `profile` never switches every
 check off.
 
 The shipped profiles are documented in `definitions/profiles/README.md`. In the 0.x series `base-repo` includes the
-`ADOPT`, `GHA` and `OUT` families with proposed requirements reported, so a repository sees every finding it would face
-before any of them can fail its build.
+`ADOPT`, `GHA`, `OUT` and `REPO` families with proposed requirements reported, so a repository sees every finding it
+would face before any of them can fail its build, and every kind's profile inherits it.
 
 ## Requirements
 
@@ -360,11 +363,11 @@ Checked by: conftest · Severity: warning · Since: 0.1.0
 
 **The declaration names a profile the release defines.**
 
-The profile decides which requirements apply, so a profile name the pinned release does not define leaves the
-repository checked against something it did not choose. It usually means a typo (`base_repo` for `base-repo`), or a
-profile that a newer release adds and this one lacks. The check falls back to `base-repo`, so the repository is still
-checked, and reports the unknown name so it can be corrected. The profiles a release defines are listed in
-`definitions/profiles/README.md`.
+The profile decides which requirements apply, so a profile name the pinned release does not define leaves the repository
+checked against something it did not choose. It usually means a typo (`base_repo` for `base-repo`), or a profile that a
+newer release adds and this one lacks. The check falls back to the profile of the repository's kind, or to `base-repo`,
+so the repository is still checked, and reports the unknown name so it can be corrected. The profiles a release defines
+are listed in `definitions/profiles/README.md`.
 
 **Correct:**
 
@@ -375,7 +378,7 @@ profile = "base-repo"
 **Incorrect:**
 
 ```toml
-profile = "base_repo"         # not a profile the release defines; base-repo is used, plus ADOPT-07
+profile = "base_repo"         # not a profile the release defines; the kind's is used, plus ADOPT-07
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0

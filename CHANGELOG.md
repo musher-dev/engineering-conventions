@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/musher-dev/engineering-conventions/compare/v0.4.0...v0.5.0) (2026-09-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **conventions:** a YAML declaration is no longer read. A repository that has .repo/conventions.yaml or .repo/outputs.yaml renames it to .toml, rewrites it in TOML, and quotes every date: an unquoted `expires = 2026-12-01` is a TOML date, which conftest renders as 2026-12-01T00:00:00Z, and ADOPT-02 now reports it with a message that asks for the quotes. The ADOPT-05 message says "set expires to" instead of the YAML "set expires: to". OUT-01's title names .repo/outputs.toml.
+
+### Features
+
+* **conventions:** name repositories, declare their identity, and move .repo/ to TOML ([#23](https://github.com/musher-dev/engineering-conventions/issues/23)) ([de17c9b](https://github.com/musher-dev/engineering-conventions/commit/de17c9ba9b13bd858211906884a45b56cdac713c))
+
 ## [0.4.0](https://github.com/musher-dev/engineering-conventions/compare/v0.3.0...v0.4.0) (2026-09-24)
 
 

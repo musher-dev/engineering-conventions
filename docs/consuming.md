@@ -6,7 +6,7 @@ one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.4.0 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.5.0 -- conventions check  # x-release-please-version
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
@@ -24,7 +24,7 @@ Pin the release in `mise.toml` (or `.devcontainer/mise.toml`):
 
 ```toml
 [tools]
-"github:musher-dev/engineering-conventions" = "0.4.0"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.5.0"  # x-release-please-version
 ```
 
 Then run it:

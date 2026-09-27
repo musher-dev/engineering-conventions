@@ -80,32 +80,34 @@ and a ruleset that requires only the aggregate.
 
 ## Declare only what differs
 
-A repository that uses the `base-repo` profile and holds no waivers needs no other file. Add `.repo/conventions.yaml`
+A repository that uses the `base-repo` profile and holds no waivers needs no other file. Add `.repo/conventions.toml`
 when it needs a different profile, its own display forms, or a waiver:
 
-```yaml
-schema_version: 1
-profile: base-repo
-waivers: []
+```toml
+schema_version = 1
+profile = "base-repo"
 ```
+
+The declarations under `.repo/` are TOML.
 
 The full format is [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md). ADOPT-02
 checks the file against its schema as part of `conventions check`; no separate validator is needed.
 
 ## Declare what you publish
 
-A repository with a `publish` workflow lists what it publishes in `.repo/outputs.yaml`, one entry per container image,
+A repository with a `publish` workflow lists what it publishes in `.repo/outputs.toml`, one entry per container image,
 library, command-line tool, contract or bundle:
 
-```yaml
-schema_version: 1
-outputs:
-  - id: api-image
-    kind: image
-    source: api/
-    publish_workflow: publish-api.yml
-    location: ghcr.io/your-org/api
-    docs: api/README.md#run-the-image
+```toml
+schema_version = 1
+
+[[outputs]]
+id = "api-image"
+kind = "image"
+source = "api/"
+publish_workflow = "publish-api.yml"
+location = "ghcr.io/your-org/api"
+docs = "api/README.md#run-the-image"
 ```
 
 `conventions check` reports OUT-01 on a publish workflow until the file exists, and checks that each kind is known and
@@ -185,16 +187,16 @@ them. That is not a pass: export the rulesets from the repository settings and c
 When a repository cannot meet a requirement yet, it records a waiver in its declaration rather than ignoring the
 finding:
 
-```yaml
-waivers:
-  - requirement: GHA-32
-    paths:
-      - .github/workflows/validate-docs.yml
-    reason: >-
-      The docs workflow keeps its paths filter until its jobs move into validate-repository.yml.
-    tracking: https://github.com/your-org/your-repo/issues/1
-    expires: 2026-12-31
+```toml
+[[waivers]]
+requirement = "GHA-32"
+paths = [".github/workflows/validate-docs.yml"]
+reason = "The docs workflow keeps its paths filter until its jobs move into validate-repository.yml."
+tracking = "https://github.com/your-org/your-repo/issues/1"
+expires = "2026-12-31"
 ```
+
+Quote the date. An unquoted `expires = 2026-12-31` is a TOML date rather than a string, and ADOPT-02 reports it.
 
 A waiver needs a reason of at least 20 characters, a tracking issue URL and an expiry at most 180 days away. It
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.

@@ -39,12 +39,14 @@ tasks:
           PATHSPEC: "'engineering-conventions/definitions/conventions/families.yml'"
       - task: schemas:validate:files
         vars:
+          YQ_FLAGS: -p toml
           SCHEMA: conventions-declaration
-          PATHSPEC: "'.repo/conventions.yaml' 'engineering-conventions/examples/**/.repo/conventions.yaml'"
+          PATHSPEC: "'.repo/conventions.toml' 'engineering-conventions/examples/**/.repo/conventions.toml'"
       - task: schemas:validate:files
         vars:
+          YQ_FLAGS: -p toml
           SCHEMA: outputs
-          PATHSPEC: "'.repo/outputs.yaml' 'engineering-conventions/examples/**/.repo/outputs.yaml'"
+          PATHSPEC: "'.repo/outputs.toml' 'engineering-conventions/examples/**/.repo/outputs.toml'"
       # Topic READMEs and the generated index carry no frontmatter.
       - task: schemas:validate:files
         vars:
@@ -94,7 +96,8 @@ tasks:
     requires:
       vars: [PATHSPEC]
     vars:
-      # '--front-matter=extract' for Markdown; empty for plain YAML.
+      # '--front-matter=extract' for Markdown, '-p toml' for the TOML
+      # declarations; empty for plain YAML.
       YQ_FLAGS: '{{.YQ_FLAGS | default ""}}'
       # A product schema by name, or any schema by path (the decision schema
       # lives beside the decisions, outside the product).
@@ -102,7 +105,8 @@ tasks:
     cmds:
       # Through yq to JSON first, so YAML typing (a bare date becomes a string)
       # matches what the conventions CLI's loader sees, rather than
-      # check-jsonschema's own YAML loader. The JSON copies mirror the source
+      # check-jsonschema's own YAML loader. yq rejects an unquoted TOML date,
+      # which the declarations never hold (decision 0011). The JSON copies mirror the source
       # paths, so an error still names the file to fix. An empty match fails:
       # a mistyped pathspec must not turn the gate into a silent pass.
       - |

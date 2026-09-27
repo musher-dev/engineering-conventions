@@ -10,7 +10,7 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": ".repo/conventions.yaml"
+          "path": ".repo/conventions.toml"
         },
         {
           "type": "generic",

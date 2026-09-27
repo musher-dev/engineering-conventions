@@ -41,7 +41,7 @@ If it helps, think of a **building code**:
 | The inspector's checklist | The checks |
 | The class of building (house, warehouse) | A convention profile, such as `base-repo` |
 | The edition a permit cites | The release a repository pins |
-| A granted variance, with an end date | A waiver in `.repo/conventions.yaml` |
+| A granted variance, with an end date | A waiver in `.repo/conventions.toml` |
 
 A convention is **not** a template you copy (nothing here is applied to your repository), not a matter of taste (each
 requirement names the failure it prevents), and not a definition of a word that another repository owns.
@@ -66,7 +66,7 @@ flowchart LR
   release[["Release vX.Y.Z<br/>bundle, checksums, attestation"]]
   subgraph yours["Your repository"]
     pin["mise.toml pin"]
-    declarations[".repo/conventions.yaml<br/>.repo/outputs.yaml"]
+    declarations[".repo/conventions.toml<br/>.repo/outputs.toml"]
     check["conventions check"]
   end
   upstream["Defined elsewhere<br/>platform, specifications,<br/>observability-schema-registry"]
@@ -93,9 +93,9 @@ Start from the part of your repository you are working on:
 
 | Topic | Governs in your repository | Conventions | Requirements |
 | --- | --- | --- | --- |
-| [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `mise.toml`, `.repo/conventions.yaml` | EC-0001 | ADOPT-01 – ADOPT-09 |
+| [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `mise.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-09 |
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006 | GHA-01 – GHA-38 |
-| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.yaml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-11 |
+| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-11 |
 
 A topic's README gives the reading order. Two other ways in:
 
@@ -114,7 +114,7 @@ or format another repository defines gets a pointer, not a copy.
 | Owned here | Not owned here |
 | --- | --- |
 | That a workflow that publishes is named `publish[-<scope>].yml` (GHA-02) | Your publish workflow, what it builds, when it runs |
-| The format of `.repo/outputs.yaml` and what each output states (EC-0007) | The image, its registry, or a catalog that collects declarations |
+| The format of `.repo/outputs.toml` and what each output states (EC-0007) | The image, its registry, or a catalog that collects declarations |
 | `validate` as a workflow token, and its banned synonyms `ci` and `checks` | Platform domain nouns, telemetry names, the customer glossary |
 | The checks, and the release that ships them | Running them: your CI runs `conventions check` |
 | What a waiver must state and how long it may last | Whether your repository needs one |

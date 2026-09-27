@@ -6,7 +6,7 @@
 #   every workflow the same view of its triggers and jobs.
 package conventions.lib.files
 
-declaration_path := ".repo/conventions.yaml"
+declaration_path := ".repo/conventions.toml"
 
 # conftest keeps each path as the runner passed it, so `./x` and `x` must name
 # the same file before any path comparison or waiver glob sees it.
@@ -86,7 +86,7 @@ declaration_documents := [doc.contents |
 	doc.path == declaration_path
 ]
 
-outputs_path := ".repo/outputs.yaml"
+outputs_path := ".repo/outputs.toml"
 
 outputs_declared if outputs_path in repository_files
 

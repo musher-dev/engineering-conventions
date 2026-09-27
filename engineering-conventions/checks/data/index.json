@@ -128,7 +128,7 @@
             "properties": {
               "expires": {
                 "$ref": "#/definitions/common_date",
-                "description": "The last day the waiver applies (YYYY-MM-DD), at most 180 days ahead."
+                "description": "The last day the waiver applies, as a quoted \"YYYY-MM-DD\" string (an unquoted TOML date is rejected), at most 180 days ahead."
               },
               "paths": {
                 "description": "Limit the waiver to findings on these paths (repository-relative globs). Omit to waive the requirement everywhere.",
@@ -171,7 +171,7 @@
             "type": "object"
           }
         },
-        "description": "A consuming repository's optional .repo/conventions.yaml: the convention profile that applies to it and every waiver it holds, and, for a repository that does not pin the release in mise, the release it is checked against. ADOPT-02 checks a declaration against this schema.",
+        "description": "A consuming repository's optional .repo/conventions.toml: the convention profile that applies to it and every waiver it holds, and, for a repository that does not pin the release in mise, the release it is checked against. ADOPT-02 checks a declaration against this schema.",
         "properties": {
           "conventions": {
             "additionalProperties": false,
@@ -201,7 +201,7 @@
             "properties": {
               "display_forms": {
                 "$ref": "#/definitions/common_displayForms",
-                "description": "Extra display forms, keyed by lower-case token, e.g. grpc: gRPC. They add to the release's display forms."
+                "description": "Extra display forms, keyed by lower-case token, e.g. grpc = \"gRPC\". They add to the release's display forms."
               }
             },
             "type": "object"
@@ -293,7 +293,7 @@
             "type": "object"
           }
         },
-        "description": "A repository's .repo/outputs.yaml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented. OUT-02 checks a declaration against this schema.",
+        "description": "A repository's .repo/outputs.toml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented. OUT-02 checks a declaration against this schema.",
         "properties": {
           "outputs": {
             "description": "The outputs this repository publishes, at least one.",
@@ -454,7 +454,7 @@
           "severity": "warning",
           "since": "0.1.0",
           "status": "retired",
-          "title": "A repository declares its conventions in .repo/conventions.yaml",
+          "title": "A repository declares its conventions in .repo/conventions.toml",
           "waivable": false
         },
         "ADOPT-02": {
@@ -1083,7 +1083,7 @@
           "severity": "warning",
           "since": "0.3.0",
           "status": "proposed",
-          "title": "A repository with a publish workflow declares its outputs in .repo/outputs.yaml",
+          "title": "A repository with a publish workflow declares its outputs in .repo/outputs.toml",
           "waivable": true
         },
         "OUT-02": {

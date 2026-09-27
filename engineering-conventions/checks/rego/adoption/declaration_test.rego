@@ -76,6 +76,17 @@ test_adopt_02_messages if {
 		with data.conventions.runtime.now as td.now
 }
 
+# conftest renders an unquoted TOML date as a timestamp at midnight UTC.
+test_adopt_02_bare_toml_date if {
+	bare := td.declaration({"schema_version": 1, "waivers": [waiver("GHA-07", "2026-12-01T00:00:00Z")]})
+	messages(declaration.findings, "ADOPT-02") == {concat("", [
+		"`waivers.0.expires` is the bare TOML date 2026-12-01T00:00:00Z; ",
+		`quote it as "2026-12-01", because the declaration's dates are strings.`,
+	])} with input as [misnamed, td.pin, bare]
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+}
+
 test_active_matching_waiver_is_quiet if {
 	docs := with_waivers([waiver("GHA-07", "2026-12-01")])
 	count(declaration.findings) == 0 with input as docs
@@ -125,7 +136,7 @@ test_adopt_05_expiry_too_far if {
 		with data.conventions.runtime.now as td.now
 	some message in messages(found, "ADOPT-05")
 	startswith(message, "waiver 1 (GHA-07) expires on 2027-06-01, more than 180 days away;")
-	contains(message, "set expires: to 2027-03-22 or earlier")
+	contains(message, "set expires to 2027-03-22 or earlier")
 }
 
 test_adopt_06_stale_waivers if {

@@ -23,7 +23,7 @@ ID is permanent: it is never renumbered or reused.
 
 | ID | Title | Convention | Status | Severity | Engine |
 | --- | --- | --- | --- | --- | --- |
-| [ADOPT-01](adoption/conventions-declaration.md#adopt-01) | A repository declares its conventions in .repo/conventions.yaml | EC-0001 | retired | warning | conftest |
+| [ADOPT-01](adoption/conventions-declaration.md#adopt-01) | A repository declares its conventions in .repo/conventions.toml | EC-0001 | retired | warning | conftest |
 | [ADOPT-02](adoption/conventions-declaration.md#adopt-02) | The conventions declaration is valid against its schema | EC-0001 | proposed | warning | conftest |
 | [ADOPT-03](adoption/conventions-declaration.md#adopt-03) | An expired waiver no longer suppresses its finding | EC-0001 | proposed | warning | conftest |
 | [ADOPT-04](adoption/conventions-declaration.md#adopt-04) | A waiver names a requirement that exists and is not retired | EC-0001 | proposed | warning | conftest |
@@ -70,7 +70,7 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-36](github-actions/units-and-renames.md#gha-36) | A rename updates every reference to the renamed identity in the same change | EC-0006 | proposed | warning | review |
 | [GHA-37](github-actions/units-and-renames.md#gha-37) | A name states the responsibility, result or capability, not the trigger or tool | EC-0006 | proposed | warning | review |
 | [GHA-38](github-actions/composite-actions.md#gha-38) | Inputs and outputs of actions and reusable workflows are kebab-case | EC-0004 | proposed | warning | conftest |
-| [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.yaml | EC-0007 | proposed | warning | conftest |
+| [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
 | [OUT-04](outputs/outputs-declaration.md#out-04) | Output IDs are unique within a repository | EC-0007 | proposed | warning | conftest |

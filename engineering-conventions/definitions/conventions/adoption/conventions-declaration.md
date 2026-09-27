@@ -3,13 +3,13 @@ id: EC-0001
 title: Conventions declaration
 summary: >-
   Every consuming repository pins the release it is checked against, and
-  declares in an optional .repo/conventions.yaml any convention profile other
+  declares in an optional .repo/conventions.toml any convention profile other
   than the default and every time-boxed waiver it holds.
 status: active
 topic: adoption
 applies_to:
   paths:
-    - .repo/conventions.yaml
+    - .repo/conventions.toml
 created: 2026-09-23
 owners:
   - "@justinmerrell"
@@ -17,7 +17,7 @@ authority: self
 migration: authoritative
 requirements:
   - id: ADOPT-01
-    title: A repository declares its conventions in .repo/conventions.yaml
+    title: A repository declares its conventions in .repo/conventions.toml
     status: retired
     severity: warning
     since: 0.1.0
@@ -94,14 +94,14 @@ requirements:
 # Conventions declaration
 
 A repository that adopts these conventions pins the release it is checked against, usually as one line in
-`mise.toml` (ADOPT-09). Anything else it needs to say goes in an optional `.repo/conventions.yaml`: a convention
+`mise.toml` (ADOPT-09). Anything else it needs to say goes in an optional `.repo/conventions.toml`: a convention
 profile other than `base-repo`, repository-specific vocabulary, and every waiver it holds. The declaration makes a
 repository's position explicit and reviewable. A deviation is a dated, tracked line in a file, not a silent gap in a
 check.
 
 ## Scope
 
-This convention covers `.repo/conventions.yaml` in every repository checked against a release of
+This convention covers `.repo/conventions.toml` in every repository checked against a release of
 `musher-dev/engineering-conventions`. It defines the file's format, how the profile is selected, and how waivers
 behave over time.
 
@@ -120,36 +120,40 @@ waived without making every waiver meaningless.
 
 ## The declaration file
 
-```yaml
-# .repo/conventions.yaml
-schema_version: 1
+```toml
+# .repo/conventions.toml
+schema_version = 1
+
+# Optional: the convention profile that applies. base-repo is the default.
+profile = "base-repo"
 
 # Optional: the release this repository is checked against, without the leading v.
 # Leave it out when mise pins the release (github:musher-dev/engineering-conventions).
-conventions:
-  version: "0.1.0"
-
-# Optional: the convention profile that applies. base-repo is the default.
-profile: base-repo
+[conventions]
+version = "0.1.0"
 
 # Optional: display forms for this repository's own filename tokens. They add to
 # the release's display forms and can never redefine one it ships.
-vocabulary:
-  display_forms:
-    grpc: gRPC
-    sbom: SBOM
+[vocabulary.display_forms]
+grpc = "gRPC"
+sbom = "SBOM"
 
-# Optional: time-boxed deviations. Omit the key or use [] when there are none.
-waivers:
-  - requirement: GHA-32
-    paths:
-      - .github/workflows/validate-docs.yml
-    reason: >-
-      The docs workflow is paths-filtered until its jobs move into validate-repository.yml;
-      its check is not yet required.
-    tracking: https://github.com/your-org/your-repo/issues/1
-    expires: 2026-12-31
+# Optional: time-boxed deviations, one [[waivers]] table each. Leave them out
+# when there are none.
+[[waivers]]
+requirement = "GHA-32"
+paths = [".github/workflows/validate-docs.yml"]
+reason = """\
+  The docs workflow is paths-filtered until its jobs move into validate-repository.yml; \
+  its check is not yet required."""
+tracking = "https://github.com/your-org/your-repo/issues/1"
+expires = "2026-12-31" # quoted: a bare TOML date is not a string (ADOPT-02)
 ```
+
+The file is TOML ([decision 0011](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0011-declarations-are-toml.md)).
+Keys at the top level come before the first `[table]` header, since everything after a header belongs to that table.
+Dates are quoted strings: an unquoted `expires = 2026-12-31` is a TOML date, which the checks read as a timestamp and
+ADOPT-02 reports.
 
 | Field | Required | Meaning |
 | --- | --- | --- |
@@ -172,7 +176,7 @@ A waiver suppresses the findings of one requirement, optionally only on some pat
 | `paths` | no | Repository-relative globs. The waiver applies only to findings on matching paths. Omit to waive the requirement everywhere. |
 | `reason` | yes | Why the deviation is needed, at least 20 characters. Written for the reviewer who will be asked to extend it. |
 | `tracking` | yes | The URL of the issue that tracks removing the waiver. |
-| `expires` | yes | The last day the waiver applies, as `YYYY-MM-DD`, at most 180 days after the day the check runs. |
+| `expires` | yes | The last day the waiver applies, as a quoted `"YYYY-MM-DD"` string, at most 180 days after the day the check runs. |
 
 A waiver is a promise to fix something, with a date on it. When the date passes, the waived findings return and the
 declaration itself reports the lapse (ADOPT-03). Extending a waiver is a new review: change `expires`, and say in the
@@ -201,10 +205,11 @@ before any of them can fail its build.
 
 ### ADOPT-01
 
-**A repository declares its conventions in `.repo/conventions.yaml`.**
+**A repository declares its conventions in `.repo/conventions.toml`.**
 
 Retired in 0.2.0 and replaced by [ADOPT-09](#adopt-09). The declaration became optional when the release pin moved
-to `mise.toml`, so a repository without one is no longer a finding; what adoption needs is a pin, not a file.
+to `mise.toml`, so a repository without one is no longer a finding; what adoption needs is a pin, not a file. The
+declaration was a YAML file when this requirement was retired; the title names the file as it is today.
 
 Checked by: nothing (retired) · Severity: warning · Since: 0.1.0
 
@@ -216,27 +221,31 @@ The declaration is read by a policy engine, so a typo in a key is not an error t
 unknown key is ignored, and a misspelled `waivers` waives nothing. Validating the file against
 `conventions-declaration.schema.json`, which the release carries in its index, turns those mistakes into findings.
 The schema rejects unknown keys, a `reason` under 20 characters, a `tracking` value that is not an `https` URL, a
-malformed date, and any waiver of an `ADOPT` requirement. A display form that redefines one the release ships is
-reported here too.
+malformed or unquoted date, and any waiver of an `ADOPT` requirement. A display form that redefines one the release
+ships is reported here too.
 
 **Correct:**
 
-```yaml
-schema_version: 1
-conventions:
-  version: "0.1.0"
-profile: base-repo
+```toml
+schema_version = 1
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
 ```
 
 **Incorrect:**
 
-```yaml
-schema_version: 1
-conventions:
-  version: v0.1.0        # no leading v
-profile: base-repo
-waiver:                  # unknown key; should be waivers
-  - requirement: ADOPT-01
+```toml
+schema_version = 1
+profile = "base-repo"
+
+[conventions]
+version = "v0.1.0"            # no leading v
+
+[[waiver]]                    # unknown key; should be waivers
+requirement = "GHA-07"
+expires = 2026-12-01          # unquoted: a TOML date, not a string
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
@@ -252,22 +261,22 @@ change that says why.
 
 **Correct:**
 
-```yaml
-waivers:
-  - requirement: GHA-06
-    reason: Two workflows keep .yaml until the release tooling that globs for it is updated.
-    tracking: https://github.com/your-org/your-repo/issues/1
-    expires: 2026-11-30      # still in the future on the day the check runs
+```toml
+[[waivers]]
+requirement = "GHA-06"
+reason = "Two workflows keep .yaml until the release tooling that globs for it is updated."
+tracking = "https://github.com/your-org/your-repo/issues/1"
+expires = "2026-11-30"        # still in the future on the day the check runs
 ```
 
 **Incorrect:**
 
-```yaml
-waivers:
-  - requirement: GHA-06
-    reason: Two workflows keep .yaml until the release tooling that globs for it is updated.
-    tracking: https://github.com/your-org/your-repo/issues/1
-    expires: 2026-06-30      # in the past: GHA-06 findings return, plus ADOPT-03
+```toml
+[[waivers]]
+requirement = "GHA-06"
+reason = "Two workflows keep .yaml until the release tooling that globs for it is updated."
+tracking = "https://github.com/your-org/your-repo/issues/1"
+expires = "2026-06-30"        # in the past: GHA-06 findings return, plus ADOPT-03
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
@@ -283,18 +292,18 @@ there if it still applies.
 
 **Correct:**
 
-```yaml
-waivers:
-  - requirement: GHA-24
-    # ...
+```toml
+[[waivers]]
+requirement = "GHA-24"
+# ...
 ```
 
 **Incorrect:**
 
-```yaml
-waivers:
-  - requirement: GHA-99      # not defined in the pinned release
-    # ...
+```toml
+[[waivers]]
+requirement = "GHA-99"        # not defined in the pinned release
+# ...
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
@@ -310,14 +319,14 @@ waiver.
 
 **Correct:**
 
-```yaml
-    expires: 2027-01-31      # within 180 days of a run on 2026-09-23
+```toml
+expires = "2027-01-31"        # within 180 days of a run on 2026-09-23
 ```
 
 **Incorrect:**
 
-```yaml
-    expires: 2028-01-01      # more than 180 days out
+```toml
+expires = "2028-01-01"        # more than 180 days out
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
@@ -332,17 +341,17 @@ check reports each waiver that matched no finding in the run.
 
 **Correct:**
 
-```yaml
-waivers: []                  # the GHA-32 fix landed, and the waiver went with it
+```toml
+waivers = []                  # the GHA-32 fix landed, and the waiver went with it
 ```
 
 **Incorrect:**
 
-```yaml
-waivers:
-  - requirement: GHA-32
-    paths: [.github/workflows/validate-docs.yml]   # file no longer exists
-    # ...
+```toml
+[[waivers]]
+requirement = "GHA-32"
+paths = [".github/workflows/validate-docs.yml"]   # file no longer exists
+# ...
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
@@ -359,14 +368,14 @@ checked, and reports the unknown name so it can be corrected. The profiles a rel
 
 **Correct:**
 
-```yaml
-profile: base-repo
+```toml
+profile = "base-repo"
 ```
 
 **Incorrect:**
 
-```yaml
-profile: base_repo           # not a profile the release defines; base-repo is used, plus ADOPT-07
+```toml
+profile = "base_repo"         # not a profile the release defines; base-repo is used, plus ADOPT-07
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0
@@ -386,16 +395,16 @@ from a checkout of this repository has no release version to compare against, an
 
 **Correct:**
 
-```yaml
-conventions:
-  version: "0.2.0"           # and CI downloads engineering-conventions-0.2.0.tar.gz
+```toml
+[conventions]
+version = "0.2.0"             # and CI downloads engineering-conventions-0.2.0.tar.gz
 ```
 
 **Incorrect:**
 
-```yaml
-conventions:
-  version: "0.1.0"           # while CI downloads and runs the 0.2.0 bundle
+```toml
+[conventions]
+version = "0.1.0"             # while CI downloads and runs the 0.2.0 bundle
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0

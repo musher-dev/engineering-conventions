@@ -1,0 +1,13 @@
+schema_version = 1
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
+
+# An unquoted TOML date: ADOPT-02 asks for it to be quoted.
+[[waivers]]
+requirement = "GHA-07"
+paths = [".github/workflows/validate.yml"]
+reason = "Renaming the workflow waits for the release branch to close."
+tracking = "https://github.com/musher-dev/engineering-conventions/issues/1"
+expires = 2026-12-01

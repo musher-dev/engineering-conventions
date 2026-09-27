@@ -25,8 +25,9 @@ declared := [waiver | some waiver in files.declaration.waivers; is_object(waiver
 	is_array(files.declaration.waivers)
 }
 
-# `expires` is a date; YAML leaves an unquoted date as its string, and a full
-# RFC 3339 timestamp is accepted too.
+# `expires` is a quoted date, "YYYY-MM-DD". A full RFC 3339 timestamp is
+# accepted too, which is also how conftest renders an unquoted TOML date
+# (ADOPT-02 still reports that one, so it gets quoted).
 expires_ns(waiver) := time.parse_rfc3339_ns(concat("", [waiver.expires, "T00:00:00Z"])) if {
 	regex.match(`^[0-9]{4}-[0-9]{2}-[0-9]{2}$`, waiver.expires)
 }

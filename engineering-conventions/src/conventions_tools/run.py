@@ -33,8 +33,10 @@ from conventions_tools.paths import (
     release_file,
 )
 
-DECLARATION = ".repo/conventions.yaml"
-OUTPUTS = ".repo/outputs.yaml"
+DECLARATION = ".repo/conventions.toml"
+OUTPUTS = ".repo/outputs.toml"
+# The repository identity declaration; bin/conventions passes it too.
+REPOSITORY = ".repo/repository.toml"
 # Where ADOPT-09 looks for the mise entry that pins the release; the same
 # list as mise_config_paths in checks/rego/lib/files.rego.
 MISE_CONFIGS = (
@@ -78,7 +80,7 @@ class Finding:
 
 @dataclass(frozen=True, order=True)
 class ParseError:
-    """A file left out of the check because it is not valid YAML or JSON."""
+    """A file left out of the check because it is not valid YAML, TOML or JSON."""
 
     path: str
     reason: str
@@ -127,7 +129,11 @@ def input_files(repo: Path) -> list[str]:
         for path in (repo / WORKFLOW_DIR).glob("*")
         if path.is_file() and path.suffix.lower() in WORKFLOW_SUFFIXES
     }
-    found |= {name for name in (DECLARATION, OUTPUTS, *MISE_CONFIGS) if (repo / name).is_file()}
+    found |= {
+        name
+        for name in (DECLARATION, OUTPUTS, REPOSITORY, *MISE_CONFIGS)
+        if (repo / name).is_file()
+    }
     return sorted(found)
 
 

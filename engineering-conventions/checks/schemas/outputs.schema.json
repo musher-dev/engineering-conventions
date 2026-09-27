@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Outputs declaration",
-  "description": "A repository's .repo/outputs.yaml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented. OUT-02 checks a declaration against this schema.",
+  "description": "A repository's .repo/outputs.toml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented. OUT-02 checks a declaration against this schema.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "outputs"],

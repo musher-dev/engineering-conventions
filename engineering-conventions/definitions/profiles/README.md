@@ -2,7 +2,7 @@
 
 A convention profile is the set of requirements that applies to one kind of
 repository, and the severity each is reported at. A consuming repository
-names its profile in `.repo/conventions.yaml`; without a declaration the
+names its profile in `.repo/conventions.toml`; without a declaration the
 checks use `base-repo`.
 
 | Profile | For |

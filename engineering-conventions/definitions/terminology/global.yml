@@ -293,7 +293,7 @@ terms:
     stability: stable
 
   # Output kinds: what a repository publishes, named in the kind field of
-  # .repo/outputs.yaml (OUT-03). The formats they carry (OCI, OpenAPI and
+  # .repo/outputs.toml (OUT-03). The formats they carry (OCI, OpenAPI and
   # the rest) are defined by their own specifications, not here.
   - id: outputs.kind.image
     display_name: container image
@@ -398,7 +398,7 @@ terms:
   - id: conventions.conventions-declaration
     display_name: conventions declaration
     definition: >-
-      The file .repo/conventions.yaml in a consuming repository, which pins a
+      The file .repo/conventions.toml in a consuming repository, which pins a
       release, names a convention profile and lists waivers.
     tags: [meta]
     stability: stable
@@ -432,7 +432,7 @@ terms:
   - id: conventions.outputs-declaration
     display_name: outputs declaration
     definition: >-
-      The file .repo/outputs.yaml in a repository that publishes, which
+      The file .repo/outputs.toml in a repository that publishes, which
       lists each output with its kind, source, publishing workflow, location
       and consumption docs.
     tags: [meta]

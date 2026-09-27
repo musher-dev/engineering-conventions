@@ -25,7 +25,7 @@ Not shipped in the bundle (tooling): `src/` and `tests/` (the `conventions` auth
 
 ## Using it
 
-1. Declare the conventions in `.repo/conventions.yaml`
+1. Declare the conventions in `.repo/conventions.toml`
    ([EC-0001](definitions/conventions/adoption/conventions-declaration.md)).
 2. Download and verify a release, then run `conftest` with `checks/rego` and `checks/data/`.
 

@@ -1,0 +1,11 @@
+schema_version = 1
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
+
+[[waivers]]
+requirement = "CI-14"
+reason = "The workflow rename waits for the release branch to close."
+tracking = "https://github.com/musher-dev/engineering-conventions/issues/1"
+expires = "2026-12-01"

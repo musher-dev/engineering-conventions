@@ -27,7 +27,7 @@ test_missing_declaration_reads_as_empty if {
 }
 
 test_declaration_seen_only_in_inventory_counts_as_declared if {
-	files.declared with input as [td.inventory([".repo/conventions.yaml"])]
+	files.declared with input as [td.inventory([".repo/conventions.toml"])]
 }
 
 test_non_array_input_has_no_documents if {

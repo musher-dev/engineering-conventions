@@ -106,11 +106,12 @@
           ],
           "./engineering-conventions/checks/schemas/families.schema.json": [
             "engineering-conventions/definitions/conventions/families.yml"
-          ],
-          "./engineering-conventions/checks/schemas/conventions-declaration.schema.json": [
-            ".repo/conventions.yaml"
           ]
         },
+        // The TOML declarations under .repo/ get no editor schema: Taplo
+        // cannot resolve the schemas' relative $refs (common.schema.json)
+        // without an $id, which the schemas deliberately lack. The gate is
+        // `task schemas:validate`.
 
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff",

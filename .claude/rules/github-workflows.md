@@ -17,7 +17,7 @@ are held to them first. This file routes; it restates none of them.
   holds the responsibility, capability and action tokens and the display forms.
 - **The proof**: `task conventions:self` runs this repository through its own
   conventions and MUST report zero findings, warnings included. There are no waivers
-  in `.repo/conventions.yaml`, and adding one here needs a very good reason.
+  in `.repo/conventions.toml`, and adding one here needs a very good reason.
 - **Security**: `task lint:actions` (actionlint) and `task lint:actions:security`
   (zizmor, config in `.config/actions/zizmor.yml`).
 - **Tools in CI**: installed only through `.github/actions/setup-tools`, the one

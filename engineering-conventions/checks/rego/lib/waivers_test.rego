@@ -47,7 +47,7 @@ test_suppressed_only_by_active_waivable_waiver if {
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
 	adopt := [td.declaration({"waivers": [{"requirement": "ADOPT-01", "expires": "2026-12-01"}]})]
-	adopt_finding := {"id": "ADOPT-01", "path": ".repo/conventions.yaml", "message": "m"}
+	adopt_finding := {"id": "ADOPT-01", "path": ".repo/conventions.toml", "message": "m"}
 	not waivers.suppressed(adopt_finding) with input as adopt
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now

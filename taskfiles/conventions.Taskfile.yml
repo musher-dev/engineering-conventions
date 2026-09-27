@@ -1,7 +1,7 @@
 version: '3'
 
 # Dogfooding: this repository run through its own rules, exactly as a consumer
-# would run them, against its own declaration (.repo/conventions.yaml).
+# would run them, against its own declaration (.repo/conventions.toml).
 
 set: [errexit, nounset, pipefail]
 

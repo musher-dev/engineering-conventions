@@ -75,7 +75,8 @@ index := {
 }
 
 # A cut-down declaration schema with the shapes ADOPT-02's messages depend on:
-# an unknown key, a wrong type, and a waiver of an ADOPT requirement.
+# an unknown key, a wrong type, a waiver of an ADOPT requirement, and an
+# expires date that is not YYYY-MM-DD (which fails two keywords).
 declaration_schema := {
 	"type": "object",
 	"additionalProperties": false,
@@ -87,7 +88,10 @@ declaration_schema := {
 		"vocabulary": {"type": "object"},
 		"waivers": {"type": "array", "items": {
 			"type": "object",
-			"properties": {"requirement": {"type": "string", "not": {"pattern": "^ADOPT-"}}},
+			"properties": {
+				"requirement": {"type": "string", "not": {"pattern": "^ADOPT-"}},
+				"expires": {"type": "string", "format": "date", "pattern": `^[0-9]{4}-[0-9]{2}-[0-9]{2}$`},
+			},
 		}},
 	},
 }
@@ -109,7 +113,7 @@ file(path, contents) := {"path": path, "contents": contents}
 inventory(paths) := file("/tmp/inventory.json", {"conventions_inventory": {"files": paths}})
 
 # schema_version is filled in so a test states only what it is about.
-declaration(contents) := file(".repo/conventions.yaml", object.union({"schema_version": 1}, contents))
+declaration(contents) := file(".repo/conventions.toml", object.union({"schema_version": 1}, contents))
 
 # The mise entry that pins the release (ADOPT-09).
 pin := file("mise.toml", {"tools": {"github:musher-dev/engineering-conventions": "0.2.0"}})
@@ -192,7 +196,7 @@ outputs_schema := {
 }
 
 # schema_version is filled in so a test states only what it is about.
-outputs(entries) := file(".repo/outputs.yaml", {"schema_version": 1, "outputs": entries})
+outputs(entries) := file(".repo/outputs.toml", {"schema_version": 1, "outputs": entries})
 
 # A conforming image output published by publish.yml.
 image_output := {

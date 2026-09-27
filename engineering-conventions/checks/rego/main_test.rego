@@ -81,7 +81,7 @@ test_expired_waiver_reports_finding_and_adopt_03 if {
 		with data.conventions.runtime.now as td.now
 	pairs(warnings) == {
 		["GHA-07", ".github/workflows/validate.yml", "warning"],
-		["ADOPT-03", ".repo/conventions.yaml", "warning"],
+		["ADOPT-03", ".repo/conventions.toml", "warning"],
 	}
 }
 
@@ -92,6 +92,6 @@ test_adopt_findings_are_never_waived if {
 		with data.conventions.runtime.now as td.now
 	pairs(warnings) == {
 		["ADOPT-09", "mise.toml", "warning"],
-		["ADOPT-02", ".repo/conventions.yaml", "warning"],
+		["ADOPT-02", ".repo/conventions.toml", "warning"],
 	}
 }

@@ -1,6 +1,8 @@
-"""Reading YAML, JSON and Markdown frontmatter into plain, typed values."""
+"""Reading YAML, TOML, JSON and Markdown frontmatter into plain, typed values."""
 
 import json
+import tomllib
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import cast
 
@@ -49,6 +51,55 @@ def yaml_problem(text: str) -> str | None:
     except yaml.YAMLError as error:
         return f"not valid YAML: {' '.join(str(error).split())}"
     return None
+
+
+def _clock(value: datetime | time) -> str:
+    """HH:MM:SS with the fraction Go's RFC 3339 form keeps: no trailing zeros."""
+    text = value.strftime("%H:%M:%S")
+    if value.microsecond:
+        text += "." + f"{value.microsecond:06d}".rstrip("0")
+    return text
+
+
+def _offset(value: datetime) -> str:
+    offset = value.utcoffset()
+    if offset is None or offset == timedelta(0):
+        return "Z"
+    sign = "-" if offset < timedelta(0) else "+"
+    minutes = abs(int(offset.total_seconds())) // 60
+    return f"{sign}{minutes // 60:02d}:{minutes % 60:02d}"
+
+
+def _as_conftest(value: object) -> object:
+    """A TOML value as conftest renders it: every date and time is an RFC 3339 string.
+
+    conftest decodes a TOML date or time into Go's time.Time, which JSON
+    renders in full: a bare date gains midnight UTC, a local date-time gains
+    UTC, and a bare time gains the date 0000-01-01. Normalizing the same way
+    keeps a schema check here in step with what the Rego checks see.
+    """
+    if isinstance(value, datetime):
+        return f"{value.date().isoformat()}T{_clock(value)}{_offset(value)}"
+    if isinstance(value, date):
+        return f"{value.isoformat()}T00:00:00Z"
+    if isinstance(value, time):
+        return f"0000-01-01T{_clock(value)}Z"
+    if isinstance(value, dict):
+        return {key: _as_conftest(item) for key, item in cast("dict[str, object]", value).items()}
+    if isinstance(value, list):
+        return [_as_conftest(item) for item in cast("list[object]", value)]
+    return value
+
+
+def parse_toml(text: str, source: str) -> object:
+    try:
+        return _as_conftest(tomllib.loads(text))
+    except tomllib.TOMLDecodeError as error:
+        raise ContentError([f"{source}: not valid TOML: {error}"]) from error
+
+
+def read_toml(path: Path) -> object:
+    return parse_toml(path.read_text(encoding="utf-8"), str(path))
 
 
 def json_problem(text: str) -> str | None:

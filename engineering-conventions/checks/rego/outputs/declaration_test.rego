@@ -11,7 +11,7 @@ publish := td.file(".github/workflows/publish.yml", {"name": "Publish", "true": 
 tree := td.inventory([
 	".github/workflows/publish.yml",
 	".github/workflows/validate.yml",
-	".repo/outputs.yaml",
+	".repo/outputs.toml",
 	"api/Dockerfile",
 	"api/README.md",
 	"api/openapi.yaml",
@@ -33,7 +33,7 @@ test_out_01_publish_workflow_without_declaration if {
 		with data.conventions.index as td.index
 	td.pairs(found) == {["OUT-01", ".github/workflows/publish.yml"]}
 	messages(found, "OUT-01") == {concat(" ", [
-		"publish.yml publishes an output, but the repository has no .repo/outputs.yaml;",
+		"publish.yml publishes an output, but the repository has no .repo/outputs.toml;",
 		"declare each output it publishes there",
 	])}
 }
@@ -60,7 +60,7 @@ test_out_02_schema_problems_in_one_finding if {
 }
 
 test_out_02_root_problem if {
-	found := declaration.findings with input as [td.file(".repo/outputs.yaml", {"schema_version": 1})]
+	found := declaration.findings with input as [td.file(".repo/outputs.toml", {"schema_version": 1})]
 		with data.conventions.index as td.index
 	messages(found, "OUT-02") == {"the declaration: outputs is required."}
 }

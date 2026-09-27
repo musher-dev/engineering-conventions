@@ -3,14 +3,14 @@ id: EC-0007
 title: Outputs declaration
 summary: >-
   A repository that publishes something for others to consume lists each
-  output in .repo/outputs.yaml, with its kind, where it is built from, the
+  output in .repo/outputs.toml, with its kind, where it is built from, the
   workflow that publishes it, where consumers get it and where its use is
   documented.
 status: draft
 topic: outputs
 applies_to:
   paths:
-    - .repo/outputs.yaml
+    - .repo/outputs.toml
     - .github/workflows/*.yml
     - .github/workflows/*.yaml
 created: 2026-09-24
@@ -25,7 +25,7 @@ references:
     url: https://github.com/opencontainers/image-spec/blob/main/annotations.md
 requirements:
   - id: OUT-01
-    title: A repository with a publish workflow declares its outputs in .repo/outputs.yaml
+    title: A repository with a publish workflow declares its outputs in .repo/outputs.toml
     status: proposed
     severity: warning
     since: 0.3.0
@@ -85,7 +85,7 @@ requirements:
 # Outputs declaration
 
 A repository that publishes something other repositories depend on, such as a container image, a library, a
-command-line tool, a contract or a bundle, says so in one file: `.repo/outputs.yaml`. Each entry answers the questions a
+command-line tool, a contract or a bundle, says so in one file: `.repo/outputs.toml`. Each entry answers the questions a
 consumer asks first. What is it? Where is it built from? What publishes it? Where do I get it? How do I use it?
 Without the file, the answers are scattered across workflows, READMEs and registry pages, and nobody can tell which
 repository produces what without reading all of them.
@@ -96,7 +96,7 @@ done here.
 
 ## Scope
 
-This convention covers `.repo/outputs.yaml` in every repository checked against a release of
+This convention covers `.repo/outputs.toml` in every repository checked against a release of
 `musher-dev/engineering-conventions`, and the publish workflows it points at. A repository that publishes nothing needs
 no declaration. One with a workflow whose responsibility is `publish`
 ([EC-0002](../github-actions/workflow-files.md)) is taken to publish something, and must declare it (OUT-01).
@@ -112,26 +112,32 @@ series ([decision 0010](https://github.com/musher-dev/engineering-conventions/bl
 
 ## The declaration file
 
-```yaml
-# .repo/outputs.yaml
-schema_version: 1
-outputs:
-  - id: api-image
-    kind: image
-    description: The API server.
-    source: api/
-    publish_workflow: publish-api.yml
-    location: ghcr.io/your-org/api
-    docs: api/README.md#run-the-image
-  - id: api-contract
-    kind: contract
-    format: openapi
-    definition: api/openapi.yaml
-    source: api/
-    publish_workflow: publish-api.yml
-    location: https://github.com/your-org/your-repo/releases
-    docs: api/README.md#the-contract
+```toml
+# .repo/outputs.toml
+schema_version = 1
+
+[[outputs]]
+id = "api-image"
+kind = "image"
+description = "The API server."
+source = "api/"
+publish_workflow = "publish-api.yml"
+location = "ghcr.io/your-org/api"
+docs = "api/README.md#run-the-image"
+
+[[outputs]]
+id = "api-contract"
+kind = "contract"
+format = "openapi"
+definition = "api/openapi.yaml"
+source = "api/"
+publish_workflow = "publish-api.yml"
+location = "https://github.com/your-org/your-repo/releases"
+docs = "api/README.md#the-contract"
 ```
+
+The file is TOML ([decision 0011](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0011-declarations-are-toml.md)):
+each output is one `[[outputs]]` table, and `outputs[]` below means a key in one of them.
 
 | Field | Required | Meaning |
 | --- | --- | --- |
@@ -167,7 +173,7 @@ and are named here so every catalog uses the same ones.
 
 ### OUT-01
 
-**A repository with a publish workflow declares its outputs in .repo/outputs.yaml.**
+**A repository with a publish workflow declares its outputs in .repo/outputs.toml.**
 
 A publish workflow pushes a versioned output somewhere others fetch it from. If nothing declares that output, a reader
 has to open the workflow to learn what the repository produces, and a catalog has nothing to read. The finding is
@@ -177,14 +183,14 @@ reported on each publish workflow, entry point or reusable, while the declaratio
 
 ```text
 .github/workflows/publish-api.yml
-.repo/outputs.yaml
+.repo/outputs.toml
 ```
 
 **Incorrect:**
 
 ```text
 .github/workflows/publish-api.yml
-# no .repo/outputs.yaml
+# no .repo/outputs.toml
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -199,26 +205,28 @@ more there are.
 
 **Correct:**
 
-```yaml
-schema_version: 1
-outputs:
-  - id: api-image
-    kind: image
-    source: api/
-    publish_workflow: publish-api.yml
-    location: ghcr.io/your-org/api
-    docs: api/README.md
+```toml
+schema_version = 1
+
+[[outputs]]
+id = "api-image"
+kind = "image"
+source = "api/"
+publish_workflow = "publish-api.yml"
+location = "ghcr.io/your-org/api"
+docs = "api/README.md"
 ```
 
 **Incorrect:**
 
-```yaml
-schema_version: 1
-outputs:
-  - name: api-image        # the field is id
-    kind: image
-    source: api/
-    location: ghcr.io/your-org/api
+```toml
+schema_version = 1
+
+[[outputs]]
+name = "api-image"            # the field is id
+kind = "image"
+source = "api/"
+location = "ghcr.io/your-org/api"
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -232,14 +240,14 @@ kind into several, which is the drift the terminology exists to stop.
 
 **Correct:**
 
-```yaml
-kind: image
+```toml
+kind = "image"
 ```
 
 **Incorrect:**
 
-```yaml
-kind: docker
+```toml
+kind = "docker"
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -253,18 +261,22 @@ with one ID make every such reference ambiguous.
 
 **Correct:**
 
-```yaml
-outputs:
-  - id: api-image
-  - id: api-contract
+```toml
+[[outputs]]
+id = "api-image"
+
+[[outputs]]
+id = "api-contract"
 ```
 
 **Incorrect:**
 
-```yaml
-outputs:
-  - id: api
-  - id: api
+```toml
+[[outputs]]
+id = "api"
+
+[[outputs]]
+id = "api"
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -279,16 +291,16 @@ not checked.
 
 **Correct:**
 
-```yaml
-source: api/
-docs: api/README.md#run-the-image   # api/README.md exists
+```toml
+source = "api/"
+docs = "api/README.md#run-the-image"  # api/README.md exists
 ```
 
 **Incorrect:**
 
-```yaml
-source: server/                     # moved to api/
-docs: docs/api.md                   # never written
+```toml
+source = "server/"                    # moved to api/
+docs = "docs/api.md"                  # never written
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -303,14 +315,14 @@ one that makes the output available.
 
 **Correct:**
 
-```yaml
-publish_workflow: publish-api.yml
+```toml
+publish_workflow = "publish-api.yml"
 ```
 
 **Incorrect:**
 
-```yaml
-publish_workflow: validate.yml      # validates; does not publish
+```toml
+publish_workflow = "validate.yml"     # validates; does not publish
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -324,16 +336,16 @@ reads it. Both are what a catalog needs to present it as an API.
 
 **Correct:**
 
-```yaml
-kind: contract
-format: openapi
-definition: api/openapi.yaml
+```toml
+kind = "contract"
+format = "openapi"
+definition = "api/openapi.yaml"
 ```
 
 **Incorrect:**
 
-```yaml
-kind: contract                      # which file, in which format?
+```toml
+kind = "contract"                     # which file, in which format?
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0

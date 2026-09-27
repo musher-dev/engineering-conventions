@@ -31,6 +31,8 @@ as a public API.
 - **MUST NOT** restate a definition owned upstream. An `authority` entry points
   at its owner; the charter lists what this repository does not own
   (docs/decisions/0000-charter.md).
+- **MUST** write a `.repo/` declaration, and every example of one, in TOML
+  with its dates quoted (docs/decisions/0011-declarations-are-toml.md).
 - Decisions are append-only: supersede a decision with a new one, never rewrite
   an accepted one.
 

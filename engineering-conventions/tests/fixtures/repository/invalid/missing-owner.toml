@@ -1,0 +1,8 @@
+schema_version = 1
+name = "platform-api"
+system = "platform"
+component = "api"
+kind = "service"
+lifecycle = "production"
+audience = "internal"
+tier = 1

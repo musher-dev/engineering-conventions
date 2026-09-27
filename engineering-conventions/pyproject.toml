@@ -32,8 +32,27 @@ target-version = "py313"
 
 [tool.ruff.lint]
 select = [
-  "A", "ARG", "B", "C4", "DTZ", "E", "ERA", "F", "FBT", "I", "N", "PERF", "PIE",
-  "PL", "PT", "PTH", "RET", "RUF", "SIM", "UP", "W",
+  "A",
+  "ARG",
+  "B",
+  "C4",
+  "DTZ",
+  "E",
+  "ERA",
+  "F",
+  "FBT",
+  "I",
+  "N",
+  "PERF",
+  "PIE",
+  "PL",
+  "PT",
+  "PTH",
+  "RET",
+  "RUF",
+  "SIM",
+  "UP",
+  "W",
 ]
 # PLR2004 flags every literal in an assertion; the tests compare against
 # literal expectations on purpose.

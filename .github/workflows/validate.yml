@@ -36,8 +36,8 @@ jobs:
         with:
           install-args: >-
             aqua:go-task/task node npm:markdownlint-cli2 aqua:astral-sh/uv
-            pipx:yamllint aqua:crate-ci/typos aqua:koalaman/shellcheck
-      - name: Lint Markdown, YAML, spelling and shell scripts
+            pipx:yamllint aqua:tamasfe/taplo aqua:crate-ci/typos aqua:koalaman/shellcheck
+      - name: Lint Markdown, YAML, TOML, spelling and shell scripts
         run: task lint
 
   repository_secrets:

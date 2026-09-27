@@ -1,0 +1,6 @@
+schema_version = 1
+profile = "base-repo"
+exceptions = []
+
+[conventions]
+version = "0.1.0"

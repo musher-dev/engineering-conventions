@@ -1,0 +1,9 @@
+schema_version = 1
+name = "platform-api"
+system = "platform"
+component = "api"
+kind = "service"
+owner = "@octocat"
+lifecycle = "production"
+audience = "internal"
+tier = 1

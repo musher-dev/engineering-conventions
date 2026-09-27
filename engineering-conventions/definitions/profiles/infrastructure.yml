@@ -1,0 +1,9 @@
+# The profile the identity declaration selects for kind = "infrastructure"
+# (EC-0009). It is base-repo until requirements specific to the kind exist.
+schema_version: 1
+id: infrastructure
+display_name: Infrastructure
+description: >-
+  Repositories whose kind is infrastructure. Until requirements specific to the kind
+  exist, it applies exactly what base-repo does.
+inherits: [base-repo]

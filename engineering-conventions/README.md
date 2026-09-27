@@ -25,8 +25,9 @@ Not shipped in the bundle (tooling): `src/` and `tests/` (the `conventions` auth
 
 ## Using it
 
-1. Declare the conventions in `.repo/conventions.yaml`
-   ([EC-0001](definitions/conventions/adoption/conventions-declaration.md)).
+1. Declare the repository's identity in `.repo/repository.toml`
+   ([EC-0009](definitions/conventions/repository/identity-declaration.md)), and any profile override or waiver in
+   `.repo/conventions.toml` ([EC-0001](definitions/conventions/adoption/conventions-declaration.md)).
 2. Download and verify a release, then run `conftest` with `checks/rego` and `checks/data/`.
 
 The commands are in [Consuming the conventions](https://github.com/musher-dev/engineering-conventions/blob/main/docs/consuming.md),

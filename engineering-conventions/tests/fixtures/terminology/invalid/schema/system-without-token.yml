@@ -1,0 +1,8 @@
+schema_version: 1
+description: A registered system must carry the token a repository name starts with.
+terms:
+  - id: example.system.widgets
+    display_name: widgets
+    definition: The repositories that build widgets.
+    tags: [repository.system]
+    stability: provisional

@@ -15,6 +15,7 @@ vars:
   ACTIONLINT_CONFIG: .config/actions/actionlint.yaml
   ZIZMOR_CONFIG: .config/actions/zizmor.yml
   GITLEAKS_CONFIG: .config/security/gitleaks.toml
+  TOML_CONFIG: .config/toml/taplo.toml
   # CHANGELOG.md is written by release-please, whose output markdownlint
   # rejects and no commit can fix. The PR template is a PR body, whose H1 is
   # the PR title, so it starts at `##` by design (MD041). Fixtures are data
@@ -26,13 +27,18 @@ vars:
   # carry deliberate faults; the product's own YAML is otherwise in scope.
   YAML_PATHSPEC: >-
     '**/*.yml' '**/*.yaml' ':!:engineering-conventions/tests/fixtures/**'
+  # Fixture repos carry TOML exactly as a consumer might write it; the same
+  # exclusion is in .config/toml/taplo.toml for the editor.
+  TOML_PATHSPEC: >-
+    '**/*.toml' ':!:engineering-conventions/tests/fixtures/**'
 
 tasks:
   lint:
-    desc: Lint Markdown, YAML, spelling and shell scripts.
+    desc: Lint Markdown, YAML, TOML, spelling and shell scripts.
     cmds:
       - task: lint:md
       - task: lint:yaml
+      - task: lint:toml
       - task: lint:spelling
       - task: lint:shell
 
@@ -50,6 +56,16 @@ tasks:
     desc: Lint YAML against .config/yaml/yamllint.yaml (warnings fail).
     cmds:
       - '{{.LIST_FILES}} {{.YAML_PATHSPEC}} | xargs -0 -r yamllint -c {{.YAML_CONFIG}} --strict'
+
+  lint:toml:
+    desc: Check TOML formatting against .config/toml/taplo.toml.
+    cmds:
+      - '{{.LIST_FILES}} {{.TOML_PATHSPEC}} | xargs -0 -r taplo fmt --config {{.TOML_CONFIG}} --check'
+
+  lint:toml:fix:
+    desc: Format TOML files in place with taplo (review the diff).
+    cmds:
+      - '{{.LIST_FILES}} {{.TOML_PATHSPEC}} | xargs -0 -r taplo fmt --config {{.TOML_CONFIG}}'
 
   lint:spelling:
     desc: Spellcheck every file against .config/spelling/typos.toml.

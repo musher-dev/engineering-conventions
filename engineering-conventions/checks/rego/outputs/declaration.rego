@@ -2,7 +2,7 @@
 # title: Outputs declaration
 # description: >-
 #   A repository with a publish workflow declares its outputs in
-#   .repo/outputs.yaml (OUT-01), and the declaration is valid, names known
+#   .repo/outputs.toml (OUT-01), and the declaration is valid, names known
 #   kinds, unique IDs, existing paths and real publish workflows, and says
 #   what each contract is (OUT-02 to OUT-07).
 # scope: package

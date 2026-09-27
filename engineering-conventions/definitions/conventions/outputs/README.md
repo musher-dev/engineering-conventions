@@ -9,7 +9,7 @@ The governing rule, in one sentence:
 > **Declare every output where a reader can find it, publish each version once from a tag, and consume it by an exact
 > version.**
 
-The declaration lives in `.repo/outputs.yaml`, beside the conventions declaration. It is a declaration, not a catalog:
+The declaration lives in `.repo/outputs.toml`, beside the conventions declaration. It is a declaration, not a catalog:
 these conventions own its format, and anything that collects declarations across repositories reads them.
 
 ## Status

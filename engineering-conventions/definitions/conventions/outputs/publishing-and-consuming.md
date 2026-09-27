@@ -9,7 +9,7 @@ status: draft
 topic: outputs
 applies_to:
   paths:
-    - .repo/outputs.yaml
+    - .repo/outputs.toml
     - .github/workflows/*.yml
     - .github/workflows/*.yaml
 created: 2026-09-24
@@ -62,7 +62,7 @@ by changing it.
 
 ## Scope
 
-This convention covers every output declared in `.repo/outputs.yaml`, the workflows that publish them, and every
+This convention covers every output declared in `.repo/outputs.toml`, the workflows that publish them, and every
 repository that consumes an output of another. The formats themselves (OCI images, package registries, API
 description formats) are defined by their own specifications, which this convention links rather than restates.
 

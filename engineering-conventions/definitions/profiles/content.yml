@@ -1,0 +1,9 @@
+# The profile the identity declaration selects for kind = "content"
+# (EC-0009). It is base-repo until requirements specific to the kind exist.
+schema_version: 1
+id: content
+display_name: Content
+description: >-
+  Repositories whose kind is content. Until requirements specific to the kind
+  exist, it applies exactly what base-repo does.
+inherits: [base-repo]

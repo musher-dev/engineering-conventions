@@ -157,6 +157,26 @@ def test_alias_owned_by_two_terms_is_reported(content: Content) -> None:
     assert any(f"alias {alias.text!r}" in p and "more than one term" in p for p in problems)
 
 
+def test_duplicate_system_token_is_reported(content: Content) -> None:
+    glob = content.terminology
+    platform = next(term for term in glob.terms if term.id == "repository.system.platform")
+    copy = replace(platform, id="repository.system.platform-copy")
+    edited = replace(content, terminology=replace(glob, terms=(*glob.terms, copy)))
+    problems = invariants.terminology_consistent(edited)
+    assert "token 'platform' is used by more than one repository.system term" in "\n".join(problems)
+
+
+def test_kind_without_a_profile_is_reported(content: Content) -> None:
+    edited = replace(
+        content, profiles=tuple(profile for profile in content.profiles if profile.id != "tool")
+    )
+    assert invariants.kinds_have_profiles(edited) == [
+        "repository kind 'tool' has no profile; add definitions/profiles/tool.yml "
+        "inheriting base-repo"
+    ]
+    assert invariants.kinds_have_profiles(content) == []
+
+
 def test_profile_cycle_is_reported(content: Content, fixtures: Path) -> None:
     cycle = load_profiles(content.product, fixtures / "profiles" / "invalid" / "cycle")
     edited = replace(content, profiles=content.profiles + cycle)

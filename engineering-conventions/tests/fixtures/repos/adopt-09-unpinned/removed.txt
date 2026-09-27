@@ -1,1 +1,1 @@
-.repo/conventions.yaml
+.repo/conventions.toml

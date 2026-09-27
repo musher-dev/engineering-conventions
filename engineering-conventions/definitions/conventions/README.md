@@ -18,12 +18,14 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0006](github-actions/units-and-renames.md) | Units and renames | github-actions | draft |
 | [EC-0007](outputs/outputs-declaration.md) | Outputs declaration | outputs | draft |
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
+| [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
+| [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
 
 ## Requirements
 
 | ID | Title | Convention | Status | Severity | Engine |
 | --- | --- | --- | --- | --- | --- |
-| [ADOPT-01](adoption/conventions-declaration.md#adopt-01) | A repository declares its conventions in .repo/conventions.yaml | EC-0001 | retired | warning | conftest |
+| [ADOPT-01](adoption/conventions-declaration.md#adopt-01) | A repository declares its conventions in .repo/conventions.toml | EC-0001 | retired | warning | conftest |
 | [ADOPT-02](adoption/conventions-declaration.md#adopt-02) | The conventions declaration is valid against its schema | EC-0001 | proposed | warning | conftest |
 | [ADOPT-03](adoption/conventions-declaration.md#adopt-03) | An expired waiver no longer suppresses its finding | EC-0001 | proposed | warning | conftest |
 | [ADOPT-04](adoption/conventions-declaration.md#adopt-04) | A waiver names a requirement that exists and is not retired | EC-0001 | proposed | warning | conftest |
@@ -70,7 +72,7 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-36](github-actions/units-and-renames.md#gha-36) | A rename updates every reference to the renamed identity in the same change | EC-0006 | proposed | warning | review |
 | [GHA-37](github-actions/units-and-renames.md#gha-37) | A name states the responsibility, result or capability, not the trigger or tool | EC-0006 | proposed | warning | review |
 | [GHA-38](github-actions/composite-actions.md#gha-38) | Inputs and outputs of actions and reusable workflows are kebab-case | EC-0004 | proposed | warning | conftest |
-| [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.yaml | EC-0007 | proposed | warning | conftest |
+| [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
 | [OUT-04](outputs/outputs-declaration.md#out-04) | Output IDs are unique within a repository | EC-0007 | proposed | warning | conftest |
@@ -81,6 +83,19 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-09](outputs/publishing-and-consuming.md#out-09) | A version is published only from a release tag and is never overwritten | EC-0008 | proposed | warning | review |
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
+| [REPO-01](repository/identity-declaration.md#repo-01) | A repository declares its identity in .repo/repository.toml | EC-0009 | proposed | warning | conftest |
+| [REPO-02](repository/identity-declaration.md#repo-02) | The identity declaration is valid against its schema | EC-0009 | proposed | warning | conftest |
+| [REPO-03](repository/identity-declaration.md#repo-03) | The declared system, kind, lifecycle and audience are registered values | EC-0009 | proposed | warning | conftest |
+| [REPO-04](repository/identity-declaration.md#repo-04) | The declared name is the system and the component joined by a hyphen | EC-0009 | proposed | warning | conftest |
+| [REPO-05](repository/identity-declaration.md#repo-05) | One team owns every repository of a system | EC-0009 | proposed | warning | review |
+| [REPO-06](repository/identity-declaration.md#repo-06) | The identity declaration is the only source of a repository's catalog entry and organization properties | EC-0009 | proposed | warning | review |
+| [REPO-07](repository/repository-names.md#repo-07) | The declared name is the repository's actual name | EC-0010 | proposed | warning | conftest |
+| [REPO-08](repository/repository-names.md#repo-08) | A repository name is a system and a component in lowercase kebab-case, at most 63 characters | EC-0010 | proposed | warning | conftest |
+| [REPO-09](repository/repository-names.md#repo-09) | A repository name starts with a registered system | EC-0010 | proposed | warning | conftest |
+| [REPO-10](repository/repository-names.md#repo-10) | A repository name holds no banned token and no version | EC-0010 | proposed | warning | conftest |
+| [REPO-11](repository/repository-names.md#repo-11) | A repository name is at most 40 characters | EC-0010 | proposed | warning | conftest |
+| [REPO-12](repository/repository-names.md#repo-12) | The component names what the repository holds | EC-0010 | proposed | warning | review |
+| [REPO-13](repository/repository-names.md#repo-13) | A rename changes everything that names the repository in one change, and the old name is never reused | EC-0010 | proposed | warning | review |
 
 ## Families
 
@@ -89,3 +104,4 @@ ID is permanent: it is never renumbered or reused.
 | ADOPT | Adopting the conventions | adoption |
 | GHA | GitHub Actions | github-actions |
 | OUT | Outputs | outputs |
+| REPO | Repositories | repository |

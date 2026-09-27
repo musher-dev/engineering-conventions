@@ -1,0 +1,12 @@
+schema_version = 1
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
+
+[[waivers]]
+requirement = "GHA-07"
+paths = [".github/workflows/*.yml"]
+reason = "Renaming the workflow waits for the release branch to close."
+tracking = "https://github.com/musher-dev/engineering-conventions/issues/1"
+expires = "2026-12-01"

@@ -26,3 +26,24 @@ test_severity_from_profile_then_catalog if {
 	profile.severity("GHA-07") == "warning" with data.conventions.index as td.index with input as []
 	profile.severity("NOPE-01") == "warning" with data.conventions.index as td.index with input as []
 }
+
+test_kind_selects_its_profile if {
+	docs := [td.repository({"kind": "service"})]
+	profile.name == "service" with data.conventions.index as td.index with input as docs
+	profile.in_profile("REPO-01") with data.conventions.index as td.index with input as docs
+}
+
+test_declared_profile_overrides_the_kind if {
+	docs := [td.repository({"kind": "service"}), td.declaration({"profile": "narrow"})]
+	profile.name == "narrow" with data.conventions.index as td.index with input as docs
+}
+
+test_unknown_declared_profile_falls_back_to_the_kind if {
+	docs := [td.repository({"kind": "service"}), td.declaration({"profile": "no-such-profile"})]
+	profile.name == "service" with data.conventions.index as td.index with input as docs
+}
+
+test_unknown_kind_falls_back_to_default if {
+	docs := [td.repository({"kind": "microservice"})]
+	profile.name == "base-repo" with data.conventions.index as td.index with input as docs
+}

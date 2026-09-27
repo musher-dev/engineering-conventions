@@ -1,12 +1,14 @@
 # The global terminology. Every convention uses these words with these
 # meanings.
-# `conventions generate` projects the gha.* tags, the identifier-scope
-# aliases and the display forms into checks/data/index.json, and the
-# prose-scope aliases into the MusherConventions Vale style.
+# `conventions generate` projects the gha.*, outputs.* and repository.*
+# tags, the identifier-scope and repository-name-scope aliases and the
+# display forms into checks/data/index.json, and the prose-scope aliases
+# into the MusherConventions Vale style.
 schema_version: 1
 description: >-
   Words the conventions themselves are written in, the GitHub Actions naming
-  vocabulary, and pointers to terms another repository defines.
+  vocabulary, the vocabulary of a repository's identity and name, and
+  pointers to terms another repository defines.
 
 terms:
   # Workflow responsibility tokens: the first filename token of an
@@ -293,7 +295,7 @@ terms:
     stability: stable
 
   # Output kinds: what a repository publishes, named in the kind field of
-  # .repo/outputs.yaml (OUT-03). The formats they carry (OCI, OpenAPI and
+  # .repo/outputs.toml (OUT-03). The formats they carry (OCI, OpenAPI and
   # the rest) are defined by their own specifications, not here.
   - id: outputs.kind.image
     display_name: container image
@@ -335,6 +337,210 @@ terms:
       A versioned archive of files released as assets and consumed by
       pinning, such as this repository's release.
     tags: [outputs.kind]
+    stability: provisional
+
+  # Systems: the first token of a repository's name (REPO-09) and the system
+  # field of .repo/repository.toml (REPO-03). A system groups repositories by
+  # what they provide together; it is never a team.
+  - id: repository.system.platform
+    display_name: platform
+    token: platform
+    definition: >-
+      The hosted Musher product: the API and the applications, sites and
+      contracts that serve its users and operators.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.host
+    display_name: host
+    token: host
+    definition: >-
+      The software that runs on Musher compute, gateway and storage hosts:
+      the agent, its configuration and the images that carry them.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.sdk
+    display_name: sdk
+    token: sdk
+    definition: >-
+      The client libraries and command-line tool developers use to reach the
+      platform from their own code and terminals.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.infra
+    display_name: infra
+    token: infra
+    definition: >-
+      The infrastructure-as-code that provisions and governs the estate: the
+      landing zone, the platform's infrastructure and the GitHub
+      organization.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.observability
+    display_name: observability
+    token: observability
+    definition: >-
+      How the estate is observed: the registry of telemetry names and the
+      stack that collects and shows the telemetry. The names themselves are
+      defined in that registry, not here.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.engineering
+    display_name: engineering
+    token: engineering
+    definition: >-
+      How Musher builds software: the conventions, contributor
+      documentation, the development container and engineering tools.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.brand
+    display_name: brand
+    token: brand
+    definition: >-
+      Musher's public presence and visual identity: the website and the
+      design system.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.company
+    display_name: company
+    token: company
+    definition: >-
+      How Musher operates as an organization, and the sites that present it
+      to its members and investors.
+    tags: [repository.system]
+    stability: provisional
+  - id: repository.system.catalog
+    display_name: catalog
+    token: catalog
+    definition: >-
+      The curated content users install through the platform: catalog items
+      and example applications. The format of a catalog item is defined by
+      its specification, not here.
+    tags: [repository.system]
+    stability: provisional
+
+  # Repository kinds: a repository's primary role, the kind field of
+  # .repo/repository.toml (REPO-03). The kind selects the convention profile
+  # of the same name. What a repository publishes is its outputs
+  # declaration, not its kind.
+  - id: repository.kind.service
+    display_name: service
+    token: service
+    definition: >-
+      A repository whose primary role is a deployable process: an API
+      server, a worker or an agent.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.website
+    display_name: website
+    token: website
+    definition: >-
+      A repository whose primary role is a site or browser application that
+      people use through a web browser.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.library
+    display_name: library
+    token: library
+    definition: >-
+      A repository whose primary role is code other repositories import as
+      a dependency.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.tool
+    display_name: tool
+    token: tool
+    definition: >-
+      A repository whose primary role is a program people run from a
+      terminal or a pipeline, such as a command-line tool.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.infrastructure
+    display_name: infrastructure
+    token: infrastructure
+    definition: >-
+      A repository whose primary role is infrastructure-as-code that
+      provisions or configures environments, accounts or an organization.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.specification
+    display_name: specification
+    token: specification
+    definition: >-
+      A repository whose primary role is a definition other repositories are
+      built or checked against: a format, a schema, a contract or a set of
+      conventions.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.content
+    display_name: content
+    token: content
+    definition: >-
+      A repository whose primary role is curated material consumed as data
+      rather than run, such as catalog items or examples.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.documentation
+    display_name: documentation
+    token: documentation
+    definition: >-
+      A repository whose primary role is prose for people to read, published
+      as a site or read in place.
+    tags: [repository.kind]
+    stability: provisional
+  - id: repository.kind.template
+    display_name: template
+    token: template
+    definition: >-
+      A repository whose primary role is a starting point other repositories
+      copy or build on, such as a development container or a project
+      scaffold.
+    tags: [repository.kind]
+    stability: provisional
+
+  # Lifecycles: the lifecycle field of .repo/repository.toml (REPO-03), the
+  # values Backstage uses for spec.lifecycle.
+  - id: repository.lifecycle.experimental
+    display_name: experimental
+    token: experimental
+    definition: >-
+      Early or exploratory: it may change or disappear without notice, and
+      nothing should depend on it in production.
+    tags: [repository.lifecycle]
+    stability: provisional
+  - id: repository.lifecycle.production
+    display_name: production
+    token: production
+    definition: >-
+      Maintained and relied on: changes to what it offers follow its
+      versioning and are announced.
+    tags: [repository.lifecycle]
+    stability: provisional
+  - id: repository.lifecycle.deprecated
+    display_name: deprecated
+    token: deprecated
+    definition: >-
+      Being retired: it receives only fixes, and its dependents are moving
+      away from it.
+    tags: [repository.lifecycle]
+    stability: provisional
+
+  # Audiences: the audience field of .repo/repository.toml (REPO-03). Who
+  # the repository's outputs are for, which is not the same as whether
+  # GitHub shows the repository to the public.
+  - id: repository.audience.internal
+    display_name: internal
+    token: internal
+    definition: >-
+      Its outputs are for Musher's own repositories and people.
+    tags: [repository.audience]
+    stability: provisional
+  - id: repository.audience.public
+    display_name: public
+    token: public
+    definition: >-
+      Its outputs are for people and code outside Musher, such as customers
+      or the open-source community.
+    tags: [repository.audience]
     stability: provisional
 
   # The words this repository is written in.
@@ -398,7 +604,7 @@ terms:
   - id: conventions.conventions-declaration
     display_name: conventions declaration
     definition: >-
-      The file .repo/conventions.yaml in a consuming repository, which pins a
+      The file .repo/conventions.toml in a consuming repository, which pins a
       release, names a convention profile and lists waivers.
     tags: [meta]
     stability: stable
@@ -432,9 +638,98 @@ terms:
   - id: conventions.outputs-declaration
     display_name: outputs declaration
     definition: >-
-      The file .repo/outputs.yaml in a repository that publishes, which
+      The file .repo/outputs.toml in a repository that publishes, which
       lists each output with its kind, source, publishing workflow, location
       and consumption docs.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.system
+    display_name: system
+    definition: >-
+      A registered grouping of repositories that together provide one part
+      of what Musher builds, such as platform or sdk. Its token is the first
+      token of each of their names. A system is named for what its
+      repositories provide, never for a team: one team owns every
+      repository of a system, but the grouping outlives any team structure.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.component
+    display_name: component
+    definition: >-
+      What one repository holds within its system, named by the rest of the
+      repository's name after the system token, such as api in platform-api.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.repository-name
+    display_name: repository name
+    definition: >-
+      A repository's name on GitHub, written <system>-<component> in
+      lowercase kebab-case. It names what the repository holds, and nothing
+      the organization, the declaration or the history already says.
+    tags: [meta]
+    stability: provisional
+    # Tokens banned anywhere in a repository name (REPO-10). The note is the
+    # advice the check prints. A version suffix such as v2 is refused by a
+    # pattern in the check, not listed here.
+    aliases:
+      - text: musher
+        status: banned
+        scope: [repository-name]
+        note: >-
+          The organization already says it; drop the token.
+      - text: repo
+        status: banned
+        scope: [repository-name]
+        note: >-
+          GitHub already says it is a repository; drop the token.
+      - text: common
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Says who uses it, not what it holds; name what it holds.
+      - text: shared
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Says who uses it, not what it holds; name what it holds.
+      - text: utils
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Says nothing about what it holds; name what it holds.
+      - text: util
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Says nothing about what it holds; name what it holds.
+      - text: misc
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Says nothing about what it holds; name what it holds.
+      - text: new
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Names a lifecycle, which changes while the name must not; drop the
+          token and set lifecycle = "experimental" in .repo/repository.toml.
+      - text: legacy
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Names a lifecycle, which changes while the name must not; drop the
+          token and set lifecycle = "deprecated" in .repo/repository.toml.
+      - text: old
+        status: banned
+        scope: [repository-name]
+        note: >-
+          Names a lifecycle, which changes while the name must not; drop the
+          token and set lifecycle = "deprecated" in .repo/repository.toml.
+  - id: conventions.identity-declaration
+    display_name: identity declaration
+    definition: >-
+      The file .repo/repository.toml in every repository, which states its
+      name, system, component, kind, owner, lifecycle, audience and tier.
     tags: [meta]
     stability: provisional
 

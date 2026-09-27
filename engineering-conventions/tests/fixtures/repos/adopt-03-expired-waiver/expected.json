@@ -6,7 +6,7 @@
   },
   {
     "id": "ADOPT-03",
-    "path": ".repo/conventions.yaml",
+    "path": ".repo/conventions.toml",
     "severity": "warning"
   }
 ]

@@ -1,0 +1,9 @@
+# The profile the identity declaration selects for kind = "service"
+# (EC-0009). It is base-repo until requirements specific to the kind exist.
+schema_version: 1
+id: service
+display_name: Service
+description: >-
+  Repositories whose kind is service. Until requirements specific to the kind
+  exist, it applies exactly what base-repo does.
+inherits: [base-repo]

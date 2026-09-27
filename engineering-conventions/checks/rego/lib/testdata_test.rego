@@ -16,6 +16,13 @@ requirement_ids := [
 	"OUT-01", "OUT-02", "OUT-03", "OUT-04", "OUT-05", "OUT-06", "OUT-07",
 ]
 
+# In the index but outside base-repo here, so the tests of the other
+# families need not declare an identity; the service profile selects them.
+repo_requirement_ids := [
+	"REPO-01", "REPO-02", "REPO-03", "REPO-04",
+	"REPO-07", "REPO-08", "REPO-09", "REPO-10", "REPO-11",
+]
+
 index := {
 	"schema_version": 1,
 	"repository": "https://github.com/musher-dev/engineering-conventions",
@@ -34,7 +41,7 @@ index := {
 			"aliases": aliases(id),
 			"waivable": waivable(id),
 		} |
-			some id in requirement_ids
+			some id in array.concat(requirement_ids, repo_requirement_ids)
 		},
 		{"GHA-99": {
 			"convention": "EC-0002",
@@ -53,6 +60,11 @@ index := {
 			"severity": {id: "error" | some id in requirement_ids},
 		},
 		"narrow": {"display_name": "Narrow", "requirements": ["GHA-07"], "severity": {"GHA-07": "warning"}},
+		"service": {
+			"display_name": "Service",
+			"requirements": array.concat(requirement_ids, repo_requirement_ids),
+			"severity": {},
+		},
 	},
 	"vocabulary": {
 		"responsibility_tokens": [
@@ -69,13 +81,23 @@ index := {
 		"schedule_tokens": ["nightly", "scheduled"],
 		"display_forms": {"api": "API", "pr": "PR", "devcontainer": "Dev Container"},
 		"output_kinds": ["bundle", "cli", "contract", "image", "library"],
+		"repository_systems": ["engineering", "platform", "sdk"],
+		"repository_kinds": ["library", "service", "specification"],
+		"repository_lifecycles": ["deprecated", "experimental", "production"],
+		"repository_audiences": ["internal", "public"],
+		"banned_repository_tokens": {
+			"musher": "The organization already says it; drop the token.",
+			"utils": "Says nothing about what it holds; name what it holds.",
+		},
 	},
 	"declaration_schema": declaration_schema,
 	"outputs_schema": outputs_schema,
+	"repository_schema": repository_schema,
 }
 
 # A cut-down declaration schema with the shapes ADOPT-02's messages depend on:
-# an unknown key, a wrong type, and a waiver of an ADOPT requirement.
+# an unknown key, a wrong type, a waiver of an ADOPT requirement, and an
+# expires date that is not YYYY-MM-DD (which fails two keywords).
 declaration_schema := {
 	"type": "object",
 	"additionalProperties": false,
@@ -87,7 +109,10 @@ declaration_schema := {
 		"vocabulary": {"type": "object"},
 		"waivers": {"type": "array", "items": {
 			"type": "object",
-			"properties": {"requirement": {"type": "string", "not": {"pattern": "^ADOPT-"}}},
+			"properties": {
+				"requirement": {"type": "string", "not": {"pattern": "^ADOPT-"}},
+				"expires": {"type": "string", "format": "date", "pattern": `^[0-9]{4}-[0-9]{2}-[0-9]{2}$`},
+			},
 		}},
 	},
 }
@@ -108,8 +133,29 @@ file(path, contents) := {"path": path, "contents": contents}
 
 inventory(paths) := file("/tmp/inventory.json", {"conventions_inventory": {"files": paths}})
 
+# The inventory of a repository whose actual name the runner knows (EC-0010).
+named_inventory(paths, name) := file(
+	"/tmp/inventory.json",
+	{"conventions_inventory": {"files": paths, "repository": {"name": name}}},
+)
+
 # schema_version is filled in so a test states only what it is about.
-declaration(contents) := file(".repo/conventions.yaml", object.union({"schema_version": 1}, contents))
+declaration(contents) := file(".repo/conventions.toml", object.union({"schema_version": 1}, contents))
+
+# schema_version is filled in so a test states only what it is about.
+repository(contents) := file(".repo/repository.toml", object.union({"schema_version": 1}, contents))
+
+# A conforming identity declaration (EC-0009).
+identity := {
+	"name": "platform-api",
+	"system": "platform",
+	"component": "api",
+	"kind": "service",
+	"owner": "@musher-dev/platform",
+	"lifecycle": "production",
+	"audience": "internal",
+	"tier": 1,
+}
 
 # The mise entry that pins the release (ADOPT-09).
 pin := file("mise.toml", {"tools": {"github:musher-dev/engineering-conventions": "0.2.0"}})
@@ -192,7 +238,7 @@ outputs_schema := {
 }
 
 # schema_version is filled in so a test states only what it is about.
-outputs(entries) := file(".repo/outputs.yaml", {"schema_version": 1, "outputs": entries})
+outputs(entries) := file(".repo/outputs.toml", {"schema_version": 1, "outputs": entries})
 
 # A conforming image output published by publish.yml.
 image_output := {
@@ -202,4 +248,23 @@ image_output := {
 	"publish_workflow": "publish.yml",
 	"location": "ghcr.io/example/api",
 	"docs": "api/README.md#run",
+}
+
+# A cut-down identity schema with the shapes REPO-02's messages depend on: a
+# missing required key, an unknown key and a value out of range.
+repository_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["schema_version", "name", "owner", "tier"],
+	"properties": {
+		"schema_version": {"const": 1},
+		"name": {"type": "string"},
+		"system": {"type": "string"},
+		"component": {"type": "string"},
+		"kind": {"type": "string"},
+		"owner": {"type": "string", "pattern": "^@musher-dev/[a-z0-9-]+$"},
+		"lifecycle": {"type": "string"},
+		"audience": {"type": "string"},
+		"tier": {"type": "integer", "minimum": 1, "maximum": 3},
+	},
 }

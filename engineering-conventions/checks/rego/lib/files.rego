@@ -6,7 +6,7 @@
 #   every workflow the same view of its triggers and jobs.
 package conventions.lib.files
 
-declaration_path := ".repo/conventions.yaml"
+declaration_path := ".repo/conventions.toml"
 
 # conftest keeps each path as the runner passed it, so `./x` and `x` must name
 # the same file before any path comparison or waiver glob sees it.
@@ -86,7 +86,7 @@ declaration_documents := [doc.contents |
 	doc.path == declaration_path
 ]
 
-outputs_path := ".repo/outputs.yaml"
+outputs_path := ".repo/outputs.toml"
 
 outputs_declared if outputs_path in repository_files
 
@@ -104,6 +104,40 @@ outputs_documents := [doc.contents |
 	some doc in documents
 	doc.path == outputs_path
 ]
+
+repository_path := ".repo/repository.toml"
+
+repository_declared if repository_path in repository_files
+
+# The identity declaration (EC-0009), read like the other declarations: a
+# non-mapping reads as empty, and REPO-02 reports its shape.
+default repository_declaration := {}
+
+repository_declaration := doc.contents if {
+	some doc in documents
+	doc.path == repository_path
+	is_object(doc.contents)
+}
+
+repository_documents := [doc.contents |
+	some doc in documents
+	doc.path == repository_path
+]
+
+# The repository's actual name, when the runner knows it: bin/conventions
+# adds it to the inventory from --repository, GITHUB_REPOSITORY or the origin
+# remote (EC-0010). Undefined when the runner could not tell.
+actual_repository_names contains name if {
+	some doc in inventory_documents
+	name := doc.contents.conventions_inventory.repository.name
+	is_string(name)
+	name != ""
+}
+
+actual_repository_name := name if {
+	count(actual_repository_names) == 1
+	some name in actual_repository_names
+}
 
 # Where mise reads project configuration (its config search), plus the dev
 # container's manifest, which Musher repositories point mise at.

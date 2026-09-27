@@ -46,7 +46,9 @@ def _invariants(arguments: argparse.Namespace) -> int:
 
 def _check(arguments: argparse.Namespace) -> int:
     now = run.validate_now(arguments.now) if arguments.now else run.utc_now()
-    report = run.check(product_dir(), Path(arguments.repo_dir), now)
+    repo = Path(arguments.repo_dir)
+    repository = run.repository_name(repo.resolve(), arguments.repository)
+    report = run.check(product_dir(), repo, now, repository=repository)
     if arguments.format == "json":
         sys.stdout.write(run.render_json(report))
     else:
@@ -139,6 +141,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--now",
         metavar="RFC3339",
         help="evaluate waiver expiry at this time instead of the current time",
+    )
+    check_parser.add_argument(
+        "--repository",
+        metavar="NAME",
+        help=(
+            "the repository's actual name, which REPO-07 compares with the declared one; "
+            "default CONVENTIONS_REPOSITORY, else GITHUB_REPOSITORY when REPO_DIR is "
+            "GITHUB_WORKSPACE, else the origin remote when REPO_DIR is a work-tree root"
+        ),
     )
     check_parser.set_defaults(handler=_check)
 

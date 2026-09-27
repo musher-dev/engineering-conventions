@@ -7,7 +7,14 @@ from jsonschema import Draft7Validator
 
 from conventions_tools import schemas
 from conventions_tools.content import convention_files
-from conventions_tools.loading import as_list, as_map, read_json, read_yaml, split_frontmatter
+from conventions_tools.loading import (
+    as_list,
+    as_map,
+    read_json,
+    read_toml,
+    read_yaml,
+    split_frontmatter,
+)
 from conventions_tools.paths import families_file, product_dir, schemas_dir
 
 PRODUCT = product_dir()
@@ -16,6 +23,7 @@ FIXTURES = PRODUCT / "tests" / "fixtures"
 KINDS = {
     "declarations": (schemas.DECLARATION, "valid", "invalid"),
     "outputs": (schemas.OUTPUTS, "valid", "invalid"),
+    "repository": (schemas.REPOSITORY, "valid", "invalid"),
     "profiles": (schemas.PROFILE, "valid", "invalid/schema"),
     "terminology": (schemas.TERMINOLOGY, "valid", "invalid/schema"),
     "conventions": (schemas.CONVENTION, "valid", "invalid"),
@@ -26,6 +34,8 @@ def _load(path: Path) -> object:
     if path.suffix == ".md":
         frontmatter, _ = split_frontmatter(path.read_text(encoding="utf-8"), str(path))
         return frontmatter
+    if path.suffix == ".toml":
+        return read_toml(path)
     return read_yaml(path)
 
 
@@ -87,9 +97,19 @@ def test_global_terminology_and_base_profile_are_valid() -> None:
 
 
 def test_waiver_on_adopt_is_rejected_with_a_clear_path() -> None:
-    declaration = read_yaml(FIXTURES / "declarations" / "invalid" / "adopt-waiver.yaml")
+    declaration = read_toml(FIXTURES / "declarations" / "invalid" / "adopt-waiver.toml")
     errors = list(schemas.iter_errors(PRODUCT, schemas.DECLARATION, declaration))
     assert [schemas.location(error) for error in errors] == ["waivers[0].requirement"]
+
+
+def test_bare_toml_date_reads_as_conftest_renders_it() -> None:
+    # conftest renders an unquoted TOML date as midnight UTC, which the date
+    # pattern rejects; the declarations quote their dates (decision 0011).
+    declaration = as_map(read_toml(FIXTURES / "declarations" / "invalid" / "bare-date.toml"))
+    waiver = as_map(as_list(declaration["waivers"])[0])
+    assert waiver["expires"] == "2026-10-31T00:00:00Z"
+    errors = list(schemas.iter_errors(PRODUCT, schemas.DECLARATION, declaration))
+    assert {schemas.location(error) for error in errors} == {"waivers[0].expires"}
 
 
 def _refs(node: object) -> list[str]:
@@ -121,7 +141,7 @@ def test_check_jsonschema_resolves_refs_from_disk(tmp_path: Path) -> None:
             executable,
             "--schemafile",
             str(schemas_dir(PRODUCT) / schemas.DECLARATION),
-            str(FIXTURES / "declarations" / "valid" / "full.yaml"),
+            str(FIXTURES / "declarations" / "valid" / "full.toml"),
         ],
         cwd=tmp_path,
         capture_output=True,

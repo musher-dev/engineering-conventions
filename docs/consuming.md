@@ -10,7 +10,8 @@ mise exec github:musher-dev/engineering-conventions@0.4.0 -- conventions check  
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
-repository. The run reports ADOPT-09, because nothing pins a release yet.
+repository. The run reports ADOPT-09, because nothing pins a release yet, and REPO-01, because the repository does
+not declare its identity.
 
 Name a version rather than `@latest`. mise hides a release younger than its `minimum_release_age` setting, so for a
 while after each release `@latest` resolves to an older one, and 0.1.0, the oldest, predates the `conventions`
@@ -35,7 +36,7 @@ conventions check --fail-on warning    # fail on every finding, as CI should in 
 conventions prose                      # lint Markdown with the MusherConventions Vale style
 ```
 
-That is the whole adoption. What mise does with the line:
+With the identity declaration below, that is the whole adoption. What mise does with the line:
 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
   proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in `mise.lock`.
@@ -78,34 +79,74 @@ tasks:
 `mise.toml`, a `Validate` workflow that runs the step above as its `Conventions` job, a pull-request-title workflow,
 and a ruleset that requires only the aggregate.
 
+## Declare the repository's identity
+
+Every repository says what it is in `.repo/repository.toml`:
+
+```toml
+schema_version = 1
+name = "platform-api"
+system = "platform"
+component = "api"
+kind = "service"
+owner = "@musher-dev/platform"
+lifecycle = "production"
+audience = "internal"
+tier = 1
+```
+
+The `name` is the repository's name on GitHub, `<system>-<component>`, with the system taken from the registered
+systems. The `kind` selects the convention profile of the same name, so a service is checked as a service without
+any other file. `conventions check` reports REPO-01 until the file exists, and checks every value against the
+registered ones. The format is
+[EC-0009](../engineering-conventions/definitions/conventions/repository/identity-declaration.md), and the naming rules
+are [EC-0010](../engineering-conventions/definitions/conventions/repository/repository-names.md). A repository that is
+still to be renamed keeps its current name in the declaration and waives the REPO findings about the name until the
+rename.
+
+### How the checks learn the repository's name
+
+REPO-07 compares the declared name with the repository's actual name. `conventions check` learns the actual name, in
+order, from:
+
+1. `--repository NAME`, or the `CONVENTIONS_REPOSITORY` environment variable;
+2. `GITHUB_REPOSITORY` in GitHub Actions, only when the directory checked is `GITHUB_WORKSPACE`;
+3. the last segment of the `origin` remote's URL, only when the directory checked is the root of a git work tree.
+
+A directory checked with `-C` inside another work tree, or a copy with no remote, has no actual name: REPO-07 is not
+checked, and the other naming requirements judge the declared name. Pass `--repository` when the remote does not carry
+the repository's name, such as a mirror.
+
 ## Declare only what differs
 
-A repository that uses the `base-repo` profile and holds no waivers needs no other file. Add `.repo/conventions.yaml`
-when it needs a different profile, its own display forms, or a waiver:
+A repository that holds no waivers, and whose kind selects the profile it needs, needs no other file. Add
+`.repo/conventions.toml` when it needs a different profile, its own display forms, or a waiver:
 
-```yaml
-schema_version: 1
-profile: base-repo
-waivers: []
+```toml
+schema_version = 1
+profile = "base-repo"         # overrides the profile the kind selects
 ```
+
+The declarations under `.repo/` are TOML.
 
 The full format is [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md). ADOPT-02
 checks the file against its schema as part of `conventions check`; no separate validator is needed.
 
 ## Declare what you publish
 
-A repository with a `publish` workflow lists what it publishes in `.repo/outputs.yaml`, one entry per container image,
+A repository with a `publish` workflow lists what it publishes in `.repo/outputs.toml`, one entry per container image,
 library, command-line tool, contract or bundle:
 
-```yaml
-schema_version: 1
-outputs:
-  - id: api-image
-    kind: image
-    source: api/
-    publish_workflow: publish-api.yml
-    location: ghcr.io/your-org/api
-    docs: api/README.md#run-the-image
+```toml
+schema_version = 1
+
+[[outputs]]
+id = "api-image"
+kind = "image"
+source = "api/"
+publish_workflow = "publish-api.yml"
+location = "ghcr.io/your-org/api"
+docs = "api/README.md#run-the-image"
 ```
 
 `conventions check` reports OUT-01 on a publish workflow until the file exists, and checks that each kind is known and
@@ -185,16 +226,16 @@ them. That is not a pass: export the rulesets from the repository settings and c
 When a repository cannot meet a requirement yet, it records a waiver in its declaration rather than ignoring the
 finding:
 
-```yaml
-waivers:
-  - requirement: GHA-32
-    paths:
-      - .github/workflows/validate-docs.yml
-    reason: >-
-      The docs workflow keeps its paths filter until its jobs move into validate-repository.yml.
-    tracking: https://github.com/your-org/your-repo/issues/1
-    expires: 2026-12-31
+```toml
+[[waivers]]
+requirement = "GHA-32"
+paths = [".github/workflows/validate-docs.yml"]
+reason = "The docs workflow keeps its paths filter until its jobs move into validate-repository.yml."
+tracking = "https://github.com/your-org/your-repo/issues/1"
+expires = "2026-12-31"
 ```
+
+Quote the date. An unquoted `expires = 2026-12-31` is a TOML date rather than a string, and ADOPT-02 reports it.
 
 A waiver needs a reason of at least 20 characters, a tracking issue URL and an expiry at most 180 days away. It
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.

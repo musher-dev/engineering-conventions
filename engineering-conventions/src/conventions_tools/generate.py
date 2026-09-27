@@ -92,6 +92,8 @@ def build_index(content: Content) -> dict[str, object]:
         "declaration_schema": schemas.self_contained(content.product, schemas.DECLARATION),
         # OUT-02 validates the outputs declaration the same way.
         "outputs_schema": schemas.self_contained(content.product, schemas.OUTPUTS),
+        # REPO-02 validates the identity declaration the same way.
+        "repository_schema": schemas.self_contained(content.product, schemas.REPOSITORY),
     }
     return {"conventions": {"index": index}}
 

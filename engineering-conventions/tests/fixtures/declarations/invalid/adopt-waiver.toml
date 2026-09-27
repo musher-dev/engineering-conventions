@@ -1,0 +1,11 @@
+schema_version = 1
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
+
+[[waivers]]
+requirement = "ADOPT-01"
+reason = "The declaration is being written in a follow-up change."
+tracking = "https://github.com/your-org/your-repo/issues/1"
+expires = "2026-10-31"

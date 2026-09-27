@@ -1,6 +1,7 @@
 """bin/conventions, the consumer's launcher, agrees with the runner the fixtures use."""
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -12,7 +13,14 @@ import pytest
 from conventions_tools.fixtures import expected_findings, materialize
 from conventions_tools.loading import as_list, as_map, get_str
 from conventions_tools.paths import fixture_repos_dir, product_dir
-from conventions_tools.run import check, render_json, render_text, requirement_titles, utc_now
+from conventions_tools.run import (
+    check,
+    render_json,
+    render_text,
+    repository_name,
+    requirement_titles,
+    utc_now,
+)
 
 PRODUCT = product_dir()
 LAUNCHER = PRODUCT / "bin" / "conventions"
@@ -29,9 +37,22 @@ CASES = [
 ]
 
 
-def _launch(*arguments: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+# Where the launcher learns a repository's actual name; cleared so a run in
+# GitHub Actions tests the same thing as a run anywhere else.
+NAME_SOURCES = ("CONVENTIONS_REPOSITORY", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE")
+
+
+def _launch(
+    *arguments: str, cwd: Path, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    environment = {key: value for key, value in os.environ.items() if key not in NAME_SOURCES}
     return subprocess.run(
-        [str(LAUNCHER), *arguments], cwd=cwd, capture_output=True, text=True, check=False
+        [str(LAUNCHER), *arguments],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=environment | (env or {}),
     )
 
 
@@ -100,7 +121,9 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     completed = _launch("check", "--output", "json", "-C", str(case), cwd=PRODUCT)
     assert completed.returncode == 0, completed.stderr
     found = {finding_id for _, finding_id, _ in _found(completed.stdout)}
-    assert found == {"GHA-07", "ADOPT-09"}
+    # The case holds no .repo/ declarations, so they are reported missing:
+    # this repository's own were not read.
+    assert found == {"GHA-07", "ADOPT-09", "REPO-01"}
 
 
 def test_launcher_is_committed_executable() -> None:
@@ -135,3 +158,58 @@ def test_conftest_formats_pass_through(tmp_path: Path) -> None:
     completed = _launch("check", "--output", "github", cwd=repo)
     assert completed.returncode == 0, completed.stderr
     assert "::warning file=" in completed.stdout
+
+
+def _ids(stdout: str) -> set[str]:
+    return {finding_id for _, finding_id, _ in _found(stdout)}
+
+
+def test_repository_flag_matches_the_runner(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    completed = _launch("check", "--output", "json", "--repository", "platform-web", cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert _ids(completed.stdout) == {"REPO-07"}
+    report = check(PRODUCT, repo, utc_now(), repository="platform-web")
+    assert completed.stdout == render_json(report)
+    env = {"CONVENTIONS_REPOSITORY": "platform-web"}
+    assert _launch("check", "--output", "json", cwd=repo, env=env).stdout == completed.stdout
+
+
+def test_github_repository_names_only_the_workspace(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    named = {"GITHUB_REPOSITORY": "musher-dev/platform-web", "GITHUB_WORKSPACE": str(repo)}
+    assert _ids(_launch("check", "--output", "json", cwd=repo, env=named).stdout) == {"REPO-07"}
+    # A directory other than the workspace, such as a fixture checked with -C
+    # in CI, must not borrow the workspace's name.
+    elsewhere = named | {"GITHUB_WORKSPACE": str(tmp_path)}
+    assert _ids(_launch("check", "--output", "json", cwd=repo, env=elsewhere).stdout) == set()
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/musher-dev/platform-web.git",
+        "git@github.com:musher-dev/platform-web.git",
+        "ssh://git@github.com/musher-dev/platform-web/",
+    ],
+)
+def test_origin_remote_names_a_work_tree_root(url: str, tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    git = shutil.which("git")
+    assert git
+    subprocess.run([git, "init", "-q", str(repo)], check=True)
+    subprocess.run([git, "-C", str(repo), "remote", "add", "origin", url], check=True)
+    completed = _launch("check", "--output", "json", cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert _ids(completed.stdout) == {"REPO-07"}
+    assert repository_name(repo) == "platform-web"
+    # Checked as a subdirectory of the work tree, the origin is not its name.
+    subdirectory = _launch("check", "--output", "json", "-C", ".github", cwd=repo)
+    assert "REPO-07" not in _ids(subdirectory.stdout)
+
+
+def test_an_unusable_name_is_unknown(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    completed = _launch("check", "--output", "json", "--repository", "not a name", cwd=repo)
+    assert _ids(completed.stdout) == set()
+    assert repository_name(repo, "not a name") is None

@@ -99,7 +99,7 @@ def repo(tmp_path: Path) -> Path:
 
 def _write_declaration(repo: Path, text: str) -> None:
     (repo / ".repo").mkdir(exist_ok=True)
-    (repo / ".repo" / "conventions.yaml").write_text(text, encoding="utf-8")
+    (repo / ".repo" / "conventions.toml").write_text(text, encoding="utf-8")
 
 
 def test_diagnostic_line_format() -> None:
@@ -172,8 +172,9 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/actions/setup-tools/action.yml",
         ".github/actions/nested/deeper/action.yaml",
         ".github/rulesets/main-branch.json",
-        ".repo/conventions.yaml",
-        ".repo/outputs.yaml",
+        ".repo/conventions.toml",
+        ".repo/outputs.toml",
+        ".repo/repository.toml",
         "mise.toml",
         ".devcontainer/mise.toml",
         "nested/mise.toml",
@@ -189,8 +190,9 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/workflows/deploy.YML",
         ".github/workflows/release.yaml",
         ".github/workflows/validate.yml",
-        ".repo/conventions.yaml",
-        ".repo/outputs.yaml",
+        ".repo/conventions.toml",
+        ".repo/outputs.toml",
+        ".repo/repository.toml",
         "mise.toml",
     ]
 
@@ -243,6 +245,58 @@ def test_check_plumbs_runtime_inventory_and_release(stub: Path, home: Path, repo
     assert inventory["files"] == [".github/workflows/validate.yml"]
 
 
+def test_the_inventory_carries_a_known_repository_name(stub: Path, home: Path, repo: Path) -> None:
+    run.check(home, repo, NOW)
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert "repository" not in inventory
+    run.check(home, repo, NOW, repository="platform-api")
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert inventory["repository"] == {"name": "platform-api"}
+    # A name the launcher would not pass on is treated as unknown here too.
+    run.check(home, repo, NOW, repository="not a name")
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert "repository" not in inventory
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/musher-dev/platform-api.git",
+        "https://github.com/musher-dev/platform-api",
+        "git@github.com:musher-dev/platform-api.git",
+        "ssh://git@github.com/musher-dev/platform-api.git/",
+        "git@example.com:platform-api.git\n",
+    ],
+)
+def test_remote_name(url: str) -> None:
+    assert run.remote_name(url) == "platform-api"
+
+
+def test_repository_name_sources_in_order(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    for variable in ("CONVENTIONS_REPOSITORY", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE"):
+        monkeypatch.delenv(variable, raising=False)
+    assert run.repository_name(tmp_path) is None
+    monkeypatch.setenv("GITHUB_REPOSITORY", "musher-dev/sdk-python")
+    monkeypatch.setenv("GITHUB_WORKSPACE", str(tmp_path / "elsewhere"))
+    assert run.repository_name(tmp_path) is None
+    monkeypatch.setenv("GITHUB_WORKSPACE", str(tmp_path))
+    assert run.repository_name(tmp_path) == "sdk-python"
+    monkeypatch.setenv("CONVENTIONS_REPOSITORY", "sdk-typescript")
+    assert run.repository_name(tmp_path) == "sdk-typescript"
+    assert run.repository_name(tmp_path, "sdk-cli") == "sdk-cli"
+    assert run.repository_name(tmp_path, "..") is None
+
+
+def test_cli_check_passes_the_repository_name(
+    stub: Path, home: Path, repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(HOME_ENV, str(home))
+    monkeypatch.delenv("CONVENTIONS_REPOSITORY", raising=False)
+    assert main(["check", str(repo), "--now", NOW, "--repository", "platform-api"]) == 0
+    inventory = as_map(as_map(read_json(stub / "inventory.json"))["conventions_inventory"])
+    assert inventory["repository"] == {"name": "platform-api"}
+
+
 def test_release_data_is_optional(stub: Path, home: Path, repo: Path) -> None:
     run.check(home, repo, NOW)
     args = (stub / "args").read_text().splitlines()
@@ -251,16 +305,16 @@ def test_release_data_is_optional(stub: Path, home: Path, repo: Path) -> None:
 
 def test_declaration_is_passed_to_conftest(stub: Path, home: Path, repo: Path) -> None:
     # ADOPT-02 is decided in Rego like every other requirement.
-    _write_declaration(repo, "schema_version: 1\nprofile: no-such-profile\n")
+    _write_declaration(repo, 'schema_version = 1\nprofile = "no-such-profile"\n')
     assert run.check(home, repo, NOW).findings == []
-    assert ".repo/conventions.yaml" in (stub / "args").read_text().splitlines()
+    assert ".repo/conventions.toml" in (stub / "args").read_text().splitlines()
 
 
 def test_unparsable_declaration_is_a_parse_error(stub: Path, home: Path, repo: Path) -> None:
-    _write_declaration(repo, "profile: [unterminated\n")
+    _write_declaration(repo, "profile = [unterminated\n")
     report = run.check(home, repo, NOW)
-    assert [error.path for error in report.errors] == [".repo/conventions.yaml"]
-    assert ".repo/conventions.yaml" not in (stub / "args").read_text().splitlines()
+    assert [error.path for error in report.errors] == [".repo/conventions.toml"]
+    assert ".repo/conventions.toml" not in (stub / "args").read_text().splitlines()
 
 
 def test_unparsable_mise_config_is_a_parse_error(stub: Path, home: Path, repo: Path) -> None:

@@ -1,0 +1,9 @@
+# The profile the identity declaration selects for kind = "template"
+# (EC-0009). It is base-repo until requirements specific to the kind exist.
+schema_version: 1
+id: template
+display_name: Template
+description: >-
+  Repositories whose kind is template. Until requirements specific to the kind
+  exist, it applies exactly what base-repo does.
+inherits: [base-repo]

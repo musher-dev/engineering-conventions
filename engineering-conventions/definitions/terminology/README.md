@@ -33,7 +33,11 @@ An **alias** is a word to avoid in favour of the term:
 - `scope` says where the alias is checked. `identifier` means filenames,
   directory names and IDs, which the conventions that govern them check (for
   example GHA-05 for workflow filenames). `prose` means documentation, which
-  the `MusherConventions` Vale style checks.
+  the `MusherConventions` Vale style checks. `repository-name` means a token
+  of a repository's own name, which REPO-10 checks; its `note` is required,
+  because the check prints it as the advice. Each scope is projected on its
+  own, so a token banned in repository names is not banned in filenames or
+  prose.
 - `suggest` says what to write instead when that is not simply the term: its
   `token` in an identifier, its `display_name` in prose.
 
@@ -47,7 +51,9 @@ from it: `api` is written `API`, so `deploy-api.yml` is named `Deploy API`.
 | Source | Generated |
 | --- | --- |
 | Terms tagged `gha.responsibility`, `gha.capability`, `gha.action`, `outputs.kind` | the token lists in `checks/data/index.json` |
+| Terms tagged `repository.system`, `repository.kind`, `repository.lifecycle`, `repository.audience` | `repository_systems`, `repository_kinds`, `repository_lifecycles`, `repository_audiences` in `checks/data/index.json` |
 | Banned `identifier` aliases | `banned_identifier_tokens` in `checks/data/index.json` |
+| Banned `repository-name` aliases, with their notes | `banned_repository_tokens` in `checks/data/index.json` |
 | `display_forms` | `display_forms` in `checks/data/index.json` |
 | Banned `prose` aliases | `checks/vale/MusherConventions/Terms.yml` (error) |
 | Discouraged `prose` aliases | `checks/vale/MusherConventions/Discouraged.yml` (warning) |

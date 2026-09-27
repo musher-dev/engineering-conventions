@@ -2,7 +2,7 @@
 # title: Conventions declaration
 # description: >-
 #   A repository pins the release it is checked against (ADOPT-09), and its
-#   optional .repo/conventions.yaml is valid (ADOPT-02) with every waiver
+#   optional .repo/conventions.toml is valid (ADOPT-02) with every waiver
 #   known, time-boxed, in force and still needed.
 # scope: package
 # custom:
@@ -77,7 +77,7 @@ findings contains lib.finding("ADOPT-05", files.declaration_path, message) if {
 	waivers.too_long(waiver)
 	message := sprintf(
 		concat(" ", [
-			"%s expires on %s, more than %d days away; set expires: to %s or earlier and renew it if",
+			"%s expires on %s, more than %d days away; set expires to %s or earlier and renew it if",
 			"the work is still open then",
 		]),
 		[waivers.label(index, waiver), waiver.expires, waivers.max_term_days, waivers.latest_allowed_date],
@@ -142,6 +142,12 @@ raw_findings contains finding if {
 	some finding in package_findings
 }
 
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.repository[convention].findings
+	some finding in package_findings
+}
+
 requirements := object.get(data.conventions.index, "requirements", {})
 
 known(id) if requirements[id].status != "retired"
@@ -191,8 +197,16 @@ plural(n) := "s" if n != 1
 problems := array.concat(schema_problems, override_problems)
 
 # A waiver of an ADOPT requirement fails the schema's `not` clause, whose
-# generic wording says nothing useful; it gets its own message instead.
+# generic wording says nothing useful; it gets its own message instead. So
+# does an unquoted TOML date, which conftest renders as a timestamp at
+# midnight UTC and the schema's date pattern rejects. A field that fails
+# several keywords with the same message is one problem, not several.
 schema_problems := [problem |
+	some index, problem in schema_messages
+	not problem in array.slice(schema_messages, 0, index)
+]
+
+schema_messages := [problem |
 	some contents in files.declaration_documents
 	[_, errors] := json.match_schema(contents, data.conventions.index.declaration_schema)
 	some error in sort_errors(errors)
@@ -212,6 +226,16 @@ schema_message(error, contents) := sprintf(
 	regex.match(`^waivers\.[0-9]+\.requirement$`, error.field)
 	name := object.get(contents, field_path(error.field), "")
 	startswith(name, "ADOPT-")
+}
+
+else := sprintf(
+	"`%s` is the bare TOML date %s; quote it as \"%s\", because the declaration's dates are strings.",
+	[error.field, value, substring(value, 0, 10)],
+) if {
+	regex.match(`^waivers\.[0-9]+\.expires$`, error.field)
+	value := object.get(contents, field_path(error.field), "")
+	is_string(value)
+	regex.match(`^[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z$`, value)
 }
 
 else := sprintf("the declaration: %s.", [trim_suffix(error.desc, ".")]) if error.field == "(Root)"

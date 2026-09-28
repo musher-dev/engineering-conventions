@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/musher-dev/engineering-conventions/compare/v0.5.0...v0.6.0) (2026-09-28)
+
+
+### Features
+
+* **cli:** read JSONC, any Dockerfile and agent-context text into the check ([#27](https://github.com/musher-dev/engineering-conventions/issues/27)) ([0700ea0](https://github.com/musher-dev/engineering-conventions/commit/0700ea0d53ab0aab36e19922c9ba5b72e6a9c607))
+* **conventions:** adopt general governance from the platform and development-container ([#37](https://github.com/musher-dev/engineering-conventions/issues/37)) ([baa1dfa](https://github.com/musher-dev/engineering-conventions/commit/baa1dfa2fbe2248e02d77c6e11e3b52540f4554c))
+
+
+### Bug Fixes
+
+* **conventions:** let a release workflow publish what it releases ([#25](https://github.com/musher-dev/engineering-conventions/issues/25)) ([75fae34](https://github.com/musher-dev/engineering-conventions/commit/75fae349e320e55261df8a75a2dafc3c4fea8c68))
+
 ## [0.5.0](https://github.com/musher-dev/engineering-conventions/compare/v0.4.0...v0.5.0) (2026-09-27)
 
 

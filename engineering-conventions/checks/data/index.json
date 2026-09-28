@@ -86,6 +86,13 @@
           "status": "draft",
           "title": "Repository names",
           "topic": "repository"
+        },
+        "EC-0018": {
+          "authority": "self",
+          "path": "definitions/conventions/repository/layout.md",
+          "status": "draft",
+          "title": "Repository layout",
+          "topic": "repository"
         }
       },
       "declaration_schema": {
@@ -419,7 +426,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -491,7 +507,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "content": {
@@ -566,7 +591,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -638,7 +672,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "documentation": {
@@ -713,7 +756,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -785,7 +837,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "infrastructure": {
@@ -860,7 +921,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -932,7 +1002,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "library": {
@@ -1007,7 +1086,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1079,7 +1167,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "service": {
@@ -1154,7 +1251,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1226,7 +1332,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "specification": {
@@ -1301,7 +1416,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1373,7 +1497,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "template": {
@@ -1448,7 +1581,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1520,7 +1662,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "tool": {
@@ -1595,7 +1746,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1667,7 +1827,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         },
         "website": {
@@ -1742,7 +1911,16 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "REPO-14",
+            "REPO-15",
+            "REPO-16",
+            "REPO-17",
+            "REPO-18",
+            "REPO-19",
+            "REPO-20",
+            "REPO-21",
+            "REPO-22"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1814,7 +1992,16 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "REPO-14": "warning",
+            "REPO-15": "warning",
+            "REPO-16": "warning",
+            "REPO-17": "warning",
+            "REPO-18": "warning",
+            "REPO-19": "warning",
+            "REPO-20": "warning",
+            "REPO-21": "warning",
+            "REPO-22": "warning"
           }
         }
       },
@@ -1829,7 +2016,7 @@
             "type": "string"
           }
         },
-        "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name.",
+        "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name. The optional layout table says where the product lives (EC-0018).",
         "properties": {
           "audience": {
             "$ref": "#/definitions/common_nonEmptyString",
@@ -1842,6 +2029,28 @@
           "kind": {
             "$ref": "#/definitions/common_nonEmptyString",
             "description": "The repository's primary role, a registered kind, e.g. service. It selects the convention profile of the same name. REPO-03 checks the token."
+          },
+          "layout": {
+            "additionalProperties": false,
+            "description": "Where the repository keeps its product (EC-0018). REPO-14 asks for it; a repository without a product directory sets product to \"\".",
+            "properties": {
+              "product": {
+                "description": "The product directory: one path segment named after the repository, e.g. platform-api, or \"\" when the repository has no product directory.",
+                "pattern": "^([A-Za-z0-9][A-Za-z0-9._-]*)?$",
+                "type": "string"
+              },
+              "root_exceptions": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Root entries REPO-18 would report, each mapped to the reason it stays at the root, e.g. package.json = \"Repository tooling only; the product has its own\". REPO-19 checks each entry and reason.",
+                "propertyNames": {
+                  "pattern": "^[^/]+$"
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
           },
           "lifecycle": {
             "$ref": "#/definitions/common_nonEmptyString",
@@ -2820,6 +3029,141 @@
           "since": "0.5.0",
           "status": "proposed",
           "title": "A rename changes everything that names the repository in one change, and the old name is never reused",
+          "waivable": true
+        },
+        "REPO-14": {
+          "aliases": [
+            "development-container:LAYOUT-01"
+          ],
+          "anchor": "repo-14",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The identity declaration says where the product lives",
+          "waivable": true
+        },
+        "REPO-15": {
+          "aliases": [
+            "development-container:LAYOUT-02"
+          ],
+          "anchor": "repo-15",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The declared product directory exists",
+          "waivable": true
+        },
+        "REPO-16": {
+          "aliases": [
+            "development-container:LAYOUT-03"
+          ],
+          "anchor": "repo-16",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The product directory is named after the repository",
+          "waivable": true
+        },
+        "REPO-17": {
+          "aliases": [
+            "development-container:LAYOUT-04"
+          ],
+          "anchor": "repo-17",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The product directory holds its build manifest",
+          "waivable": true
+        },
+        "REPO-18": {
+          "aliases": [
+            "development-container:LAYOUT-05"
+          ],
+          "anchor": "repo-18",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The repository root holds no manifest, lockfile, toolchain file or source tree",
+          "waivable": true
+        },
+        "REPO-19": {
+          "aliases": [
+            "development-container:LAYOUT-06"
+          ],
+          "anchor": "repo-19",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every root exception gives a reason and names an entry at the root",
+          "waivable": true
+        },
+        "REPO-20": {
+          "aliases": [
+            "development-container:LAYOUT-08"
+          ],
+          "anchor": "repo-20",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Dependabot updates the product's dependencies in the product directory, not the root",
+          "waivable": true
+        },
+        "REPO-21": {
+          "aliases": [
+            "development-container:LAYOUT-09"
+          ],
+          "anchor": "repo-21",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The Taskfile's PRODUCT_DIR is the declared product directory",
+          "waivable": true
+        },
+        "REPO-22": {
+          "aliases": [
+            "development-container:PATH-02b"
+          ],
+          "anchor": "repo-22",
+          "convention": "EC-0018",
+          "engine": "conftest",
+          "package": "conventions.checks.repository.layout",
+          "path": "definitions/conventions/repository/layout.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every directory a Dependabot update names exists",
           "waivable": true
         }
       },

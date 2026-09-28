@@ -1,0 +1,11 @@
+version: '3'
+
+vars:
+  PRODUCT_DIR: '{{.ROOT_DIR}}/api'
+
+tasks:
+  build:
+    desc: Build the product
+    dir: '{{.PRODUCT_DIR}}'
+    cmds:
+      - go build ./...

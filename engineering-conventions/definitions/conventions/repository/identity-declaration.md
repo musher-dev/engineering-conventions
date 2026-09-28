@@ -113,7 +113,8 @@ tier = 1
 ```
 
 The file is TOML ([decision 0011](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0011-declarations-are-toml.md)),
-and every field is required.
+and every field above is required. An optional `[layout]` table says where the product lives; its rules are
+[EC-0018](layout.md).
 
 | Field | Meaning |
 | --- | --- |

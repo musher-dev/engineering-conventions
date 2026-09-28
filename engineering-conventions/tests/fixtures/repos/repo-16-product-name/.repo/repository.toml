@@ -9,4 +9,4 @@ audience = "internal"
 tier = 1
 
 [layout]
-product = "platform-api"
+product = "api"

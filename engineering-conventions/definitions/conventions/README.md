@@ -20,6 +20,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
+| [EC-0018](repository/layout.md) | Repository layout | repository | draft |
 
 ## Requirements
 
@@ -96,6 +97,15 @@ ID is permanent: it is never renumbered or reused.
 | [REPO-11](repository/repository-names.md#repo-11) | A repository name is at most 40 characters | EC-0010 | proposed | warning | conftest |
 | [REPO-12](repository/repository-names.md#repo-12) | The component names what the repository holds | EC-0010 | proposed | warning | review |
 | [REPO-13](repository/repository-names.md#repo-13) | A rename changes everything that names the repository in one change, and the old name is never reused | EC-0010 | proposed | warning | review |
+| [REPO-14](repository/layout.md#repo-14) | The identity declaration says where the product lives | EC-0018 | proposed | warning | conftest |
+| [REPO-15](repository/layout.md#repo-15) | The declared product directory exists | EC-0018 | proposed | warning | conftest |
+| [REPO-16](repository/layout.md#repo-16) | The product directory is named after the repository | EC-0018 | proposed | warning | conftest |
+| [REPO-17](repository/layout.md#repo-17) | The product directory holds its build manifest | EC-0018 | proposed | warning | conftest |
+| [REPO-18](repository/layout.md#repo-18) | The repository root holds no manifest, lockfile, toolchain file or source tree | EC-0018 | proposed | warning | conftest |
+| [REPO-19](repository/layout.md#repo-19) | Every root exception gives a reason and names an entry at the root | EC-0018 | proposed | warning | conftest |
+| [REPO-20](repository/layout.md#repo-20) | Dependabot updates the product's dependencies in the product directory, not the root | EC-0018 | proposed | warning | conftest |
+| [REPO-21](repository/layout.md#repo-21) | The Taskfile's PRODUCT_DIR is the declared product directory | EC-0018 | proposed | warning | conftest |
+| [REPO-22](repository/layout.md#repo-22) | Every directory a Dependabot update names exists | EC-0018 | proposed | warning | conftest |
 
 ## Families
 

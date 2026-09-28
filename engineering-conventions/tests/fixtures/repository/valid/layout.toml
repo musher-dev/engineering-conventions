@@ -10,3 +10,6 @@ tier = 1
 
 [layout]
 product = "platform-api"
+
+[layout.root_exceptions]
+"package.json" = "Repository tooling only (commitlint); the product has its own under platform-api/."

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Identity declaration",
-  "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name.",
+  "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name. The optional layout table says where the product lives (EC-0018).",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "name", "system", "component", "kind", "owner", "lifecycle", "audience", "tier"],
@@ -44,6 +44,24 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 3
+    },
+    "layout": {
+      "description": "Where the repository keeps its product (EC-0018). REPO-14 asks for it; a repository without a product directory sets product to \"\".",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "product": {
+          "description": "The product directory: one path segment named after the repository, e.g. platform-api, or \"\" when the repository has no product directory.",
+          "type": "string",
+          "pattern": "^([A-Za-z0-9][A-Za-z0-9._-]*)?$"
+        },
+        "root_exceptions": {
+          "description": "Root entries REPO-18 would report, each mapped to the reason it stays at the root, e.g. package.json = \"Repository tooling only; the product has its own\". REPO-19 checks each entry and reason.",
+          "type": "object",
+          "propertyNames": { "pattern": "^[^/]+$" },
+          "additionalProperties": { "type": "string" }
+        }
+      }
     }
   }
 }

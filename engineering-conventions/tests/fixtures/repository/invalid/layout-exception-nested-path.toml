@@ -10,3 +10,6 @@ tier = 1
 
 [layout]
 product = "platform-api"
+
+[layout.root_exceptions]
+"tools/package.json" = "Not a root entry"

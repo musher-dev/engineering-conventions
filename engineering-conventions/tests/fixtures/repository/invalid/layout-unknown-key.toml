@@ -10,3 +10,4 @@ tier = 1
 
 [layout]
 product = "platform-api"
+workspace = "platform-api"

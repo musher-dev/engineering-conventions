@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REPO-18",
+    "path": "go.sum",
+    "severity": "warning"
+  }
+]

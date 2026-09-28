@@ -30,34 +30,17 @@ from conventions_tools.loading import (
 )
 from conventions_tools.paths import (
     index_file,
+    launcher_file,
+    product_dir,
     rego_dir,
     release_file,
 )
 
-DECLARATION = ".repo/conventions.toml"
-OUTPUTS = ".repo/outputs.toml"
-# The repository identity declaration; bin/conventions passes it too.
-REPOSITORY = ".repo/repository.toml"
-# Where ADOPT-09 looks for the mise entry that pins the release; the same
-# list as mise_config_paths in checks/rego/lib/files.rego.
-MISE_CONFIGS = (
-    "mise.toml",
-    ".mise.toml",
-    ".config/mise.toml",
-    ".config/mise/config.toml",
-    "mise/config.toml",
-    ".devcontainer/mise.toml",
-)
 PARSE_ID = "PARSE"
-WORKFLOW_DIR = ".github/workflows"
-# Matched case-insensitively, so a `.YML` workflow is checked (and GHA-01
-# asks for the lowercase extension) instead of silently skipped.
-WORKFLOW_SUFFIXES = frozenset({".yml", ".yaml"})
-INPUT_GLOBS = (
-    ".github/actions/**/action.yml",
-    ".github/actions/**/action.yaml",
-    ".github/rulesets/*.json",
-)
+# A pattern bin/conventions builds, one assignment per line:
+#   NAME='regex'   or   NAME="${NAME}|"'regex'
+LAUNCHER_PATTERN = re.compile(r"^(?P<name>[A-Z_]+)=(?:\"\$\{(?P=name)\}\|\")?'(?P<regex>[^']*)'$")
+LAUNCHER_NUMBER = re.compile(r"^(?P<name>[A-Z_]+)=(?P<value>[0-9]+)$")
 # A repository name the runner passes on; anything else is treated as unknown,
 # as bin/conventions does.
 REPOSITORY_NAME = re.compile(r"[A-Za-z0-9._-]+")
@@ -120,25 +103,54 @@ def validate_now(value: str) -> str:
     return value
 
 
-def input_files(repo: Path) -> list[str]:
+@dataclass(frozen=True)
+class Selection:
+    """Which files the runner reads, and how: the patterns bin/conventions defines.
+
+    Read from the launcher itself, so the two runners cannot select different
+    files (decision 0015).
+    """
+
+    inputs: re.Pattern[str]
+    jsonnet: re.Pattern[str]
+    dockerfiles: re.Pattern[str]
+    texts: re.Pattern[str]
+    sizes: re.Pattern[str]
+    text_limit: int
+
+
+def selection(product: Path | None = None) -> Selection:
+    patterns: dict[str, list[str]] = {}
+    numbers: dict[str, int] = {}
+    for line in launcher_file(product or product_dir()).read_text(encoding="utf-8").splitlines():
+        if matched := LAUNCHER_PATTERN.match(line):
+            patterns.setdefault(matched["name"], []).append(matched["regex"])
+        elif matched := LAUNCHER_NUMBER.match(line):
+            numbers[matched["name"]] = int(matched["value"])
+
+    def compiled(name: str) -> re.Pattern[str]:
+        if name not in patterns:
+            raise RunnerError(f"bin/conventions defines no {name} pattern")
+        return re.compile("|".join(patterns[name]))
+
+    return Selection(
+        inputs=compiled("INPUTS"),
+        jsonnet=compiled("JSONNET"),
+        dockerfiles=compiled("DOCKERFILES"),
+        texts=compiled("TEXTS"),
+        sizes=compiled("SIZES"),
+        text_limit=numbers["TEXT_LIMIT"],
+    )
+
+
+def input_files(
+    repo: Path, files: list[str] | None = None, chosen: Selection | None = None
+) -> list[str]:
     """Repository-relative paths conftest reads, in a stable order."""
-    found = {
-        path.relative_to(repo).as_posix()
-        for pattern in INPUT_GLOBS
-        for path in repo.glob(pattern)
-        if path.is_file()
-    }
-    found |= {
-        path.relative_to(repo).as_posix()
-        for path in (repo / WORKFLOW_DIR).glob("*")
-        if path.is_file() and path.suffix.lower() in WORKFLOW_SUFFIXES
-    }
-    found |= {
-        name
-        for name in (DECLARATION, OUTPUTS, REPOSITORY, *MISE_CONFIGS)
-        if (repo / name).is_file()
-    }
-    return sorted(found)
+    pattern = (chosen or selection()).inputs
+    return sorted(
+        path for path in (inventory(repo) if files is None else files) if pattern.search(path)
+    )
 
 
 def _git(repo: Path, *arguments: str) -> subprocess.CompletedProcess[str] | None:
@@ -234,6 +246,60 @@ def _conftest() -> str:
     return found
 
 
+def conftest_reason(error: str) -> str:
+    """conftest's error on one line, as bin/inventory.jq shortens it."""
+    reason = re.sub(r"\s+", " ", error)
+    reason = re.sub(r"^ ?Error: ", "", reason)
+    reason = re.sub(r"^parse configurations: ", "", reason)
+    reason = re.sub(r" ?, path: .*$", "", reason)
+    return "conftest cannot parse it: " + re.sub(r" $", "", reason)
+
+
+def _preparse(repo: Path, parser: str, relative: str) -> tuple[object, str | None]:
+    completed = subprocess.run(
+        [_conftest(), "parse", "--combine", "--parser", parser, relative],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return None, conftest_reason(completed.stderr)
+    # --combine gives each file as {path, contents}, the shape conftest test reads.
+    return as_map(as_list(json.loads(completed.stdout))[0]).get("contents"), None
+
+
+def inventory_document(
+    repo: Path, files: list[str], repository: str | None, chosen: Selection
+) -> dict[str, object]:
+    """The inventory conftest reads beside the files: what bin/inventory.jq writes."""
+    parsed: list[dict[str, object]] = []
+    unparsed: list[dict[str, str]] = []
+    for parser, pattern in (("jsonnet", chosen.jsonnet), ("dockerfile", chosen.dockerfiles)):
+        for relative in files:
+            if pattern.search(relative):
+                contents, problem = _preparse(repo, parser, relative)
+                if problem is None:
+                    parsed.append({"path": relative, "contents": contents})
+                else:
+                    unparsed.append({"path": relative, "reason": problem})
+    texts = {
+        relative: (repo / relative).read_text(encoding="utf-8", errors="replace")
+        for relative in files
+        if chosen.texts.search(relative) and (repo / relative).stat().st_size <= chosen.text_limit
+    }
+    sizes = {
+        relative: (repo / relative).stat().st_size
+        for relative in files
+        if chosen.sizes.search(relative)
+    }
+    listing: dict[str, object] = {"files": files}
+    if repository is not None:
+        listing["repository"] = {"name": repository}
+    listing |= {"texts": texts, "sizes": sizes, "parsed": parsed, "unparsed": unparsed}
+    return {"conventions_inventory": listing}
+
+
 def parse_problem(repo: Path, relative: str) -> str | None:
     """Why a file conftest would read cannot be parsed, in one line, or None."""
     try:
@@ -318,6 +384,7 @@ class RunData:
     now: str
     release: Path | None = None
     repository: str | None = None
+    inventory: dict[str, object] | None = None
 
 
 def run_conftest(product: Path, repo: Path, files: list[str], data: RunData) -> list[Finding]:
@@ -329,10 +396,9 @@ def run_conftest(product: Path, repo: Path, files: list[str], data: RunData) -> 
         scratch = Path(temp)
         runtime = {"conventions": {"runtime": {"now": data.now}}}
         (scratch / "runtime.json").write_text(json.dumps(runtime), encoding="utf-8")
-        listing: dict[str, object] = {"files": inventory(repo)}
-        if data.repository is not None:
-            listing["repository"] = {"name": data.repository}
-        document = {"conventions_inventory": listing}
+        document = data.inventory or inventory_document(
+            repo, inventory(repo), data.repository, selection(product)
+        )
         (scratch / "inventory.json").write_text(json.dumps(document), encoding="utf-8")
         completed = subprocess.run(
             conftest_command(product, scratch, files, data.release),
@@ -381,7 +447,9 @@ def check(
     if not repo.is_dir():
         raise RunnerError(f"{repo} is not a directory")
     release = _release(product, release)
-    files = input_files(repo)
+    listed = inventory(repo)
+    chosen = selection(product)
+    files = input_files(repo, listed, chosen)
     errors = [
         ParseError(relative, problem)
         for relative in files
@@ -389,7 +457,13 @@ def check(
     ]
     unparsed = {error.path for error in errors}
     files = [relative for relative in files if relative not in unparsed]
-    data = RunData(now, release, _valid_name(repository))
+    name = _valid_name(repository)
+    document = inventory_document(repo, listed, name, chosen)
+    errors += [
+        ParseError(get_str(item, "path"), get_str(item, "reason"))
+        for item in map(as_map, as_list(as_map(document["conventions_inventory"]).get("unparsed")))
+    ]
+    data = RunData(now, release, name, document)
     findings, skipped = _conftest_findings(product, repo, files, data)
     return Report(sort_findings(findings), sorted(errors + skipped))
 

@@ -210,7 +210,17 @@ With `--output json`, each finding is one object with the same parts.
 
 **A file that does not parse.** A workflow, action, ruleset, declaration or mise configuration that is not valid YAML,
 JSON or TOML cannot be checked at all: conftest stops with a parse error naming the file. Fix the syntax and run
-again.
+again. A `devcontainer.json` or Dockerfile is parsed before the check ([decision 0015](decisions/0015-the-runner-reads-what-conftest-cannot-select.md)),
+so one that does not parse is reported as a `PARSE` error and the rest of the repository is still checked.
+
+**Fixtures.** Directories of test fixtures, such as sample repositories or files that are invalid on purpose, are
+declared so the checks do not read them as the repository's own. This is for fixtures only. It does not expire, and a
+finding in code you ship needs a waiver:
+
+```toml
+[paths]
+fixtures = ["tests/fixtures/**"]
+```
 
 **Fix filenames before names.** A workflow's `name:` (GHA-07), the workflow prefix of a required-check job (GHA-12) and
 an action's `name:` (GHA-22) are derived from a filename or directory. While GHA-01, GHA-05, GHA-20 or GHA-21 asks for a

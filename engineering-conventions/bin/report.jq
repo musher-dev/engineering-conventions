@@ -7,6 +7,8 @@
 #   --arg fail_on   error or warning.
 #   --argjson colour  true to colour the text for a terminal.
 #   --slurpfile index checks/data/index.json, for requirement titles.
+#   --slurpfile inventory the inventory bin/inventory.jq wrote, whose
+#                   unparsed files are reported as PARSE errors.
 #
 # src/conventions_tools/run.py renders the same text, and
 # tests/test_launcher.py holds the two to the same output.
@@ -21,7 +23,8 @@ def block:
   .[0] as $first
   | [
       "\(paint("1"; $first.id))  \(paint(if $first.severity == "error" then "31" else "33" end; $first.severity))  \(plural(length; "finding"))",
-      ($index[0].conventions.index.requirements[$first.id].title // "" | select(. != "")),
+      (if $first.id == "PARSE" then "A file that does not parse cannot be checked"
+       else $index[0].conventions.index.requirements[$first.id].title // "" end | select(. != "")),
       ($first.url | select(. != "") | paint("2"; .)),
       (sort_by([.path, .message]) | group_by(.path)[] | ("  " + .[0].path), (.[] | "    " + .message))
     ]
@@ -33,6 +36,7 @@ def summary:
     + if $fail_on == "error" and $errors == 0 then "\nWarnings do not fail the check; --fail-on warning makes them fail." else "" end;
 
 [.[] | ((.failures // [])[], (.warnings // [])[]) | .metadata | {convention, id, message, path, severity, url}]
++ [$inventory[0].conventions_inventory.unparsed[]? | {convention: "", id: "PARSE", message: .reason, path, severity: "error", url: ""}]
 | sort_by([.path, .id, .message])
 | if $format == "json" then .
   elif $format == "fails" then any(.[]; .severity == "error" or $fail_on == "warning")

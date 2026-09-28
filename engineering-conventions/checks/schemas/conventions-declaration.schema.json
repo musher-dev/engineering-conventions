@@ -37,6 +37,20 @@
         }
       }
     },
+    "paths": {
+      "description": "How the checks treat parts of the repository.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fixtures": {
+          "description": "Directories of test fixtures: sample repositories and deliberately invalid files that a test reads. The checks do not read them as part of this repository. Declare only fixtures here; a finding in real code needs a waiver, which expires.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/pathGlob" }
+        }
+      }
+    },
     "waivers": {
       "description": "Time-boxed, tracked deviations from a requirement. Requirements in the ADOPT family cannot be waived.",
       "type": "array",

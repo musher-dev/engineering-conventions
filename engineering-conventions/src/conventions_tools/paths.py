@@ -41,6 +41,11 @@ def rego_dir(product: Path) -> Path:
     return product / "checks" / "rego"
 
 
+def launcher_file(product: Path) -> Path:
+    """bin/conventions, whose file patterns both runners use (decision 0015)."""
+    return product / "bin" / "conventions"
+
+
 def index_file(product: Path) -> Path:
     return product / "checks" / "data" / "index.json"
 

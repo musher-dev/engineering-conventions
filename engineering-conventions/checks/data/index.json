@@ -201,6 +201,22 @@
             ],
             "type": "object"
           },
+          "paths": {
+            "additionalProperties": false,
+            "description": "How the checks treat parts of the repository.",
+            "properties": {
+              "fixtures": {
+                "description": "Directories of test fixtures: sample repositories and deliberately invalid files that a test reads. The checks do not read them as part of this repository. Declare only fixtures here; a finding in real code needs a waiver, which expires.",
+                "items": {
+                  "$ref": "#/definitions/common_pathGlob"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "type": "object"
+          },
           "profile": {
             "$ref": "#/definitions/common_slug",
             "description": "The convention profile that applies, e.g. base-repo. Defaults to base-repo."

@@ -132,3 +132,53 @@ test_actual_repository_name_comes_from_the_inventory if {
 	not files.actual_repository_name with input as [td.inventory([])]
 	not files.actual_repository_name with input as [td.named_inventory([], "")]
 }
+
+rich_inventory := td.file("/tmp/inventory.json", {"conventions_inventory": {
+	"files": ["CLAUDE.md", "docs/a.md", "tests/fixtures/repos/x/CLAUDE.md", ".devcontainer/devcontainer.json"],
+	"texts": {"CLAUDE.md": "@README.md\n", "tests/fixtures/repos/x/CLAUDE.md": "fixture\n", "odd.md": 3},
+	"sizes": {"CLAUDE.md": 11, "docs/a.md": "big"},
+	"parsed": [
+		{"path": ".devcontainer/devcontainer.json", "contents": {"name": "x"}},
+		{"path": 7, "contents": {}},
+	],
+	"unparsed": [{"path": "./build.Dockerfile", "reason": "conftest cannot parse it: bad"}],
+}})
+
+fixtures_declared := td.declaration({"paths": {"fixtures": ["tests/fixtures/**"]}})
+
+test_preparsed_files_are_documents if {
+	docs := [rich_inventory]
+	{"path": ".devcontainer/devcontainer.json", "contents": {"name": "x"}} in files.documents with input as docs
+	count(files.preparsed_documents) == 1 with input as docs
+}
+
+test_texts_sizes_and_unparsed if {
+	docs := [rich_inventory]
+	files.texts == {"CLAUDE.md": "@README.md\n", "tests/fixtures/repos/x/CLAUDE.md": "fixture\n"} with input as docs
+	files.sizes == {"CLAUDE.md": 11} with input as docs
+	files.unparsed == {"build.Dockerfile"} with input as docs
+}
+
+test_fixtures_are_set_apart if {
+	docs := [rich_inventory, fixtures_declared]
+	files.texts == {"CLAUDE.md": "@README.md\n"} with input as docs
+	not "tests/fixtures/repos/x/CLAUDE.md" in files.repository_files with input as docs
+	"tests/fixtures/repos/x/CLAUDE.md" in files.all_files with input as docs
+	files.fixture("tests/fixtures/repos/x/CLAUDE.md") with input as docs
+	not files.fixture("docs/a.md") with input as docs
+}
+
+test_directories if {
+	expected := {"docs", "tests", "tests/fixtures", "tests/fixtures/repos", "tests/fixtures/repos/x", ".devcontainer"}
+	files.directories == expected with input as [rich_inventory]
+}
+
+test_own_documents_exclude_fixtures_and_inventory if {
+	docs := [
+		td.file("tests/fixtures/a/Taskfile.yml", {"version": "3"}),
+		td.file("Taskfile.yml", {"version": "3"}),
+		fixtures_declared,
+		td.inventory([]),
+	]
+	[doc.path | some doc in files.own_documents] == ["Taskfile.yml", ".repo/conventions.toml"] with input as docs
+}

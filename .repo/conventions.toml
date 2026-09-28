@@ -11,3 +11,11 @@ waivers = []
 
 [conventions]
 version = "0.5.0" # x-release-please-version
+
+# The fixture repositories and the example consumer are separate
+# repositories that tests check on their own; many are wrong on purpose.
+[paths]
+fixtures = [
+  "engineering-conventions/tests/fixtures/**",
+  "engineering-conventions/examples/**",
+]

@@ -124,11 +124,91 @@ INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
 INPUTS="${INPUTS}|"'^\.repo/(conventions|outputs|repository)\.toml$'
 INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
 INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'
+INPUTS="${INPUTS}|"'^\.github/dependabot\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}[Tt]askfile(\.dist)?\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.ya?ml$'
+INPUTS="${INPUTS}|"'^(\.config/)?\.?lefthook(-local)?\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}env\.schema\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}package\.json$'
+INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
+
+# Files conftest cannot choose a parser for by name, parsed before the check
+# with the parser named and added to the inventory (decision 0015):
+# devcontainer.json is JSON with comments, and a Dockerfile's name is often
+# build.Dockerfile, which conftest reads as an unknown extension.
+JSONNET='^\.devcontainer(/[^/]+)?/devcontainer\.json$'
+JSONNET="${JSONNET}|"'^\.devcontainer\.json$'
+DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$'
+
+# Files the checks read as text: agent context, decision records, the
+# .config/ index, and the one-line and ignore files no parser reads. Only
+# files up to TEXT_LIMIT bytes are embedded.
+TEXTS='(^|/)CLAUDE\.md$'
+TEXTS="${TEXTS}|"'^AGENTS\.md$'
+TEXTS="${TEXTS}|"'^\.claude/rules/.+\.md$'
+TEXTS="${TEXTS}|"'^\.config/README\.md$'
+TEXTS="${TEXTS}|"'(^|/)(decisions|adrs)/.+\.md$'
+TEXTS="${TEXTS}|"'(^|/)\.(trivyignore|gitleaksignore|nvmrc|node-version|python-version|tool-versions)$'
+TEXT_LIMIT=262144
+
+# Files whose size the checks read: Markdown, for the agent context budget.
+SIZES='\.md$'
+
+# matching PATTERN: the repository's files that match PATTERN, one per line.
+matching() {
+  printf '%s\n' "${files}" | grep -E "$1" || true
+}
+
+# preparse PARSER PATTERN: parse each matching file with conftest's PARSER
+# into the scratch directory, and add it to the jq arguments being built. A
+# file that does not parse is recorded with conftest's reason, not fatal.
+preparse() {
+  parser=$1
+  while IFS= read -r file; do
+    [ -n "${file}" ] || continue
+    count=$((count + 1))
+    if tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse --combine --parser "${parser}" \
+      "${file}" > "${scratch}/parsed.${count}.json" 2> "${scratch}/unparsed.${count}.txt"; then
+      printf '%s\n%s\n%s\n' --slurpfile "parsed:${file}" "${scratch}/parsed.${count}.json"
+    else
+      printf '%s\n%s\n%s\n' --rawfile "unparsed:${file}" "${scratch}/unparsed.${count}.txt"
+    fi
+  done << EOF
+$(matching "$2")
+EOF
+}
+
+# The inventory lets the checks see files whose contents are not passed: every
+# path, the text and size of the files above, the files parsed before the
+# check, and the repository's actual name when it is known. jq writes it, so
+# any file name or text is escaped correctly.
+write_inventory() {
+  count=0
+  {
+    preparse jsonnet "${JSONNET}"
+    preparse dockerfile "${DOCKERFILES}"
+    matching "${TEXTS}" | while IFS= read -r file; do
+      if [ -n "${file}" ] && [ "$(wc -c < "${file}")" -le "${TEXT_LIMIT}" ]; then
+        printf '%s\n%s\n%s\n' --rawfile "text:${file}" "${file}"
+      fi
+    done
+    matching "${SIZES}" | while IFS= read -r file; do
+      if [ -n "${file}" ]; then
+        printf '%s\n%s\n%s\n' --arg "size:${file}" "$(wc -c < "${file}" | tr -d ' ')"
+      fi
+    done
+  } > "${scratch}/arguments"
+  set --
+  while IFS= read -r argument; do set -- "$@" "${argument}"; done < "${scratch}/arguments"
+  printf '%s\n' "${files}" | tool jq aqua:jqlang/jq "${JQ_VERSION}" -Rn --arg name "${actual_name}" "$@" \
+    -f "${bundle}/bin/inventory.jq" > "${scratch}/inventory.json"
+}
 
 # report JQ_FLAG FORMAT: render conftest's results with bin/report.jq.
 report() {
   tool jq aqua:jqlang/jq "${JQ_VERSION}" "$1" --arg format "$2" --arg fail_on "${fail_on}" \
     --argjson colour "${colour:-false}" --slurpfile index "${bundle}/checks/data/index.json" \
+    --slurpfile inventory "${scratch}/inventory.json" \
     -f "${bundle}/bin/report.jq" "${scratch}/results.json"
 }
 
@@ -159,32 +239,22 @@ check() {
   trap 'rm -rf "${scratch}"' EXIT
   files=$(list_files)
 
-  name=$(repository_name)
-
-  # The inventory lets the checks see files whose contents are not passed,
-  # and the repository's actual name when it is known. git quotes a file name
-  # holding a quote, backslash or control character, so escaping backslashes
-  # and quotes is all JSON needs.
-  {
-    printf '{"conventions_inventory": {"files": ['
-    printf '%s\n' "${files}" | sed '/^$/d; s/\\/\\\\/g; s/"/\\"/g; s/.*/"&"/' | paste -sd, -
-    printf ']'
-    if [ -n "${name}" ]; then printf ', "repository": {"name": "%s"}' "${name}"; fi
-    printf '}}\n'
-  } > "${scratch}/inventory.json"
+  actual_name=$(repository_name)
+  # Paths are relative to the repository from here on.
+  cd "${root}"
+  write_inventory
 
   set --
   while IFS= read -r file; do
     if [ -n "${file}" ]; then set -- "$@" "${file}"; fi
   done << EOF
-$(printf '%s\n' "${files}" | grep -E "${INPUTS}" || true)
+$(matching "${INPUTS}")
 EOF
 
   set -- -d "${bundle}/checks/data/index.json" "$@"
   if [ -f "${bundle}/checks/data/release.json" ]; then
     set -- -d "${bundle}/checks/data/release.json" "$@"
   fi
-  cd "${root}"
 
   # Any other format is conftest's own (github, sarif, junit, tap, table),
   # passed through with conftest's exit status.

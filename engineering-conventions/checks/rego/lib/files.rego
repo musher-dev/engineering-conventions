@@ -12,18 +12,53 @@ declaration_path := ".repo/conventions.toml"
 # the same file before any path comparison or waiver glob sees it.
 normalise(path) := trim_prefix(path, "./")
 
-documents := [{"path": normalise(doc.path), "contents": doc.contents} |
+passed_documents := [{"path": normalise(doc.path), "contents": doc.contents} |
 	is_array(input)
 	some doc in input
 	is_object(doc)
 	is_string(doc.path)
 ]
 
+# Every parsed file: the ones conftest parsed by name, and the ones the runner
+# parsed first with a named parser (devcontainer.json, Dockerfiles) and
+# carried in the inventory (decision 0015).
+documents := array.concat(passed_documents, preparsed_documents)
+
 # The inventory is identified by its top-level key, never by its path: the
 # runner writes it to a temporary directory outside the repository.
 is_inventory(contents) if is_array(contents.conventions_inventory.files)
 
-inventory_documents := [doc | some doc in documents; is_inventory(doc.contents)]
+inventory_documents := [doc | some doc in passed_documents; is_inventory(doc.contents)]
+
+preparsed_documents := [{"path": normalise(parsed.path), "contents": parsed.contents} |
+	some doc in inventory_documents
+	some parsed in doc.contents.conventions_inventory.parsed
+	is_object(parsed)
+	is_string(parsed.path)
+]
+
+# The text of each file the runner embeds: agent context, decision records,
+# the .config/ index, and files no parser reads (decision 0015).
+texts[normalise(path)] := text if {
+	some doc in inventory_documents
+	some path, text in doc.contents.conventions_inventory.texts
+	is_string(text)
+	not fixture(normalise(path))
+}
+
+# The size in bytes of each Markdown file.
+sizes[normalise(path)] := size if {
+	some doc in inventory_documents
+	some path, size in doc.contents.conventions_inventory.sizes
+	is_number(size)
+}
+
+# Files the runner tried to parse first and could not; it reports them itself.
+unparsed contains normalise(entry.path) if {
+	some doc in inventory_documents
+	some entry in doc.contents.conventions_inventory.unparsed
+	is_string(entry.path)
+}
 
 inventory contains normalise(file) if {
 	some doc in inventory_documents
@@ -36,8 +71,43 @@ passed_paths contains doc.path if {
 	not is_inventory(doc.contents)
 }
 
-# Every file the repository holds, whether or not its contents were passed.
-repository_files := inventory | passed_paths
+# Every file the repository holds, whether or not its contents were passed,
+# except the fixtures its conventions declaration sets apart.
+all_files := inventory | passed_paths
+
+repository_files contains path if {
+	some path in all_files
+	not fixture(path)
+}
+
+# Every directory that holds a file.
+directories contains dir if {
+	some path in repository_files
+	parts := split(path, "/")
+	count(parts) > 1
+	some i in numbers.range(1, count(parts) - 1)
+	dir := concat("/", array.slice(parts, 0, i))
+}
+
+# Fixture directories hold sample repositories and deliberately broken files
+# that tests read; they are not part of the repository being checked. They
+# are declared as globs under [paths] fixtures in the conventions declaration.
+default fixture_globs := []
+
+fixture_globs := [pattern |
+	some doc in passed_documents
+	doc.path == declaration_path
+	some pattern in doc.contents.paths.fixtures
+	is_string(pattern)
+]
+
+fixture(path) if {
+	some pattern in fixture_globs
+	glob.match(pattern, ["/"], path)
+}
+
+# A document the checks may read: any parsed file outside the fixtures.
+own_documents := [doc | some doc in documents; not fixture(doc.path); not is_inventory(doc.contents)]
 
 # The extension is matched case-insensitively so that a `.YML` file is still
 # seen as a workflow, and GHA-01 can ask for the lowercase extension.

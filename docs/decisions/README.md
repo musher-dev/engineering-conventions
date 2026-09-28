@@ -26,6 +26,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0013](0013-identity-declaration.md) | A repository declares its identity in .repo/repository.toml, and its kind selects its profile | accepted |
 | [0014](0014-release-workflows-may-publish.md) | A release workflow may publish what it releases | accepted |
 | [0015](0015-the-runner-reads-what-conftest-cannot-select.md) | The runner reads what conftest cannot select | accepted |
+| [0016](0016-adopted-rules-get-new-families.md) | Rules adopted from other repositories get new families, and keep their old IDs as aliases | accepted |
 
 ## Writing a decision
 

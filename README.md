@@ -65,7 +65,7 @@ flowchart LR
   end
   release[["Release vX.Y.Z<br/>bundle, checksums, attestation"]]
   subgraph yours["Your repository"]
-    pin["mise.toml pin"]
+    pin[".config/mise/config.toml pin"]
     declarations[".repo/conventions.toml<br/>.repo/outputs.toml<br/>.repo/repository.toml"]
     check["conventions check"]
   end
@@ -103,6 +103,7 @@ Start from the part of your repository you are working on:
 | [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml` | EC-0019, EC-0020 | ENVS-01 – ENVS-14 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
 | [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-14 |
+| [Toolchain](engineering-conventions/definitions/conventions/toolchain/README.md) | `.config/mise/config.toml` and every version pinned outside it | EC-0017 | TOOL-01 – TOOL-11 |
 
 A topic's README gives the reading order. Two other ways in:
 
@@ -145,9 +146,11 @@ A repository's own rule may be stricter than a convention here, never contradict
 
 ## Using the conventions in another repository
 
-Pin a release in `mise.toml` and run one command, the same locally and in CI:
+Pin a release in `.config/mise/config.toml` and run one command, the same locally and in CI:
 
 ```toml
+min_version = "2026.9.12"
+
 [tools]
 "github:musher-dev/engineering-conventions" = "0.5.0"  # x-release-please-version
 ```

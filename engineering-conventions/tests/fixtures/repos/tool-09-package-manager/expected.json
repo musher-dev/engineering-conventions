@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOOL-09",
+    "path": "package.json",
+    "severity": "warning"
+  }
+]

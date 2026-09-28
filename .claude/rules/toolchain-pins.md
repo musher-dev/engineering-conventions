@@ -45,4 +45,5 @@ pairs below, which mise cannot express.
 | lefthook is new enough | lefthook refuses to run below `min_version` |
 | mise is new enough | mise refuses to load the config below `min_version` |
 | The lockfile covers every pin | `mise install --locked` (`task tools:install`, `setup-tools`) |
-| mise versions agree, backends qualified | Review |
+| mise versions agree, backends qualified, versions exact | `task conventions:self` (TOOL-02, TOOL-03, TOOL-04, EC-0017) |
+| `.python-version` equals the python pin | `task conventions:self` (TOOL-11) |

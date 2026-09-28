@@ -1,11 +1,12 @@
 # Example consumer
 
-A miniature repository that meets every GitHub Actions, adoption, repository and task requirement in this release.
-Copy from it; the comments explain the choices that are not obvious.
+A miniature repository that meets every GitHub Actions, adoption, repository, task, environment and toolchain
+requirement in this release. Copy from it; the comments explain the choices that are not obvious.
 
 | File | Shows |
 | --- | --- |
-| [`mise.toml`](mise.toml) | One line pinning the release (ADOPT-09), beside the two tools GHA-33 delegates to. No `.repo/conventions.toml` is needed without waivers ([EC-0001](../../definitions/conventions/adoption/conventions-declaration.md)) |
+| [`.config/mise/config.toml`](.config/mise/config.toml) | One line pinning the release (ADOPT-09), beside the two tools GHA-33 delegates to and the `min_version` of mise, in the one place mise reads ([EC-0017](../../definitions/conventions/toolchain/tool-pins.md)). No `.repo/conventions.toml` is needed without waivers ([EC-0001](../../definitions/conventions/adoption/conventions-declaration.md)) |
+| [`.config/mise/mise.lock`](.config/mise/mise.lock) | What `mise lock` writes: each tool's download URL and checksum per platform (TOOL-05). Here release-please raises the release pin, so until someone runs `mise lock` the entry for the release can lag one release behind; in your repository the lockfile changes with the pin |
 | [`.repo/repository.toml`](.repo/repository.toml) | The repository's identity ([EC-0009](../../definitions/conventions/repository/identity-declaration.md)): `platform-api`, a `service` in the `platform` system, whose kind selects the `service` profile, and whose `[layout]` names its product directory ([EC-0018](../../definitions/conventions/repository/layout.md)) |
 | [`platform-api/env.schema.yaml`](platform-api/env.schema.yaml) | The service's environment contract ([EC-0019](../../definitions/conventions/environment/env-contract.md)): every variable it reads, in the format of [EC-0020](../../definitions/conventions/environment/env-schema.md), with a component vocabulary and a secret that commits only a loopback address |
 | [`platform-api/go.mod`](platform-api/go.mod) | The product directory, named after the repository and holding the build manifest, so the root keeps only what acts on the product |
@@ -18,7 +19,7 @@ Copy from it; the comments explain the choices that are not obvious.
 
 | Job | Does |
 | --- | --- |
-| `Workflows` | actionlint and zizmor at medium severity (GHA-33), at the versions in `mise.toml` |
+| `Workflows` | actionlint and zizmor at medium severity (GHA-33), at the versions in `.config/mise/config.toml` |
 | `Conventions` | `conventions check --fail-on warning`, the command a developer runs locally |
 | `Validate / Required` | fails unless both jobs above succeeded |
 

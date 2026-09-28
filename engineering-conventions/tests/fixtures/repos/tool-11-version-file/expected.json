@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOOL-11",
+    "path": ".nvmrc",
+    "severity": "warning"
+  }
+]

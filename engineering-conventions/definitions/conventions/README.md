@@ -26,6 +26,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0014](git-hooks/lefthook.md) | Lefthook configuration | git-hooks | draft |
 | [EC-0015](tasks/taskfile-style.md) | Taskfile style | tasks | draft |
 | [EC-0016](tasks/task-interface.md) | Task interface | tasks | draft |
+| [EC-0017](toolchain/tool-pins.md) | Tool pins | toolchain | draft |
 | [EC-0018](repository/layout.md) | Repository layout | repository | draft |
 | [EC-0019](environment/env-contract.md) | Environment contract | environment | draft |
 | [EC-0020](environment/env-schema.md) | Environment schema | environment | draft |
@@ -181,6 +182,17 @@ ID is permanent: it is never renumbered or reused.
 | [TASK-12](tasks/task-interface.md#task-12) | The root Taskfile of a service also defines dev | EC-0016 | proposed | warning | conftest |
 | [TASK-13](tasks/task-interface.md#task-13) | The check task runs every gate CI runs | EC-0016 | proposed | warning | review |
 | [TASK-14](tasks/taskfile-style.md#task-14) | Every literal sources entry names something the repository holds | EC-0015 | proposed | warning | conftest |
+| [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
+| [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |
+| [TOOL-03](toolchain/tool-pins.md#tool-03) | Every tool in the mise configuration is pinned to one exact version | EC-0017 | proposed | warning | conftest |
+| [TOOL-04](toolchain/tool-pins.md#tool-04) | The mise configuration sets min_version, and every place that installs mise installs that version | EC-0017 | proposed | warning | conftest |
+| [TOOL-05](toolchain/tool-pins.md#tool-05) | The mise lockfile is committed beside the configuration | EC-0017 | proposed | warning | conftest |
+| [TOOL-06](toolchain/tool-pins.md#tool-06) | A Dockerfile's version argument defaults to one exact version | EC-0017 | proposed | warning | conftest |
+| [TOOL-07](toolchain/tool-pins.md#tool-07) | A Dockerfile's image of a tool mise pins uses the pinned version | EC-0017 | proposed | warning | conftest |
+| [TOOL-08](toolchain/tool-pins.md#tool-08) | A dev container Feature that installs a tool mise pins installs the pinned version | EC-0017 | proposed | warning | conftest |
+| [TOOL-09](toolchain/tool-pins.md#tool-09) | package.json's packageManager is the version mise pins | EC-0017 | proposed | warning | conftest |
+| [TOOL-10](toolchain/tool-pins.md#tool-10) | A setup action installs the version mise pins | EC-0017 | proposed | warning | conftest |
+| [TOOL-11](toolchain/tool-pins.md#tool-11) | A runtime version file says what mise pins, and there is no .tool-versions | EC-0017 | proposed | warning | conftest |
 
 ## Families
 
@@ -196,3 +208,4 @@ ID is permanent: it is never renumbered or reused.
 | AGENT | Agent context | agents |
 | TASK | Tasks | tasks |
 | DEC | Decision records | decisions |
+| TOOL | Toolchain | toolchain |

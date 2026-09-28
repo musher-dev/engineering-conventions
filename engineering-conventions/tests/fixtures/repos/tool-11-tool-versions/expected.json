@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOOL-11",
+    "path": ".tool-versions",
+    "severity": "warning"
+  }
+]

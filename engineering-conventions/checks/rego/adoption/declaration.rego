@@ -26,12 +26,12 @@ findings contains lib.finding("ADOPT-02", files.declaration_path, message) if {
 
 # ADOPT-09. The pin is a mise tool entry or, for a repository without mise,
 # the declared version; "latest" pins nothing.
-findings contains lib.finding("ADOPT-09", "mise.toml", message) if {
+findings contains lib.finding("ADOPT-09", ".config/mise/config.toml", message) if {
 	not pinned
 	message := sprintf(
 		concat(" ", [
 			"nothing pins the conventions release this repository is checked against; add",
-			"%q = \"<release>\" under [tools] in mise.toml, or conventions.version to %s",
+			"%q = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to %s",
 		]),
 		[files.conventions_tool, files.declaration_path],
 	)
@@ -182,6 +182,12 @@ raw_findings contains finding if {
 raw_findings contains finding if {
 	some convention
 	package_findings := data.conventions.checks.decisions[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.toolchain[convention].findings
 	some finding in package_findings
 }
 

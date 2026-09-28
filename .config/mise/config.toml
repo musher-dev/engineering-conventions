@@ -19,8 +19,8 @@ min_version = "2026.9.12"
 # Node exists only to run markdownlint-cli2.
 node = "24.21.0"
 # Python exists so `mise install --locked` can replay the pipx tools' uv.lock
-# files, which needs an interpreter mise manages. Minor version matches
-# engineering-conventions/.python-version.
+# files, which needs an interpreter mise manages. uv reads the same version
+# from engineering-conventions/.python-version (TOOL-11).
 python = "3.13.15"
 "aqua:astral-sh/uv" = "0.12.18"
 

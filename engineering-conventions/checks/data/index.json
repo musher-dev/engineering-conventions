@@ -129,6 +129,13 @@
           "title": "Task interface",
           "topic": "tasks"
         },
+        "EC-0017": {
+          "authority": "self",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "status": "draft",
+          "title": "Tool pins",
+          "topic": "toolchain"
+        },
         "EC-0018": {
           "authority": "self",
           "path": "definitions/conventions/repository/layout.md",
@@ -1198,7 +1205,18 @@
             "TASK-09",
             "TASK-10",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1342,7 +1360,18 @@
             "TASK-09": "warning",
             "TASK-10": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "content": {
@@ -1489,7 +1518,18 @@
             "TASK-09",
             "TASK-10",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1633,7 +1673,18 @@
             "TASK-09": "warning",
             "TASK-10": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "documentation": {
@@ -1780,7 +1831,18 @@
             "TASK-09",
             "TASK-10",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1924,7 +1986,18 @@
             "TASK-09": "warning",
             "TASK-10": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "infrastructure": {
@@ -2071,7 +2144,18 @@
             "TASK-09",
             "TASK-10",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -2215,7 +2299,18 @@
             "TASK-09": "warning",
             "TASK-10": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "library": {
@@ -2363,7 +2458,18 @@
             "TASK-10",
             "TASK-11",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -2508,7 +2614,18 @@
             "TASK-10": "warning",
             "TASK-11": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "service": {
@@ -2658,7 +2775,18 @@
             "TASK-11",
             "TASK-12",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -2805,7 +2933,18 @@
             "TASK-11": "warning",
             "TASK-12": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "specification": {
@@ -2952,7 +3091,18 @@
             "TASK-09",
             "TASK-10",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -3096,7 +3246,18 @@
             "TASK-09": "warning",
             "TASK-10": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "template": {
@@ -3243,7 +3404,18 @@
             "TASK-09",
             "TASK-10",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -3387,7 +3559,18 @@
             "TASK-09": "warning",
             "TASK-10": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "tool": {
@@ -3535,7 +3718,18 @@
             "TASK-10",
             "TASK-11",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -3680,7 +3874,18 @@
             "TASK-10": "warning",
             "TASK-11": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         },
         "website": {
@@ -3828,7 +4033,18 @@
             "TASK-10",
             "TASK-11",
             "TASK-13",
-            "TASK-14"
+            "TASK-14",
+            "TOOL-01",
+            "TOOL-02",
+            "TOOL-03",
+            "TOOL-04",
+            "TOOL-05",
+            "TOOL-06",
+            "TOOL-07",
+            "TOOL-08",
+            "TOOL-09",
+            "TOOL-10",
+            "TOOL-11"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -3973,7 +4189,18 @@
             "TASK-10": "warning",
             "TASK-11": "warning",
             "TASK-13": "warning",
-            "TASK-14": "warning"
+            "TASK-14": "warning",
+            "TOOL-01": "warning",
+            "TOOL-02": "warning",
+            "TOOL-03": "warning",
+            "TOOL-04": "warning",
+            "TOOL-05": "warning",
+            "TOOL-06": "warning",
+            "TOOL-07": "warning",
+            "TOOL-08": "warning",
+            "TOOL-09": "warning",
+            "TOOL-10": "warning",
+            "TOOL-11": "warning"
           }
         }
       },
@@ -6107,6 +6334,166 @@
           "since": "0.6.0",
           "status": "proposed",
           "title": "Every literal sources entry names something the repository holds",
+          "waivable": true
+        },
+        "TOOL-01": {
+          "aliases": [],
+          "anchor": "tool-01",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A repository has one mise configuration, at .config/mise/config.toml",
+          "waivable": true
+        },
+        "TOOL-02": {
+          "aliases": [],
+          "anchor": "tool-02",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every tool in the mise configuration names its backend, except mise's core tools",
+          "waivable": true
+        },
+        "TOOL-03": {
+          "aliases": [],
+          "anchor": "tool-03",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every tool in the mise configuration is pinned to one exact version",
+          "waivable": true
+        },
+        "TOOL-04": {
+          "aliases": [],
+          "anchor": "tool-04",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The mise configuration sets min_version, and every place that installs mise installs that version",
+          "waivable": true
+        },
+        "TOOL-05": {
+          "aliases": [],
+          "anchor": "tool-05",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The mise lockfile is committed beside the configuration",
+          "waivable": true
+        },
+        "TOOL-06": {
+          "aliases": [
+            "development-container:TC-02"
+          ],
+          "anchor": "tool-06",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A Dockerfile's version argument defaults to one exact version",
+          "waivable": true
+        },
+        "TOOL-07": {
+          "aliases": [
+            "platform:TC-01",
+            "platform:TC-02",
+            "platform:TC-03"
+          ],
+          "anchor": "tool-07",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A Dockerfile's image of a tool mise pins uses the pinned version",
+          "waivable": true
+        },
+        "TOOL-08": {
+          "aliases": [
+            "platform:TC-03"
+          ],
+          "anchor": "tool-08",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A dev container Feature that installs a tool mise pins installs the pinned version",
+          "waivable": true
+        },
+        "TOOL-09": {
+          "aliases": [
+            "platform:TC-01"
+          ],
+          "anchor": "tool-09",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "package.json's packageManager is the version mise pins",
+          "waivable": true
+        },
+        "TOOL-10": {
+          "aliases": [
+            "platform:TC-01",
+            "platform:TC-02",
+            "platform:TC-12",
+            "development-container:TC-03"
+          ],
+          "anchor": "tool-10",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A setup action installs the version mise pins",
+          "waivable": true
+        },
+        "TOOL-11": {
+          "aliases": [
+            "platform:TC-03"
+          ],
+          "anchor": "tool-11",
+          "convention": "EC-0017",
+          "engine": "conftest",
+          "package": "conventions.checks.toolchain.tool_pins",
+          "path": "definitions/conventions/toolchain/tool-pins.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A runtime version file says what mise pins, and there is no .tool-versions",
           "waivable": true
         }
       },

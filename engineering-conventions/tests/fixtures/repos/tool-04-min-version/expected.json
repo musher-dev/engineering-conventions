@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOOL-04",
+    "path": ".config/mise/config.toml",
+    "severity": "warning"
+  }
+]

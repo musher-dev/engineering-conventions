@@ -1,7 +1,7 @@
 # Consuming the conventions
 
-How to check a repository against a release of these conventions. The short version is one line in `mise.toml` and
-one command, the same locally and in CI.
+How to check a repository against a release of these conventions. The short version is one line in the mise
+configuration and one command, the same locally and in CI.
 
 ## Try it without adopting anything
 
@@ -20,17 +20,21 @@ launcher: mise then fails with `"conventions" couldn't exec process: Permission 
 
 ## Adopt it
 
-Pin the release in `mise.toml` (or `.devcontainer/mise.toml`):
+Pin the release in the repository's one mise configuration, `.config/mise/config.toml`, where mise finds it without
+being told ([EC-0017](../engineering-conventions/definitions/conventions/toolchain/tool-pins.md)):
 
 ```toml
+min_version = "2026.9.12"   # the mise that CI and the dev container install
+
 [tools]
 "github:musher-dev/engineering-conventions" = "0.5.0"  # x-release-please-version
 ```
 
-Then run it:
+Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:
 
 ```sh
-mise install
+mise lock
+mise install --locked
 conventions check                      # report findings; fail only on errors
 conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
 conventions prose                      # lint Markdown with the MusherConventions Vale style
@@ -39,7 +43,8 @@ conventions prose                      # lint Markdown with the MusherConvention
 With the identity declaration below, that is the whole adoption. What mise does with the line:
 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
-  proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in `mise.lock`.
+  proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in
+  `.config/mise/mise.lock`.
 - It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`) through `mise exec` at the
   versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
@@ -71,13 +76,15 @@ tasks:
 
 ```yaml
 - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+  with:
+    version: 2026.9.12   # the min_version in .config/mise/config.toml (TOOL-04)
 - name: Check the repository against its conventions
   run: conventions check --fail-on warning
 ```
 
-[`examples/consumer`](../engineering-conventions/examples/consumer/) is a complete, conforming repository: the
-`mise.toml`, a `Validate` workflow that runs the step above as its `Conventions` job, a pull-request-title workflow,
-and a ruleset that requires only the aggregate.
+[`examples/consumer`](../engineering-conventions/examples/consumer/) is a complete, conforming repository: the mise
+configuration and its lockfile, a `Validate` workflow that runs the step above as its `Conventions` job, a
+pull-request-title workflow, and a ruleset that requires only the aggregate.
 
 ## Declare the repository's identity
 
@@ -216,8 +223,8 @@ for a repository that runs Vale itself.
 
 ## Delegated checks
 
-GHA-33 is delegated to actionlint and zizmor, which `conventions check` does not run. Pin them in `mise.toml` beside
-the conventions and run them in the repository's own validation:
+GHA-33 is delegated to actionlint and zizmor, which `conventions check` does not run. Pin them in
+`.config/mise/config.toml` beside the conventions and run them in the repository's own validation:
 
 ```sh
 actionlint
@@ -308,5 +315,5 @@ are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/con
 
 ## Upgrading
 
-Change the version in `mise.toml`, or accept Renovate's pull request that does. Read the release notes first: what
-each kind of release can change is in [versioning](versioning.md).
+Change the version in `.config/mise/config.toml` and run `mise lock`, or accept Renovate's pull request that does. Read
+the release notes first: what each kind of release can change is in [versioning](versioning.md).

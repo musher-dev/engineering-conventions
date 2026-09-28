@@ -3,6 +3,14 @@
 # attestation, and puts `conventions` on PATH. Renovate's mise manager raises
 # the version. conftest and Vale come with the release, at the versions it
 # was tested with.
+#
+# The file sits where mise looks for it unprompted (TOOL-01), beside the
+# mise.lock that `mise lock` writes (TOOL-05).
+
+# The mise every install uses: jdx/mise-action's version in the Validate
+# workflow is the same (TOOL-04).
+min_version = "2026.9.12"
+
 [tools]
 "github:musher-dev/engineering-conventions" = "0.5.0" # x-release-please-version
 

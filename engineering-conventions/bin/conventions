@@ -5,8 +5,8 @@
 # Shipped in the release bundle, so installing a release with mise puts it on
 # PATH:
 #
-#   mise.toml   [tools] "github:musher-dev/engineering-conventions" = "0.2.0"
-#   then        conventions check
+#   .config/mise/config.toml   [tools] "github:musher-dev/engineering-conventions" = "0.2.0"
+#   then                       conventions check
 #
 # It needs only POSIX sh and git. conftest, jq and Vale come through
 # `mise exec` at the versions below, which move with this release, so the

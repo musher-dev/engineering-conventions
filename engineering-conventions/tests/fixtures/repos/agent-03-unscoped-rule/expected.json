@@ -1,0 +1,7 @@
+[
+  {
+    "id": "AGENT-03",
+    "path": ".claude/rules/everywhere.md",
+    "severity": "warning"
+  }
+]

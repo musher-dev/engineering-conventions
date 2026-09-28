@@ -734,6 +734,28 @@ terms:
       name, system, component, kind, owner, lifecycle, audience and tier.
     tags: [meta]
     stability: provisional
+  - id: conventions.agent-context
+    display_name: agent context
+    definition: >-
+      The files a repository commits to give a coding agent its
+      instructions: every CLAUDE.md, the rules under .claude/rules/, and
+      AGENTS.md.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.project-memory
+    display_name: project memory
+    definition: >-
+      The one CLAUDE.md, at the root or in .claude/, that Claude Code loads
+      at every launch, together with the files it imports.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.path-scoped-rule
+    display_name: path-scoped rule
+    definition: >-
+      A Markdown file under .claude/rules/ whose paths frontmatter names the
+      files it governs, so it loads only when an agent works on one of them.
+    tags: [meta]
+    stability: provisional
 
   # Defined upstream and deliberately not restated here. GitHub Actions
   # uses audit and drift in a narrower, automation sense: see

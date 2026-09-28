@@ -1,0 +1,7 @@
+[
+  {
+    "id": "AGENT-07",
+    "path": ".claude/settings.local.json",
+    "severity": "warning"
+  }
+]

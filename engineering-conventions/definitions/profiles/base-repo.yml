@@ -8,9 +8,9 @@ description: >-
   Every repository in the organisation: declaring its conventions, its
   outputs and its identity, a name from the registered systems, and the
   GitHub Actions naming, structure and hygiene every repository with
-  workflows shares.
+  workflows shares, and the agent context of any repository that has one.
 include:
-  families: [ADOPT, GHA, OUT, REPO]
+  families: [ADOPT, GHA, OUT, REPO, AGENT]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

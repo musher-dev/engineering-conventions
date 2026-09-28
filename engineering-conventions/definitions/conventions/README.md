@@ -20,6 +20,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
+| [EC-0013](agents/agent-context.md) | Agent context | agents | draft |
 
 ## Requirements
 
@@ -34,6 +35,14 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
+| [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | proposed | warning | conftest |
+| [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
+| [AGENT-03](agents/agent-context.md#agent-03) | Every rule under .claude/rules/ is scoped by a non-empty paths list | EC-0013 | proposed | warning | conftest |
+| [AGENT-04](agents/agent-context.md#agent-04) | The context loaded at every launch is at most 40 KiB | EC-0013 | proposed | warning | conftest |
+| [AGENT-05](agents/agent-context.md#agent-05) | Every import in a CLAUDE.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
+| [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
+| [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -105,3 +114,4 @@ ID is permanent: it is never renumbered or reused.
 | GHA | GitHub Actions | github-actions |
 | OUT | Outputs | outputs |
 | REPO | Repositories | repository |
+| AGENT | Agent context | agents |

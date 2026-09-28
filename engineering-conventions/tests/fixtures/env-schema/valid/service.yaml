@@ -1,0 +1,87 @@
+# Every top-level block and binding field the platform's schemas use.
+service: platform-api
+runtime: python
+settings_file: src/platform_api/config/_generated.py
+naming:
+  components: [API, DATABASE, WORKERS]
+  client_prefixes: [VITE_, PUBLIC_]
+  vendor_prefixes: [OTEL_]
+bindings:
+  API_PORT:
+    type: integer
+    default: 8080
+    constraints: {min: 1, max: 65535}
+    sensitivity: internal
+    lifecycle: runtime
+    source: code-default
+    consumer: api
+    description: TCP port the HTTP server listens on inside the container.
+  API_LOG_LEVEL:
+    type: enum
+    values: [debug, info, warning, error]
+    default: info
+    sensitivity: public
+    description: Lowest level of log record the API writes to standard output.
+  DATABASE_URL:
+    type: string
+    format: url
+    required: true
+    sensitivity: secret
+    source: infisical
+    path: /platform-api/runtime
+    local_default: postgres://postgres@localhost:5432/app
+    description: Connection string of the primary Postgres database, credentials included.
+  DATABASE_POOL_URL:
+    type: string
+    format: url
+    allow_empty: true
+    default: ""
+    sensitivity: secret
+    description: Connection string of a dedicated pool; empty falls back to DATABASE_URL.
+  API_ENCRYPTION_KEY:
+    type: string
+    sensitivity: secret
+    local_generate: base64url:32
+    constraints: {min_length: 44}
+    description: Key that encrypts stored credentials; rotating it strands every stored row.
+  API_OWNER_EMAIL:
+    type: string
+    format: email
+    sensitivity: confidential
+    python_field_name: owner_contact
+    description: Address the API sends operational alerts about its tenants to.
+  WORKERS__EXPORT__BATCH_SIZE:
+    type: integer
+    default: 100
+    sensitivity: internal
+    consumer: workers
+    nested: {group: workers, sub: export, field: batch_size, model: null}
+    description: Rows the export worker writes per batch before it commits.
+  OTEL_SERVICE_NAME:
+    type: string
+    default: platform-api
+    sensitivity: public
+    grammar_exempt: true
+    grammar_exempt_reason: The OpenTelemetry SDK reads this name.
+    description: Service name every span and metric the API exports carries.
+vendor_passthrough: [OTEL_EXPORTER_OTLP_ENDPOINT, "INFISICAL_*"]
+retired:
+  - name: API_LEGACY_TOKEN
+    retired_on: "2026-05-01"
+    reason: Requests authenticate with signed service tokens; see API_ENCRYPTION_KEY.
+shared_with:
+  - name: DATABASE_URL
+    apps:
+      - {service: platform-api, path: /platform-api/runtime}
+      - {service: platform-workers, path: /platform-workers/runtime}
+generated:
+  pydantic:
+    base_class: BaseSettings
+    extra_imports: []
+infisical:
+  path: /platform-api/runtime
+  environment: prod
+  delivery: container
+coolify_env:
+  required: [INFISICAL_CLIENT_ID]
+  optional: [INFISICAL_API_URL]

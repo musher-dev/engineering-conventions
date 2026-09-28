@@ -1,0 +1,8 @@
+service: platform-api
+runtime: python
+bindings:
+  API_KEY:
+    type: string
+    sensitivity: secret
+    local_generate: random:32
+    description: Key that signs service tokens the workers verify.

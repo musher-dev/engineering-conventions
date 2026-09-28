@@ -1,0 +1,5 @@
+service: platform-api
+runtime: python
+naming:
+  client_prefixes: [VITE]
+bindings: {}

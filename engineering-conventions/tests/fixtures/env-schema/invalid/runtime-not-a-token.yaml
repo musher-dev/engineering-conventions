@@ -1,0 +1,3 @@
+service: platform-api
+runtime: Python 3
+bindings: {}

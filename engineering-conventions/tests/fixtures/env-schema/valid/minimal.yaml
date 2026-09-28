@@ -1,0 +1,3 @@
+service: docs-site
+runtime: node
+bindings: {}

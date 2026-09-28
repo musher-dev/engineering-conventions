@@ -93,6 +93,20 @@
           "status": "draft",
           "title": "Repository layout",
           "topic": "repository"
+        },
+        "EC-0019": {
+          "authority": "self",
+          "path": "definitions/conventions/environment/env-contract.md",
+          "status": "draft",
+          "title": "Environment contract",
+          "topic": "environment"
+        },
+        "EC-0020": {
+          "authority": "self",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "status": "draft",
+          "title": "Environment schema",
+          "topic": "environment"
         }
       },
       "declaration_schema": {
@@ -257,6 +271,494 @@
         "title": "Conventions declaration",
         "type": "object"
       },
+      "env_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "definitions": {
+          "binding": {
+            "additionalProperties": false,
+            "description": "One variable.",
+            "properties": {
+              "allow_empty": {
+                "description": "An empty value is a deliberate, valid configuration. Requires default \"\" (ENVS-07).",
+                "type": "boolean"
+              },
+              "constraints": {
+                "additionalProperties": false,
+                "description": "Range constraints the value must meet.",
+                "properties": {
+                  "max": {
+                    "type": "number"
+                  },
+                  "max_length": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "min": {
+                    "type": "number"
+                  },
+                  "min_length": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "pattern": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "consumer": {
+                "description": "Which part of the product reads it. client means a browser bundle (ENVS-14).",
+                "enum": [
+                  "api",
+                  "workers",
+                  "client",
+                  "server"
+                ],
+                "type": "string"
+              },
+              "consumers": {
+                "description": "The dev-environment stacks that read it.",
+                "items": {
+                  "$ref": "#/definitions/common_nonEmptyString"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "default": {
+                "description": "The value the product uses when the variable is unset. It ships to production."
+              },
+              "description": {
+                "description": "What the variable is for, in a sentence someone who has never seen it can act on: what breaks when the value is wrong, not what the name already says.",
+                "minLength": 24,
+                "type": "string"
+              },
+              "format": {
+                "description": "The shape of a string value.",
+                "enum": [
+                  "url",
+                  "email",
+                  "path",
+                  "json"
+                ],
+                "type": "string"
+              },
+              "grammar_exempt": {
+                "description": "The naming grammar does not apply, because something outside the repository fixes the name. Requires grammar_exempt_reason (ENVS-07).",
+                "type": "boolean"
+              },
+              "grammar_exempt_reason": {
+                "description": "Why the name is exempt from the grammar.",
+                "type": "string"
+              },
+              "group": {
+                "$ref": "#/definitions/common_nonEmptyString",
+                "description": "A heading the rendered environment file groups it under."
+              },
+              "lifecycle": {
+                "description": "When the value is read.",
+                "enum": [
+                  "build-time",
+                  "deploy-time",
+                  "runtime",
+                  "ephemeral"
+                ],
+                "type": "string"
+              },
+              "local_default": {
+                "description": "The value written into a developer's local environment file, correct only for a dev environment. A secret's may only be empty or address a loopback host (ENVS-06)."
+              },
+              "local_generate": {
+                "description": "Mint per-developer secret material into the local environment file instead of committing a value: hex:<bytes>, base64:<bytes> or base64url:<bytes>.",
+                "pattern": "^(hex|base64|base64url):[1-9][0-9]*$",
+                "type": "string"
+              },
+              "mirrored_in": {
+                "description": "Files, relative to the schema's directory, that repeat its local_default and must agree with it.",
+                "items": {
+                  "$ref": "#/definitions/common_nonEmptyString"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "nested": {
+                "additionalProperties": false,
+                "description": "Groups the binding into a nested settings model; its name then uses __ between group, sub-model and field (ENVS-13).",
+                "properties": {
+                  "field": {
+                    "$ref": "#/definitions/common_nonEmptyString"
+                  },
+                  "group": {
+                    "$ref": "#/definitions/common_nonEmptyString"
+                  },
+                  "model": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sub": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "group",
+                  "field"
+                ],
+                "type": "object"
+              },
+              "path": {
+                "$ref": "#/definitions/common_nonEmptyString",
+                "description": "The secret-store path the value is read from, when not the schema's own infisical.path."
+              },
+              "python_field_name": {
+                "description": "The generated Python field name, when the lowercased variable name would collide with another attribute.",
+                "pattern": "^[a-z_][a-z0-9_]*$",
+                "type": "string"
+              },
+              "required": {
+                "description": "The product refuses to start without a value.",
+                "type": "boolean"
+              },
+              "roles": {
+                "description": "The host roles whose rendered environment file carries it.",
+                "items": {
+                  "$ref": "#/definitions/common_nonEmptyString"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "sensitivity": {
+                "description": "Who may see the value: public (anyone, including a browser), internal (the organization), confidential (people who operate the product), secret (a credential; only the process).",
+                "enum": [
+                  "public",
+                  "internal",
+                  "confidential",
+                  "secret"
+                ],
+                "type": "string"
+              },
+              "source": {
+                "description": "Where the value comes from.",
+                "enum": [
+                  "code-default",
+                  "env-file",
+                  "infisical",
+                  "ci-secret",
+                  "vendor",
+                  "host"
+                ],
+                "type": "string"
+              },
+              "type": {
+                "description": "The value's type. enum takes one of values; list is a comma-separated list, optionally of values.",
+                "enum": [
+                  "string",
+                  "integer",
+                  "number",
+                  "boolean",
+                  "enum",
+                  "list"
+                ],
+                "type": "string"
+              },
+              "values": {
+                "description": "The allowed values of an enum or list.",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "type",
+              "sensitivity",
+              "description"
+            ],
+            "type": "object"
+          },
+          "common_date": {
+            "description": "A calendar date in ISO 8601 form, YYYY-MM-DD.",
+            "format": "date",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+            "type": "string"
+          },
+          "common_nonEmptyString": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "coolifyEnv": {
+            "additionalProperties": false,
+            "description": "The variables the deployment platform must hold before the process can reach its secret store.",
+            "properties": {
+              "optional": {
+                "items": {
+                  "$ref": "#/definitions/variableName"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "required": {
+                "items": {
+                  "$ref": "#/definitions/variableName"
+                },
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "type": "object"
+          },
+          "generated": {
+            "additionalProperties": false,
+            "description": "Code generated from the schema: pydantic for runtime python, ts for runtime sveltekit (ENVS-07).",
+            "properties": {
+              "pydantic": {
+                "additionalProperties": false,
+                "properties": {
+                  "base_class": {
+                    "$ref": "#/definitions/common_nonEmptyString"
+                  },
+                  "extra_imports": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "ts": {
+                "additionalProperties": false,
+                "properties": {
+                  "client_prefix": {
+                    "$ref": "#/definitions/prefix"
+                  },
+                  "framework": {
+                    "description": "t3-core-client: inlined into the browser bundle at build time; t3-core-dynamic: read by the browser from the server at start, so one image serves every environment; t3-core-server: read on the server only.",
+                    "enum": [
+                      "t3-core-client",
+                      "t3-core-dynamic",
+                      "t3-core-server"
+                    ],
+                    "type": "string"
+                  },
+                  "output_path": {
+                    "$ref": "#/definitions/common_nonEmptyString",
+                    "description": "Where the module is written, relative to the schema's directory."
+                  }
+                },
+                "required": [
+                  "framework",
+                  "output_path"
+                ],
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "infisical": {
+            "additionalProperties": false,
+            "description": "Where the product's values are kept in Infisical, and how they reach the process.",
+            "properties": {
+              "delivery": {
+                "description": "container: the process fetches its values at start; coolify-env: the deploy copies them into the application's environment.",
+                "enum": [
+                  "container",
+                  "coolify-env"
+                ],
+                "type": "string"
+              },
+              "environment": {
+                "$ref": "#/definitions/common_nonEmptyString"
+              },
+              "path": {
+                "$ref": "#/definitions/common_nonEmptyString"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "naming": {
+            "additionalProperties": false,
+            "description": "The repository's own vocabulary for the naming grammar (ENVS-04, ENVS-09, ENVS-14).",
+            "properties": {
+              "client_prefixes": {
+                "description": "Prefixes that mark a variable a browser bundle reads. Defaults to VITE_ and PUBLIC_.",
+                "items": {
+                  "$ref": "#/definitions/prefix"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "components": {
+                "description": "The component qualifiers a binding name may start with, without the trailing underscore, e.g. API, DATABASE, BRAVE_SEARCH. When declared, ENVS-04 asks every binding to start with one.",
+                "items": {
+                  "pattern": "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$",
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "vendor_prefixes": {
+                "description": "Prefixes of vendor-owned names the grammar does not apply to, e.g. OTEL_ or AWS_.",
+                "items": {
+                  "$ref": "#/definitions/prefix"
+                },
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "type": "object"
+          },
+          "prefix": {
+            "description": "An upper-case name prefix, ending in an underscore, e.g. VITE_.",
+            "pattern": "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*_$",
+            "type": "string"
+          },
+          "retiredBinding": {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "$ref": "#/definitions/variableName"
+              },
+              "reason": {
+                "$ref": "#/definitions/common_nonEmptyString",
+                "description": "Why it is gone and what answers the question now. ENVS-05 prints it."
+              },
+              "retired_on": {
+                "$ref": "#/definitions/common_date",
+                "description": "The date the removal shipped, as a quoted YYYY-MM-DD."
+              }
+            },
+            "required": [
+              "name",
+              "retired_on",
+              "reason"
+            ],
+            "type": "object"
+          },
+          "sharedKey": {
+            "additionalProperties": false,
+            "properties": {
+              "apps": {
+                "description": "Every deployable that holds the value, this one included.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "path": {
+                      "$ref": "#/definitions/common_nonEmptyString",
+                      "description": "Where that deployable's copy is stored."
+                    },
+                    "service": {
+                      "$ref": "#/definitions/common_nonEmptyString"
+                    }
+                  },
+                  "required": [
+                    "service",
+                    "path"
+                  ],
+                  "type": "object"
+                },
+                "minItems": 2,
+                "type": "array"
+              },
+              "name": {
+                "$ref": "#/definitions/variableName"
+              }
+            },
+            "required": [
+              "name",
+              "apps"
+            ],
+            "type": "object"
+          },
+          "variableName": {
+            "description": "An environment variable name.",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+            "type": "string"
+          }
+        },
+        "description": "An env.schema.yaml: the environment a product reads at runtime (<product>/env.schema.yaml), or the one its dev environment reads (.devcontainer/env.schema.yaml). EC-0020 describes every field; ENVS-03 checks a schema against this file, and ENVS-04 to ENVS-14 check what a JSON Schema cannot express. Draft-07 only: the checks validate with OPA, which ignores newer keywords.",
+        "properties": {
+          "bindings": {
+            "additionalProperties": {
+              "$ref": "#/definitions/binding"
+            },
+            "description": "Every variable the product reads, keyed by its name. ENVS-04 checks the names.",
+            "type": "object"
+          },
+          "coolify_env": {
+            "$ref": "#/definitions/coolifyEnv"
+          },
+          "env_file": {
+            "$ref": "#/definitions/common_nonEmptyString",
+            "description": "The file the process reads its environment from, when it reads one file rather than its inherited environment, e.g. .devcontainer/.env."
+          },
+          "generated": {
+            "$ref": "#/definitions/generated"
+          },
+          "infisical": {
+            "$ref": "#/definitions/infisical"
+          },
+          "naming": {
+            "$ref": "#/definitions/naming"
+          },
+          "retired": {
+            "description": "Names the product deliberately stopped reading, with why; ENVS-05 refuses them again.",
+            "items": {
+              "$ref": "#/definitions/retiredBinding"
+            },
+            "type": "array"
+          },
+          "runtime": {
+            "description": "What reads the environment, as a lowercase token: python, sveltekit, node, go, rust, docker-compose. ENVS-07 ties the generated block to python and sveltekit.",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/definitions/common_nonEmptyString",
+            "description": "The deployable the schema describes, e.g. platform-api; devcontainer for the dev environment's schema."
+          },
+          "settings_file": {
+            "description": "Where a generated settings module is written, relative to the schema's directory; null when nothing is generated.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shared_with": {
+            "description": "Variables that hold the same value in several deployables; ENVS-07 and ENVS-08 check that every copy agrees.",
+            "items": {
+              "$ref": "#/definitions/sharedKey"
+            },
+            "type": "array"
+          },
+          "vendor_passthrough": {
+            "description": "Variables a vendor library reads by its own name (OTEL_EXPORTER_OTLP_ENDPOINT), passed through rather than declared as bindings; the naming grammar does not apply to them. A trailing * passes a whole prefix (INFISICAL_*).",
+            "items": {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\*?$",
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "service",
+          "runtime",
+          "bindings"
+        ],
+        "title": "Environment schema",
+        "type": "object"
+      },
       "outputs_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": false,
@@ -365,6 +867,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -446,6 +961,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -530,6 +1058,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -611,6 +1152,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -695,6 +1249,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -776,6 +1343,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -860,6 +1440,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -941,6 +1534,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1025,6 +1631,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1106,6 +1725,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1190,6 +1822,20 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-01",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1271,6 +1917,20 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-01": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1355,6 +2015,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1436,6 +2109,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1520,6 +2206,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1601,6 +2300,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1685,6 +2397,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1766,6 +2491,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1850,6 +2588,19 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "ENVS-02",
+            "ENVS-03",
+            "ENVS-04",
+            "ENVS-05",
+            "ENVS-06",
+            "ENVS-07",
+            "ENVS-08",
+            "ENVS-09",
+            "ENVS-10",
+            "ENVS-11",
+            "ENVS-12",
+            "ENVS-13",
+            "ENVS-14",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1931,6 +2682,19 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "ENVS-02": "warning",
+            "ENVS-03": "warning",
+            "ENVS-04": "warning",
+            "ENVS-05": "warning",
+            "ENVS-06": "warning",
+            "ENVS-07": "warning",
+            "ENVS-08": "warning",
+            "ENVS-09": "warning",
+            "ENVS-10": "warning",
+            "ENVS-11": "warning",
+            "ENVS-12": "warning",
+            "ENVS-13": "warning",
+            "ENVS-14": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -2214,6 +2978,211 @@
           "status": "proposed",
           "title": "A repository pins the conventions release it is checked against",
           "waivable": false
+        },
+        "ENVS-01": {
+          "aliases": [
+            "development-container:LAYOUT-10"
+          ],
+          "anchor": "envs-01",
+          "convention": "EC-0019",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_contract",
+          "path": "definitions/conventions/environment/env-contract.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A service declares its runtime environment at <product>/env.schema.yaml",
+          "waivable": true
+        },
+        "ENVS-02": {
+          "aliases": [
+            "development-container:LAYOUT-11"
+          ],
+          "anchor": "envs-02",
+          "convention": "EC-0019",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_contract",
+          "path": "definitions/conventions/environment/env-contract.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "An environment schema lives only at <product>/env.schema.yaml or .devcontainer/env.schema.yaml",
+          "waivable": true
+        },
+        "ENVS-03": {
+          "aliases": [
+            "development-container:ENV-01"
+          ],
+          "anchor": "envs-03",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "An environment schema is valid against the published format",
+          "waivable": true
+        },
+        "ENVS-04": {
+          "aliases": [
+            "platform:G-01"
+          ],
+          "anchor": "envs-04",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A binding name is UPPER_SNAKE_CASE and starts with a declared component",
+          "waivable": true
+        },
+        "ENVS-05": {
+          "aliases": [],
+          "anchor": "envs-05",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A retired name is never declared again",
+          "waivable": true
+        },
+        "ENVS-06": {
+          "aliases": [
+            "development-container:ENV-07"
+          ],
+          "anchor": "envs-06",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A secret binding commits no value but an empty one or a loopback address",
+          "waivable": true
+        },
+        "ENVS-07": {
+          "aliases": [],
+          "anchor": "envs-07",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A schema's fields agree with each other",
+          "waivable": true
+        },
+        "ENVS-08": {
+          "aliases": [],
+          "anchor": "envs-08",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every copy of a shared variable agrees in type and sensitivity",
+          "waivable": true
+        },
+        "ENVS-09": {
+          "aliases": [
+            "platform:G-02",
+            "platform:G-11"
+          ],
+          "anchor": "envs-09",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A boolean binding's name starts with a boolean prefix",
+          "waivable": true
+        },
+        "ENVS-10": {
+          "aliases": [
+            "platform:G-04"
+          ],
+          "anchor": "envs-10",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A unit suffix is abbreviated",
+          "waivable": true
+        },
+        "ENVS-11": {
+          "aliases": [
+            "platform:G-07"
+          ],
+          "anchor": "envs-11",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A binding name does not repeat a word",
+          "waivable": true
+        },
+        "ENVS-12": {
+          "aliases": [
+            "platform:G-09"
+          ],
+          "anchor": "envs-12",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A URL binding's name ends in _URL",
+          "waivable": true
+        },
+        "ENVS-13": {
+          "aliases": [
+            "platform:G-08"
+          ],
+          "anchor": "envs-13",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A nested binding's name separates its parts with __",
+          "waivable": true
+        },
+        "ENVS-14": {
+          "aliases": [
+            "platform:G-06"
+          ],
+          "anchor": "envs-14",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_grammar",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A binding the browser reads starts with a client prefix",
+          "waivable": true
         },
         "GHA-01": {
           "aliases": [

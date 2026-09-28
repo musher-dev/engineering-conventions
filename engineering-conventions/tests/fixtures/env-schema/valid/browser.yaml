@@ -1,0 +1,19 @@
+service: platform-console
+runtime: sveltekit
+settings_file: null
+bindings:
+  PUBLIC_API_BASE_URL:
+    type: string
+    format: url
+    default: http://localhost:8080
+    sensitivity: public
+    consumer: client
+    description: Address the browser sends API requests to, scheme and host included.
+generated:
+  ts:
+    framework: t3-core-dynamic
+    client_prefix: PUBLIC_
+    output_path: src/lib/env.ts
+infisical:
+  path: /platform-console/runtime
+  delivery: coolify-env

@@ -126,6 +126,30 @@ A directory checked with `-C` inside another work tree, or a copy with no remote
 checked, and the other naming requirements judge the declared name. Pass `--repository` when the remote does not carry
 the repository's name, such as a mirror.
 
+## Declare a service's environment
+
+A repository whose kind is `service` declares every variable its product reads in `<product>/env.schema.yaml`, beside
+the build manifest (ENVS-01). The dev environment's variables, if it declares them, go in
+`.devcontainer/env.schema.yaml`; no other location is checked as a schema (ENVS-02).
+
+```yaml
+service: platform-api
+runtime: python
+naming:
+  components: [API, DATABASE]
+bindings:
+  API_PORT:
+    type: integer
+    default: 8080
+    sensitivity: internal
+    description: TCP port the HTTP server listens on inside the container.
+```
+
+`conventions check` validates every schema against the published format and checks the naming grammar, retired
+names, committed secrets and shared variables. The format is
+[EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md); the location is
+[EC-0019](../engineering-conventions/definitions/conventions/environment/env-contract.md).
+
 ## Declare only what differs
 
 A repository that holds no waivers, and whose kind selects the profile it needs, needs no other file. Add

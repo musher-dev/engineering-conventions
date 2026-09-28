@@ -6,11 +6,16 @@ id: base-repo
 display_name: Base repository
 description: >-
   Every repository in the organisation: declaring its conventions, its
-  outputs and its identity, a name from the registered systems, and the
-  GitHub Actions naming, structure and hygiene every repository with
-  workflows shares.
+  outputs and its identity, a name from the registered systems, where its
+  product lives, the GitHub Actions naming, structure and hygiene every
+  repository with workflows shares, and the format of any environment
+  schema it holds.
 include:
   families: [ADOPT, GHA, OUT, REPO]
+  # The environment schema format applies wherever a schema exists; that a
+  # service has one (ENVS-01) is the service profile's alone.
+  conventions: [EC-0020]
+  requirements: [ENVS-02]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

@@ -16,7 +16,7 @@ next choice rather than switching every check off.
 | Profile | For |
 | --- | --- |
 | [`base-repo`](base-repo.yml) | Every repository |
-| [`service`](service.yml) | `kind = "service"` |
+| [`service`](service.yml) | `kind = "service"`; adds ENVS-01 |
 | [`website`](website.yml) | `kind = "website"` |
 | [`library`](library.yml) | `kind = "library"` |
 | [`tool`](tool.yml) | `kind = "tool"` |
@@ -28,7 +28,9 @@ next choice rather than switching every check off.
 
 Every registered kind has a profile of the same name, and `task invariants`
 fails when one is missing. Each kind's profile inherits `base-repo` and, until
-requirements specific to the kind exist, applies exactly what it does.
+requirements specific to the kind exist, applies exactly what it does. The
+`service` profile adds ENVS-01: a service declares its runtime environment
+([EC-0019](../conventions/environment/env-contract.md)).
 
 Profiles are validated against
 [`profile.schema.json`](../../checks/schemas/profile.schema.json).

@@ -1,0 +1,8 @@
+service: platform-api
+runtime: python
+bindings:
+  WORKERS__EXPORT__BATCH_SIZE:
+    type: integer
+    sensitivity: internal
+    nested: {group: workers}
+    description: Rows the export worker writes per batch before it commits.

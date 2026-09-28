@@ -143,10 +143,15 @@ test_repo_21_product_dir_var if {
 	])}
 }
 
-test_repo_21_missing_var if {
+test_repo_21_no_var_is_fine if {
 	taskfile := td.file("Taskfile.yml", {"version": "3"})
+	count(layout.findings) == 0 with input as repo(conforming, product_files, [taskfile])
+}
+
+test_repo_21_non_string_var if {
+	taskfile := td.file("Taskfile.yml", {"version": "3", "vars": {"PRODUCT_DIR": {"sh": "pwd"}}})
 	found := layout.findings with input as repo(conforming, product_files, [taskfile])
-	contains(concat("", messages(found, "REPO-21")), "vars.PRODUCT_DIR is missing")
+	td.pairs(found) == {["REPO-21", "Taskfile.yml"]}
 }
 
 test_repo_21_matching_var if {

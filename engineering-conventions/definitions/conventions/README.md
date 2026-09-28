@@ -21,6 +21,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
 | [EC-0013](agents/agent-context.md) | Agent context | agents | draft |
+| [EC-0015](tasks/taskfile-style.md) | Taskfile style | tasks | draft |
+| [EC-0016](tasks/task-interface.md) | Task interface | tasks | draft |
 | [EC-0018](repository/layout.md) | Repository layout | repository | draft |
 | [EC-0019](environment/env-contract.md) | Environment contract | environment | draft |
 | [EC-0020](environment/env-schema.md) | Environment schema | environment | draft |
@@ -131,6 +133,20 @@ ID is permanent: it is never renumbered or reused.
 | [REPO-20](repository/layout.md#repo-20) | Dependabot updates the product's dependencies in the product directory, not the root | EC-0018 | proposed | warning | conftest |
 | [REPO-21](repository/layout.md#repo-21) | The Taskfile's PRODUCT_DIR is the declared product directory | EC-0018 | proposed | warning | conftest |
 | [REPO-22](repository/layout.md#repo-22) | Every directory a Dependabot update names exists | EC-0018 | proposed | warning | conftest |
+| [TASK-01](tasks/taskfile-style.md#task-01) | A Taskfile declares version '3' as a string | EC-0015 | proposed | warning | conftest |
+| [TASK-02](tasks/taskfile-style.md#task-02) | A Taskfile names its variables in UPPER_SNAKE | EC-0015 | proposed | warning | conftest |
+| [TASK-03](tasks/taskfile-style.md#task-03) | A task name is kebab-case words joined by colons, with a leading underscore only on an internal task | EC-0015 | proposed | warning | conftest |
+| [TASK-04](tasks/taskfile-style.md#task-04) | A template has no whitespace inside its delimiters | EC-0015 | proposed | warning | conftest |
+| [TASK-05](tasks/taskfile-style.md#task-05) | Every public task has a desc | EC-0015 | proposed | warning | conftest |
+| [TASK-06](tasks/taskfile-style.md#task-06) | Every internal task is called by another task | EC-0015 | proposed | warning | conftest |
+| [TASK-07](tasks/taskfile-style.md#task-07) | A task sets prefix only where the output mode is prefixed | EC-0015 | proposed | warning | conftest |
+| [TASK-08](tasks/taskfile-style.md#task-08) | A variable named for a directory, file or configuration names a path that exists | EC-0015 | proposed | warning | conftest |
+| [TASK-09](tasks/taskfile-style.md#task-09) | Every include names a Taskfile that exists, unless it is optional | EC-0015 | proposed | warning | conftest |
+| [TASK-10](tasks/task-interface.md#task-10) | The root Taskfile defines setup, check and lint | EC-0016 | proposed | warning | conftest |
+| [TASK-11](tasks/task-interface.md#task-11) | The root Taskfile of a library, tool, service or website also defines build and test | EC-0016 | proposed | warning | conftest |
+| [TASK-12](tasks/task-interface.md#task-12) | The root Taskfile of a service also defines dev | EC-0016 | proposed | warning | conftest |
+| [TASK-13](tasks/task-interface.md#task-13) | The check task runs every gate CI runs | EC-0016 | proposed | warning | review |
+| [TASK-14](tasks/taskfile-style.md#task-14) | Every literal sources entry names something the repository holds | EC-0015 | proposed | warning | conftest |
 
 ## Families
 
@@ -142,3 +158,4 @@ ID is permanent: it is never renumbered or reused.
 | REPO | Repositories | repository |
 | ENVS | Environment contract | environment |
 | AGENT | Agent context | agents |
+| TASK | Tasks | tasks |

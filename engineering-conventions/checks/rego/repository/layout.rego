@@ -112,15 +112,17 @@ findings contains lib.finding("REPO-20", path, message) if {
 	)
 }
 
-# REPO-21
+# REPO-21. Only a Taskfile that names the product: one that never needs the
+# path does not have to define it.
 findings contains lib.finding("REPO-21", path, message) if {
 	product_dir
 	expected := sprintf("{{.ROOT_DIR}}/%s", [product_dir])
 	some path, taskfile in root_taskfiles
+	"PRODUCT_DIR" in object.keys(object.get(taskfile, "vars", {}))
 	object.get(object.get(taskfile, "vars", {}), "PRODUCT_DIR", null) != expected
 	message := sprintf(
 		"vars.PRODUCT_DIR is %s; set it to '%s' so tasks reach the product through dir: '{{.PRODUCT_DIR}}'",
-		[describe(object.get(object.get(taskfile, "vars", {}), "PRODUCT_DIR", null)), expected],
+		[describe(taskfile.vars.PRODUCT_DIR), expected],
 	)
 }
 
@@ -279,6 +281,4 @@ root_taskfiles[doc.path] := doc.contents if {
 	is_object(doc.contents)
 }
 
-describe(null) := "missing"
-
-describe(value) := sprintf("'%v'", [value]) if value != null
+describe(value) := sprintf("'%v'", [value])

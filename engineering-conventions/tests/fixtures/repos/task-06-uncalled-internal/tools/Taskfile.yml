@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  fmt:
+    desc: Format the code.
+    cmds:
+      - gofmt -w .
+
+  _generate:
+    internal: true
+    cmds:
+      - go generate ./...

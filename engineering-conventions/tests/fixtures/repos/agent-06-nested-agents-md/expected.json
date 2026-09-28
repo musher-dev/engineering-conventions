@@ -1,7 +1,7 @@
 [
   {
     "id": "AGENT-06",
-    "path": "apps/api/AGENTS.md",
+    "path": "docs/api/AGENTS.md",
     "severity": "warning"
   }
 ]

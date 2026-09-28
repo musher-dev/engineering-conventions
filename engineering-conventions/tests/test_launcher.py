@@ -121,9 +121,9 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     completed = _launch("check", "--output", "json", "-C", str(case), cwd=PRODUCT)
     assert completed.returncode == 0, completed.stderr
     found = {finding_id for _, finding_id, _ in _found(completed.stdout)}
-    # The case holds no .repo/ declarations, so they are reported missing:
-    # this repository's own were not read.
-    assert found == {"GHA-07", "ADOPT-09", "REPO-01"}
+    # The case holds no .repo/ declarations and no Taskfile, so they are
+    # reported missing: this repository's own were not read.
+    assert found == {"GHA-07", "ADOPT-09", "REPO-01", "TASK-10"}
 
 
 def test_launcher_is_committed_executable() -> None:

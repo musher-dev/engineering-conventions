@@ -409,8 +409,9 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: developme
 
 Tasks reach the product's toolchain through `dir: '{{.PRODUCT_DIR}}'`. A task run from the wrong directory does not
 fail: it builds with the root's defaults, or finds no project. So the root Taskfile carries the product path in one
-variable, `PRODUCT_DIR: '{{.ROOT_DIR}}/<product>'`, and a repository with no product directory does not set it. The
-name is shared across repositories; "workspace" already means something to Cargo and pnpm.
+variable, `PRODUCT_DIR: '{{.ROOT_DIR}}/<product>'`, and a repository with no product directory does not set it. A
+Taskfile that never needs the path need not define it; one that does must name the declared product. The name is
+shared across repositories; "workspace" already means something to Cargo and pnpm.
 
 **Correct:**
 

@@ -1,0 +1,10 @@
+version: '3'
+
+vars:
+  LINT_CONFIG: .golangci.yml
+
+tasks:
+  lint:
+    desc: Lint the code.
+    cmds:
+      - golangci-lint run --config {{.LINT_CONFIG}}

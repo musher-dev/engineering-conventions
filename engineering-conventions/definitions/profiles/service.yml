@@ -1,12 +1,14 @@
 # The profile the identity declaration selects for kind = "service"
-# (EC-0009): base-repo, and the environment contract a deployable process
-# declares (ENVS-01).
+# (EC-0009). It adds the build, test and dev tasks to what base-repo applies,
+# and the environment contract a deployable process declares (ENVS-01).
 schema_version: 1
 id: service
 display_name: Service
 description: >-
   Repositories whose kind is service: everything base-repo applies, and a
-  runtime environment contract at <product>/env.schema.yaml.
+  root Taskfile that also defines build and test (TASK-11) and dev
+  (TASK-12), and a runtime environment contract at
+  <product>/env.schema.yaml (ENVS-01).
 inherits: [base-repo]
 include:
-  requirements: [ENVS-01]
+  requirements: [TASK-11, TASK-12, ENVS-01]

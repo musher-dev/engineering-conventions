@@ -99,6 +99,7 @@ Start from the part of your repository you are working on:
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `CLAUDE.md`, `.claude/rules/`, `AGENTS.md` | EC-0013 | AGENT-01 – AGENT-08 |
 | [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml` | EC-0019, EC-0020 | ENVS-01 – ENVS-14 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
+| [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-14 |
 
 A topic's README gives the reading order. Two other ways in:
 

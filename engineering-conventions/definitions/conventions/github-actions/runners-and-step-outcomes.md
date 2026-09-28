@@ -110,7 +110,7 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.github_actions.runners_and_step_outcomes
-    aliases: ["development-container:PATH-02"]
+    aliases: ["development-container:PATH-02a"]
 ---
 
 # Runners and step outcomes

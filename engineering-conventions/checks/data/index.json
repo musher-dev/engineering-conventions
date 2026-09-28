@@ -5856,7 +5856,7 @@
         },
         "GHA-45": {
           "aliases": [
-            "development-container:PATH-02"
+            "development-container:PATH-02a"
           ],
           "anchor": "gha-45",
           "convention": "EC-0022",

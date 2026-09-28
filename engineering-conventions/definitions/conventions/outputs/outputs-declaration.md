@@ -146,7 +146,7 @@ each output is one `[[outputs]]` table, and `outputs[]` below means a key in one
 | `outputs[].kind` | yes | An output kind from the table below (OUT-03). |
 | `outputs[].description` | no | One line on what the output is for. |
 | `outputs[].source` | yes | The file or directory it is built from (OUT-05). |
-| `outputs[].publish_workflow` | yes | The filename of the workflow under `.github/workflows/` that publishes it (OUT-06). |
+| `outputs[].publish_workflow` | yes | The filename of the workflow under `.github/workflows/` that publishes it: a `publish` or `release` workflow (OUT-06). |
 | `outputs[].location` | yes | Where a consumer gets it: an image repository, a package name, a release URL. |
 | `outputs[].docs` | yes | The document, with an optional `#anchor`, that says how to consume it (OUT-05, OUT-08). |
 | `outputs[].format` | contract | The interface format, such as `openapi`, `asyncapi`, `protobuf` or `json-schema` (OUT-07). |
@@ -310,8 +310,10 @@ Checked by: conftest · Severity: warning · Since: 0.3.0
 **An output names a publish workflow that exists.**
 
 The workflow is how a reader learns when and how a version is published. It must exist under `.github/workflows/`,
-and its responsibility must be `publish`: a workflow that builds without publishing, or one that deploys, is not the
-one that makes the output available.
+and its responsibility must be `publish` or `release`: a workflow that builds without publishing, or one that deploys,
+is not the one that makes the output available. A `release` workflow qualifies because it may publish the artifacts of
+the release it cuts, in the same run, when the version is known only there
+([decision 0014](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0014-release-workflows-may-publish.md)).
 
 **Correct:**
 
@@ -319,10 +321,15 @@ one that makes the output available.
 publish_workflow = "publish-api.yml"
 ```
 
+```toml
+publish_workflow = "release.yml"      # cuts the release, then publishes its image
+```
+
 **Incorrect:**
 
 ```toml
 publish_workflow = "validate.yml"     # validates; does not publish
+publish_workflow = "deploy.yml"       # deploys; changes what runs, publishes nothing
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0

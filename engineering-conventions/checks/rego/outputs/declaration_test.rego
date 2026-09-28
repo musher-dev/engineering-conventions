@@ -8,14 +8,16 @@ messages(found, id) := {f.message | some f in found; f.id == id}
 publish := td.file(".github/workflows/publish.yml", {"name": "Publish", "true": {"push": {"tags": ["v*"]}}})
 
 # The files a conforming image output points at.
-tree := td.inventory([
+tree_paths := [
 	".github/workflows/publish.yml",
 	".github/workflows/validate.yml",
 	".repo/outputs.toml",
 	"api/Dockerfile",
 	"api/README.md",
 	"api/openapi.yaml",
-])
+]
+
+tree := td.inventory(tree_paths)
 
 test_conforming_outputs if {
 	contract := object.union(td.image_output, {
@@ -120,7 +122,27 @@ test_out_06_workflow_that_does_not_publish if {
 	found := declaration.findings with input as [publish, tree, td.outputs([output])]
 		with data.conventions.index as td.index
 	messages(found, "OUT-06") == {concat(" ", [
-		`output "api-image" names "validate.yml", whose responsibility is not publish;`,
+		`output "api-image" names "validate.yml", whose responsibility is neither publish nor release;`,
+		"name the workflow that publishes it",
+	])}
+}
+
+test_out_06_release_workflow_may_publish if {
+	output := object.union(td.image_output, {"publish_workflow": "release.yml"})
+	release := td.file(".github/workflows/release.yml", {"name": "Release", "true": {"push": {"branches": ["main"]}}})
+	with_release := td.inventory(array.concat(tree_paths, [".github/workflows/release.yml"]))
+	found := declaration.findings with input as [release, with_release, td.outputs([output])]
+		with data.conventions.index as td.index
+	count(messages(found, "OUT-06")) == 0
+}
+
+test_out_06_deploy_workflow_does_not_publish if {
+	output := object.union(td.image_output, {"publish_workflow": "deploy.yml"})
+	with_deploy := td.inventory(array.concat(tree_paths, [".github/workflows/deploy.yml"]))
+	found := declaration.findings with input as [publish, with_deploy, td.outputs([output])]
+		with data.conventions.index as td.index
+	messages(found, "OUT-06") == {concat(" ", [
+		`output "api-image" names "deploy.yml", whose responsibility is neither publish nor release;`,
 		"name the workflow that publishes it",
 	])}
 }

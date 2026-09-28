@@ -61,7 +61,9 @@ terms:
     token: release
     definition: >-
       Versioning and changelog work: release pull requests, tags and GitHub
-      Releases. A release workflow builds nothing.
+      Releases. A release workflow may also publish the artifacts of the
+      release it cuts, in the same run, when the version is known only there;
+      a workflow that only publishes is publish.
     tags: [gha.responsibility]
     stability: provisional
   - id: gha.responsibility.publish

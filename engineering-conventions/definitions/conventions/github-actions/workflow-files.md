@@ -163,6 +163,7 @@ platform keeps its current behavior until the handoff, and adopts these differen
 | Scope after a reusable token | CI-14 requires one: `reusable-build.yml` fails | Optional: `reusable-build.yml` passes GHA-01 |
 | Display forms `ci`, `cli`, `dco`, `e2e`, `oci`, `uv` | CI-15 lacks them, so `validate-e2e.yml` must be named `Validate E2e` | Shipped, so `validate-e2e.yml` is named `Validate E2E` |
 | A name whose filename must change | CI-15 judges the name against the current filename | GHA-07 waits until GHA-01 and GHA-05 accept the filename |
+| What `release` owns | #2892 has no `publish` token, so pushing an artifact is filed under `release` or `deploy` | `release` owns versioning, and may also publish the artifacts of the release it cuts in the same run; a workflow that only publishes is `publish` ([decision 0014](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0014-release-workflows-may-publish.md)) |
 
 ## Vocabulary
 
@@ -174,8 +175,8 @@ The first token of an entry-point workflow's filename is one of these. Each owns
 | Token | Owns | Not this |
 | --- | --- | --- |
 | `validate` | Deciding whether a change may merge. Runs against a change (pull request, merge queue, push to the default branch) and mutates nothing outside the run. | Not `verify`, which exercises a deployed environment. Not `audit`, which never gates a merge. Not `check`, which is a capability a responsibility uses, never a responsibility of its own. |
-| `release` | Versioning: release pull requests, version bumps, changelogs, tags and GitHub Releases. Builds and ships nothing. | Not `publish`, which pushes the artifact a release names. Not `deploy`. |
-| `publish` | Pushing a versioned artifact to a registry or distribution channel: a package, an image, release assets. | Not `release`, which decides the version. Not `deploy`: publishing an artifact changes nothing that is running. |
+| `release` | Versioning: release pull requests, version bumps, changelogs, tags and GitHub Releases. It may also publish the artifacts of the release it cuts, in the same run, when the version is known only there (release-please). | Not `publish`: a workflow that only publishes is `publish`. Not `deploy`. |
+| `publish` | Pushing a versioned artifact to a registry or distribution channel: a package, an image, release assets. | Not `release`, which decides the version and may publish only what it just released. Not `deploy`: publishing an artifact changes nothing that is running. |
 | `deploy` | Changing what a running environment serves. | Not `publish`. Not `verify`, which confirms the result afterward. |
 | `verify` | Exercising a *deployed* environment to confirm it behaves: smoke tests and probes after a deploy. | Not `validate`, which judges a change before it merges. Not `monitor`, which watches for drift over time rather than confirming one deploy. |
 | `monitor` | A scheduled, report-only comparison of something this repository depends on but does not own (external links, an upstream schema, a pinned version) against what the repository expects. | Not `audit`, which examines this repository's own contents. Not `maintain`: a monitor changes nothing. |
@@ -579,6 +580,10 @@ convention replaces are resolved in the table above rather than left to judgment
 [Decision 0006](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0006-github-actions-naming-vocabulary.md)
 records the choices: why `maintain` rather than `maintenance`, why `publish` is separate from `release`, and why
 `build` and `check` are capabilities rather than responsibilities.
+[Decision 0014](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0014-release-workflows-may-publish.md)
+refines the split: a release workflow may also publish what it releases, because a tool such as release-please knows
+the new version only inside its own run, and splitting the publish out would mean a second tag-triggered workflow or a
+`workflow_run` chain for no gain in clarity.
 
 ## References
 

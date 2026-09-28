@@ -1,9 +1,12 @@
 # The profile the identity declaration selects for kind = "service"
-# (EC-0009). It is base-repo until requirements specific to the kind exist.
+# (EC-0009). It adds the build, test and dev tasks to what base-repo applies.
 schema_version: 1
 id: service
 display_name: Service
 description: >-
-  Repositories whose kind is service. Until requirements specific to the kind
-  exist, it applies exactly what base-repo does.
+  Repositories whose kind is service: everything base-repo applies, and a
+  root Taskfile that also defines build and test (TASK-11) and dev
+  (TASK-12).
 inherits: [base-repo]
+include:
+  requirements: [TASK-11, TASK-12]

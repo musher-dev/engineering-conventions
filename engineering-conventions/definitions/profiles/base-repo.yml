@@ -6,11 +6,16 @@ id: base-repo
 display_name: Base repository
 description: >-
   Every repository in the organisation: declaring its conventions, its
-  outputs and its identity, a name from the registered systems, and the
-  GitHub Actions naming, structure and hygiene every repository with
-  workflows shares.
+  outputs and its identity, a name from the registered systems, the GitHub
+  Actions naming, structure and hygiene every repository with workflows
+  shares, Taskfile style, and a root Taskfile with setup, check and lint.
 include:
   families: [ADOPT, GHA, OUT, REPO]
+  # EC-0015 applies to any Taskfile. Of EC-0016, only what every repository
+  # shares is selected here; the kind profiles add the rest by ID, because
+  # an exclude here would win over their includes.
+  conventions: [EC-0015]
+  requirements: [TASK-10, TASK-13]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

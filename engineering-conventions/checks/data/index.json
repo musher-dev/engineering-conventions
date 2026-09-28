@@ -86,6 +86,20 @@
           "status": "draft",
           "title": "Repository names",
           "topic": "repository"
+        },
+        "EC-0015": {
+          "authority": "self",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "status": "draft",
+          "title": "Taskfile style",
+          "topic": "tasks"
+        },
+        "EC-0016": {
+          "authority": "self",
+          "path": "definitions/conventions/tasks/task-interface.md",
+          "status": "draft",
+          "title": "Task interface",
+          "topic": "tasks"
         }
       },
       "declaration_schema": {
@@ -419,7 +433,19 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -491,7 +517,19 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "content": {
@@ -566,7 +604,19 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -638,7 +688,19 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "documentation": {
@@ -713,7 +775,19 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -785,7 +859,19 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "infrastructure": {
@@ -860,7 +946,19 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -932,7 +1030,19 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "library": {
@@ -1007,7 +1117,20 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-11",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1079,7 +1202,20 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-11": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "service": {
@@ -1154,7 +1290,21 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-11",
+            "TASK-12",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1226,7 +1376,21 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-11": "warning",
+            "TASK-12": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "specification": {
@@ -1301,7 +1465,19 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1373,7 +1549,19 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "template": {
@@ -1448,7 +1636,19 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1520,7 +1720,19 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "tool": {
@@ -1595,7 +1807,20 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-11",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1667,7 +1892,20 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-11": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         },
         "website": {
@@ -1742,7 +1980,20 @@
             "REPO-10",
             "REPO-11",
             "REPO-12",
-            "REPO-13"
+            "REPO-13",
+            "TASK-01",
+            "TASK-02",
+            "TASK-03",
+            "TASK-04",
+            "TASK-05",
+            "TASK-06",
+            "TASK-07",
+            "TASK-08",
+            "TASK-09",
+            "TASK-10",
+            "TASK-11",
+            "TASK-13",
+            "TASK-14"
           ],
           "severity": {
             "ADOPT-02": "warning",
@@ -1814,7 +2065,20 @@
             "REPO-10": "warning",
             "REPO-11": "warning",
             "REPO-12": "warning",
-            "REPO-13": "warning"
+            "REPO-13": "warning",
+            "TASK-01": "warning",
+            "TASK-02": "warning",
+            "TASK-03": "warning",
+            "TASK-04": "warning",
+            "TASK-05": "warning",
+            "TASK-06": "warning",
+            "TASK-07": "warning",
+            "TASK-08": "warning",
+            "TASK-09": "warning",
+            "TASK-10": "warning",
+            "TASK-11": "warning",
+            "TASK-13": "warning",
+            "TASK-14": "warning"
           }
         }
       },
@@ -2820,6 +3084,210 @@
           "since": "0.5.0",
           "status": "proposed",
           "title": "A rename changes everything that names the repository in one change, and the old name is never reused",
+          "waivable": true
+        },
+        "TASK-01": {
+          "aliases": [
+            "platform:TF-01"
+          ],
+          "anchor": "task-01",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A Taskfile declares version '3' as a string",
+          "waivable": true
+        },
+        "TASK-02": {
+          "aliases": [
+            "platform:TF-06"
+          ],
+          "anchor": "task-02",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A Taskfile names its variables in UPPER_SNAKE",
+          "waivable": true
+        },
+        "TASK-03": {
+          "aliases": [
+            "platform:TF-08",
+            "platform:TF-12"
+          ],
+          "anchor": "task-03",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A task name is kebab-case words joined by colons, with a leading underscore only on an internal task",
+          "waivable": true
+        },
+        "TASK-04": {
+          "aliases": [
+            "platform:TF-07"
+          ],
+          "anchor": "task-04",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A template has no whitespace inside its delimiters",
+          "waivable": true
+        },
+        "TASK-05": {
+          "aliases": [
+            "platform:TF-09"
+          ],
+          "anchor": "task-05",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every public task has a desc",
+          "waivable": true
+        },
+        "TASK-06": {
+          "aliases": [],
+          "anchor": "task-06",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every internal task is called by another task",
+          "waivable": true
+        },
+        "TASK-07": {
+          "aliases": [
+            "platform:TF-15"
+          ],
+          "anchor": "task-07",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A task sets prefix only where the output mode is prefixed",
+          "waivable": true
+        },
+        "TASK-08": {
+          "aliases": [
+            "development-container:PATH-03"
+          ],
+          "anchor": "task-08",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A variable named for a directory, file or configuration names a path that exists",
+          "waivable": true
+        },
+        "TASK-09": {
+          "aliases": [],
+          "anchor": "task-09",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every include names a Taskfile that exists, unless it is optional",
+          "waivable": true
+        },
+        "TASK-10": {
+          "aliases": [
+            "platform:TF-20a"
+          ],
+          "anchor": "task-10",
+          "convention": "EC-0016",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.task_interface",
+          "path": "definitions/conventions/tasks/task-interface.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The root Taskfile defines setup, check and lint",
+          "waivable": true
+        },
+        "TASK-11": {
+          "aliases": [
+            "platform:TF-20b"
+          ],
+          "anchor": "task-11",
+          "convention": "EC-0016",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.task_interface",
+          "path": "definitions/conventions/tasks/task-interface.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The root Taskfile of a library, tool, service or website also defines build and test",
+          "waivable": true
+        },
+        "TASK-12": {
+          "aliases": [
+            "platform:TF-20c"
+          ],
+          "anchor": "task-12",
+          "convention": "EC-0016",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.task_interface",
+          "path": "definitions/conventions/tasks/task-interface.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The root Taskfile of a service also defines dev",
+          "waivable": true
+        },
+        "TASK-13": {
+          "aliases": [],
+          "anchor": "task-13",
+          "convention": "EC-0016",
+          "engine": "review",
+          "path": "definitions/conventions/tasks/task-interface.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The check task runs every gate CI runs",
+          "waivable": true
+        },
+        "TASK-14": {
+          "aliases": [
+            "platform:TF-21"
+          ],
+          "anchor": "task-14",
+          "convention": "EC-0015",
+          "engine": "conftest",
+          "package": "conventions.checks.tasks.taskfile_style",
+          "path": "definitions/conventions/tasks/taskfile-style.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Every literal sources entry names something the repository holds",
           "waivable": true
         }
       },

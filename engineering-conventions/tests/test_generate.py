@@ -203,13 +203,38 @@ def test_prose_aliases_do_not_leak_into_identifier_tokens(content: Content) -> N
     assert "exception" not in banned
 
 
+# Requirements only a kind's profile selects (EC-0016): the build, test and
+# dev tasks. Every other requirement applies to every repository.
+KIND_SPECIFIC = {"TASK-11", "TASK-12"}
+
+
 def test_base_profile_includes_every_non_retired_requirement(content: Content) -> None:
     profiles = as_map(_index(content)["profiles"])
     base = as_map(profiles["base-repo"])
-    expected = [req.id for req in content.requirements if req.status != "retired"]
+    expected = [
+        req.id
+        for req in content.requirements
+        if req.status != "retired" and req.id not in KIND_SPECIFIC
+    ]
     assert sorted(as_list(base["requirements"]), key=str) == sorted(expected)
     assert as_map(base["severity"])["GHA-07"] == "warning"
     assert base["display_name"] == "Base repository"
+
+
+def test_kind_profiles_add_their_own_task_verbs(content: Content) -> None:
+    profiles = as_map(_index(content)["profiles"])
+    base = set(as_list(as_map(profiles["base-repo"])["requirements"]))
+    added = {
+        name: set(as_list(as_map(profiles[name])["requirements"])) - base
+        for name in ("library", "tool", "website", "service", "specification")
+    }
+    assert added == {
+        "library": {"TASK-11"},
+        "tool": {"TASK-11"},
+        "website": {"TASK-11"},
+        "service": {"TASK-11", "TASK-12"},
+        "specification": set(),
+    }
 
 
 def _resolve_with(content: Content, directory: Path) -> dict[str, ResolvedProfile]:

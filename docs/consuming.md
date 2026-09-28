@@ -117,6 +117,15 @@ A directory checked with `-C` inside another work tree, or a copy with no remote
 checked, and the other naming requirements judge the declared name. Pass `--repository` when the remote does not carry
 the repository's name, such as a mirror.
 
+## Define the standard tasks
+
+Every repository has a root `Taskfile.yml` that defines `setup`, `check` and `lint` (TASK-10). The kind adds to that:
+a `library`, `tool`, `service` or `website` also defines `build` and `test` (TASK-11), and a `service` defines `dev`
+(TASK-12). An alias or an included task counts, so a repository whose verbs have other names adds `aliases:` rather
+than renaming. The interface is
+[EC-0016](../engineering-conventions/definitions/conventions/tasks/task-interface.md), and how each Taskfile is
+written is [EC-0015](../engineering-conventions/definitions/conventions/tasks/taskfile-style.md).
+
 ## Declare only what differs
 
 A repository that holds no waivers, and whose kind selects the profile it needs, needs no other file. Add

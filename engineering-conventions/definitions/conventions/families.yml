@@ -8,6 +8,10 @@ families:
     title: Adopting the conventions
     topic: adoption
     owner: "@justinmerrell"
+  - prefix: CONF
+    title: Tool configuration
+    topic: configuration
+    owner: "@justinmerrell"
   - prefix: GHA
     title: GitHub Actions
     topic: github-actions

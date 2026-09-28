@@ -1,0 +1,4 @@
+# The example key from the vendor's documentation, not a credential.
+3f2a91c:docs/setup.md:generic-api-key:42
+
+9b8c7d6:tests/data/sample.json:generic-api-key:7

@@ -7,14 +7,15 @@ display_name: Base repository
 description: >-
   Every repository in the organisation: declaring its conventions, its
   outputs and its identity, a name from the registered systems, where its
-  product lives, the GitHub Actions naming, structure and hygiene every
+  product lives, tool configuration kept in .config/ with every
+  suppression reasoned and time-boxed, the GitHub Actions naming, structure and hygiene every
   repository with workflows shares, Taskfile style and a root Taskfile
   with setup, check and lint, the git hooks of any repository that uses
   lefthook, the agent context of any repository that has one, the shape
   of its decision records if it keeps any, and the format of any
   environment schema it holds.
 include:
-  families: [ADOPT, GHA, OUT, REPO, AGENT, HOOKS, DEC]
+  families: [ADOPT, GHA, OUT, REPO, AGENT, CONF, HOOKS, DEC]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
   # schema. Of EC-0016 and EC-0019, only what every repository shares is
   # selected here; the kind profiles add the rest by ID, because an

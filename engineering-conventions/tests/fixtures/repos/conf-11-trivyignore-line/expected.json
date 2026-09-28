@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-11",
+    "path": ".config/security/trivyignore",
+    "severity": "warning"
+  }
+]

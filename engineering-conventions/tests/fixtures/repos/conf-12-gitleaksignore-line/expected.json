@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-12",
+    "path": ".config/security/gitleaksignore",
+    "severity": "warning"
+  }
+]

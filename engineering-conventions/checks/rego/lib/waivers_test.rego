@@ -5,14 +5,6 @@ import data.conventions.lib.waivers
 
 finding := {"id": "GHA-07", "path": ".github/workflows/ci.yml", "message": "m"}
 
-test_now_from_runtime_data if {
-	waivers.now_ns == time.parse_rfc3339_ns(td.now) with data.conventions.runtime.now as td.now
-}
-
-test_now_falls_back_to_clock if {
-	waivers.now_ns > time.parse_rfc3339_ns("2020-01-01T00:00:00Z")
-}
-
 test_expiry_parsing if {
 	waivers.expires_ns({"expires": "2026-09-23"}) == time.parse_rfc3339_ns("2026-09-23T00:00:00Z")
 	waivers.expires_ns({"expires": "2026-09-23T12:00:00Z"}) == time.parse_rfc3339_ns("2026-09-23T12:00:00Z")
@@ -27,7 +19,6 @@ test_expired_and_active if {
 test_too_long if {
 	waivers.too_long({"expires": "2027-03-23"}) with data.conventions.runtime.now as td.now
 	not waivers.too_long({"expires": "2027-03-22"}) with data.conventions.runtime.now as td.now
-	waivers.latest_allowed_date == "2027-03-22" with data.conventions.runtime.now as td.now
 }
 
 test_matches_with_and_without_paths if {

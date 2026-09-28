@@ -1,0 +1,9 @@
+name: Check Security
+description: Scan the repository for known vulnerabilities and leaked secrets.
+runs:
+  using: composite
+  steps:
+    - name: Scan the repository
+      id: scan
+      shell: bash
+      run: gitleaks git --gitleaks-ignore-path .config/security/gitleaksignore --redact

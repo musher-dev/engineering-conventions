@@ -234,9 +234,13 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
         ".nvmrc",
         "api/.python-version",
         ".config/README.md",
+        ".trivyignore",
+        ".config/security/trivyignore",
+        ".config/security/gitleaksignore",
     ):
         assert chosen.texts.search(name), name
     assert not chosen.texts.search("README.md")
+    assert not chosen.texts.search("docs/trivyignore")
     assert chosen.sizes.search("docs/guide.md")
     assert chosen.text_limit > 0
 

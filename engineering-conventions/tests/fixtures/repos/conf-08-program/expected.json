@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-08",
+    "path": ".config/scripts/banner.sh",
+    "severity": "warning"
+  }
+]

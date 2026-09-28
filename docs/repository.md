@@ -89,6 +89,10 @@ Four rules keep `.config/` predictable:
 - **Every config has a caller** in `taskfiles/` or `.config/lefthook.yml`, and CI runs the same tasks.
 - **Every ignore has a reason** beside it. Nothing is suppressed inline in the code it concerns.
 
+These are the published conventions [EC-0011 Tool configuration](../engineering-conventions/definitions/conventions/configuration/tool-configuration.md)
+and [EC-0012 Suppressions](../engineering-conventions/definitions/conventions/configuration/suppressions.md), and
+`task conventions:self` checks this repository against them.
+
 There is no `.editorconfig`. Editor settings live once, in `devcontainer.json` → `customizations.vscode.settings`.
 `.gitattributes` enforces LF endings, and the lint gates fail on anything an editor gets wrong.
 

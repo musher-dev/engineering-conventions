@@ -1,0 +1,5 @@
+vulnerabilities:
+  - id: CVE-2026-0001
+    statement: The vulnerable parser is only reached by the admin import, which this image does not ship.
+    expired_at: 2026-12-01
+  - id: CVE-2026-0002

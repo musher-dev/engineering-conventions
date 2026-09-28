@@ -141,7 +141,8 @@ JSONNET="${JSONNET}|"'^\.devcontainer\.json$'
 DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$'
 
 # Files the checks read as text: agent context, decision records, the
-# .config/ index, and the one-line and ignore files no parser reads. Only
+# .config/ index, and the one-line and ignore files no parser reads,
+# including an ignore file kept in .config/ without its dot (EC-0012). Only
 # files up to TEXT_LIMIT bytes are embedded.
 TEXTS='(^|/)CLAUDE\.md$'
 TEXTS="${TEXTS}|"'^AGENTS\.md$'
@@ -149,6 +150,7 @@ TEXTS="${TEXTS}|"'^\.claude/rules/.+\.md$'
 TEXTS="${TEXTS}|"'^\.config/README\.md$'
 TEXTS="${TEXTS}|"'(^|/)(decisions|adrs)/.+\.md$'
 TEXTS="${TEXTS}|"'(^|/)\.(trivyignore|gitleaksignore|nvmrc|node-version|python-version|tool-versions)$'
+TEXTS="${TEXTS}|"'^\.config/(.+/)?(trivyignore|gitleaksignore)$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.

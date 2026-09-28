@@ -20,6 +20,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
+| [EC-0011](configuration/tool-configuration.md) | Tool configuration | configuration | draft |
+| [EC-0012](configuration/suppressions.md) | Suppressions | configuration | draft |
 | [EC-0013](agents/agent-context.md) | Agent context | agents | draft |
 | [EC-0014](git-hooks/lefthook.md) | Lefthook configuration | git-hooks | draft |
 | [EC-0015](tasks/taskfile-style.md) | Taskfile style | tasks | draft |
@@ -50,6 +52,18 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
 | [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
+| [CONF-01](configuration/tool-configuration.md#conf-01) | A known tool's configuration does not sit at the repository root | EC-0011 | proposed | warning | conftest |
+| [CONF-02](configuration/tool-configuration.md#conf-02) | A repository with a .config/ directory indexes it in .config/README.md | EC-0011 | proposed | warning | conftest |
+| [CONF-03](configuration/tool-configuration.md#conf-03) | Every file under .config/ is named in .config/README.md | EC-0011 | proposed | warning | conftest |
+| [CONF-04](configuration/tool-configuration.md#conf-04) | Every file under .config/ has a caller that names it by path | EC-0011 | proposed | warning | conftest |
+| [CONF-05](configuration/tool-configuration.md#conf-05) | No filename inside .config/ starts with a dot | EC-0011 | proposed | warning | conftest |
+| [CONF-06](configuration/tool-configuration.md#conf-06) | No lefthook configuration at the root shadows .config/lefthook.yml | EC-0011 | proposed | warning | conftest |
+| [CONF-07](configuration/tool-configuration.md#conf-07) | A tool's configuration sits in a concern directory under .config/ | EC-0011 | proposed | warning | conftest |
+| [CONF-08](configuration/tool-configuration.md#conf-08) | .config/ holds no programs | EC-0011 | proposed | warning | conftest |
+| [CONF-09](configuration/tool-configuration.md#conf-09) | Every .config/ path a caller names exists | EC-0011 | proposed | warning | conftest |
+| [CONF-10](configuration/suppressions.md#conf-10) | Every entry in a trivyignore.yaml has a statement and an expiry within the term | EC-0012 | proposed | warning | conftest |
+| [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
+| [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
 | [DEC-01](decisions/decision-records.md#dec-01) | A decision record is named NNNN-kebab-slug in the repository's decisions directory | EC-0021 | proposed | warning | conftest |
 | [DEC-02](decisions/decision-records.md#dec-02) | A decision record's frontmatter is valid against the decision schema | EC-0021 | proposed | warning | conftest |
 | [DEC-03](decisions/decision-records.md#dec-03) | Decision numbers are unique and contiguous from 0000 or 0001 | EC-0021 | proposed | warning | conftest |
@@ -173,6 +187,7 @@ ID is permanent: it is never renumbered or reused.
 | Prefix | Title | Topic |
 | --- | --- | --- |
 | ADOPT | Adopting the conventions | adoption |
+| CONF | Tool configuration | configuration |
 | GHA | GitHub Actions | github-actions |
 | HOOKS | Git hooks | git-hooks |
 | OUT | Outputs | outputs |

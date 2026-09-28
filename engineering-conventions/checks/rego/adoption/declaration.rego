@@ -9,6 +9,7 @@
 #   convention: EC-0001
 package conventions.checks.adoption.declaration
 
+import data.conventions.lib.dates
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.names
@@ -80,7 +81,7 @@ findings contains lib.finding("ADOPT-05", files.declaration_path, message) if {
 			"%s expires on %s, more than %d days away; set expires to %s or earlier and renew it if",
 			"the work is still open then",
 		]),
-		[waivers.label(index, waiver), waiver.expires, waivers.max_term_days, waivers.latest_allowed_date],
+		[waivers.label(index, waiver), waiver.expires, dates.max_term_days, dates.latest_allowed_date],
 	)
 }
 
@@ -130,6 +131,12 @@ findings contains lib.finding("ADOPT-08", files.declaration_path, message) if {
 # all of data.conventions.checks would include this package and recurse. A
 # new family is added here with its checks (`conventions invariants` fails
 # until it is).
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.configuration[convention].findings
+	some finding in package_findings
+}
+
 raw_findings contains finding if {
 	some convention
 	package_findings := data.conventions.checks.github_actions[convention].findings

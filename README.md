@@ -97,6 +97,7 @@ Start from the part of your repository you are working on:
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006 | GHA-01 – GHA-38 |
 | [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-11 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name | EC-0009, EC-0010 | REPO-01 – REPO-13 |
+| [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
 
 A topic's README gives the reading order. Two other ways in:
 

@@ -20,6 +20,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
+| [EC-0021](decisions/decision-records.md) | Decision records | decisions | draft |
 
 ## Requirements
 
@@ -34,6 +35,13 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
+| [DEC-01](decisions/decision-records.md#dec-01) | A decision record is named NNNN-kebab-slug in the repository's decisions directory | EC-0021 | proposed | warning | conftest |
+| [DEC-02](decisions/decision-records.md#dec-02) | A decision record's frontmatter is valid against the decision schema | EC-0021 | proposed | warning | conftest |
+| [DEC-03](decisions/decision-records.md#dec-03) | Decision numbers are unique and contiguous from 0000 or 0001 | EC-0021 | proposed | warning | conftest |
+| [DEC-04](decisions/decision-records.md#dec-04) | Supersede and amend links agree in both directions, and only a superseded record names its successors | EC-0021 | proposed | warning | conftest |
+| [DEC-05](decisions/decision-records.md#dec-05) | A decision record has Context, Decision and Consequences sections | EC-0021 | proposed | warning | conftest |
+| [DEC-06](decisions/decision-records.md#dec-06) | A decision record says how it is enforced in an Enforcement section | EC-0021 | proposed | warning | conftest |
+| [DEC-07](decisions/decision-records.md#dec-07) | The decisions directory's index links every record | EC-0021 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -105,3 +113,4 @@ ID is permanent: it is never renumbered or reused.
 | GHA | GitHub Actions | github-actions |
 | OUT | Outputs | outputs |
 | REPO | Repositories | repository |
+| DEC | Decision records | decisions |

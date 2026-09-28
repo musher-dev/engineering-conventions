@@ -1,0 +1,6 @@
+# A form that is neither file nor directory, and a page in a subdirectory.
+schema_version = 1
+
+[decisions]
+form = "folder"
+page = "pages/+page.md"

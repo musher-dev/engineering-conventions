@@ -38,6 +38,7 @@ def test_index_top_level_shape(content: Content) -> None:
     index = _index(content)
     assert sorted(index) == [
         "conventions",
+        "decision_schema",
         "declaration_schema",
         "outputs_schema",
         "product_dir",
@@ -276,7 +277,7 @@ def test_profile_cannot_lower_a_default_severity(content: Content) -> None:
     edited = replace(content, conventions=(changed, *content.conventions[1:]))
     lowering = replace(content.profiles[0], severity={raised.id: "warning"})
     with pytest.raises(ProfileError, match=f"lowers {raised.id} from error to warning"):
-        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA", "OUT", "REPO"})
+        resolve_all((lowering,), edited.requirements, {"ADOPT", "GHA", "OUT", "REPO", "DEC"})
 
 
 def test_vale_styles_are_substitutions(content: Content) -> None:

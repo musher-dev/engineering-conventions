@@ -20,6 +20,7 @@ PROFILE = "profile.schema.json"
 DECLARATION = "conventions-declaration.schema.json"
 OUTPUTS = "outputs.schema.json"
 REPOSITORY = "repository.schema.json"
+DECISION = "decision.schema.json"
 
 
 class Validator(Protocol):

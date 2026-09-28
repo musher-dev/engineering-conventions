@@ -116,7 +116,7 @@ pre-commit:
         - "engineering-conventions/definitions/terminology/**/*.yml"
         - "engineering-conventions/definitions/profiles/*.yml"
         - "engineering-conventions/definitions/conventions/**/*.{md,yml}"
-        - "docs/decisions/*.{md,json}"
+        - "docs/decisions/*.md"
         - ".repo/*.toml"
         - ".github/**/*.{yml,yaml}"
         - "Taskfile.yml"

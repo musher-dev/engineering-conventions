@@ -86,7 +86,138 @@
           "status": "draft",
           "title": "Repository names",
           "topic": "repository"
+        },
+        "EC-0021": {
+          "authority": "self",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "status": "draft",
+          "title": "Decision records",
+          "topic": "decisions"
         }
+      },
+      "decision_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "definitions": {
+          "common_date": {
+            "description": "A calendar date in ISO 8601 form, YYYY-MM-DD.",
+            "format": "date",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+            "type": "string"
+          },
+          "common_nonEmptyString": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "decisionId": {
+            "description": "A decision's four-digit number, the prefix of its name, quoted so leading zeros survive (\"0009\", not 0009).",
+            "pattern": "^[0-9]{4}$",
+            "type": "string"
+          }
+        },
+        "description": "The YAML frontmatter of a decision record, NNNN-slug.md in the repository's decisions directory (EC-0021). The record's name carries its number, so the frontmatter does not repeat it. DEC-02 checks a record's frontmatter against this schema.",
+        "if": {
+          "properties": {
+            "status": {
+              "const": "superseded"
+            }
+          },
+          "required": [
+            "status"
+          ]
+        },
+        "properties": {
+          "amended_by": {
+            "description": "Decisions that change this one in part. The status is unchanged: an amended decision is still in force.",
+            "items": {
+              "$ref": "#/definitions/decisionId"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "amends": {
+            "description": "Decisions this one changes in part, leaving the rest in force. Each lists this one in amended_by (DEC-04).",
+            "items": {
+              "$ref": "#/definitions/decisionId"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "consulted": {
+            "description": "Whose opinion was sought before deciding.",
+            "items": {
+              "$ref": "#/definitions/common_nonEmptyString"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "date": {
+            "$ref": "#/definitions/common_date",
+            "description": "When the decision reached its current status."
+          },
+          "deciders": {
+            "description": "Who made the decision. MADR 4 calls this field decision-makers; the name here is kept (EC-0021).",
+            "items": {
+              "$ref": "#/definitions/common_nonEmptyString"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "informed": {
+            "description": "Who is kept up to date on the decision.",
+            "items": {
+              "$ref": "#/definitions/common_nonEmptyString"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "status": {
+            "description": "proposed: open for comment; accepted: in force; rejected: considered and declined; deprecated: no longer applies; superseded: replaced by the decisions in superseded_by.",
+            "enum": [
+              "proposed",
+              "accepted",
+              "rejected",
+              "deprecated",
+              "superseded"
+            ],
+            "type": "string"
+          },
+          "superseded_by": {
+            "description": "Decisions that replace this one. Required once the status is superseded, and set only then (DEC-04).",
+            "items": {
+              "$ref": "#/definitions/decisionId"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "supersedes": {
+            "description": "Decisions this one replaces. Each lists this one in superseded_by (DEC-04).",
+            "items": {
+              "$ref": "#/definitions/decisionId"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "title": {
+            "$ref": "#/definitions/common_nonEmptyString",
+            "description": "The decision, in sentence case."
+          }
+        },
+        "required": [
+          "title",
+          "date",
+          "status"
+        ],
+        "then": {
+          "required": [
+            "superseded_by"
+          ]
+        },
+        "title": "Decision record frontmatter",
+        "type": "object"
       },
       "declaration_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -199,6 +330,31 @@
             "required": [
               "version"
             ],
+            "type": "object"
+          },
+          "decisions": {
+            "additionalProperties": false,
+            "description": "Where the repository keeps its decision records, when not in docs/decisions/ as one NNNN-slug.md file each (EC-0021).",
+            "properties": {
+              "form": {
+                "description": "file: each record is <path>/NNNN-slug.md and the index is <path>/README.md. directory: each record is <path>/NNNN-slug/<page> and the index is <path>/<page>. Defaults to file.",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "type": "string"
+              },
+              "page": {
+                "description": "In the directory form, the name of the Markdown file each record's directory holds, which is also the index's name, e.g. +page.md. Defaults to README.md. The file form ignores it.",
+                "pattern": "^[^/]+\\.md$",
+                "type": "string"
+              },
+              "path": {
+                "description": "The directory that holds the records, relative to the repository root, e.g. docs/adrs. Its last segment is decisions or adrs, the names the runner reads records from. Defaults to docs/decisions.",
+                "pattern": "^([^/*?\\[\\]]+/)*(decisions|adrs)$",
+                "type": "string"
+              }
+            },
             "type": "object"
           },
           "paths": {
@@ -358,6 +514,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -430,6 +593,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -505,6 +675,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -577,6 +754,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -652,6 +836,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -724,6 +915,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -799,6 +997,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -871,6 +1076,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -946,6 +1158,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1018,6 +1237,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1093,6 +1319,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1165,6 +1398,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1240,6 +1480,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1312,6 +1559,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1387,6 +1641,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1459,6 +1720,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1534,6 +1802,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1606,6 +1881,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -1681,6 +1963,13 @@
             "ADOPT-07",
             "ADOPT-08",
             "ADOPT-09",
+            "DEC-01",
+            "DEC-02",
+            "DEC-03",
+            "DEC-04",
+            "DEC-05",
+            "DEC-06",
+            "DEC-07",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -1753,6 +2042,13 @@
             "ADOPT-07": "warning",
             "ADOPT-08": "warning",
             "ADOPT-09": "warning",
+            "DEC-01": "warning",
+            "DEC-02": "warning",
+            "DEC-03": "warning",
+            "DEC-04": "warning",
+            "DEC-05": "warning",
+            "DEC-06": "warning",
+            "DEC-07": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -2005,6 +2301,110 @@
           "status": "proposed",
           "title": "A repository pins the conventions release it is checked against",
           "waivable": false
+        },
+        "DEC-01": {
+          "aliases": [
+            "platform:DC-10",
+            "platform:DC-15"
+          ],
+          "anchor": "dec-01",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A decision record is named NNNN-kebab-slug in the repository's decisions directory",
+          "waivable": true
+        },
+        "DEC-02": {
+          "aliases": [
+            "platform:DC-12"
+          ],
+          "anchor": "dec-02",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A decision record's frontmatter is valid against the decision schema",
+          "waivable": true
+        },
+        "DEC-03": {
+          "aliases": [
+            "platform:DC-11"
+          ],
+          "anchor": "dec-03",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Decision numbers are unique and contiguous from 0000 or 0001",
+          "waivable": true
+        },
+        "DEC-04": {
+          "aliases": [
+            "platform:DC-14"
+          ],
+          "anchor": "dec-04",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "Supersede and amend links agree in both directions, and only a superseded record names its successors",
+          "waivable": true
+        },
+        "DEC-05": {
+          "aliases": [
+            "platform:DC-13"
+          ],
+          "anchor": "dec-05",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A decision record has Context, Decision and Consequences sections",
+          "waivable": true
+        },
+        "DEC-06": {
+          "aliases": [
+            "platform:DC-16"
+          ],
+          "anchor": "dec-06",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "A decision record says how it is enforced in an Enforcement section",
+          "waivable": true
+        },
+        "DEC-07": {
+          "aliases": [],
+          "anchor": "dec-07",
+          "convention": "EC-0021",
+          "engine": "conftest",
+          "package": "conventions.checks.decisions.records",
+          "path": "definitions/conventions/decisions/decision-records.md",
+          "severity": "warning",
+          "since": "0.6.0",
+          "status": "proposed",
+          "title": "The decisions directory's index links every record",
+          "waivable": true
         },
         "GHA-01": {
           "aliases": [

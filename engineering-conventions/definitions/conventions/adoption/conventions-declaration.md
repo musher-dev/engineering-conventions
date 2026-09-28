@@ -162,6 +162,7 @@ ADOPT-02 reports.
 | `conventions.version` | no | The release pinned, such as `0.1.0`, for a repository that does not pin it in mise. Upgrade by changing this value and the downloaded bundle together; ADOPT-08 reports a mismatch. |
 | `profile` | no | The convention profile that selects which requirements apply and at what severity. It overrides the profile of the repository's kind ([EC-0009](../repository/identity-declaration.md)); without either, `base-repo` applies. It must be one the pinned release defines (ADOPT-07). |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
+| `decisions` | no | Where the repository keeps its decision records, when not in `docs/decisions/` as one `NNNN-slug.md` file each: `path`, `form` and `page`, described in [EC-0021](../decisions/decision-records.md#where-the-records-are). |
 | `waivers` | no | A list of waivers, described below. |
 
 The authoritative shape is `checks/schemas/conventions-declaration.schema.json`, and ADOPT-02 checks the file against

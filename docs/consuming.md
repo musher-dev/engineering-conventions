@@ -222,6 +222,18 @@ finding in code you ship needs a waiver:
 fixtures = ["tests/fixtures/**"]
 ```
 
+**Decision records elsewhere.** The DEC checks read decision records from `docs/decisions/`, one `NNNN-slug.md`
+file each, and stay silent in a repository without them. A repository that keeps them in another directory, or as one
+directory per record for a documentation site, declares where
+([EC-0021](../engineering-conventions/definitions/conventions/decisions/decision-records.md#where-the-records-are)):
+
+```toml
+[decisions]
+path = "docs/site/adrs"
+form = "directory"
+page = "+page.md"
+```
+
 **Fix filenames before names.** A workflow's `name:` (GHA-07), the workflow prefix of a required-check job (GHA-12) and
 an action's `name:` (GHA-22) are derived from a filename or directory. While GHA-01, GHA-05, GHA-20 or GHA-21 asks for a
 file to be renamed, the derived-name checks wait, so a first run can show fewer name findings than the second. Rename

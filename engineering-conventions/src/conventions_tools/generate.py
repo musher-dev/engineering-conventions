@@ -94,6 +94,8 @@ def build_index(content: Content) -> dict[str, object]:
         "outputs_schema": schemas.self_contained(content.product, schemas.OUTPUTS),
         # REPO-02 validates the identity declaration the same way.
         "repository_schema": schemas.self_contained(content.product, schemas.REPOSITORY),
+        # DEC-02 validates each decision record's frontmatter the same way.
+        "decision_schema": schemas.self_contained(content.product, schemas.DECISION),
     }
     return {"conventions": {"index": index}}
 

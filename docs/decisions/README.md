@@ -1,8 +1,10 @@
 # Decisions
 
 Architecture decision records for this repository: why it exists, how it checks conventions, how it is released and
-consumed, and why the vocabulary is what it is. Each record follows [MADR](https://adr.github.io/madr/) with YAML
-frontmatter validated by [`decision.schema.json`](decision.schema.json).
+consumed, and why the vocabulary is what it is. Each record follows [MADR](https://adr.github.io/madr/) and the
+decision-record convention this repository publishes,
+[EC-0021](../../engineering-conventions/definitions/conventions/decisions/decision-records.md), with YAML
+frontmatter validated by [`decision.schema.json`](../../engineering-conventions/checks/schemas/decision.schema.json).
 
 These records govern this repository. The conventions it publishes are in
 [`engineering-conventions/definitions/conventions/`](../../engineering-conventions/definitions/conventions/);
@@ -31,7 +33,8 @@ decisions about how the company operates are in `musher-dev/company`.
 
 Copy [`template.md`](template.md) to the next unused number, fill it in, and add a row above. Numbers are never
 reused. A decision that changes an earlier one supersedes it: the new record lists the old one in `supersedes`, and
-the old record's status becomes `superseded` with `superseded_by` set. The old file is kept.
+the old record's status becomes `superseded` with `superseded_by` set. The old file is kept. A decision that changes
+only part of an earlier one lists it in `amends`, and the earlier record gains `amended_by`.
 
 A decision needs an `## Enforcement` section that names the check which holds it, or says `review-only` and what a
 reviewer looks for.

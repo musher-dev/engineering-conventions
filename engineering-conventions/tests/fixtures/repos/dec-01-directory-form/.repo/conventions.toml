@@ -1,0 +1,12 @@
+schema_version = 1
+profile = "base-repo"
+waivers = []
+
+[conventions]
+version = "0.1.0"
+
+# Records are pages of a documentation site: docs/adrs/NNNN-slug/+page.md.
+[decisions]
+path = "docs/adrs"
+form = "directory"
+page = "+page.md"

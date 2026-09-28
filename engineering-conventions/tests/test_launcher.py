@@ -173,6 +173,8 @@ def test_a_file_parsed_first_is_reported_alike(tmp_path: Path) -> None:
     (repo / "Dockerfile").write_text("FROM scratch\n")
     (repo / "docker").mkdir()
     (repo / "docker" / "build.Dockerfile").write_text("")
+    # BuildKit's per-Dockerfile ignore file is not a Dockerfile, so it is not parsed.
+    (repo / "docker" / "build.Dockerfile.dockerignore").write_text("**/node_modules\n")
     completed = _launch("check", "--output", "json", cwd=repo)
     assert completed.returncode == 1, completed.stderr
     assert _found(completed.stdout) == [("docker/build.Dockerfile", "PARSE", "error")]

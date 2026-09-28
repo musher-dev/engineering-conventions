@@ -139,6 +139,9 @@ INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
 JSONNET='^\.devcontainer(/[^/]+)?/devcontainer\.json$'
 JSONNET="${JSONNET}|"'^\.devcontainer\.json$'
 DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$'
+# BuildKit's per-Dockerfile ignore file (build.Dockerfile.dockerignore) is
+# named like a Dockerfile but is not one.
+NOT_DOCKERFILES='\.dockerignore$'
 
 # Files the checks read as text: agent context, decision records, the
 # .config/ index, and the one-line and ignore files no parser reads,
@@ -156,12 +159,13 @@ TEXT_LIMIT=262144
 # Files whose size the checks read: Markdown, for the agent context budget.
 SIZES='\.md$'
 
-# matching PATTERN: the repository's files that match PATTERN, one per line.
+# matching PATTERN [EXCLUDE]: the repository's files that match PATTERN and
+# not EXCLUDE, one per line.
 matching() {
-  printf '%s\n' "${files}" | grep -E "$1" || true
+  printf '%s\n' "${files}" | grep -E "$1" | grep -Ev "${2:-^$}" || true
 }
 
-# preparse PARSER PATTERN: parse each matching file with conftest's PARSER
+# preparse PARSER PATTERN [EXCLUDE]: parse each matching file with conftest's PARSER
 # into the scratch directory, and add it to the jq arguments being built. A
 # file that does not parse is recorded with conftest's reason, not fatal.
 preparse() {
@@ -176,7 +180,7 @@ preparse() {
       printf '%s\n%s\n%s\n' --rawfile "unparsed:${file}" "${scratch}/unparsed.${count}.txt"
     fi
   done << EOF
-$(matching "$2")
+$(matching "$2" "${3:-}")
 EOF
 }
 
@@ -188,7 +192,7 @@ write_inventory() {
   count=0
   {
     preparse jsonnet "${JSONNET}"
-    preparse dockerfile "${DOCKERFILES}"
+    preparse dockerfile "${DOCKERFILES}" "${NOT_DOCKERFILES}"
     matching "${TEXTS}" | while IFS= read -r file; do
       if [ -n "${file}" ] && [ "$(wc -c < "${file}")" -le "${TEXT_LIMIT}" ]; then
         printf '%s\n%s\n%s\n' --rawfile "text:${file}" "${file}"

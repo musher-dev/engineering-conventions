@@ -225,6 +225,8 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
     for name in ("Dockerfile", "docker/build.Dockerfile", "Containerfile", "Dockerfile.dev"):
         assert chosen.dockerfiles.search(name), name
     assert not chosen.dockerfiles.search(".dockerignore")
+    assert chosen.not_dockerfiles.search("docker/build.Dockerfile.dockerignore")
+    assert not chosen.not_dockerfiles.search("docker/build.Dockerfile")
     for name in (
         "CLAUDE.md",
         "api/CLAUDE.md",

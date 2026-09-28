@@ -258,8 +258,10 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform 
 **Every import in a `CLAUDE.md` names a file in the repository.**
 
 Claude Code skips an import it cannot find without saying so, so a moved or misspelled file silently drops what the
-agent was meant to read. Any `@word` outside code is read as an import: a handle such as `@octocat` in prose is an
-import of a file that does not exist. Put it in backticks. An import that climbs out of the repository depends on one
+agent was meant to read. An `@path` outside code that names a file with an extension is checked; a handle
+(`@octocat`), an npm scope (`@testing-library`) or a directory (`@docs/routes/`) is not, because prose mentions those
+far more often than it imports them. An import resolves from the file that holds it, so `@.claude/CLAUDE.md` in
+`.github/CLAUDE.md` names `.github/.claude/CLAUDE.md`. An import that climbs out of the repository depends on one
 person's checkout and is reported too; an import from the home directory (`@~/...`) is personal by design and is
 skipped.
 
@@ -267,7 +269,7 @@ skipped.
 
 ```markdown
 @README.md
-See @docs/testing.md before changing a test. Ask `@octocat` about releases.
+See @docs/testing.md before changing a test. Ask @octocat about releases.
 ```
 
 **Incorrect:**

@@ -38,11 +38,18 @@ has_heading(text, level, title) if {
 	lower(heading.title) == lower(title)
 }
 
-# The files a CLAUDE.md imports: every @path outside code, as written, less
-# the punctuation that ends a sentence.
-imports(text) := [trim_right(match[1], ".,;:") |
+# The files a CLAUDE.md imports: every @path to a file outside code, as
+# written, less the punctuation that ends a sentence.
+imports(text) := [path |
 	some match in regex.find_all_string_submatch_n(import_pattern, without_code_spans(prose(text)), -1)
+	path := trim_right(match[1], ".,;:")
+	names_a_file(path)
 ]
+
+# An import names a file with an extension. That leaves out an npm scope
+# (@testing-library), a handle (@justinmerrell) and a directory
+# (@docs/routes/), which prose mentions far more often than it imports them.
+names_a_file(path) if regex.match(`[^/]\.[A-Za-z0-9]+$`, path)
 
 import_pattern := `(?m)(?:^|[\s(])@([A-Za-z0-9._~][A-Za-z0-9._~/-]*)`
 

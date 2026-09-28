@@ -93,6 +93,9 @@ owner = "@musher-dev/platform"
 lifecycle = "production"
 audience = "internal"
 tier = 1
+
+[layout]
+product = "platform-api"
 ```
 
 The `name` is the repository's name on GitHub, `<system>-<component>`, with the system taken from the registered
@@ -103,6 +106,12 @@ registered ones. The format is
 are [EC-0010](../engineering-conventions/definitions/conventions/repository/repository-names.md). A repository that is
 still to be renamed keeps its current name in the declaration and waives the REPO findings about the name until the
 rename.
+
+The `[layout]` table says where the product lives: `product` is the directory, named after the repository, that holds
+the product's build manifest, or `""` for a repository with no product directory. The root then holds no manifest,
+lockfile or source tree, and Dependabot and the Taskfile's `PRODUCT_DIR` name the same directory. The rules are
+[EC-0018](../engineering-conventions/definitions/conventions/repository/layout.md); a repository with several products
+under one workspace root declares `product = ""` and waives REPO-18 until it is split.
 
 ### How the checks learn the repository's name
 

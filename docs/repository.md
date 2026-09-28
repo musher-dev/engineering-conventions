@@ -30,6 +30,10 @@ engineering-conventions/               repository level: acts on the product
     └── pyproject.toml  uv.lock  .python-version
 ```
 
+This is the layout every repository follows ([EC-0018](../engineering-conventions/definitions/conventions/repository/layout.md)):
+`.repo/repository.toml` declares `[layout] product = "engineering-conventions"`, and `task conventions:self` checks
+that the root holds no product content and that the Taskfile and Dependabot name the same directory.
+
 The product directory is a native uv project root: with the working directory set to it, `uv run pytest` or
 `ruff check .` behave as they would in a single-purpose repository.
 

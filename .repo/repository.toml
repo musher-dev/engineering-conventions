@@ -10,3 +10,9 @@ owner = "@musher-dev/engineering"
 lifecycle = "experimental"
 audience = "public"
 tier = 2
+
+# Where the product lives (EC-0018): the directory a consumer pins, named
+# after the repository. The Taskfile's PRODUCT_DIR and Dependabot's uv update
+# name the same directory.
+[layout]
+product = "engineering-conventions"

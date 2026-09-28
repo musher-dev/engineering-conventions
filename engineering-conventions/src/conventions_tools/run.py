@@ -114,6 +114,7 @@ class Selection:
     inputs: re.Pattern[str]
     jsonnet: re.Pattern[str]
     dockerfiles: re.Pattern[str]
+    not_dockerfiles: re.Pattern[str]
     texts: re.Pattern[str]
     sizes: re.Pattern[str]
     text_limit: int
@@ -137,6 +138,7 @@ def selection(product: Path | None = None) -> Selection:
         inputs=compiled("INPUTS"),
         jsonnet=compiled("JSONNET"),
         dockerfiles=compiled("DOCKERFILES"),
+        not_dockerfiles=compiled("NOT_DOCKERFILES"),
         texts=compiled("TEXTS"),
         sizes=compiled("SIZES"),
         text_limit=numbers["TEXT_LIMIT"],
@@ -275,9 +277,12 @@ def inventory_document(
     """The inventory conftest reads beside the files: what bin/inventory.jq writes."""
     parsed: list[dict[str, object]] = []
     unparsed: list[dict[str, str]] = []
-    for parser, pattern in (("jsonnet", chosen.jsonnet), ("dockerfile", chosen.dockerfiles)):
+    for parser, pattern, excluded in (
+        ("jsonnet", chosen.jsonnet, None),
+        ("dockerfile", chosen.dockerfiles, chosen.not_dockerfiles),
+    ):
         for relative in files:
-            if pattern.search(relative):
+            if pattern.search(relative) and not (excluded and excluded.search(relative)):
                 contents, problem = _preparse(repo, parser, relative)
                 if problem is None:
                     parsed.append({"path": relative, "contents": contents})

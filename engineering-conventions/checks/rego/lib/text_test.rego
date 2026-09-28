@@ -53,6 +53,15 @@ test_imports_skip_code if {
 	text.imports(doc) == ["README.md", "docs/guide.md"]
 }
 
+test_imports_skip_scopes_handles_and_directories if {
+	prose := concat("\n", [
+		"Uses @testing-library/svelte and @testing-library,",
+		"see @docs/routes/ and @justinmerrell.",
+		"@AGENTS.md",
+	])
+	text.imports(prose) == ["AGENTS.md"]
+}
+
 test_import_in_parentheses_and_relative if {
 	text.imports("(@../README.md)\n@./notes.md\nmail me at a@b.c\n") == ["../README.md", "./notes.md"]
 }

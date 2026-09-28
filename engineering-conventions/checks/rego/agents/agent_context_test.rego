@@ -168,19 +168,13 @@ test_agent_04_unconditional_rules_alone if {
 }
 
 test_agent_05_unresolved_import if {
-	texts := with_files({"CLAUDE.md": "@README.md\nAsk @octocat, or read @docs/gone.md.\n"})
+	texts := with_files({"CLAUDE.md": "@README.md\nAsk @octocat, use @testing-library, or read @docs/gone.md.\n"})
 	found := agent_context.findings with input as repo(texts)
 	td.pairs(found) == {["AGENT-05", "CLAUDE.md"]}
-	{f.message | some f in found} == {
-		concat(" ", [
-			"@octocat does not name a file in the repository; correct the path, or put the text in",
-			"backticks if it is not meant as an import",
-		]),
-		concat(" ", [
-			"@docs/gone.md does not name a file in the repository; correct the path, or put the text",
-			"in backticks if it is not meant as an import",
-		]),
-	}
+	{f.message | some f in found} == {concat(" ", [
+		"@docs/gone.md does not name a file in the repository; correct the path, or put the text",
+		"in backticks if it is not meant as an import",
+	])}
 }
 
 test_agent_05_outside_the_repository if {

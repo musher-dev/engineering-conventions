@@ -39,7 +39,7 @@ run on (conftest, OPA, Vale), which have their own security policies.
   beside it. Both are required checks through `Validate / Required`.
 - `task secrets:scan` runs [gitleaks](https://github.com/gitleaks/gitleaks) over
   the history on every change, and the pre-commit hook scans each staged change.
-- Every CLI the gates run is pinned once, in `.devcontainer/mise.toml`, and CI
+- Every CLI the gates run is pinned once, in `.config/mise/config.toml`, and CI
   installs from that file
   ([Toolchain](docs/repository.md#toolchain)). Beyond the pins listed there,
   the dev container CLI is an exact version in the Dev Container job, and the

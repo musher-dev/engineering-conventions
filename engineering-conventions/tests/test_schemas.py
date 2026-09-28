@@ -135,7 +135,7 @@ def test_check_jsonschema_resolves_refs_from_disk(tmp_path: Path) -> None:
     # check-jsonschema is how the repository and consumers validate files; it
     # must resolve the relative $refs from disk, whatever the working directory.
     executable = shutil.which("check-jsonschema")
-    assert executable, "check-jsonschema must be on PATH (see .devcontainer/mise.toml)"
+    assert executable, "check-jsonschema must be on PATH (see .config/mise/config.toml)"
     completed = subprocess.run(
         [
             executable,

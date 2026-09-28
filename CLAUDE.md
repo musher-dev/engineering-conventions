@@ -38,7 +38,7 @@ each part lives in `.claude/rules/` and loads when you read a file it governs.
   ([the charter](docs/decisions/0000-charter.md)).
 - **No inline lint suppressions.** A rule that is wrong here is turned off in
   its `.config/` file with the reason beside it.
-- **No tool installed outside `.devcontainer/mise.toml`.** CI installs through
+- **No tool installed outside `.config/mise/config.toml`.** CI installs through
   `.github/actions/setup-tools` from that same file.
 
 ## Verification

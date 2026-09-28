@@ -100,7 +100,7 @@ def test_unknown_arguments_print_usage(tmp_path: Path) -> None:
 
 
 def test_tool_versions_move_with_the_repository_pins() -> None:
-    pins = PRODUCT.parent / ".devcontainer" / "mise.toml"
+    pins = PRODUCT.parent / ".config" / "mise" / "config.toml"
     if not pins.is_file():
         pytest.skip("not a checkout of the repository")
     tools = as_map(tomllib.loads(pins.read_text(encoding="utf-8")).get("tools"))

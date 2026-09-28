@@ -21,7 +21,7 @@ are held to them first. This file routes; it restates none of them.
 - **Security**: `task lint:actions` (actionlint) and `task lint:actions:security`
   (zizmor, config in `.config/actions/zizmor.yml`).
 - **Tools in CI**: installed only through `.github/actions/setup-tools`, the one
-  `jdx/mise-action` reference, from `.devcontainer/mise.toml`. MUST NOT install
+  `jdx/mise-action` reference, from `.config/mise/config.toml`. MUST NOT install
   a tool any other way.
 - **Required checks**: `.github/rulesets/RULESETS.md`. A new gate joins the
   `Validate / Required` aggregate; renaming a job that a ruleset lists breaks

@@ -2,7 +2,7 @@
 # Dev container image for musher-dev/engineering-conventions.
 #
 # The image bakes exactly one tool, mise, because mise cannot pin itself.
-# Every other CLI is pinned in .devcontainer/mise.toml (docs/repository.md →
+# Every other CLI is pinned in .config/mise/config.toml (docs/repository.md →
 # "Toolchain").
 #
 # Pinned to the LTS tag: a floating `:ubuntu` rolls to interim releases.

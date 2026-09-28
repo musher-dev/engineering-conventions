@@ -18,7 +18,7 @@
 
 assert_lefthook_installed: true
 
-# Lockstep with "aqua:evilmartians/lefthook" in .devcontainer/mise.toml
+# Lockstep with "aqua:evilmartians/lefthook" in .config/mise/config.toml
 # (.claude/rules/toolchain-pins.md).
 min_version: "2.1.14"
 

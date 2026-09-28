@@ -39,6 +39,7 @@ def test_index_top_level_shape(content: Content) -> None:
     assert sorted(index) == [
         "conventions",
         "declaration_schema",
+        "env_schema",
         "outputs_schema",
         "product_dir",
         "profiles",
@@ -203,11 +204,21 @@ def test_prose_aliases_do_not_leak_into_identifier_tokens(content: Content) -> N
     assert "exception" not in banned
 
 
+# Requirements only a kind's own profile selects.
+KIND_SPECIFIC = {"ENVS-01": "service"}
+
+
 def test_base_profile_includes_every_non_retired_requirement(content: Content) -> None:
     profiles = as_map(_index(content)["profiles"])
     base = as_map(profiles["base-repo"])
-    expected = [req.id for req in content.requirements if req.status != "retired"]
+    expected = [
+        req.id
+        for req in content.requirements
+        if req.status != "retired" and req.id not in KIND_SPECIFIC
+    ]
     assert sorted(as_list(base["requirements"]), key=str) == sorted(expected)
+    for requirement, kind in KIND_SPECIFIC.items():
+        assert requirement in as_list(as_map(profiles[kind])["requirements"])
     assert as_map(base["severity"])["GHA-07"] == "warning"
     assert base["display_name"] == "Base repository"
 

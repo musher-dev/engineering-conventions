@@ -13,6 +13,7 @@ package conventions.checks.repository.layout
 
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.layout
 
 # REPO-14. Only a declaration that exists; without one, REPO-01 reports it.
 findings contains lib.finding("REPO-14", files.repository_path, message) if {
@@ -147,26 +148,17 @@ unexpected_product_dir := concat(" ", [
 	"remove it, or declare the product",
 ])
 
-table := files.repository_declaration.layout if is_object(files.repository_declaration.layout)
+# The declaration's [layout], read once in lib/layout.rego, which the
+# environment checks share.
+product_key_declared if layout.product_key_declared
 
-product_key_declared if "product" in object.keys(table)
+declared_product := layout.declared_product
 
-declared_product := table.product if is_string(table.product)
+product_dir := layout.product_dir
 
-# One path segment, as the schema has it; anything else is REPO-02's.
-segment_pattern := `^[A-Za-z0-9][A-Za-z0-9._-]*$`
+declares_placement if layout.declared
 
-# The declared product directory, when there is one.
-product_dir := declared_product if regex.match(segment_pattern, declared_product)
-
-# A layout the checks can use: a product, or none.
-declares_placement if product_dir
-
-declares_placement if declared_product == ""
-
-default root_exceptions := {}
-
-root_exceptions := table.root_exceptions if is_object(table.root_exceptions)
+root_exceptions := layout.root_exceptions
 
 has_reason(reason) if {
 	is_string(reason)

@@ -21,6 +21,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
 | [EC-0018](repository/layout.md) | Repository layout | repository | draft |
+| [EC-0019](environment/env-contract.md) | Environment contract | environment | draft |
+| [EC-0020](environment/env-schema.md) | Environment schema | environment | draft |
 
 ## Requirements
 
@@ -35,6 +37,20 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
+| [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
+| [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
+| [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
+| [ENVS-04](environment/env-schema.md#envs-04) | A binding name is UPPER_SNAKE_CASE and starts with a declared component | EC-0020 | proposed | warning | conftest |
+| [ENVS-05](environment/env-schema.md#envs-05) | A retired name is never declared again | EC-0020 | proposed | warning | conftest |
+| [ENVS-06](environment/env-schema.md#envs-06) | A secret binding commits no value but an empty one or a loopback address | EC-0020 | proposed | warning | conftest |
+| [ENVS-07](environment/env-schema.md#envs-07) | A schema's fields agree with each other | EC-0020 | proposed | warning | conftest |
+| [ENVS-08](environment/env-schema.md#envs-08) | Every copy of a shared variable agrees in type and sensitivity | EC-0020 | proposed | warning | conftest |
+| [ENVS-09](environment/env-schema.md#envs-09) | A boolean binding's name starts with a boolean prefix | EC-0020 | proposed | warning | conftest |
+| [ENVS-10](environment/env-schema.md#envs-10) | A unit suffix is abbreviated | EC-0020 | proposed | warning | conftest |
+| [ENVS-11](environment/env-schema.md#envs-11) | A binding name does not repeat a word | EC-0020 | proposed | warning | conftest |
+| [ENVS-12](environment/env-schema.md#envs-12) | A URL binding's name ends in _URL | EC-0020 | proposed | warning | conftest |
+| [ENVS-13](environment/env-schema.md#envs-13) | A nested binding's name separates its parts with __ | EC-0020 | proposed | warning | conftest |
+| [ENVS-14](environment/env-schema.md#envs-14) | A binding the browser reads starts with a client prefix | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -115,3 +131,4 @@ ID is permanent: it is never renumbered or reused.
 | GHA | GitHub Actions | github-actions |
 | OUT | Outputs | outputs |
 | REPO | Repositories | repository |
+| ENVS | Environment contract | environment |

@@ -1,0 +1,11 @@
+service: platform-api
+runtime: python
+bindings:
+  API_PORT:
+    type: integer
+    sensitivity: internal
+    description: TCP port the HTTP server listens on inside the container.
+shared_with:
+  - name: API_PORT
+    apps:
+      - {service: platform-api, path: /platform-api/runtime}

@@ -1,0 +1,7 @@
+service: platform-api
+runtime: python
+bindings:
+  API_PORT:
+    type: int
+    sensitivity: internal
+    description: TCP port the HTTP server listens on inside the container.

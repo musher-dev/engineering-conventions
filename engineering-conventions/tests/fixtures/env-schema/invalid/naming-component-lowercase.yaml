@@ -1,0 +1,5 @@
+service: platform-api
+runtime: python
+naming:
+  components: [api]
+bindings: {}

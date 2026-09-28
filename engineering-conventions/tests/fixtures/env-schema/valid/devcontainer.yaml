@@ -1,0 +1,27 @@
+# The dev environment's schema: the fields development-container uses.
+service: devcontainer
+runtime: docker-compose
+env_file: .devcontainer/.env
+bindings:
+  COMPOSE_PROFILES:
+    type: list
+    values: [redis, minio]
+    local_default: ""
+    sensitivity: public
+    group: Service Profiles
+    description: Comma-separated optional stacks to start; empty starts only the always-on ones.
+  POSTGRES_PASSWORD:
+    type: string
+    local_default: postgres
+    sensitivity: internal
+    consumers: [postgres]
+    mirrored_in: [compose.yaml]
+    group: PostgreSQL
+    description: Dev-only password of the Postgres superuser. Never a real credential.
+  GH_TOKEN:
+    type: string
+    sensitivity: secret
+    source: host
+    local_generate: hex:20
+    roles: [compute]
+    description: Token the GitHub CLI inside the container authenticates with.

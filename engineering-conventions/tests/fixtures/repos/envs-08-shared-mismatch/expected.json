@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ENVS-08",
+    "path": ".devcontainer/env.schema.yaml",
+    "severity": "warning"
+  },
+  {
+    "id": "ENVS-08",
+    "path": "platform-api/env.schema.yaml",
+    "severity": "warning"
+  }
+]

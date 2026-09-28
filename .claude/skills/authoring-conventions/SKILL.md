@@ -6,7 +6,7 @@ description: >-
   Use when writing or editing anything under engineering-conventions/definitions/ (conventions/, terminology/,
   profiles/) or checks/rego/. Triggered by: new requirement, add requirement, GHA-, ADOPT-, OUT-, EC-, convention,
   requirement ID, retire requirement, tombstone, waiver, terminology, display form, banned alias, profile, fixture,
-  expected.json, outputs declaration, identity declaration, repository name, system, kind, REPO-, layout, product directory, root exception,
+  expected.json, outputs declaration, identity declaration, repository name, system, kind, REPO-, layout, product directory, root exception, ENVS-, env.schema.yaml, environment schema, binding,
   task generate,
   change class, feat!.
 ---

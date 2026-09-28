@@ -1,0 +1,11 @@
+// A dev container whose editor settings name the configuration.
+{
+  "name": "Fixture",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "postCreateCommand": "bash .config/scripts/banner.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {}
+    }
+  }
+}

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-02",
+    "path": ".config/README.md",
+    "severity": "warning"
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-49",
+    "path": ".github/workflows/deploy-production.yml",
+    "severity": "warning"
+  }
+]

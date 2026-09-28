@@ -1,0 +1,5 @@
+# The runner reads records only under a directory named decisions or adrs.
+schema_version = 1
+
+[decisions]
+path = "docs/records"

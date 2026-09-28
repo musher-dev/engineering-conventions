@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-04",
+    "path": ".config/markdown/markdownlint.jsonc",
+    "severity": "warning"
+  }
+]

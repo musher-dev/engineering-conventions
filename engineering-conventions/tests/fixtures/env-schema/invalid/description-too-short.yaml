@@ -1,0 +1,7 @@
+service: platform-api
+runtime: python
+bindings:
+  API_PORT:
+    type: integer
+    sensitivity: internal
+    description: The API port.

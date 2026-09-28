@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TASK-02",
+    "path": "tools/Taskfile.yml",
+    "severity": "warning"
+  }
+]

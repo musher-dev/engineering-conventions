@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  docker_build:
+    desc: Build the image.
+    cmds:
+      - docker build .

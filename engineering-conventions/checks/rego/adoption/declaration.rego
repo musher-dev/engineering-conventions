@@ -9,6 +9,7 @@
 #   convention: EC-0001
 package conventions.checks.adoption.declaration
 
+import data.conventions.lib.dates
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.names
@@ -25,12 +26,12 @@ findings contains lib.finding("ADOPT-02", files.declaration_path, message) if {
 
 # ADOPT-09. The pin is a mise tool entry or, for a repository without mise,
 # the declared version; "latest" pins nothing.
-findings contains lib.finding("ADOPT-09", "mise.toml", message) if {
+findings contains lib.finding("ADOPT-09", ".config/mise/config.toml", message) if {
 	not pinned
 	message := sprintf(
 		concat(" ", [
 			"nothing pins the conventions release this repository is checked against; add",
-			"%q = \"<release>\" under [tools] in mise.toml, or conventions.version to %s",
+			"%q = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to %s",
 		]),
 		[files.conventions_tool, files.declaration_path],
 	)
@@ -80,7 +81,7 @@ findings contains lib.finding("ADOPT-05", files.declaration_path, message) if {
 			"%s expires on %s, more than %d days away; set expires to %s or earlier and renew it if",
 			"the work is still open then",
 		]),
-		[waivers.label(index, waiver), waiver.expires, waivers.max_term_days, waivers.latest_allowed_date],
+		[waivers.label(index, waiver), waiver.expires, dates.max_term_days, dates.latest_allowed_date],
 	)
 }
 
@@ -132,6 +133,12 @@ findings contains lib.finding("ADOPT-08", files.declaration_path, message) if {
 # until it is).
 raw_findings contains finding if {
 	some convention
+	package_findings := data.conventions.checks.configuration[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
 	package_findings := data.conventions.checks.github_actions[convention].findings
 	some finding in package_findings
 }
@@ -145,6 +152,42 @@ raw_findings contains finding if {
 raw_findings contains finding if {
 	some convention
 	package_findings := data.conventions.checks.repository[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.environment[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.agents[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.tasks[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.git_hooks[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.decisions[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.toolchain[convention].findings
 	some finding in package_findings
 }
 

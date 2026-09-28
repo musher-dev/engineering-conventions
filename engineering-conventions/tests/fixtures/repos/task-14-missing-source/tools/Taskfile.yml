@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+  install:
+    desc: Install the dependencies.
+    sources:
+      - package.json
+    cmds:
+      - npm ci

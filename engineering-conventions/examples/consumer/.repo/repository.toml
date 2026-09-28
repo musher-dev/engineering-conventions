@@ -9,3 +9,8 @@ owner = "@musher-dev/platform"
 lifecycle = "production"
 audience = "internal"
 tier = 1
+
+# Where the product lives (EC-0018): one directory named after the
+# repository, holding its build manifest. The root keeps what acts on it.
+[layout]
+product = "platform-api"

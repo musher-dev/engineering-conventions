@@ -93,11 +93,11 @@ requirements:
 
 # Conventions declaration
 
-A repository that adopts these conventions pins the release it is checked against, usually as one line in `mise.toml`
-(ADOPT-09). Anything else it needs to say goes in an optional `.repo/conventions.toml`: a convention profile other than
-the one its kind selects, repository-specific vocabulary, and every waiver it holds. The declaration makes a
-repository's position explicit and reviewable. A deviation is a dated, tracked line in a file, not a silent gap in a
-check.
+A repository that adopts these conventions pins the release it is checked against, usually as one line in its mise
+configuration, `.config/mise/config.toml` (ADOPT-09). Anything else it needs to say goes in an optional
+`.repo/conventions.toml`: a convention profile other than the one its kind selects, repository-specific vocabulary,
+and every waiver it holds. The declaration makes a repository's position explicit and reviewable. A deviation is a
+dated, tracked line in a file, not a silent gap in a check.
 
 ## Scope
 
@@ -162,6 +162,7 @@ ADOPT-02 reports.
 | `conventions.version` | no | The release pinned, such as `0.1.0`, for a repository that does not pin it in mise. Upgrade by changing this value and the downloaded bundle together; ADOPT-08 reports a mismatch. |
 | `profile` | no | The convention profile that selects which requirements apply and at what severity. It overrides the profile of the repository's kind ([EC-0009](../repository/identity-declaration.md)); without either, `base-repo` applies. It must be one the pinned release defines (ADOPT-07). |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
+| `decisions` | no | Where the repository keeps its decision records, when not in `docs/decisions/` as one `NNNN-slug.md` file each: `path`, `form` and `page`, described in [EC-0021](../decisions/decision-records.md#where-the-records-are). |
 | `waivers` | no | A list of waivers, described below. |
 
 The authoritative shape is `checks/schemas/conventions-declaration.schema.json`, and ADOPT-02 checks the file against
@@ -421,12 +422,13 @@ to it rather than through a pull request. A pin makes the release a line in a di
 reviewer can read. The usual pin is the tool entry that installs the release through mise; for a repository that
 does not use mise, `conventions.version` in the declaration is the pin. The check reads `mise.toml`, `.mise.toml`,
 `.config/mise.toml`, `.config/mise/config.toml`, `mise/config.toml` and `.devcontainer/mise.toml`. The finding is
-reported on `mise.toml`, the file to add the pin to.
+reported on `.config/mise/config.toml`, the file to add the pin to, and the one mise configuration
+[EC-0017](../toolchain/tool-pins.md) allows.
 
 **Correct:**
 
 ```toml
-# mise.toml
+# .config/mise/config.toml
 [tools]
 "github:musher-dev/engineering-conventions" = "0.2.0"
 ```

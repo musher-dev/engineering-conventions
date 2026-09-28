@@ -91,7 +91,7 @@ test_adopt_findings_are_never_waived if {
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
 	pairs(warnings) == {
-		["ADOPT-09", "mise.toml", "warning"],
+		["ADOPT-09", ".config/mise/config.toml", "warning"],
 		["ADOPT-02", ".repo/conventions.toml", "warning"],
 	}
 }

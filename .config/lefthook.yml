@@ -18,7 +18,7 @@
 
 assert_lefthook_installed: true
 
-# Lockstep with "aqua:evilmartians/lefthook" in .devcontainer/mise.toml
+# Lockstep with "aqua:evilmartians/lefthook" in .config/mise/config.toml
 # (.claude/rules/toolchain-pins.md).
 min_version: "2.1.14"
 
@@ -116,7 +116,7 @@ pre-commit:
         - "engineering-conventions/definitions/terminology/**/*.yml"
         - "engineering-conventions/definitions/profiles/*.yml"
         - "engineering-conventions/definitions/conventions/**/*.{md,yml}"
-        - "docs/decisions/*.{md,json}"
+        - "docs/decisions/*.md"
         - ".repo/*.toml"
         - ".github/**/*.{yml,yaml}"
         - "Taskfile.yml"

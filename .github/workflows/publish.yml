@@ -23,7 +23,7 @@ concurrency:
 jobs:
   bundle:
     name: Bundle
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: write  # upload the release assets

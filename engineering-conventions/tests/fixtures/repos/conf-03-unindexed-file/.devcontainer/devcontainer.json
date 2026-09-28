@@ -1,0 +1,12 @@
+// A dev container whose editor settings name the configuration.
+{
+  "name": "Fixture",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "markdownlint.configFile": ".config/markdown/markdownlint.jsonc"
+      }
+    }
+  }
+}

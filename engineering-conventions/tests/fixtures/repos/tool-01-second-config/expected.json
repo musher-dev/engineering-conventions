@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOOL-01",
+    "path": "mise.toml",
+    "severity": "warning"
+  }
+]

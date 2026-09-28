@@ -65,7 +65,7 @@ flowchart LR
   end
   release[["Release vX.Y.Z<br/>bundle, checksums, attestation"]]
   subgraph yours["Your repository"]
-    pin["mise.toml pin"]
+    pin[".config/mise/config.toml pin"]
     declarations[".repo/conventions.toml<br/>.repo/outputs.toml<br/>.repo/repository.toml"]
     check["conventions check"]
   end
@@ -94,9 +94,16 @@ Start from the part of your repository you are working on:
 | Topic | Governs in your repository | Conventions | Requirements |
 | --- | --- | --- | --- |
 | [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `mise.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-09 |
-| [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006 | GHA-01 – GHA-38 |
+| [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `CLAUDE.md`, `.claude/rules/`, `AGENTS.md` | EC-0013 | AGENT-01 – AGENT-08 |
+| [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-12 |
+| [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
+| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml` | EC-0019, EC-0020 | ENVS-01 – ENVS-14 |
+| [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-11 |
+| [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-49 |
 | [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-11 |
-| [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name | EC-0009, EC-0010 | REPO-01 – REPO-13 |
+| [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
+| [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-14 |
+| [Toolchain](engineering-conventions/definitions/conventions/toolchain/README.md) | `.config/mise/config.toml` and every version pinned outside it | EC-0017 | TOOL-01 – TOOL-11 |
 
 A topic's README gives the reading order. Two other ways in:
 
@@ -139,9 +146,11 @@ A repository's own rule may be stricter than a convention here, never contradict
 
 ## Using the conventions in another repository
 
-Pin a release in `mise.toml` and run one command, the same locally and in CI:
+Pin a release in `.config/mise/config.toml` and run one command, the same locally and in CI:
 
 ```toml
+min_version = "2026.9.12"
+
 [tools]
 "github:musher-dev/engineering-conventions" = "0.5.0"  # x-release-please-version
 ```

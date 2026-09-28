@@ -1,7 +1,7 @@
 [
   {
     "id": "ADOPT-09",
-    "path": "mise.toml",
+    "path": ".config/mise/config.toml",
     "severity": "warning"
   }
 ]

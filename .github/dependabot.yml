@@ -5,7 +5,7 @@
 # `include: scope` turns each prefix into `<type>(deps)`, or `<type>(deps-dev)`
 # for a development dependency, so no Dependabot PR needs a hand-edited title.
 #
-# The CLI pins in .devcontainer/mise.toml have no Dependabot ecosystem; bump
+# The CLI pins in .config/mise/config.toml have no Dependabot ecosystem; bump
 # them by hand, with the lockstep pins in .claude/rules/toolchain-pins.md.
 version: 2
 updates:

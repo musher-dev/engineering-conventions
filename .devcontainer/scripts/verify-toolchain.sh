@@ -3,7 +3,7 @@
 #
 # Two halves. mise is the one image-baked tool, so its version is read back
 # from the Dockerfile's ARG and compared with the binary. Every other CLI is
-# pinned in .devcontainer/mise.toml, and `mise ls --current --missing` lists
+# pinned in .config/mise/config.toml, and `mise ls --current --missing` lists
 # any pin that is not installed, so an empty listing means the container runs
 # exactly the versions CI does.
 #
@@ -19,6 +19,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
 DOCKERFILE="${SCRIPT_DIR}/../Dockerfile"
 readonly DOCKERFILE
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+readonly REPO_ROOT
+MISE_CONFIG="${REPO_ROOT}/.config/mise/config.toml"
+readonly MISE_CONFIG
 
 # Reads a pinned ARG default out of the Dockerfile.
 #
@@ -62,26 +66,45 @@ assert_mise() {
   echo "  ok   mise ${expected}"
 }
 
-# Asserts every tool pinned in mise.toml is installed at its pinned version.
+# Asserts min_version in the mise config is the version the Dockerfile pins,
+# so a mise older than the one CI and the container run refuses the config.
 #
-# Globals:
-#   MISE_GLOBAL_CONFIG_FILE — read by mise to locate .devcontainer/mise.toml
+# Outputs:
+#   Writes a pass/fail line to stdout
+# Returns:
+#   0 on match, 1 on mismatch or a missing min_version
+assert_mise_min_version() {
+  local expected actual
+  expected="$(arg_pin MISE_VERSION)"
+  expected="${expected#v}"
+  actual="$(sed -n 's/^min_version = "\(.*\)"$/\1/p' "${MISE_CONFIG}" | head -1)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "  FAIL config.toml: min_version is '${actual}', expected ${expected}"
+    return 1
+  fi
+  echo "  ok   config.toml min_version ${expected}"
+}
+
+# Asserts every tool pinned in .config/mise/config.toml is installed at its
+# pinned version. mise finds the config by walking up from the working
+# directory, so this runs from the repository root.
+#
 # Outputs:
 #   Writes a pass/fail line, and any missing pins, to stdout
 # Returns:
 #   0 when nothing is missing, 1 otherwise
 assert_mise_pins() {
   local missing
-  if ! missing="$(mise ls --current --missing 2>&1)"; then
-    echo "  FAIL mise.toml: 'mise ls --current --missing' failed: ${missing}"
+  if ! missing="$(cd "${REPO_ROOT}" && mise ls --current --missing 2>&1)"; then
+    echo "  FAIL config.toml: 'mise ls --current --missing' failed: ${missing}"
     return 1
   fi
   if [[ -n "${missing}" ]]; then
-    echo "  FAIL mise.toml: pinned tools not installed (run 'task tools:install'):"
+    echo "  FAIL config.toml: pinned tools not installed (run 'task tools:install'):"
     printf '%s\n' "${missing}" | sed 's/^/         /'
     return 1
   fi
-  echo "  ok   every mise.toml pin is installed"
+  echo "  ok   every config.toml pin is installed"
 }
 
 # Entry point: checks the baked tool and every mise pin.
@@ -91,9 +114,10 @@ assert_mise_pins() {
 # Returns:
 #   0 if everything matches, 1 otherwise
 main() {
-  echo "Verifying the toolchain against ${DOCKERFILE} and mise.toml..."
+  echo "Verifying the toolchain against ${DOCKERFILE} and ${MISE_CONFIG}..."
   local failed=0
   assert_mise || failed=1
+  assert_mise_min_version || failed=1
   assert_mise_pins || failed=1
   if ((failed)); then
     echo "Toolchain verification FAILED" >&2

@@ -1,7 +1,7 @@
 # Consuming the conventions
 
-How to check a repository against a release of these conventions. The short version is one line in `mise.toml` and
-one command, the same locally and in CI.
+How to check a repository against a release of these conventions. The short version is one line in the mise
+configuration and one command, the same locally and in CI.
 
 ## Try it without adopting anything
 
@@ -20,17 +20,21 @@ launcher: mise then fails with `"conventions" couldn't exec process: Permission 
 
 ## Adopt it
 
-Pin the release in `mise.toml` (or `.devcontainer/mise.toml`):
+Pin the release in the repository's one mise configuration, `.config/mise/config.toml`, where mise finds it without
+being told ([EC-0017](../engineering-conventions/definitions/conventions/toolchain/tool-pins.md)):
 
 ```toml
+min_version = "2026.9.12"   # the mise that CI and the dev container install
+
 [tools]
 "github:musher-dev/engineering-conventions" = "0.5.0"  # x-release-please-version
 ```
 
-Then run it:
+Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:
 
 ```sh
-mise install
+mise lock
+mise install --locked
 conventions check                      # report findings; fail only on errors
 conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
 conventions prose                      # lint Markdown with the MusherConventions Vale style
@@ -39,7 +43,8 @@ conventions prose                      # lint Markdown with the MusherConvention
 With the identity declaration below, that is the whole adoption. What mise does with the line:
 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
-  proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in `mise.lock`.
+  proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in
+  `.config/mise/mise.lock`.
 - It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`) through `mise exec` at the
   versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
@@ -71,13 +76,15 @@ tasks:
 
 ```yaml
 - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+  with:
+    version: 2026.9.12   # the min_version in .config/mise/config.toml (TOOL-04)
 - name: Check the repository against its conventions
   run: conventions check --fail-on warning
 ```
 
-[`examples/consumer`](../engineering-conventions/examples/consumer/) is a complete, conforming repository: the
-`mise.toml`, a `Validate` workflow that runs the step above as its `Conventions` job, a pull-request-title workflow,
-and a ruleset that requires only the aggregate.
+[`examples/consumer`](../engineering-conventions/examples/consumer/) is a complete, conforming repository: the mise
+configuration and its lockfile, a `Validate` workflow that runs the step above as its `Conventions` job, a
+pull-request-title workflow, and a ruleset that requires only the aggregate.
 
 ## Declare the repository's identity
 
@@ -93,6 +100,9 @@ owner = "@musher-dev/platform"
 lifecycle = "production"
 audience = "internal"
 tier = 1
+
+[layout]
+product = "platform-api"
 ```
 
 The `name` is the repository's name on GitHub, `<system>-<component>`, with the system taken from the registered
@@ -103,6 +113,12 @@ registered ones. The format is
 are [EC-0010](../engineering-conventions/definitions/conventions/repository/repository-names.md). A repository that is
 still to be renamed keeps its current name in the declaration and waives the REPO findings about the name until the
 rename.
+
+The `[layout]` table says where the product lives: `product` is the directory, named after the repository, that holds
+the product's build manifest, or `""` for a repository with no product directory. The root then holds no manifest,
+lockfile or source tree, and Dependabot and the Taskfile's `PRODUCT_DIR` name the same directory. The rules are
+[EC-0018](../engineering-conventions/definitions/conventions/repository/layout.md); a repository with several products
+under one workspace root declares `product = ""` and waives REPO-18 until it is split.
 
 ### How the checks learn the repository's name
 
@@ -116,6 +132,39 @@ order, from:
 A directory checked with `-C` inside another work tree, or a copy with no remote, has no actual name: REPO-07 is not
 checked, and the other naming requirements judge the declared name. Pass `--repository` when the remote does not carry
 the repository's name, such as a mirror.
+
+## Define the standard tasks
+
+Every repository has a root `Taskfile.yml` that defines `setup`, `check` and `lint` (TASK-10). The kind adds to that:
+a `library`, `tool`, `service` or `website` also defines `build` and `test` (TASK-11), and a `service` defines `dev`
+(TASK-12). An alias or an included task counts, so a repository whose verbs have other names adds `aliases:` rather
+than renaming. The interface is
+[EC-0016](../engineering-conventions/definitions/conventions/tasks/task-interface.md), and how each Taskfile is
+written is [EC-0015](../engineering-conventions/definitions/conventions/tasks/taskfile-style.md).
+
+## Declare a service's environment
+
+A repository whose kind is `service` declares every variable its product reads in `<product>/env.schema.yaml`, beside
+the build manifest (ENVS-01). The dev environment's variables, if it declares them, go in
+`.devcontainer/env.schema.yaml`; no other location is checked as a schema (ENVS-02).
+
+```yaml
+service: platform-api
+runtime: python
+naming:
+  components: [API, DATABASE]
+bindings:
+  API_PORT:
+    type: integer
+    default: 8080
+    sensitivity: internal
+    description: TCP port the HTTP server listens on inside the container.
+```
+
+`conventions check` validates every schema against the published format and checks the naming grammar, retired
+names, committed secrets and shared variables. The format is
+[EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md); the location is
+[EC-0019](../engineering-conventions/definitions/conventions/environment/env-contract.md).
 
 ## Declare only what differs
 
@@ -174,8 +223,8 @@ for a repository that runs Vale itself.
 
 ## Delegated checks
 
-GHA-33 is delegated to actionlint and zizmor, which `conventions check` does not run. Pin them in `mise.toml` beside
-the conventions and run them in the repository's own validation:
+GHA-33 is delegated to actionlint and zizmor, which `conventions check` does not run. Pin them in
+`.config/mise/config.toml` beside the conventions and run them in the repository's own validation:
 
 ```sh
 actionlint
@@ -222,6 +271,18 @@ finding in code you ship needs a waiver:
 fixtures = ["tests/fixtures/**"]
 ```
 
+**Decision records elsewhere.** The DEC checks read decision records from `docs/decisions/`, one `NNNN-slug.md`
+file each, and stay silent in a repository without them. A repository that keeps them in another directory, or as one
+directory per record for a documentation site, declares where
+([EC-0021](../engineering-conventions/definitions/conventions/decisions/decision-records.md#where-the-records-are)):
+
+```toml
+[decisions]
+path = "docs/site/adrs"
+form = "directory"
+page = "+page.md"
+```
+
 **Fix filenames before names.** A workflow's `name:` (GHA-07), the workflow prefix of a required-check job (GHA-12) and
 an action's `name:` (GHA-22) are derived from a filename or directory. While GHA-01, GHA-05, GHA-20 or GHA-21 asks for a
 file to be renamed, the derived-name checks wait, so a first run can show fewer name findings than the second. Rename
@@ -254,5 +315,5 @@ are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/con
 
 ## Upgrading
 
-Change the version in `mise.toml`, or accept Renovate's pull request that does. Read the release notes first: what
-each kind of release can change is in [versioning](versioning.md).
+Change the version in `.config/mise/config.toml` and run `mise lock`, or accept Renovate's pull request that does. Read
+the release notes first: what each kind of release can change is in [versioning](versioning.md).

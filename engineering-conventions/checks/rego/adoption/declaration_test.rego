@@ -22,9 +22,9 @@ test_adopt_09_unpinned if {
 	found := declaration.findings with input as unpinned
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
-	td.pairs(found) == {["ADOPT-09", "mise.toml"]}
+	td.pairs(found) == {["ADOPT-09", ".config/mise/config.toml"]}
 	latest := [td.file("mise.toml", {"tools": {"github:musher-dev/engineering-conventions": "latest"}})]
-	td.pairs(declaration.findings) == {["ADOPT-09", "mise.toml"]} with input as latest
+	td.pairs(declaration.findings) == {["ADOPT-09", ".config/mise/config.toml"]} with input as latest
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
 }

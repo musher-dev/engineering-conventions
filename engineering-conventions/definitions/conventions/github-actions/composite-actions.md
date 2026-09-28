@@ -249,7 +249,7 @@ default means, not its type.
 
 ```yaml
 name: Setup Tools
-description: Install the toolchain pinned in .devcontainer/mise.toml and put it on PATH.
+description: Install the toolchain pinned in .config/mise/config.toml and put it on PATH.
 inputs:
   cache:
     description: Restore and save the tool cache. Set to "false" in release jobs so no cache can alter what ships.

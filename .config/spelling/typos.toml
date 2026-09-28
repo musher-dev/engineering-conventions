@@ -30,5 +30,10 @@ extend-exclude = [
   "engineering-conventions/tests/fixtures/**",
   # Machine-written lockfile: package names and hashes, not prose.
   "engineering-conventions/uv.lock",
+  # Written by `mise lock` (`task tools:lock`): package names, URLs and hashes
+  # of the pinned tools and their dependencies, not prose.
+  ".config/mise/mise.lock",
+  ".config/mise/locks/**",
+  "engineering-conventions/examples/consumer/.config/mise/mise.lock",
   "dist/**",
 ]

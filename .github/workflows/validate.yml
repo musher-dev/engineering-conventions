@@ -26,7 +26,7 @@ concurrency:
 jobs:
   repository_lint:
     name: Repository / Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -35,14 +35,14 @@ jobs:
       - uses: ./.github/actions/setup-tools
         with:
           install-args: >-
-            aqua:go-task/task node npm:markdownlint-cli2 aqua:astral-sh/uv
+            aqua:go-task/task node npm:markdownlint-cli2 aqua:astral-sh/uv python
             pipx:yamllint aqua:tamasfe/taplo aqua:crate-ci/typos aqua:koalaman/shellcheck
       - name: Lint Markdown, YAML, TOML, spelling and shell scripts
         run: task lint
 
   repository_secrets:
     name: Repository / Secrets
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -59,7 +59,7 @@ jobs:
 
   workflows:
     name: Workflows
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -81,7 +81,7 @@ jobs:
 
   checks:
     name: Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -97,7 +97,7 @@ jobs:
 
   content:
     name: Content
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -106,14 +106,14 @@ jobs:
       - uses: ./.github/actions/setup-tools
         with:
           install-args: >-
-            aqua:go-task/task aqua:astral-sh/uv pipx:check-jsonschema
+            aqua:go-task/task aqua:astral-sh/uv python pipx:check-jsonschema
             aqua:mikefarah/yq aqua:vale-cli/vale
       - name: Validate schemas, generated files and prose
         run: task schemas:check schemas:validate generate:check prose:lint
 
   cli:
     name: CLI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       # Full history so the invariants can read the published index.json at
@@ -127,9 +127,10 @@ jobs:
           # The test suite shells out to three of these: conftest (every
           # fixture repository runs through `conventions check`), vale (the
           # generated styles must load) and check-jsonschema (the schemas'
-          # relative $refs must resolve from disk).
+          # relative $refs must resolve from disk). A pipx tool installs from
+          # the lockfile only with the python mise pins, so python comes too.
           install-args: >-
-            aqua:go-task/task aqua:astral-sh/uv aqua:open-policy-agent/conftest
+            aqua:go-task/task aqua:astral-sh/uv python aqua:open-policy-agent/conftest
             aqua:vale-cli/vale pipx:check-jsonschema
       - name: Lint, type-check and test the conventions CLI
         run: task cli:lint cli:typecheck cli:test
@@ -145,7 +146,7 @@ jobs:
 
   conventions:
     name: Conventions / Self
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -160,7 +161,7 @@ jobs:
 
   bundle:
     name: Bundle
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -176,7 +177,7 @@ jobs:
 
   devcontainer:
     name: Dev Container
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -216,7 +217,7 @@ jobs:
       - conventions
       - bundle
       - devcontainer
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       # Every job above is unconditional, so anything other than success is a

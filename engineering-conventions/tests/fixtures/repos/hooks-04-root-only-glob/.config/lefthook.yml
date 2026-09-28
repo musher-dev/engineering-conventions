@@ -1,0 +1,9 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+pre-commit:
+  jobs:
+    - name: markdown
+      glob: "*.md"
+      run: markdownlint-cli2 {staged_files}
+      fail_text: "Markdown lint failed. Run 'task lint:md'."

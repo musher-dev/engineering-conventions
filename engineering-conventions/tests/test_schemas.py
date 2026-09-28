@@ -24,9 +24,11 @@ KINDS = {
     "declarations": (schemas.DECLARATION, "valid", "invalid"),
     "outputs": (schemas.OUTPUTS, "valid", "invalid"),
     "repository": (schemas.REPOSITORY, "valid", "invalid"),
+    "env-schema": (schemas.ENV_SCHEMA, "valid", "invalid"),
     "profiles": (schemas.PROFILE, "valid", "invalid/schema"),
     "terminology": (schemas.TERMINOLOGY, "valid", "invalid/schema"),
     "conventions": (schemas.CONVENTION, "valid", "invalid"),
+    "decisions": (schemas.DECISION, "valid", "invalid"),
 }
 
 
@@ -135,7 +137,7 @@ def test_check_jsonschema_resolves_refs_from_disk(tmp_path: Path) -> None:
     # check-jsonschema is how the repository and consumers validate files; it
     # must resolve the relative $refs from disk, whatever the working directory.
     executable = shutil.which("check-jsonschema")
-    assert executable, "check-jsonschema must be on PATH (see .devcontainer/mise.toml)"
+    assert executable, "check-jsonschema must be on PATH (see .config/mise/config.toml)"
     completed = subprocess.run(
         [
             executable,

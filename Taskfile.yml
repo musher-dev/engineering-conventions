@@ -68,9 +68,14 @@ tasks:
       - task: hooks:install
 
   tools:install:
-    desc: Install every CLI pinned in .devcontainer/mise.toml.
+    desc: Install every CLI pinned in .config/mise/config.toml, as its lockfile records it.
     cmds:
-      - mise install
+      - mise install --locked
+
+  tools:lock:
+    desc: Refresh .config/mise/mise.lock after changing a pin in .config/mise/config.toml.
+    cmds:
+      - mise lock
 
   tools:doctor:
     desc: Diagnose mise, and assert every pin (and the baked mise) is what is installed.

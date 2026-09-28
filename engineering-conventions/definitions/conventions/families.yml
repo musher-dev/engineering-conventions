@@ -8,9 +8,17 @@ families:
     title: Adopting the conventions
     topic: adoption
     owner: "@justinmerrell"
+  - prefix: CONF
+    title: Tool configuration
+    topic: configuration
+    owner: "@justinmerrell"
   - prefix: GHA
     title: GitHub Actions
     topic: github-actions
+    owner: "@justinmerrell"
+  - prefix: HOOKS
+    title: Git hooks
+    topic: git-hooks
     owner: "@justinmerrell"
   - prefix: OUT
     title: Outputs
@@ -19,4 +27,24 @@ families:
   - prefix: REPO
     title: Repositories
     topic: repository
+    owner: "@justinmerrell"
+  - prefix: ENVS
+    title: Environment contract
+    topic: environment
+    owner: "@justinmerrell"
+  - prefix: AGENT
+    title: Agent context
+    topic: agents
+    owner: "@justinmerrell"
+  - prefix: TASK
+    title: Tasks
+    topic: tasks
+    owner: "@justinmerrell"
+  - prefix: DEC
+    title: Decision records
+    topic: decisions
+    owner: "@justinmerrell"
+  - prefix: TOOL
+    title: Toolchain
+    topic: toolchain
     owner: "@justinmerrell"

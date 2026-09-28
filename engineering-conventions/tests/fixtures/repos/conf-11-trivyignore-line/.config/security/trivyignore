@@ -1,0 +1,4 @@
+# The vulnerable parser is only reached by the admin import, which this image does not ship.
+CVE-2026-0001 exp:2026-12-01
+
+CVE-2026-0002

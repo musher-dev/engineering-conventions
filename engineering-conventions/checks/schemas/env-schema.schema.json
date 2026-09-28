@@ -1,0 +1,326 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Environment schema",
+  "description": "An env.schema.yaml: the environment a product reads at runtime (<product>/env.schema.yaml), or the one its dev environment reads (.devcontainer/env.schema.yaml). EC-0020 describes every field; ENVS-03 checks a schema against this file, and ENVS-04 to ENVS-14 check what a JSON Schema cannot express. Draft-07 only: the checks validate with OPA, which ignores newer keywords.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["service", "runtime", "bindings"],
+  "properties": {
+    "service": {
+      "description": "The deployable the schema describes, e.g. platform-api; devcontainer for the dev environment's schema.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "runtime": {
+      "description": "What reads the environment, as a lowercase token: python, sveltekit, node, go, rust, docker-compose. ENVS-07 ties the generated block to python and sveltekit.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "settings_file": {
+      "description": "Where a generated settings module is written, relative to the schema's directory; null when nothing is generated.",
+      "type": ["string", "null"]
+    },
+    "env_file": {
+      "description": "The file the process reads its environment from, when it reads one file rather than its inherited environment, e.g. .devcontainer/.env.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "naming": { "$ref": "#/definitions/naming" },
+    "bindings": {
+      "description": "Every variable the product reads, keyed by its name. ENVS-04 checks the names.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/binding" }
+    },
+    "vendor_passthrough": {
+      "description": "Variables a vendor library reads by its own name (OTEL_EXPORTER_OTLP_ENDPOINT), passed through rather than declared as bindings; the naming grammar does not apply to them. A trailing * passes a whole prefix (INFISICAL_*).",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\*?$" }
+    },
+    "retired": {
+      "description": "Names the product deliberately stopped reading, with why; ENVS-05 refuses them again.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/retiredBinding" }
+    },
+    "shared_with": {
+      "description": "Variables that hold the same value in several deployables; ENVS-07 and ENVS-08 check that every copy agrees.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/sharedKey" }
+    },
+    "generated": { "$ref": "#/definitions/generated" },
+    "infisical": { "$ref": "#/definitions/infisical" },
+    "coolify_env": { "$ref": "#/definitions/coolifyEnv" }
+  },
+  "definitions": {
+    "variableName": {
+      "description": "An environment variable name.",
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "prefix": {
+      "description": "An upper-case name prefix, ending in an underscore, e.g. VITE_.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*_$"
+    },
+    "naming": {
+      "description": "The repository's own vocabulary for the naming grammar (ENVS-04, ENVS-09, ENVS-14).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "description": "The component qualifiers a binding name may start with, without the trailing underscore, e.g. API, DATABASE, BRAVE_SEARCH. When declared, ENVS-04 asks every binding to start with one.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$" }
+        },
+        "client_prefixes": {
+          "description": "Prefixes that mark a variable a browser bundle reads. Defaults to VITE_ and PUBLIC_.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/prefix" }
+        },
+        "vendor_prefixes": {
+          "description": "Prefixes of vendor-owned names the grammar does not apply to, e.g. OTEL_ or AWS_.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/prefix" }
+        }
+      }
+    },
+    "binding": {
+      "description": "One variable.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sensitivity", "description"],
+      "properties": {
+        "type": {
+          "description": "The value's type. enum takes one of values; list is a comma-separated list, optionally of values.",
+          "type": "string",
+          "enum": ["string", "integer", "number", "boolean", "enum", "list"]
+        },
+        "values": {
+          "description": "The allowed values of an enum or list.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "format": {
+          "description": "The shape of a string value.",
+          "type": "string",
+          "enum": ["url", "email", "path", "json"]
+        },
+        "default": {
+          "description": "The value the product uses when the variable is unset. It ships to production."
+        },
+        "local_default": {
+          "description": "The value written into a developer's local environment file, correct only for a dev environment. A secret's may only be empty or address a loopback host (ENVS-06)."
+        },
+        "local_generate": {
+          "description": "Mint per-developer secret material into the local environment file instead of committing a value: hex:<bytes>, base64:<bytes> or base64url:<bytes>.",
+          "type": "string",
+          "pattern": "^(hex|base64|base64url):[1-9][0-9]*$"
+        },
+        "required": {
+          "description": "The product refuses to start without a value.",
+          "type": "boolean"
+        },
+        "allow_empty": {
+          "description": "An empty value is a deliberate, valid configuration. Requires default \"\" (ENVS-07).",
+          "type": "boolean"
+        },
+        "sensitivity": {
+          "description": "Who may see the value: public (anyone, including a browser), internal (the organization), confidential (people who operate the product), secret (a credential; only the process).",
+          "type": "string",
+          "enum": ["public", "internal", "confidential", "secret"]
+        },
+        "lifecycle": {
+          "description": "When the value is read.",
+          "type": "string",
+          "enum": ["build-time", "deploy-time", "runtime", "ephemeral"]
+        },
+        "source": {
+          "description": "Where the value comes from.",
+          "type": "string",
+          "enum": ["code-default", "env-file", "infisical", "ci-secret", "vendor", "host"]
+        },
+        "path": {
+          "description": "The secret-store path the value is read from, when not the schema's own infisical.path.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "consumer": {
+          "description": "Which part of the product reads it. client means a browser bundle (ENVS-14).",
+          "type": "string",
+          "enum": ["api", "workers", "client", "server"]
+        },
+        "consumers": {
+          "description": "The dev-environment stacks that read it.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+        },
+        "roles": {
+          "description": "The host roles whose rendered environment file carries it.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+        },
+        "group": {
+          "description": "A heading the rendered environment file groups it under.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "mirrored_in": {
+          "description": "Files, relative to the schema's directory, that repeat its local_default and must agree with it.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+        },
+        "description": {
+          "description": "What the variable is for, in a sentence someone who has never seen it can act on: what breaks when the value is wrong, not what the name already says.",
+          "type": "string",
+          "minLength": 24
+        },
+        "constraints": {
+          "description": "Range constraints the value must meet.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min_length": { "type": "integer", "minimum": 0 },
+            "max_length": { "type": "integer", "minimum": 0 },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "pattern": { "type": "string" }
+          }
+        },
+        "nested": {
+          "description": "Groups the binding into a nested settings model; its name then uses __ between group, sub-model and field (ENVS-13).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["group", "field"],
+          "properties": {
+            "group": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+            "sub": { "type": ["string", "null"] },
+            "field": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+            "model": { "type": ["string", "null"] }
+          }
+        },
+        "grammar_exempt": {
+          "description": "The naming grammar does not apply, because something outside the repository fixes the name. Requires grammar_exempt_reason (ENVS-07).",
+          "type": "boolean"
+        },
+        "grammar_exempt_reason": {
+          "description": "Why the name is exempt from the grammar.",
+          "type": "string"
+        },
+        "python_field_name": {
+          "description": "The generated Python field name, when the lowercased variable name would collide with another attribute.",
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        }
+      }
+    },
+    "retiredBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "retired_on", "reason"],
+      "properties": {
+        "name": { "$ref": "#/definitions/variableName" },
+        "retired_on": {
+          "description": "The date the removal shipped, as a quoted YYYY-MM-DD.",
+          "$ref": "common.schema.json#/definitions/date"
+        },
+        "reason": {
+          "description": "Why it is gone and what answers the question now. ENVS-05 prints it.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        }
+      }
+    },
+    "sharedKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "apps"],
+      "properties": {
+        "name": { "$ref": "#/definitions/variableName" },
+        "apps": {
+          "description": "Every deployable that holds the value, this one included.",
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["service", "path"],
+            "properties": {
+              "service": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+              "path": {
+                "description": "Where that deployable's copy is stored.",
+                "$ref": "common.schema.json#/definitions/nonEmptyString"
+              }
+            }
+          }
+        }
+      }
+    },
+    "generated": {
+      "description": "Code generated from the schema: pydantic for runtime python, ts for runtime sveltekit (ENVS-07).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pydantic": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "base_class": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+            "extra_imports": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "ts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["framework", "output_path"],
+          "properties": {
+            "framework": {
+              "description": "t3-core-client: inlined into the browser bundle at build time; t3-core-dynamic: read by the browser from the server at start, so one image serves every environment; t3-core-server: read on the server only.",
+              "type": "string",
+              "enum": ["t3-core-client", "t3-core-dynamic", "t3-core-server"]
+            },
+            "client_prefix": { "$ref": "#/definitions/prefix" },
+            "output_path": {
+              "description": "Where the module is written, relative to the schema's directory.",
+              "$ref": "common.schema.json#/definitions/nonEmptyString"
+            }
+          }
+        }
+      }
+    },
+    "infisical": {
+      "description": "Where the product's values are kept in Infisical, and how they reach the process.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+        "environment": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+        "delivery": {
+          "description": "container: the process fetches its values at start; coolify-env: the deploy copies them into the application's environment.",
+          "type": "string",
+          "enum": ["container", "coolify-env"]
+        }
+      }
+    },
+    "coolifyEnv": {
+      "description": "The variables the deployment platform must hold before the process can reach its secret store.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/variableName" }
+        },
+        "optional": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/variableName" }
+        }
+      }
+    }
+  }
+}

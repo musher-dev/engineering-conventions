@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-09",
+    "path": ".devcontainer/devcontainer.json",
+    "severity": "warning"
+  }
+]

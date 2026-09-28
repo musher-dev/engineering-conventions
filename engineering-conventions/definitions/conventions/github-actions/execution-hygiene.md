@@ -299,7 +299,7 @@ their own.
 jobs:
   checks:
     name: Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 ```
 
@@ -309,7 +309,7 @@ jobs:
 jobs:
   checks:
     name: Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.1.0

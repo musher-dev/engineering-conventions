@@ -1,7 +1,8 @@
 # GitHub Actions
 
 These conventions govern the automation under `.github/`: workflow files, their jobs and steps, local composite
-actions, the hygiene every workflow keeps, and how units are chosen and renamed.
+actions, the hygiene every workflow keeps, how units are chosen and renamed, the runners jobs run on, and how releases
+and deployments stay honest.
 
 The governing rule, in one sentence:
 
@@ -14,11 +15,14 @@ GitHub-specific integration such as runner setup and authentication.
 
 ## Status
 
-All five conventions are **drafts**, and every requirement is `proposed` at severity `warning`. Workflow naming is owned
+All seven conventions are **drafts**, and every requirement is `proposed` at severity `warning`. The first five, EC-0002
+to EC-0006, are owned
 by `musher-dev/platform` (issue [#2892](https://github.com/musher-dev/platform/issues/2892)) until the single handoff
 described in [decision 0002](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0002-authority-and-migration.md).
-The requirements are derived from the platform's checks CI-14 to CI-19; where they differ, each convention lists the
-difference in its Status section as a proposal the platform adopts at the handoff.
+Their requirements are derived from the platform's checks CI-14 to CI-19; where they differ, each convention lists the
+difference in its Status section as a proposal the platform adopts at the handoff. EC-0022 and EC-0023 are owned here
+(`authority: self`): they adopt further platform and development-container checks under new IDs, and list each
+upstream check and its difference in their Status sections.
 
 Three things to know before reading a result:
 
@@ -43,6 +47,8 @@ Read them in this order. Each builds on the vocabulary of the one before.
 | [EC-0004 Composite actions](composite-actions.md) | GHA-20 – GHA-23, GHA-38 | Action tokens, directory grammar, metadata, kebab-case inputs and outputs |
 | [EC-0005 Execution hygiene](execution-hygiene.md) | GHA-24 – GHA-33 | Pinning, permissions, credentials, timeouts, concurrency, path filters, linters |
 | [EC-0006 Units and renames](units-and-renames.md) | GHA-34 – GHA-37 | Choosing a workflow, job, action or reusable workflow; the validation split; renaming safely |
+| [EC-0022 Runners and step outcomes](runners-and-step-outcomes.md) | GHA-39 – GHA-45 | Pinned runner images, `ubuntu-slim` limits, swallowed failures, build caches, caller permissions, diff bases, working directories |
+| [EC-0023 Releases and deployments](releases-and-deployments.md) | GHA-46 – GHA-49 | Leased force pushes, the release-please token, jobs a skip cannot turn green, production triggers |
 
 The vocabulary and its reasoning are recorded in
 [decision 0006](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0006-github-actions-naming-vocabulary.md).

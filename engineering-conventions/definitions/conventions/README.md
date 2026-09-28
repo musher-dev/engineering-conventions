@@ -20,6 +20,19 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
+| [EC-0011](configuration/tool-configuration.md) | Tool configuration | configuration | draft |
+| [EC-0012](configuration/suppressions.md) | Suppressions | configuration | draft |
+| [EC-0013](agents/agent-context.md) | Agent context | agents | draft |
+| [EC-0014](git-hooks/lefthook.md) | Lefthook configuration | git-hooks | draft |
+| [EC-0015](tasks/taskfile-style.md) | Taskfile style | tasks | draft |
+| [EC-0016](tasks/task-interface.md) | Task interface | tasks | draft |
+| [EC-0017](toolchain/tool-pins.md) | Tool pins | toolchain | draft |
+| [EC-0018](repository/layout.md) | Repository layout | repository | draft |
+| [EC-0019](environment/env-contract.md) | Environment contract | environment | draft |
+| [EC-0020](environment/env-schema.md) | Environment schema | environment | draft |
+| [EC-0021](decisions/decision-records.md) | Decision records | decisions | draft |
+| [EC-0022](github-actions/runners-and-step-outcomes.md) | Runners and step outcomes | github-actions | draft |
+| [EC-0023](github-actions/releases-and-deployments.md) | Releases and deployments | github-actions | draft |
 
 ## Requirements
 
@@ -34,6 +47,47 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
+| [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | proposed | warning | conftest |
+| [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
+| [AGENT-03](agents/agent-context.md#agent-03) | Every rule under .claude/rules/ is scoped by a non-empty paths list | EC-0013 | proposed | warning | conftest |
+| [AGENT-04](agents/agent-context.md#agent-04) | The context loaded at every launch is at most 40 KiB | EC-0013 | proposed | warning | conftest |
+| [AGENT-05](agents/agent-context.md#agent-05) | Every import in a CLAUDE.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
+| [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
+| [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
+| [CONF-01](configuration/tool-configuration.md#conf-01) | A known tool's configuration does not sit at the repository root | EC-0011 | proposed | warning | conftest |
+| [CONF-02](configuration/tool-configuration.md#conf-02) | A repository with a .config/ directory indexes it in .config/README.md | EC-0011 | proposed | warning | conftest |
+| [CONF-03](configuration/tool-configuration.md#conf-03) | Every file under .config/ is named in .config/README.md | EC-0011 | proposed | warning | conftest |
+| [CONF-04](configuration/tool-configuration.md#conf-04) | Every file under .config/ has a caller that names it by path | EC-0011 | proposed | warning | conftest |
+| [CONF-05](configuration/tool-configuration.md#conf-05) | No filename inside .config/ starts with a dot | EC-0011 | proposed | warning | conftest |
+| [CONF-06](configuration/tool-configuration.md#conf-06) | No lefthook configuration at the root shadows .config/lefthook.yml | EC-0011 | proposed | warning | conftest |
+| [CONF-07](configuration/tool-configuration.md#conf-07) | A tool's configuration sits in a concern directory under .config/ | EC-0011 | proposed | warning | conftest |
+| [CONF-08](configuration/tool-configuration.md#conf-08) | .config/ holds no programs | EC-0011 | proposed | warning | conftest |
+| [CONF-09](configuration/tool-configuration.md#conf-09) | Every .config/ path a caller names exists | EC-0011 | proposed | warning | conftest |
+| [CONF-10](configuration/suppressions.md#conf-10) | Every entry in a trivyignore.yaml has a statement and an expiry within the term | EC-0012 | proposed | warning | conftest |
+| [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
+| [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
+| [DEC-01](decisions/decision-records.md#dec-01) | A decision record is named NNNN-kebab-slug in the repository's decisions directory | EC-0021 | proposed | warning | conftest |
+| [DEC-02](decisions/decision-records.md#dec-02) | A decision record's frontmatter is valid against the decision schema | EC-0021 | proposed | warning | conftest |
+| [DEC-03](decisions/decision-records.md#dec-03) | Decision numbers are unique and contiguous from 0000 or 0001 | EC-0021 | proposed | warning | conftest |
+| [DEC-04](decisions/decision-records.md#dec-04) | Supersede and amend links agree in both directions, and only a superseded record names its successors | EC-0021 | proposed | warning | conftest |
+| [DEC-05](decisions/decision-records.md#dec-05) | A decision record has Context, Decision and Consequences sections | EC-0021 | proposed | warning | conftest |
+| [DEC-06](decisions/decision-records.md#dec-06) | A decision record says how it is enforced in an Enforcement section | EC-0021 | proposed | warning | conftest |
+| [DEC-07](decisions/decision-records.md#dec-07) | The decisions directory's index links every record | EC-0021 | proposed | warning | conftest |
+| [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
+| [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
+| [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
+| [ENVS-04](environment/env-schema.md#envs-04) | A binding name is UPPER_SNAKE_CASE and starts with a declared component | EC-0020 | proposed | warning | conftest |
+| [ENVS-05](environment/env-schema.md#envs-05) | A retired name is never declared again | EC-0020 | proposed | warning | conftest |
+| [ENVS-06](environment/env-schema.md#envs-06) | A secret binding commits no value but an empty one or a loopback address | EC-0020 | proposed | warning | conftest |
+| [ENVS-07](environment/env-schema.md#envs-07) | A schema's fields agree with each other | EC-0020 | proposed | warning | conftest |
+| [ENVS-08](environment/env-schema.md#envs-08) | Every copy of a shared variable agrees in type and sensitivity | EC-0020 | proposed | warning | conftest |
+| [ENVS-09](environment/env-schema.md#envs-09) | A boolean binding's name starts with a boolean prefix | EC-0020 | proposed | warning | conftest |
+| [ENVS-10](environment/env-schema.md#envs-10) | A unit suffix is abbreviated | EC-0020 | proposed | warning | conftest |
+| [ENVS-11](environment/env-schema.md#envs-11) | A binding name does not repeat a word | EC-0020 | proposed | warning | conftest |
+| [ENVS-12](environment/env-schema.md#envs-12) | A URL binding's name ends in _URL | EC-0020 | proposed | warning | conftest |
+| [ENVS-13](environment/env-schema.md#envs-13) | A nested binding's name separates its parts with __ | EC-0020 | proposed | warning | conftest |
+| [ENVS-14](environment/env-schema.md#envs-14) | A binding the browser reads starts with a client prefix | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -72,6 +126,28 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-36](github-actions/units-and-renames.md#gha-36) | A rename updates every reference to the renamed identity in the same change | EC-0006 | proposed | warning | review |
 | [GHA-37](github-actions/units-and-renames.md#gha-37) | A name states the responsibility, result or capability, not the trigger or tool | EC-0006 | proposed | warning | review |
 | [GHA-38](github-actions/composite-actions.md#gha-38) | Inputs and outputs of actions and reusable workflows are kebab-case | EC-0004 | proposed | warning | conftest |
+| [GHA-39](github-actions/runners-and-step-outcomes.md#gha-39) | A job runs on a pinned runner image, never a -latest label | EC-0022 | proposed | warning | conftest |
+| [GHA-40](github-actions/runners-and-step-outcomes.md#gha-40) | A job on ubuntu-slim sets timeout-minutes of at most 15 and runs no Docker | EC-0022 | proposed | warning | conftest |
+| [GHA-41](github-actions/runners-and-step-outcomes.md#gha-41) | No step or job swallows a failure | EC-0022 | proposed | warning | conftest |
+| [GHA-42](github-actions/runners-and-step-outcomes.md#gha-42) | A Docker build does not use the GitHub Actions cache backend | EC-0022 | proposed | warning | conftest |
+| [GHA-43](github-actions/runners-and-step-outcomes.md#gha-43) | A job that calls a local reusable workflow grants every permission the callee declares | EC-0022 | proposed | warning | conftest |
+| [GHA-44](github-actions/runners-and-step-outcomes.md#gha-44) | dorny/paths-filter in a push-triggered workflow sets base | EC-0022 | proposed | warning | conftest |
+| [GHA-45](github-actions/runners-and-step-outcomes.md#gha-45) | Every literal working-directory names a directory in the repository | EC-0022 | proposed | warning | conftest |
+| [GHA-46](github-actions/releases-and-deployments.md#gha-46) | A force push leases on the commit it expects to replace | EC-0023 | proposed | warning | conftest |
+| [GHA-47](github-actions/releases-and-deployments.md#gha-47) | release-please runs with a token other than the default GITHUB_TOKEN | EC-0023 | proposed | warning | conftest |
+| [GHA-48](github-actions/releases-and-deployments.md#gha-48) | The last jobs of a release, publish or deploy workflow run unless the run is cancelled | EC-0023 | proposed | warning | conftest |
+| [GHA-49](github-actions/releases-and-deployments.md#gha-49) | A workflow that acts on production does not run on a push to a branch | EC-0023 | proposed | warning | conftest |
+| [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
+| [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
+| [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |
+| [HOOKS-04](git-hooks/lefthook.md#hooks-04) | A glob with a wildcard and no directory starts with \*\*/ | EC-0014 | proposed | warning | conftest |
+| [HOOKS-05](git-hooks/lefthook.md#hooks-05) | A hook defines jobs, not commands or scripts | EC-0014 | proposed | warning | conftest |
+| [HOOKS-06](git-hooks/lefthook.md#hooks-06) | Every job that runs something has a fail_text | EC-0014 | proposed | warning | conftest |
+| [HOOKS-07](git-hooks/lefthook.md#hooks-07) | stage_fixed is set only on a job that fixes files | EC-0014 | proposed | warning | conftest |
+| [HOOKS-08](git-hooks/lefthook.md#hooks-08) | Pre-commit runs no test runner | EC-0014 | proposed | warning | conftest |
+| [HOOKS-09](git-hooks/lefthook.md#hooks-09) | A lefthook configuration uses neither remotes nor extends | EC-0014 | proposed | warning | conftest |
+| [HOOKS-10](git-hooks/lefthook.md#hooks-10) | A job never discards its command's exit code | EC-0014 | proposed | warning | conftest |
+| [HOOKS-11](git-hooks/lefthook.md#hooks-11) | Every job glob matches a file in the repository | EC-0014 | proposed | warning | conftest |
 | [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
@@ -96,12 +172,53 @@ ID is permanent: it is never renumbered or reused.
 | [REPO-11](repository/repository-names.md#repo-11) | A repository name is at most 40 characters | EC-0010 | proposed | warning | conftest |
 | [REPO-12](repository/repository-names.md#repo-12) | The component names what the repository holds | EC-0010 | proposed | warning | review |
 | [REPO-13](repository/repository-names.md#repo-13) | A rename changes everything that names the repository in one change, and the old name is never reused | EC-0010 | proposed | warning | review |
+| [REPO-14](repository/layout.md#repo-14) | The identity declaration says where the product lives | EC-0018 | proposed | warning | conftest |
+| [REPO-15](repository/layout.md#repo-15) | The declared product directory exists | EC-0018 | proposed | warning | conftest |
+| [REPO-16](repository/layout.md#repo-16) | The product directory is named after the repository | EC-0018 | proposed | warning | conftest |
+| [REPO-17](repository/layout.md#repo-17) | The product directory holds its build manifest | EC-0018 | proposed | warning | conftest |
+| [REPO-18](repository/layout.md#repo-18) | The repository root holds no manifest, lockfile, toolchain file or source tree | EC-0018 | proposed | warning | conftest |
+| [REPO-19](repository/layout.md#repo-19) | Every root exception gives a reason and names an entry at the root | EC-0018 | proposed | warning | conftest |
+| [REPO-20](repository/layout.md#repo-20) | Dependabot updates the product's dependencies in the product directory, not the root | EC-0018 | proposed | warning | conftest |
+| [REPO-21](repository/layout.md#repo-21) | The Taskfile's PRODUCT_DIR is the declared product directory | EC-0018 | proposed | warning | conftest |
+| [REPO-22](repository/layout.md#repo-22) | Every directory a Dependabot update names exists | EC-0018 | proposed | warning | conftest |
+| [TASK-01](tasks/taskfile-style.md#task-01) | A Taskfile declares version '3' as a string | EC-0015 | proposed | warning | conftest |
+| [TASK-02](tasks/taskfile-style.md#task-02) | A Taskfile names its variables in UPPER_SNAKE | EC-0015 | proposed | warning | conftest |
+| [TASK-03](tasks/taskfile-style.md#task-03) | A task name is kebab-case words joined by colons, with a leading underscore only on an internal task | EC-0015 | proposed | warning | conftest |
+| [TASK-04](tasks/taskfile-style.md#task-04) | A template has no whitespace inside its delimiters | EC-0015 | proposed | warning | conftest |
+| [TASK-05](tasks/taskfile-style.md#task-05) | Every public task has a desc | EC-0015 | proposed | warning | conftest |
+| [TASK-06](tasks/taskfile-style.md#task-06) | Every internal task is called by another task | EC-0015 | proposed | warning | conftest |
+| [TASK-07](tasks/taskfile-style.md#task-07) | A task sets prefix only where the output mode is prefixed | EC-0015 | proposed | warning | conftest |
+| [TASK-08](tasks/taskfile-style.md#task-08) | A variable named for a directory, file or configuration names a path that exists | EC-0015 | proposed | warning | conftest |
+| [TASK-09](tasks/taskfile-style.md#task-09) | Every include names a Taskfile that exists, unless it is optional | EC-0015 | proposed | warning | conftest |
+| [TASK-10](tasks/task-interface.md#task-10) | The root Taskfile defines setup, check and lint | EC-0016 | proposed | warning | conftest |
+| [TASK-11](tasks/task-interface.md#task-11) | The root Taskfile of a library, tool, service or website also defines build and test | EC-0016 | proposed | warning | conftest |
+| [TASK-12](tasks/task-interface.md#task-12) | The root Taskfile of a service also defines dev | EC-0016 | proposed | warning | conftest |
+| [TASK-13](tasks/task-interface.md#task-13) | The check task runs every gate CI runs | EC-0016 | proposed | warning | review |
+| [TASK-14](tasks/taskfile-style.md#task-14) | Every literal sources entry names something the repository holds | EC-0015 | proposed | warning | conftest |
+| [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
+| [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |
+| [TOOL-03](toolchain/tool-pins.md#tool-03) | Every tool in the mise configuration is pinned to one exact version | EC-0017 | proposed | warning | conftest |
+| [TOOL-04](toolchain/tool-pins.md#tool-04) | The mise configuration sets min_version, and every place that installs mise installs that version | EC-0017 | proposed | warning | conftest |
+| [TOOL-05](toolchain/tool-pins.md#tool-05) | The mise lockfile is committed beside the configuration | EC-0017 | proposed | warning | conftest |
+| [TOOL-06](toolchain/tool-pins.md#tool-06) | A Dockerfile's version argument defaults to one exact version | EC-0017 | proposed | warning | conftest |
+| [TOOL-07](toolchain/tool-pins.md#tool-07) | A Dockerfile's image of a tool mise pins uses the pinned version | EC-0017 | proposed | warning | conftest |
+| [TOOL-08](toolchain/tool-pins.md#tool-08) | A dev container Feature that installs a tool mise pins installs the pinned version | EC-0017 | proposed | warning | conftest |
+| [TOOL-09](toolchain/tool-pins.md#tool-09) | package.json's packageManager is the version mise pins | EC-0017 | proposed | warning | conftest |
+| [TOOL-10](toolchain/tool-pins.md#tool-10) | A setup action installs the version mise pins | EC-0017 | proposed | warning | conftest |
+| [TOOL-11](toolchain/tool-pins.md#tool-11) | A runtime version file says what mise pins, and there is no .tool-versions | EC-0017 | proposed | warning | conftest |
 
 ## Families
 
 | Prefix | Title | Topic |
 | --- | --- | --- |
 | ADOPT | Adopting the conventions | adoption |
+| CONF | Tool configuration | configuration |
 | GHA | GitHub Actions | github-actions |
+| HOOKS | Git hooks | git-hooks |
 | OUT | Outputs | outputs |
 | REPO | Repositories | repository |
+| ENVS | Environment contract | environment |
+| AGENT | Agent context | agents |
+| TASK | Tasks | tasks |
+| DEC | Decision records | decisions |
+| TOOL | Toolchain | toolchain |

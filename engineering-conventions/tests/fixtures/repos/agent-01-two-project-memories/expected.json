@@ -1,0 +1,7 @@
+[
+  {
+    "id": "AGENT-01",
+    "path": ".claude/CLAUDE.md",
+    "severity": "warning"
+  }
+]

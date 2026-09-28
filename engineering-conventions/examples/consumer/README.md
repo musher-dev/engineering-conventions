@@ -1,12 +1,16 @@
 # Example consumer
 
-A miniature repository that meets every GitHub Actions, adoption and repository requirement in this release. Copy from
-it; the comments explain the choices that are not obvious.
+A miniature repository that meets every GitHub Actions, adoption, repository, task, environment and toolchain
+requirement in this release. Copy from it; the comments explain the choices that are not obvious.
 
 | File | Shows |
 | --- | --- |
-| [`mise.toml`](mise.toml) | One line pinning the release (ADOPT-09), beside the two tools GHA-33 delegates to. No `.repo/conventions.toml` is needed without waivers ([EC-0001](../../definitions/conventions/adoption/conventions-declaration.md)) |
-| [`.repo/repository.toml`](.repo/repository.toml) | The repository's identity ([EC-0009](../../definitions/conventions/repository/identity-declaration.md)): `platform-api`, a `service` in the `platform` system, whose kind selects the `service` profile |
+| [`.config/mise/config.toml`](.config/mise/config.toml) | One line pinning the release (ADOPT-09), beside the two tools GHA-33 delegates to and the `min_version` of mise, in the one place mise reads ([EC-0017](../../definitions/conventions/toolchain/tool-pins.md)). No `.repo/conventions.toml` is needed without waivers ([EC-0001](../../definitions/conventions/adoption/conventions-declaration.md)) |
+| [`.config/mise/mise.lock`](.config/mise/mise.lock) | What `mise lock` writes: each tool's download URL and checksum per platform (TOOL-05). Here release-please raises the release pin, so until someone runs `mise lock` the entry for the release can lag one release behind; in your repository the lockfile changes with the pin |
+| [`.repo/repository.toml`](.repo/repository.toml) | The repository's identity ([EC-0009](../../definitions/conventions/repository/identity-declaration.md)): `platform-api`, a `service` in the `platform` system, whose kind selects the `service` profile, and whose `[layout]` names its product directory ([EC-0018](../../definitions/conventions/repository/layout.md)) |
+| [`platform-api/env.schema.yaml`](platform-api/env.schema.yaml) | The service's environment contract ([EC-0019](../../definitions/conventions/environment/env-contract.md)): every variable it reads, in the format of [EC-0020](../../definitions/conventions/environment/env-schema.md), with a component vocabulary and a secret that commits only a loopback address |
+| [`platform-api/go.mod`](platform-api/go.mod) | The product directory, named after the repository and holding the build manifest, so the root keeps only what acts on the product |
+| [`Taskfile.yml`](Taskfile.yml) | The task interface ([EC-0016](../../definitions/conventions/tasks/task-interface.md)): `setup`, `check` and `lint`, plus `build`, `test` and `dev` for a service, written in the style of [EC-0015](../../definitions/conventions/tasks/taskfile-style.md) |
 | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) | An entry-point `validate` workflow: derived `name:`, `<Subject>` job names that GitHub shows after the workflow's name, snake_case IDs, least-privilege permissions, the standard concurrency group, timeouts, SHA pins, and a `Validate / Required` aggregate, the one job that leads with its workflow's name because a ruleset requires it, that treats anything but success as failure |
 | [`.github/workflows/validate-pull-request.yml`](.github/workflows/validate-pull-request.yml) | A single-job workflow that is its own required check, with workflow permissions `{}` widened by the job |
 | [`.github/rulesets/main-branch.json`](.github/rulesets/main-branch.json) | A ruleset that requires only aggregates (`Validate / Required`) and single-job workflows |
@@ -15,7 +19,7 @@ it; the comments explain the choices that are not obvious.
 
 | Job | Does |
 | --- | --- |
-| `Workflows` | actionlint and zizmor at medium severity (GHA-33), at the versions in `mise.toml` |
+| `Workflows` | actionlint and zizmor at medium severity (GHA-33), at the versions in `.config/mise/config.toml` |
 | `Conventions` | `conventions check --fail-on warning`, the command a developer runs locally |
 | `Validate / Required` | fails unless both jobs above succeeded |
 

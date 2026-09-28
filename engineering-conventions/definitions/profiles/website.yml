@@ -1,9 +1,11 @@
 # The profile the identity declaration selects for kind = "website"
-# (EC-0009). It is base-repo until requirements specific to the kind exist.
+# (EC-0009). It adds the build and test tasks to what base-repo applies.
 schema_version: 1
 id: website
 display_name: Website
 description: >-
-  Repositories whose kind is website. Until requirements specific to the kind
-  exist, it applies exactly what base-repo does.
+  Repositories whose kind is website: everything base-repo applies, and a
+  root Taskfile that also defines build and test (TASK-11).
 inherits: [base-repo]
+include:
+  requirements: [TASK-11]

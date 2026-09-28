@@ -16,3 +16,7 @@ expires = "2026-12-31"
 
 [paths]
 fixtures = ["tests/fixtures/**"]
+
+[decisions]
+path = "docs/adrs"
+form = "file"

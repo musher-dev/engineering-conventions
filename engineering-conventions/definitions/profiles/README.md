@@ -16,10 +16,10 @@ next choice rather than switching every check off.
 | Profile | For |
 | --- | --- |
 | [`base-repo`](base-repo.yml) | Every repository |
-| [`service`](service.yml) | `kind = "service"` |
-| [`website`](website.yml) | `kind = "website"` |
-| [`library`](library.yml) | `kind = "library"` |
-| [`tool`](tool.yml) | `kind = "tool"` |
+| [`service`](service.yml) | `kind = "service"`; adds TASK-11, TASK-12 and ENVS-01 |
+| [`website`](website.yml) | `kind = "website"`; adds TASK-11 |
+| [`library`](library.yml) | `kind = "library"`; adds TASK-11 |
+| [`tool`](tool.yml) | `kind = "tool"`; adds TASK-11 |
 | [`infrastructure`](infrastructure.yml) | `kind = "infrastructure"` |
 | [`specification`](specification.yml) | `kind = "specification"` |
 | [`content`](content.yml) | `kind = "content"` |
@@ -27,8 +27,11 @@ next choice rather than switching every check off.
 | [`template`](template.yml) | `kind = "template"` |
 
 Every registered kind has a profile of the same name, and `task invariants`
-fails when one is missing. Each kind's profile inherits `base-repo` and, until
-requirements specific to the kind exist, applies exactly what it does.
+fails when one is missing. Each kind's profile inherits `base-repo` and adds
+only the requirements specific to its kind, selected by ID, such as the task
+verbs of [EC-0016](../conventions/tasks/task-interface.md) and, for a service,
+its runtime environment ([EC-0019](../conventions/environment/env-contract.md)).
+A kind with none of its own applies exactly what `base-repo` does.
 
 Profiles are validated against
 [`profile.schema.json`](../../checks/schemas/profile.schema.json).

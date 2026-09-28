@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEC-01",
+    "path": "docs/decisions/0002_Use_Redis.md",
+    "severity": "warning"
+  }
+]

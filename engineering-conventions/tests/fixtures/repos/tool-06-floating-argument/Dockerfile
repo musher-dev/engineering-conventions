@@ -1,0 +1,2 @@
+ARG NODE_VERSION=24
+FROM debian:12.12-slim

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOOL-08",
+    "path": ".devcontainer/devcontainer.json",
+    "severity": "warning"
+  }
+]

@@ -5,8 +5,8 @@
 # Shipped in the release bundle, so installing a release with mise puts it on
 # PATH:
 #
-#   mise.toml   [tools] "github:musher-dev/engineering-conventions" = "0.2.0"
-#   then        conventions check
+#   .config/mise/config.toml   [tools] "github:musher-dev/engineering-conventions" = "0.2.0"
+#   then                       conventions check
 #
 # It needs only POSIX sh and git. conftest, jq and Vale come through
 # `mise exec` at the versions below, which move with this release, so the
@@ -27,7 +27,7 @@
 #   conventions version
 set -eu
 
-# Lockstep with .devcontainer/mise.toml (.claude/rules/toolchain-pins.md).
+# Lockstep with .config/mise/config.toml (.claude/rules/toolchain-pins.md).
 CONFTEST_VERSION=0.70.1
 VALE_VERSION=3.22.0
 JQ_VERSION=1.8.2
@@ -141,7 +141,8 @@ JSONNET="${JSONNET}|"'^\.devcontainer\.json$'
 DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$'
 
 # Files the checks read as text: agent context, decision records, the
-# .config/ index, and the one-line and ignore files no parser reads. Only
+# .config/ index, and the one-line and ignore files no parser reads,
+# including an ignore file kept in .config/ without its dot (EC-0012). Only
 # files up to TEXT_LIMIT bytes are embedded.
 TEXTS='(^|/)CLAUDE\.md$'
 TEXTS="${TEXTS}|"'^AGENTS\.md$'
@@ -149,6 +150,7 @@ TEXTS="${TEXTS}|"'^\.claude/rules/.+\.md$'
 TEXTS="${TEXTS}|"'^\.config/README\.md$'
 TEXTS="${TEXTS}|"'(^|/)(decisions|adrs)/.+\.md$'
 TEXTS="${TEXTS}|"'(^|/)\.(trivyignore|gitleaksignore|nvmrc|node-version|python-version|tool-versions)$'
+TEXTS="${TEXTS}|"'^\.config/(.+/)?(trivyignore|gitleaksignore)$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.

@@ -40,9 +40,8 @@
   ],
 
   "containerEnv": {
-    // Point mise at the workspace manifest (it lives under .devcontainer/, not
-    // the repo root) and auto-trust it so `mise install` runs without a prompt.
-    "MISE_GLOBAL_CONFIG_FILE": "${containerWorkspaceFolder}/.devcontainer/mise.toml",
+    // mise discovers .config/mise/config.toml on its own; trusting the
+    // workspace lets `mise install` and the shims load it without a prompt.
     "MISE_TRUSTED_CONFIG_PATHS": "${containerWorkspaceFolder}",
 
     "PYTHONDONTWRITEBYTECODE": "1",

@@ -5,7 +5,7 @@
 # Docs: https://github.com/rhysd/actionlint/blob/main/docs/config.md
 
 # Labels for self-hosted runners, if any are ever added. GitHub-hosted labels
-# (ubuntu-latest, etc.) are known to actionlint and need no declaration.
+# (ubuntu-24.04, ubuntu-slim, etc.) are known to actionlint and need no declaration.
 self-hosted-runner:
   labels: []
 

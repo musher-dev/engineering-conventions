@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-10",
+    "path": ".config/security/trivyignore.yaml",
+    "severity": "warning"
+  }
+]

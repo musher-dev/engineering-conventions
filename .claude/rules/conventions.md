@@ -34,13 +34,16 @@ as a public API.
 - **MUST** write a `.repo/` declaration, and every example of one, in TOML
   with its dates quoted (docs/decisions/0011-declarations-are-toml.md).
 - Decisions are append-only: supersede a decision with a new one, never rewrite
-  an accepted one.
+  an accepted one. They follow the convention this repository publishes for
+  decision records (EC-0021, `definitions/conventions/decisions/`), and their
+  frontmatter schema is `checks/schemas/decision.schema.json`.
 
 ## Enforced vs reviewed
 
 | Rule | How |
 | --- | --- |
 | Frontmatter shape, profiles, decisions | `task schemas:validate` |
+| Decision records' names, numbers, links, sections and index | `task conventions:self` (DEC) |
 | IDs unique and append-only, one heading each, families registered | `task invariants` |
 | Generated files current | `task generate:check` |
 | Breaking change carries `!` | Review, with the PR template's Consumer impact section |

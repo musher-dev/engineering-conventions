@@ -1,0 +1,8 @@
+version: '3'
+
+tasks:
+  deps:
+    desc: Download the modules.
+    prefix: deps
+    cmds:
+      - go mod download

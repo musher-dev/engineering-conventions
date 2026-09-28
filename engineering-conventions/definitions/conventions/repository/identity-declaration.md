@@ -113,7 +113,8 @@ tier = 1
 ```
 
 The file is TOML ([decision 0011](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0011-declarations-are-toml.md)),
-and every field is required.
+and every field above is required. An optional `[layout]` table says where the product lives; its rules are
+[EC-0018](layout.md).
 
 | Field | Meaning |
 | --- | --- |
@@ -165,8 +166,9 @@ may publish an image and a contract, and a `library` repository a package.
 | Otherwise, `kind` names a registered kind | The profile of the same name |
 | Otherwise | `base-repo` |
 
-Every kind has a profile, and each inherits `base-repo`. Until a kind gains requirements of its own, its profile
-applies exactly what `base-repo` does, so declaring a kind never loosens a check. `profile` in the conventions
+Every kind has a profile, and each inherits `base-repo` and only adds to it, so declaring a kind never loosens a
+check. A kind's own requirements, such as the `build`, `test` and `dev` tasks of
+[EC-0016](../tasks/task-interface.md), are selected by its profile. `profile` in the conventions
 declaration remains as an override ([EC-0001](../adoption/conventions-declaration.md)).
 
 ### Where the declaration is read

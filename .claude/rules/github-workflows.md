@@ -11,8 +11,8 @@ are held to them first. This file routes; it restates none of them.
 
 - **The conventions**: `engineering-conventions/definitions/conventions/github-actions/`,
   one document per concern (workflow files, jobs and steps, composite actions,
-  execution hygiene, units and renames). Every `GHA-NN` a check prints links to
-  its heading there.
+  execution hygiene, units and renames, runners and step outcomes, releases and
+  deployments). Every `GHA-NN` a check prints links to its heading there.
 - **The vocabulary**: `engineering-conventions/definitions/terminology/global.yml`, which
   holds the responsibility, capability and action tokens and the display forms.
 - **The proof**: `task conventions:self` runs this repository through its own

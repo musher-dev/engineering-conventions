@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-42",
+    "path": ".github/workflows/reusable-build-image.yml",
+    "severity": "warning"
+  }
+]

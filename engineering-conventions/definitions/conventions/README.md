@@ -31,6 +31,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0019](environment/env-contract.md) | Environment contract | environment | draft |
 | [EC-0020](environment/env-schema.md) | Environment schema | environment | draft |
 | [EC-0021](decisions/decision-records.md) | Decision records | decisions | draft |
+| [EC-0022](github-actions/runners-and-step-outcomes.md) | Runners and step outcomes | github-actions | draft |
+| [EC-0023](github-actions/releases-and-deployments.md) | Releases and deployments | github-actions | draft |
 
 ## Requirements
 
@@ -124,6 +126,17 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-36](github-actions/units-and-renames.md#gha-36) | A rename updates every reference to the renamed identity in the same change | EC-0006 | proposed | warning | review |
 | [GHA-37](github-actions/units-and-renames.md#gha-37) | A name states the responsibility, result or capability, not the trigger or tool | EC-0006 | proposed | warning | review |
 | [GHA-38](github-actions/composite-actions.md#gha-38) | Inputs and outputs of actions and reusable workflows are kebab-case | EC-0004 | proposed | warning | conftest |
+| [GHA-39](github-actions/runners-and-step-outcomes.md#gha-39) | A job runs on a pinned runner image, never a -latest label | EC-0022 | proposed | warning | conftest |
+| [GHA-40](github-actions/runners-and-step-outcomes.md#gha-40) | A job on ubuntu-slim sets timeout-minutes of at most 15 and runs no Docker | EC-0022 | proposed | warning | conftest |
+| [GHA-41](github-actions/runners-and-step-outcomes.md#gha-41) | No step or job swallows a failure | EC-0022 | proposed | warning | conftest |
+| [GHA-42](github-actions/runners-and-step-outcomes.md#gha-42) | A Docker build does not use the GitHub Actions cache backend | EC-0022 | proposed | warning | conftest |
+| [GHA-43](github-actions/runners-and-step-outcomes.md#gha-43) | A job that calls a local reusable workflow grants every permission the callee declares | EC-0022 | proposed | warning | conftest |
+| [GHA-44](github-actions/runners-and-step-outcomes.md#gha-44) | dorny/paths-filter in a push-triggered workflow sets base | EC-0022 | proposed | warning | conftest |
+| [GHA-45](github-actions/runners-and-step-outcomes.md#gha-45) | Every literal working-directory names a directory in the repository | EC-0022 | proposed | warning | conftest |
+| [GHA-46](github-actions/releases-and-deployments.md#gha-46) | A force push leases on the commit it expects to replace | EC-0023 | proposed | warning | conftest |
+| [GHA-47](github-actions/releases-and-deployments.md#gha-47) | release-please runs with a token other than the default GITHUB_TOKEN | EC-0023 | proposed | warning | conftest |
+| [GHA-48](github-actions/releases-and-deployments.md#gha-48) | The last jobs of a release, publish or deploy workflow run unless the run is cancelled | EC-0023 | proposed | warning | conftest |
+| [GHA-49](github-actions/releases-and-deployments.md#gha-49) | A workflow that acts on production does not run on a push to a branch | EC-0023 | proposed | warning | conftest |
 | [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
 | [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |

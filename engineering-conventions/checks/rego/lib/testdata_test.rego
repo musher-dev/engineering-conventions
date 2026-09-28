@@ -195,7 +195,7 @@ validate := {
 	"jobs": {
 		"lint": {
 			"name": "Lint",
-			"runs-on": "ubuntu-latest",
+			"runs-on": "ubuntu-24.04",
 			"timeout-minutes": 10,
 			"steps": [pinned_checkout, {"name": "Lint", "run": "task lint"}],
 		},
@@ -203,7 +203,7 @@ validate := {
 			"name": "Validate / Required",
 			"if": "${{ always() }}",
 			"needs": ["lint"],
-			"runs-on": "ubuntu-latest",
+			"runs-on": "ubuntu-24.04",
 			"timeout-minutes": 5,
 			"steps": [{"name": "Fail unless every job succeeded", "run": "true"}],
 		},

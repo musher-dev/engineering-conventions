@@ -308,7 +308,7 @@ A job without `name:` reports its check context as its bare ID (`api_tests`), wh
 Two jobs in one workflow that render the same name are worse: a failure cannot say which one it was, and a ruleset
 cannot require one without the other. Matrix legs count separately, each rendering the matrix values its name
 references. A matrix job with a static name is fine, because GitHub appends the leg's matrix values to it
-(`Tests (ubuntu-latest, 3.12)`). Naming every job is the precondition for the grammar in GHA-12 and GHA-13.
+(`Tests (ubuntu-24.04, 3.12)`). Naming every job is the precondition for the grammar in GHA-12 and GHA-13.
 
 **Correct:**
 
@@ -328,7 +328,7 @@ jobs:
 ```yaml
 jobs:
   api_tests:
-    runs-on: ubuntu-latest       # no name
+    runs-on: ubuntu-24.04       # no name
   docs_quality:
     name: ${{ matrix.site.name }} / Quality
     strategy:
@@ -450,7 +450,7 @@ jobs:
     name: Validate / Required
     if: always()                  # or: ${{ !cancelled() }}
     needs: [lint, checks]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Fail unless every job succeeded

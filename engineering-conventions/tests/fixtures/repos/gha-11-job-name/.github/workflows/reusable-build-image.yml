@@ -6,7 +6,7 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Check out the repository
@@ -16,7 +16,7 @@ jobs:
       - name: Build the image
         run: docker build .
   push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [build]
     steps:

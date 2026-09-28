@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-47",
+    "path": ".github/workflows/release.yml",
+    "severity": "warning"
+  }
+]

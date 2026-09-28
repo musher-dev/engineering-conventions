@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEC-05",
+    "path": "docs/decisions/0001-use-one-queue.md",
+    "severity": "warning"
+  }
+]

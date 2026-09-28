@@ -22,6 +22,19 @@ test_summary_counts_the_rest if {
 	schema.summary(["a", "b", "c"]) == "a (2 more problems in the declaration)"
 }
 
+test_problems_name_their_subject if {
+	frontmatter := {"title": "x", "date": "x", "status": "x", "k": 1}
+	found := schema.problems_of([frontmatter], td.decision_schema, "the frontmatter")
+	found == [
+		"the frontmatter: Additional property k is not allowed.",
+		"`status`: status must be one of the following: \"proposed\", \"accepted\", \"superseded\".",
+	]
+	schema.summary_of(found, "the frontmatter") == concat("", [
+		"the frontmatter: Additional property k is not allowed.",
+		" (1 more problem in the frontmatter)",
+	])
+}
+
 test_unique_keeps_first_occurrences if {
 	schema.unique(["b", "a", "b"]) == ["b", "a"]
 }

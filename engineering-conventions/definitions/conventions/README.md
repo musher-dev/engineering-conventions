@@ -27,6 +27,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0018](repository/layout.md) | Repository layout | repository | draft |
 | [EC-0019](environment/env-contract.md) | Environment contract | environment | draft |
 | [EC-0020](environment/env-schema.md) | Environment schema | environment | draft |
+| [EC-0021](decisions/decision-records.md) | Decision records | decisions | draft |
 
 ## Requirements
 
@@ -49,6 +50,13 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
 | [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
+| [DEC-01](decisions/decision-records.md#dec-01) | A decision record is named NNNN-kebab-slug in the repository's decisions directory | EC-0021 | proposed | warning | conftest |
+| [DEC-02](decisions/decision-records.md#dec-02) | A decision record's frontmatter is valid against the decision schema | EC-0021 | proposed | warning | conftest |
+| [DEC-03](decisions/decision-records.md#dec-03) | Decision numbers are unique and contiguous from 0000 or 0001 | EC-0021 | proposed | warning | conftest |
+| [DEC-04](decisions/decision-records.md#dec-04) | Supersede and amend links agree in both directions, and only a superseded record names its successors | EC-0021 | proposed | warning | conftest |
+| [DEC-05](decisions/decision-records.md#dec-05) | A decision record has Context, Decision and Consequences sections | EC-0021 | proposed | warning | conftest |
+| [DEC-06](decisions/decision-records.md#dec-06) | A decision record says how it is enforced in an Enforcement section | EC-0021 | proposed | warning | conftest |
+| [DEC-07](decisions/decision-records.md#dec-07) | The decisions directory's index links every record | EC-0021 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
@@ -172,3 +180,4 @@ ID is permanent: it is never renumbered or reused.
 | ENVS | Environment contract | environment |
 | AGENT | Agent context | agents |
 | TASK | Tasks | tasks |
+| DEC | Decision records | decisions |

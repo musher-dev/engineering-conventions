@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEC-01",
+    "path": "docs/adrs/0002-loose.md",
+    "severity": "warning"
+  }
+]

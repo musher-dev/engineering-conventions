@@ -28,6 +28,7 @@ KINDS = {
     "profiles": (schemas.PROFILE, "valid", "invalid/schema"),
     "terminology": (schemas.TERMINOLOGY, "valid", "invalid/schema"),
     "conventions": (schemas.CONVENTION, "valid", "invalid"),
+    "decisions": (schemas.DECISION, "valid", "invalid"),
 }
 
 

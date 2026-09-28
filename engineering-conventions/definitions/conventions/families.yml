@@ -36,3 +36,7 @@ families:
     title: Tasks
     topic: tasks
     owner: "@justinmerrell"
+  - prefix: DEC
+    title: Decision records
+    topic: decisions
+    owner: "@justinmerrell"

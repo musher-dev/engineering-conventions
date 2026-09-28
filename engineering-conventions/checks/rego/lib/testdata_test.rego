@@ -93,6 +93,24 @@ index := {
 	"declaration_schema": declaration_schema,
 	"outputs_schema": outputs_schema,
 	"repository_schema": repository_schema,
+	"decision_schema": decision_schema,
+}
+
+# A cut-down decision-record schema with the shapes DEC-02's messages depend
+# on: an unknown key and a value outside an enum.
+decision_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["title", "date", "status"],
+	"properties": {
+		"title": {"type": "string"},
+		"date": {"type": "string"},
+		"status": {"enum": ["proposed", "accepted", "superseded"]},
+		"supersedes": {"type": "array"},
+		"superseded_by": {"type": "array"},
+		"amends": {"type": "array"},
+		"amended_by": {"type": "array"},
+	},
 }
 
 # A cut-down declaration schema with the shapes ADOPT-02's messages depend on:

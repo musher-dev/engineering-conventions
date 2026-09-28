@@ -38,6 +38,7 @@ def test_index_top_level_shape(content: Content) -> None:
     index = _index(content)
     assert sorted(index) == [
         "conventions",
+        "decision_schema",
         "declaration_schema",
         "env_schema",
         "outputs_schema",

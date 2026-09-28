@@ -1,0 +1,7 @@
+# Records kept by a static site generator: docs/site/(docs)/adrs/0001-slug/+page.md.
+schema_version = 1
+
+[decisions]
+path = "docs/site/(docs)/adrs"
+form = "directory"
+page = "+page.md"

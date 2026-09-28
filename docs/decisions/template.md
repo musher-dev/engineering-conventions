@@ -1,12 +1,16 @@
 # Decision record template
 
 Copy the block below into `NNNN-kebab-title.md`, taking the next unused number from the [index](README.md), and add a
-row to the index. The frontmatter is validated against
-[`decision.schema.json`](decision.schema.json). The number is the filename's; the frontmatter does not repeat it.
+row to the index. The record follows the decision-record convention,
+[EC-0021](../../engineering-conventions/definitions/conventions/decisions/decision-records.md), and its frontmatter is
+validated against [`decision.schema.json`](../../engineering-conventions/checks/schemas/decision.schema.json). The
+number is the filename's; the frontmatter does not repeat it.
 
 - `status` is one of `proposed`, `accepted`, `rejected`, `deprecated` or `superseded`.
 - A superseded decision keeps its file, gains `superseded_by`, and its status becomes `superseded`. The decision that
   replaces it lists it in `supersedes`.
+- A decision that changes part of an earlier one lists it in `amends`, and the earlier one gains `amended_by`; its
+  status is unchanged.
 - Numbers are never reused, including for rejected decisions.
 
 ````markdown

@@ -10,10 +10,11 @@ description: >-
   product lives, the GitHub Actions naming, structure and hygiene every
   repository with workflows shares, Taskfile style and a root Taskfile
   with setup, check and lint, the git hooks of any repository that uses
-  lefthook, the agent context of any repository that has one, and the
-  format of any environment schema it holds.
+  lefthook, the agent context of any repository that has one, the shape
+  of its decision records if it keeps any, and the format of any
+  environment schema it holds.
 include:
-  families: [ADOPT, GHA, OUT, REPO, AGENT, HOOKS]
+  families: [ADOPT, GHA, OUT, REPO, AGENT, HOOKS, DEC]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
   # schema. Of EC-0016 and EC-0019, only what every repository shares is
   # selected here; the kind profiles add the rest by ID, because an

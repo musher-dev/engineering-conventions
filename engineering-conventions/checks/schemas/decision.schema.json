@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Decision record frontmatter",
+  "description": "The YAML frontmatter of a decision record, NNNN-slug.md in the repository's decisions directory (EC-0021). The record's name carries its number, so the frontmatter does not repeat it. DEC-02 checks a record's frontmatter against this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "date", "status"],
+  "properties": {
+    "title": {
+      "description": "The decision, in sentence case.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "date": {
+      "description": "When the decision reached its current status.",
+      "$ref": "common.schema.json#/definitions/date"
+    },
+    "status": {
+      "description": "proposed: open for comment; accepted: in force; rejected: considered and declined; deprecated: no longer applies; superseded: replaced by the decisions in superseded_by.",
+      "type": "string",
+      "enum": ["proposed", "accepted", "rejected", "deprecated", "superseded"]
+    },
+    "deciders": {
+      "description": "Who made the decision. MADR 4 calls this field decision-makers; the name here is kept (EC-0021).",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+    },
+    "consulted": {
+      "description": "Whose opinion was sought before deciding.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+    },
+    "informed": {
+      "description": "Who is kept up to date on the decision.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+    },
+    "supersedes": {
+      "description": "Decisions this one replaces. Each lists this one in superseded_by (DEC-04).",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/decisionId" }
+    },
+    "superseded_by": {
+      "description": "Decisions that replace this one. Required once the status is superseded, and set only then (DEC-04).",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/decisionId" }
+    },
+    "amends": {
+      "description": "Decisions this one changes in part, leaving the rest in force. Each lists this one in amended_by (DEC-04).",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/decisionId" }
+    },
+    "amended_by": {
+      "description": "Decisions that change this one in part. The status is unchanged: an amended decision is still in force.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/decisionId" }
+    }
+  },
+  "if": {
+    "required": ["status"],
+    "properties": { "status": { "const": "superseded" } }
+  },
+  "then": {
+    "required": ["superseded_by"]
+  },
+  "definitions": {
+    "decisionId": {
+      "description": "A decision's four-digit number, the prefix of its name, quoted so leading zeros survive (\"0009\", not 0009).",
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    }
+  }
+}

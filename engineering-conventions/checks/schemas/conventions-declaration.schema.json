@@ -51,6 +51,28 @@
         }
       }
     },
+    "decisions": {
+      "description": "Where the repository keeps its decision records, when not in docs/decisions/ as one NNNN-slug.md file each (EC-0021).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "description": "The directory that holds the records, relative to the repository root, e.g. docs/adrs. Its last segment is decisions or adrs, the names the runner reads records from. Defaults to docs/decisions.",
+          "type": "string",
+          "pattern": "^([^/*?\\[\\]]+/)*(decisions|adrs)$"
+        },
+        "form": {
+          "description": "file: each record is <path>/NNNN-slug.md and the index is <path>/README.md. directory: each record is <path>/NNNN-slug/<page> and the index is <path>/<page>. Defaults to file.",
+          "type": "string",
+          "enum": ["file", "directory"]
+        },
+        "page": {
+          "description": "In the directory form, the name of the Markdown file each record's directory holds, which is also the index's name, e.g. +page.md. Defaults to README.md. The file form ignores it.",
+          "type": "string",
+          "pattern": "^[^/]+\\.md$"
+        }
+      }
+    },
     "waivers": {
       "description": "Time-boxed, tracked deviations from a requirement. Requirements in the ADOPT family cannot be waived.",
       "type": "array",

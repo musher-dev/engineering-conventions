@@ -20,6 +20,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0008](outputs/publishing-and-consuming.md) | Publishing and consuming outputs | outputs | draft |
 | [EC-0009](repository/identity-declaration.md) | Identity declaration | repository | draft |
 | [EC-0010](repository/repository-names.md) | Repository names | repository | draft |
+| [EC-0014](git-hooks/lefthook.md) | Lefthook configuration | git-hooks | draft |
 
 ## Requirements
 
@@ -72,6 +73,17 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-36](github-actions/units-and-renames.md#gha-36) | A rename updates every reference to the renamed identity in the same change | EC-0006 | proposed | warning | review |
 | [GHA-37](github-actions/units-and-renames.md#gha-37) | A name states the responsibility, result or capability, not the trigger or tool | EC-0006 | proposed | warning | review |
 | [GHA-38](github-actions/composite-actions.md#gha-38) | Inputs and outputs of actions and reusable workflows are kebab-case | EC-0004 | proposed | warning | conftest |
+| [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
+| [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
+| [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |
+| [HOOKS-04](git-hooks/lefthook.md#hooks-04) | A glob with a wildcard and no directory starts with \*\*/ | EC-0014 | proposed | warning | conftest |
+| [HOOKS-05](git-hooks/lefthook.md#hooks-05) | A hook defines jobs, not commands or scripts | EC-0014 | proposed | warning | conftest |
+| [HOOKS-06](git-hooks/lefthook.md#hooks-06) | Every job that runs something has a fail_text | EC-0014 | proposed | warning | conftest |
+| [HOOKS-07](git-hooks/lefthook.md#hooks-07) | stage_fixed is set only on a job that fixes files | EC-0014 | proposed | warning | conftest |
+| [HOOKS-08](git-hooks/lefthook.md#hooks-08) | Pre-commit runs no test runner | EC-0014 | proposed | warning | conftest |
+| [HOOKS-09](git-hooks/lefthook.md#hooks-09) | A lefthook configuration uses neither remotes nor extends | EC-0014 | proposed | warning | conftest |
+| [HOOKS-10](git-hooks/lefthook.md#hooks-10) | A job never discards its command's exit code | EC-0014 | proposed | warning | conftest |
+| [HOOKS-11](git-hooks/lefthook.md#hooks-11) | Every job glob matches a file in the repository | EC-0014 | proposed | warning | conftest |
 | [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
@@ -103,5 +115,6 @@ ID is permanent: it is never renumbered or reused.
 | --- | --- | --- |
 | ADOPT | Adopting the conventions | adoption |
 | GHA | GitHub Actions | github-actions |
+| HOOKS | Git hooks | git-hooks |
 | OUT | Outputs | outputs |
 | REPO | Repositories | repository |

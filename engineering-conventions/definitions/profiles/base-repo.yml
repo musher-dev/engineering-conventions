@@ -8,9 +8,10 @@ description: >-
   Every repository in the organisation: declaring its conventions, its
   outputs and its identity, a name from the registered systems, and the
   GitHub Actions naming, structure and hygiene every repository with
-  workflows shares.
+  workflows shares, and the git hooks configuration of every repository
+  that uses lefthook.
 include:
-  families: [ADOPT, GHA, OUT, REPO]
+  families: [ADOPT, GHA, HOOKS, OUT, REPO]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

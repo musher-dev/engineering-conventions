@@ -1,0 +1,14 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+remotes:
+  - git_url: https://example.com/shared-hooks
+    ref: v1.0.0
+    configs:
+      - hooks.yml
+pre-commit:
+  jobs:
+    - name: yaml
+      glob: ".github/**/*.yml"
+      run: yamllint --strict {staged_files}
+      fail_text: "YAML lint failed. Run 'task lint:yaml'."

@@ -6,7 +6,7 @@ configuration and one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.5.0 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.6.0 -- conventions check  # x-release-please-version
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
@@ -27,7 +27,7 @@ being told ([EC-0017](../engineering-conventions/definitions/conventions/toolcha
 min_version = "2026.9.12"   # the mise that CI and the dev container install
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.5.0"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.6.0"  # x-release-please-version
 ```
 
 Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:

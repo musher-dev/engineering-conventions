@@ -1,2 +1,4 @@
+min_version = "2026.9.12"
+
 [tools]
 "aqua:evilmartians/lefthook" = "2.1.14"

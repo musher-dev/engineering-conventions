@@ -1,7 +1,7 @@
 [
   {
     "id": "TOOL-09",
-    "path": "package.json",
+    "path": "platform-api/package.json",
     "severity": "warning"
   }
 ]

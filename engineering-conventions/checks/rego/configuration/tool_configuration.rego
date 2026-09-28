@@ -46,7 +46,7 @@ findings contains lib.finding("CONF-01", path, message) if {
 
 # CONF-02
 findings contains lib.finding("CONF-02", index_path, message) if {
-	count(config_files) > 0
+	count(indexable) > 0
 	not index_path in files.repository_files
 	message := concat(" ", [
 		".config/ holds tool configuration but no index; add .config/README.md with one row",
@@ -59,9 +59,7 @@ findings contains lib.finding("CONF-02", index_path, message) if {
 findings contains lib.finding("CONF-03", path, message) if {
 	text := files.texts[index_path]
 	tokens := indexed_tokens(text)
-	some path in config_files
-	not readme(path)
-	not local_override(path)
+	some path in indexable
 	not indexed(tokens, relative(path))
 	message := sprintf(
 		"%s is not listed in .config/README.md; add a row for `%s` naming its tool and caller",
@@ -151,6 +149,16 @@ top_level_allowed := {"README.md", "lefthook.yml", "lefthook-local.yml"}
 program_extensions := {
 	"bash", "cjs", "cts", "js", "mjs", "mts", "pl",
 	"ps1", "py", "rb", "sh", "ts", "zsh",
+}
+
+# Files the index describes: everything but READMEs, the personal override,
+# and what a tool finds by itself (mise's and lefthook's own files), so a
+# .config/ holding only those needs no index.
+indexable contains path if {
+	some path in config_files
+	not readme(path)
+	not local_override(path)
+	not self_discovered(path)
 }
 
 # Files a tool finds inside .config/ without being told, so no caller names

@@ -1,7 +1,7 @@
 [
   {
     "id": "TOOL-11",
-    "path": ".nvmrc",
+    "path": "platform-api/.nvmrc",
     "severity": "warning"
   }
 ]

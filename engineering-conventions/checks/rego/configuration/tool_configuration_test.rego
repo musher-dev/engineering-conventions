@@ -76,6 +76,18 @@ test_conf_02_missing_index if {
 	ids_at(found) == {["CONF-02", ".config/README.md"]}
 }
 
+test_conf_02_self_discovered_only_needs_no_index if {
+	paths := [".config/mise/config.toml", ".config/mise/mise.lock", ".config/lefthook.yml", ".config/mise/locks/a.json"]
+	found := config.findings with input as repo(paths, {}, [])
+	ids_at(found) == set()
+}
+
+test_conf_03_self_discovered_need_not_be_indexed if {
+	paths := array.concat(conforming_files, [".config/mise/config.toml", ".config/mise/mise.lock"])
+	found := config.findings with input as repo(paths, {".config/README.md": index_text}, [taskfile])
+	not "CONF-03" in {id | some [id, _] in ids_at(found)}
+}
+
 test_conf_03_unindexed_file if {
 	paths := array.concat(conforming_files, [".config/spelling/typos.toml"])
 	docs := [td.file("Taskfile.yml", {"version": "3", "tasks": {"lint": {"cmds": [

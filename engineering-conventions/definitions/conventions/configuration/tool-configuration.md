@@ -260,7 +260,9 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform 
 **A repository with a `.config/` directory indexes it in `.config/README.md`.**
 
 The index is what lets a reader open the directory and know, for each file, which tool reads it, what it configures
-and what runs it, without searching the repository for callers. Add one row per file.
+and what runs it, without searching the repository for callers. Add one row per file. A `.config/` that holds only
+files their tools find by themselves (`lefthook.yml`, and mise's `mise/config.toml`, `mise/mise.lock` and
+`mise/locks/`) needs no index: the tool's own documentation says what they are.
 
 **Correct:**
 
@@ -286,7 +288,8 @@ development-container CFG-01 and CFG-02
 A file missing from the index is invisible to the next reader, who cannot tell which tool consumes it or whether it is
 still used. The check looks for the file in backticks anywhere in the index: its path under `.config/`
 (`yaml/yamllint.yaml`), its name (`yamllint.yaml`), its full path, or a directory that holds it (`mise/locks/`) for a
-generated tree. `README.md` files and `lefthook-local.yml` are not indexed.
+generated tree. `README.md` files, `lefthook-local.yml` and the files a tool finds by itself (see CONF-02) need not
+be indexed.
 
 **Correct:**
 

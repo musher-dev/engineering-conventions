@@ -8,10 +8,10 @@ description: >-
   Every repository in the organisation: declaring its conventions, its
   outputs and its identity, a name from the registered systems, where its
   product lives, the GitHub Actions naming, structure and hygiene every
-  repository with workflows shares, and the format of any environment
-  schema it holds.
+  repository with workflows shares, the agent context of any repository
+  that has one, and the format of any environment schema it holds.
 include:
-  families: [ADOPT, GHA, OUT, REPO]
+  families: [ADOPT, GHA, OUT, REPO, AGENT]
   # The environment schema format applies wherever a schema exists; that a
   # service has one (ENVS-01) is the service profile's alone.
   conventions: [EC-0020]

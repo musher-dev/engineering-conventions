@@ -240,7 +240,7 @@ def _conftest() -> str:
     found = shutil.which("conftest")
     if found is None:
         raise RunnerError(
-            "conftest is not on PATH. Install the version pinned in .devcontainer/mise.toml "
+            "conftest is not on PATH. Install the version pinned in .config/mise/config.toml "
             "(`task tools:install`), or put a conftest binary on PATH."
         )
     return found

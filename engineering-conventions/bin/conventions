@@ -27,7 +27,7 @@
 #   conventions version
 set -eu
 
-# Lockstep with .devcontainer/mise.toml (.claude/rules/toolchain-pins.md).
+# Lockstep with .config/mise/config.toml (.claude/rules/toolchain-pins.md).
 CONFTEST_VERSION=0.70.1
 VALE_VERSION=3.22.0
 JQ_VERSION=1.8.2

@@ -53,7 +53,7 @@ base_setup_cache_dirs() {
     "npm cache:${_HOME}/.cache/npm"
 }
 
-# --- mise (installs every CLI pinned in .devcontainer/mise.toml) ---
+# --- mise (installs every CLI pinned in .config/mise/config.toml) ---
 
 readonly _MISE_SHIMS="${_HOME}/.local/share/mise/shims"
 
@@ -67,15 +67,18 @@ base_setup_path() {
   export PATH="${_MISE_SHIMS}:${_HOME}/.local/bin:${PATH}"
 }
 
-# Installs the CLIs pinned in .devcontainer/mise.toml, then regenerates shims.
+# Installs the CLIs pinned in .config/mise/config.toml, as .config/mise/mise.lock
+# records them, then regenerates shims.
 #
 # mise itself is baked into the image (ARG MISE_VERSION in the Dockerfile).
 # There is deliberately no fallback installer: an unpinned mise would resolve
 # the pins with a different mise than CI uses, which is the drift the single
 # anchor exists to prevent. A missing mise means the image build is wrong.
 #
-# Globals:
-#   MISE_GLOBAL_CONFIG_FILE — read, path to the tool manifest
+# mise discovers the config from the repository root on its own; it is
+# trusted through MISE_TRUSTED_CONFIG_PATHS (devcontainer.json), and trusted
+# here too so a run outside the container needs no prompt.
+#
 # Outputs:
 #   Writes progress to stderr via log()
 # Returns:
@@ -85,10 +88,11 @@ base_install_tools() {
     log "ERROR: mise is not on PATH; rebuild the container (it is baked by .devcontainer/Dockerfile)"
     return 1
   fi
-  local config="${MISE_GLOBAL_CONFIG_FILE:-${_LIB_DIR}/../../mise.toml}"
-  log "Installing pinned CLIs from ${config}..."
-  mise trust "${config}" >/dev/null 2>&1 || true
-  retry 3 5 mise install
+  local root
+  root="$(cd "${_LIB_DIR}/../../.." && pwd)"
+  log "Installing pinned CLIs from ${root}/.config/mise/config.toml..."
+  mise trust "${root}/.config/mise/config.toml" >/dev/null 2>&1 || true
+  (cd "${root}" && retry 3 5 mise install --locked)
   mise reshim >/dev/null 2>&1 || true
 }
 

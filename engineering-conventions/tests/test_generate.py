@@ -297,7 +297,7 @@ def test_empty_style_is_still_valid_yaml() -> None:
 
 def test_vale_accepts_the_generated_styles(product: Path, tmp_path: Path) -> None:
     executable = shutil.which("vale")
-    assert executable, "vale must be on PATH (see .devcontainer/mise.toml)"
+    assert executable, "vale must be on PATH (see .config/mise/config.toml)"
     styles = product / "checks" / "vale"
     (tmp_path / ".vale.ini").write_text(
         f"StylesPath = {styles}\nMinAlertLevel = suggestion\n"

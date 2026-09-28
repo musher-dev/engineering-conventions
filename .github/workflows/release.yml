@@ -24,7 +24,7 @@ concurrency:
 jobs:
   release_please:
     name: Release PR and Tags
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       # An App token, not the default token: GitHub starts no workflow for an

@@ -12,6 +12,6 @@ exclude = ["engineering-conventions/tests/fixtures/**"]
 
 [formatting]
 # Keep hand-aligned comments and tables as written, the way the pins in
-# .devcontainer/mise.toml group their tools.
+# .config/mise/config.toml group their tools.
 align_comments = false
 array_auto_collapse = false

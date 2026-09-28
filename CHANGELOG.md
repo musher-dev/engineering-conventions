@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/musher-dev/engineering-conventions/compare/v0.6.0...v0.6.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **checks:** stop parsing Dockerfile ignore files and reading handles as imports ([#38](https://github.com/musher-dev/engineering-conventions/issues/38)) ([bff02ec](https://github.com/musher-dev/engineering-conventions/commit/bff02ecebcdafe15cfc81a152e4d69efa1743fde))
+
 ## [0.6.0](https://github.com/musher-dev/engineering-conventions/compare/v0.5.0...v0.6.0) (2026-09-28)
 
 

@@ -13,3 +13,6 @@ paths = [".github/workflows/legacy-*.yml"]
 reason = "The legacy workflows are renamed with the deploy split."
 tracking = "https://github.com/your-org/your-repo/issues/1"
 expires = "2026-12-31"
+
+[paths]
+fixtures = ["tests/fixtures/**"]

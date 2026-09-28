@@ -8,7 +8,7 @@ import pytest
 
 from conventions_tools import run
 from conventions_tools.cli import main
-from conventions_tools.loading import as_map, read_json, yaml_problem
+from conventions_tools.loading import as_list, as_map, get_str, read_json, yaml_problem
 from conventions_tools.paths import HOME_ENV
 from conventions_tools.run import Finding, RunnerError
 
@@ -85,6 +85,7 @@ def home(product: Path, tmp_path: Path) -> Path:
     copy = tmp_path / "home"
     shutil.copytree(product / "checks" / "schemas", copy / "checks" / "schemas")
     shutil.copytree(product / "checks" / "data", copy / "checks" / "data")
+    shutil.copytree(product / "bin", copy / "bin")
     (copy / "checks" / "rego").mkdir()
     return copy
 
@@ -179,13 +180,27 @@ def test_input_files(tmp_path: Path) -> None:
         ".devcontainer/mise.toml",
         "nested/mise.toml",
         "README.md",
+        "Taskfile.yml",
+        "services/api/Taskfile.yml",
+        "services/api/taskfiles/lint.Taskfile.yml",
+        "a/b/c/Taskfile.yml",
+        ".config/lefthook.yml",
+        "api/env.schema.yaml",
+        "package.json",
+        ".github/dependabot.yml",
+        ".config/security/trivyignore.yaml",
+        ".devcontainer/devcontainer.json",
+        "CLAUDE.md",
     ):
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).write_text("{}\n")
     assert run.input_files(tmp_path) == [
+        ".config/lefthook.yml",
+        ".config/security/trivyignore.yaml",
         ".devcontainer/mise.toml",
         ".github/actions/nested/deeper/action.yaml",
         ".github/actions/setup-tools/action.yml",
+        ".github/dependabot.yml",
         ".github/rulesets/main-branch.json",
         ".github/workflows/deploy.YML",
         ".github/workflows/release.yaml",
@@ -193,8 +208,72 @@ def test_input_files(tmp_path: Path) -> None:
         ".repo/conventions.toml",
         ".repo/outputs.toml",
         ".repo/repository.toml",
+        "Taskfile.yml",
+        "api/env.schema.yaml",
         "mise.toml",
+        "package.json",
+        "services/api/Taskfile.yml",
+        "services/api/taskfiles/lint.Taskfile.yml",
     ]
+
+
+def test_selection_is_read_from_the_launcher(product: Path) -> None:
+    chosen = run.selection(product)
+    assert chosen.jsonnet.search(".devcontainer/devcontainer.json")
+    assert chosen.jsonnet.search(".devcontainer/python/devcontainer.json")
+    assert not chosen.jsonnet.search("devcontainer.json")
+    for name in ("Dockerfile", "docker/build.Dockerfile", "Containerfile", "Dockerfile.dev"):
+        assert chosen.dockerfiles.search(name), name
+    assert not chosen.dockerfiles.search(".dockerignore")
+    for name in (
+        "CLAUDE.md",
+        "api/CLAUDE.md",
+        ".claude/rules/a/b.md",
+        "docs/decisions/0001-x.md",
+        "docs/adrs/0001-x/+page.md",
+        ".nvmrc",
+        "api/.python-version",
+        ".config/README.md",
+    ):
+        assert chosen.texts.search(name), name
+    assert not chosen.texts.search("README.md")
+    assert chosen.sizes.search("docs/guide.md")
+    assert chosen.text_limit > 0
+
+
+def test_selection_needs_the_launcher_patterns(tmp_path: Path) -> None:
+    (tmp_path / "bin").mkdir()
+    (tmp_path / "bin" / "conventions").write_text("INPUTS='x'\nTEXT_LIMIT=1\n")
+    with pytest.raises(RunnerError, match="no JSONNET pattern"):
+        run.selection(tmp_path)
+
+
+def test_conftest_reason_is_one_line() -> None:
+    error = "Error: parse configurations: parser unmarshal: bad token\n\n\n, path: x.json\n"
+    assert run.conftest_reason(error) == "conftest cannot parse it: parser unmarshal: bad token"
+
+
+def test_inventory_document_embeds_text_sizes_and_parses(product: Path, tmp_path: Path) -> None:
+    (tmp_path / ".devcontainer").mkdir()
+    (tmp_path / ".devcontainer" / "devcontainer.json").write_text('// c\n{"name": "x",}\n')
+    (tmp_path / "Dockerfile").write_text("ARG X=1\nFROM scratch\n")
+    (tmp_path / "broken.Dockerfile").write_text("")
+    (tmp_path / "CLAUDE.md").write_text("@README.md\n")
+    (tmp_path / "big").mkdir()
+    (tmp_path / "big" / "CLAUDE.md").write_text("x" * (run.selection(product).text_limit + 1))
+    files = run.inventory(tmp_path)
+    document = run.inventory_document(tmp_path, files, "sdk-cli", run.selection(product))
+    listing = as_map(document["conventions_inventory"])
+    assert listing["files"] == files
+    assert listing["repository"] == {"name": "sdk-cli"}
+    assert listing["texts"] == {"CLAUDE.md": "@README.md\n"}
+    assert listing["sizes"] == {"CLAUDE.md": 11, "big/CLAUDE.md": 262145}
+    parsed = {
+        get_str(entry, "path"): entry.get("contents")
+        for entry in map(as_map, as_list(listing["parsed"]))
+    }
+    assert parsed[".devcontainer/devcontainer.json"] == {"name": "x"}
+    assert as_map(as_list(parsed["Dockerfile"])[1])["Cmd"] == "from"
 
 
 def test_inventory_walks_a_plain_directory(tmp_path: Path) -> None:

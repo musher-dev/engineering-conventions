@@ -164,6 +164,23 @@ def _ids(stdout: str) -> set[str]:
     return {finding_id for _, finding_id, _ in _found(stdout)}
 
 
+def test_a_file_parsed_first_is_reported_alike(tmp_path: Path) -> None:
+    # devcontainer.json and Dockerfiles are parsed before the check (decision
+    # 0015); one that does not parse is a PARSE error from either runner.
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    (repo / ".devcontainer").mkdir()
+    (repo / ".devcontainer" / "devcontainer.json").write_text('// fine\n{"name": "x",}\n')
+    (repo / "Dockerfile").write_text("FROM scratch\n")
+    (repo / "docker").mkdir()
+    (repo / "docker" / "build.Dockerfile").write_text("")
+    completed = _launch("check", "--output", "json", cwd=repo)
+    assert completed.returncode == 1, completed.stderr
+    assert _found(completed.stdout) == [("docker/build.Dockerfile", "PARSE", "error")]
+    assert completed.stdout == render_json(check(PRODUCT, repo, utc_now()))
+    text = _launch("check", cwd=repo).stdout
+    assert text == render_text(check(PRODUCT, repo, utc_now()), requirement_titles(PRODUCT))
+
+
 def test_repository_flag_matches_the_runner(tmp_path: Path) -> None:
     repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
     completed = _launch("check", "--output", "json", "--repository", "platform-web", cwd=repo)

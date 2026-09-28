@@ -148,12 +148,12 @@
         },
         "validation": { "$ref": "#/definitions/validation" },
         "aliases": {
-          "description": "Identifiers this requirement had elsewhere, as <repository-short-name>:<id>, e.g. platform:CI-14.",
+          "description": "Identifiers this requirement had elsewhere, as <repository-short-name>:<id>, e.g. platform:CI-14, or platform:CI-13b for one part of a check that did several things.",
           "type": "array",
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9]*-[0-9]+$"
+            "pattern": "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9]*-[0-9]+[a-z]?$"
           }
         },
         "replaced_by": {

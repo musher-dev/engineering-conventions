@@ -1,0 +1,7 @@
+[
+  {
+    "id": "HOOKS-01",
+    "path": ".config/lefthook.yml",
+    "severity": "warning"
+  }
+]

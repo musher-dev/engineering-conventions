@@ -33,7 +33,7 @@ requirements:
     title: A dev container stack's service runs an image with a fixed tag or a digest
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -41,7 +41,7 @@ requirements:
     title: A dev container stack publishes its ports on the loopback address only
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -49,7 +49,7 @@ requirements:
     title: A dev container stack publishes its host ports from the reserved range 15432-15460
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -103,7 +103,7 @@ services:
     image: pgvector/pgvector:latest
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-12
 
@@ -128,7 +128,7 @@ ports:
   - "15432:5432"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-13
 
@@ -153,4 +153,4 @@ ports:
   - "127.0.0.1:5432:5432"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2 · Formerly: development-container PORT-05 (in part)
+Checked by: conftest · Severity: warning · Since: 0.6.3 · Formerly: development-container PORT-05 (in part)

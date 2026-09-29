@@ -39,7 +39,7 @@ requirements:
     title: A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/<name>/devcontainer.json
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -47,7 +47,7 @@ requirements:
     title: A dev container that uses Features commits its lockfile beside its configuration
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -55,7 +55,7 @@ requirements:
     title: The lockfile records exactly the Features the configuration uses
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -63,7 +63,7 @@ requirements:
     title: A dev container's base image names a fixed tag or a digest
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -71,7 +71,7 @@ requirements:
     title: A dev container sets remoteUser, and neither remoteUser nor containerUser is root
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -79,7 +79,7 @@ requirements:
     title: Every script a lifecycle command runs is a file the repository holds
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -87,7 +87,7 @@ requirements:
     title: A dev container commits no value for a variable an environment schema marks secret
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -95,7 +95,7 @@ requirements:
     title: A named volume a dev container mounts is musher-${devcontainerId}-<purpose>
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -103,7 +103,7 @@ requirements:
     title: Dependabot's devcontainers ecosystem or Renovate keeps a dev container's image and Features current
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -111,7 +111,7 @@ requirements:
     title: A workflow builds the dev container, with --frozen-lockfile when it has a lockfile
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -163,7 +163,7 @@ schema end up at the repository root. A configuration nested deeper than one dir
 .devcontainer/tools/python/devcontainer.json
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-02
 
@@ -187,7 +187,7 @@ reviewed pull request. The root form's lockfile is `.devcontainer-lock.json`.
 .devcontainer/devcontainer.json          # uses Features, no lockfile
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-03
 
@@ -217,7 +217,7 @@ through `dependsOn` is locked without being named in the configuration, and is n
 
 Run `devcontainer upgrade --workspace-folder .` to rewrite the lockfile.
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-04
 
@@ -248,7 +248,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 FROM mcr.microsoft.com/devcontainers/base
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-05
 
@@ -270,7 +270,7 @@ unset, the user is whatever the image's metadata says, which a reader of the con
 "remoteUser": "root"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-06
 
@@ -294,7 +294,7 @@ each relative path to a script (`.sh`, `.bash`, `.py`, `.js`, `.mjs`, `.cjs`, `.
 "postCreateCommand": "bash .devcontainer/post-create.sh"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-07
 
@@ -317,7 +317,7 @@ environment, or empty; Codespaces users receive it through `secrets` (ENVS-15).
 "remoteEnv": { "OPENAI_API_KEY": "sk-live-…" }
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-08
 
@@ -341,7 +341,7 @@ holds. `<purpose>` is lower-case words joined by hyphens. Bind mounts and anonym
 "mounts": ["source=gh-config,target=/home/vscode/.config/gh,type=volume"]
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-09
 
@@ -374,7 +374,7 @@ updates:
       interval: "weekly"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3
 
 ### DEVC-10
 
@@ -399,4 +399,4 @@ lockfile is stale, which is how DEVC-03 is enforced beyond the references this c
 - run: npx -y @devcontainers/cli@0.89.0 build --workspace-folder .
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2
+Checked by: conftest · Severity: warning · Since: 0.6.3

@@ -5886,7 +5886,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/<name>/devcontainer.json",
           "waivable": true
@@ -5899,7 +5899,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container that uses Features commits its lockfile beside its configuration",
           "waivable": true
@@ -5912,7 +5912,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "The lockfile records exactly the Features the configuration uses",
           "waivable": true
@@ -5925,7 +5925,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container's base image names a fixed tag or a digest",
           "waivable": true
@@ -5938,7 +5938,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container sets remoteUser, and neither remoteUser nor containerUser is root",
           "waivable": true
@@ -5951,7 +5951,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "Every script a lifecycle command runs is a file the repository holds",
           "waivable": true
@@ -5964,7 +5964,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container commits no value for a variable an environment schema marks secret",
           "waivable": true
@@ -5977,7 +5977,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A named volume a dev container mounts is musher-${devcontainerId}-<purpose>",
           "waivable": true
@@ -5990,7 +5990,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "Dependabot's devcontainers ecosystem or Renovate keeps a dev container's image and Features current",
           "waivable": true
@@ -6003,7 +6003,7 @@
           "package": "conventions.checks.dev_containers.configuration",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A workflow builds the dev container, with --frozen-lockfile when it has a lockfile",
           "waivable": true
@@ -6016,7 +6016,7 @@
           "package": "conventions.checks.dev_containers.stacks",
           "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container stack's service runs an image with a fixed tag or a digest",
           "waivable": true
@@ -6029,7 +6029,7 @@
           "package": "conventions.checks.dev_containers.stacks",
           "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container stack publishes its ports on the loopback address only",
           "waivable": true
@@ -6044,7 +6044,7 @@
           "package": "conventions.checks.dev_containers.stacks",
           "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container stack publishes its host ports from the reserved range 15432-15460",
           "waivable": true
@@ -6264,7 +6264,7 @@
           "package": "conventions.checks.environment.env_contract",
           "path": "definitions/conventions/environment/env-contract.md",
           "severity": "warning",
-          "since": "0.6.2",
+          "since": "0.6.3",
           "status": "proposed",
           "title": "A dev container's secrets name exactly the variables its environment schema takes from the host",
           "waivable": true

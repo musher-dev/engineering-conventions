@@ -56,7 +56,7 @@ requirements:
     title: A dev container's secrets name exactly the variables its environment schema takes from the host
     status: proposed
     severity: warning
-    since: 0.6.2
+    since: 0.6.3
     validation:
       engine: conftest
       package: conventions.checks.environment.env_contract
@@ -183,7 +183,7 @@ bindings:
 "secrets": {}
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.6.2 · Formerly: development-container ENV-06
+Checked by: conftest · Severity: warning · Since: 0.6.3 · Formerly: development-container ENV-06
 
 ## References
 

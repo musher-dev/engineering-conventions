@@ -176,7 +176,7 @@ that repository.
 
 ```toml
 [tools]
-"github:musher-dev/engineering-conventions" = "0.3.0"
+"github:musher-dev/engineering-conventions" = "X.Y.Z"
 ```
 
 **Incorrect:**

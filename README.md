@@ -29,7 +29,11 @@ For example, GHA-07 says *a workflow's name is its filename stem in Title Case*.
 `.github/workflows/validate.yml` says `name: CI` gets:
 
 ```text
-warning [GHA-07] .github/workflows/validate.yml — name "CI" should be "Validate": a workflow's name is its filename stem in Title Case https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
+GHA-07  warning  1 finding
+A workflow's name is its filename stem in Title Case
+https://github.com/musher-dev/engineering-conventions/blob/vX.Y.Z/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
+  .github/workflows/validate.yml
+    name "CI" should be "Validate": a workflow's name is its filename stem in Title Case
 ```
 
 If it helps, think of a **building code**:
@@ -93,7 +97,7 @@ Start from the part of your repository you are working on:
 
 | Topic | Governs in your repository | Conventions | Requirements |
 | --- | --- | --- | --- |
-| [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `mise.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-09 |
+| [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-09 |
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `CLAUDE.md`, `.claude/rules/`, `AGENTS.md` | EC-0013 | AGENT-01 – AGENT-08 |
 | [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-12 |
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |

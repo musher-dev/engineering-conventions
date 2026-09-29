@@ -201,9 +201,10 @@ requirement's severity from `warning` to `error`. A profile can never lower a se
 falls back to the kind's profile or `base-repo` rather than to nothing, so a typo in `profile` never switches every
 check off.
 
-The shipped profiles are documented in `definitions/profiles/README.md`. In the 0.x series `base-repo` includes the
-`ADOPT`, `GHA`, `OUT` and `REPO` families with proposed requirements reported, so a repository sees every finding it
-would face before any of them can fail its build, and every kind's profile inherits it.
+The shipped profiles, and the families and requirements each includes, are documented in
+[the profiles README](../../profiles/README.md). In the 0.x series `base-repo` reports proposed requirements, so a
+repository sees every finding it would face before any of them can fail its build, and every kind's profile inherits
+it.
 
 ## Requirements
 
@@ -430,7 +431,7 @@ reported on `.config/mise/config.toml`, the file to add the pin to, and the one 
 ```toml
 # .config/mise/config.toml
 [tools]
-"github:musher-dev/engineering-conventions" = "0.2.0"
+"github:musher-dev/engineering-conventions" = "X.Y.Z"
 ```
 
 **Incorrect:**

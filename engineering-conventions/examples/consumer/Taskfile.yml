@@ -11,7 +11,7 @@ vars:
 
 tasks:
   setup:
-    desc: Install the tools pinned in mise.toml.
+    desc: Install the tools pinned in .config/mise/config.toml.
     cmds:
       - mise install
 

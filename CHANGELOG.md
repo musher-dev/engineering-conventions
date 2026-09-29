@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.2](https://github.com/musher-dev/engineering-conventions/compare/v0.6.1...v0.6.2) (2026-09-29)
+
+
+### Features
+
+* **conventions:** add the release conventions (EC-0024 to EC-0026) ([d94523b](https://github.com/musher-dev/engineering-conventions/commit/d94523be9e4cf2e7b7ce2845449791c645a8c3d3))
+* **conventions:** add the site and machine image output kinds ([d94523b](https://github.com/musher-dev/engineering-conventions/commit/d94523be9e4cf2e7b7ce2845449791c645a8c3d3))
+* **schemas:** let a repository adopt the conventions one family at a time ([d94523b](https://github.com/musher-dev/engineering-conventions/commit/d94523be9e4cf2e7b7ce2845449791c645a8c3d3))
+
+
+### Bug Fixes
+
+* **checks:** leave a malformed repository name to REPO-08 ([#46](https://github.com/musher-dev/engineering-conventions/issues/46)) ([43b94d1](https://github.com/musher-dev/engineering-conventions/commit/43b94d12449c927726db069538c88a58eddc0e7d))
+* **checks:** stop reporting advice text, config-named files and build output ([#44](https://github.com/musher-dev/engineering-conventions/issues/44)) ([293d25c](https://github.com/musher-dev/engineering-conventions/commit/293d25ccf6e89a30abd5588c5a6295367eb4cd5c))
+* **rulesets:** make the musher-release App the release-tag bypass actor ([f266320](https://github.com/musher-dev/engineering-conventions/commit/f2663204a68f6d4d0d1348f7c3c6e00ea087239a))
+
 ## [0.6.1](https://github.com/musher-dev/engineering-conventions/compare/v0.6.0...v0.6.1) (2026-09-28)
 
 

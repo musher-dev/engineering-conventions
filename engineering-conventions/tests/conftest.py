@@ -1,3 +1,7 @@
+import os
+import shutil
+import subprocess
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -17,6 +21,35 @@ GIT_LOCATION = (
     "GIT_ALTERNATE_OBJECT_DIRECTORIES",
     "GIT_PREFIX",
 )
+
+
+# The tools the suite runs as subprocesses, many times over. Through a mise
+# shim each call re-resolves the toolchain, which costs more than the call.
+TOOLS = ("conftest", "vale", "jq", "check-jsonschema")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _tools_resolved_once(product: Path) -> Iterator[None]:
+    """Put each pinned tool's own directory on PATH, ahead of the mise shims."""
+    mise = shutil.which("mise")
+    if mise is None:
+        yield
+        return
+    directories: list[str] = []
+    for tool in TOOLS:
+        found = subprocess.run(
+            [mise, "which", tool],
+            cwd=product.parent,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if found.returncode == 0 and found.stdout.strip():
+            directories.append(str(Path(found.stdout.strip()).parent))
+    with pytest.MonkeyPatch.context() as patch:
+        if directories:
+            patch.setenv("PATH", os.pathsep.join([*directories, os.environ.get("PATH", "")]))
+        yield
 
 
 @pytest.fixture(autouse=True)

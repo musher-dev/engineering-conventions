@@ -303,6 +303,25 @@ def test_inventory_uses_git_at_a_work_tree_root(tmp_path: Path) -> None:
     assert run.inventory(tmp_path) == [".gitignore", "kept.txt"]
 
 
+def test_conftest_loads_the_policy_files_and_not_their_tests(stub: Path, home: Path) -> None:
+    rego = home / "checks" / "rego"
+    (rego / "lib").mkdir()
+    for name in ("b.rego", "b_test.rego", "lib/a.rego", "lib/a_test.rego"):
+        (rego / name).write_text("package x\n")
+
+    command = run.conftest_command(home, Path("/scratch"), [])
+
+    assert command[1:7] == [
+        "test",
+        "--combine",
+        "-p",
+        str(rego / "b.rego"),
+        "-p",
+        str(rego / "lib" / "a.rego"),
+    ]
+    assert str(stub / "conftest") == command[0]
+
+
 def test_check_plumbs_runtime_inventory_and_release(stub: Path, home: Path, repo: Path) -> None:
     (home / "checks" / "data" / "release.json").write_text(
         json.dumps({"conventions": {"release": {"version": "1.2.3"}}})
@@ -315,6 +334,7 @@ def test_check_plumbs_runtime_inventory_and_release(stub: Path, home: Path, repo
     assert report.findings == [WARNING, error]
     assert report.errors == []
     args = (stub / "args").read_text().splitlines()
+    # The rule directory holds no policy file, so it is passed whole.
     assert args[:4] == ["test", "--combine", "-p", str(home / "checks" / "rego")]
     data = [args[i + 1] for i, arg in enumerate(args) if arg == "-d"]
     assert data[0] == str(home / "checks" / "data" / "index.json")

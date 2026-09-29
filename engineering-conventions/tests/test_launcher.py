@@ -27,13 +27,12 @@ LAUNCHER = PRODUCT / "bin" / "conventions"
 
 # Cases whose findings depend on neither the date (waiver expiry) nor release
 # data, which the launcher takes from the bundle rather than from the case.
+# clean, gha-07-display-name and gha-15-required-context are held to the runner
+# by test_launcher_prints_what_the_runner_prints instead.
 CASES = [
-    "clean",
     "mise-pin-without-declaration",
     "adopt-02-invalid-declaration",
     "adopt-09-unpinned",
-    "gha-07-display-name",
-    "gha-15-required-context",
 ]
 
 
@@ -41,18 +40,25 @@ CASES = [
 # GitHub Actions tests the same thing as a run anywhere else.
 NAME_SOURCES = ("CONVENTIONS_REPOSITORY", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE")
 
+# The launcher runs the tools on PATH, which the suite has already resolved to
+# the pinned versions, rather than paying mise's start-up on every tool call.
+# test_launcher_runs_its_tools_through_mise keeps the mise path covered.
+ON_PATH = {"CONVENTIONS_NO_MISE": "1"}
+
 
 def _launch(
     *arguments: str, cwd: Path, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
     environment = {key: value for key, value in os.environ.items() if key not in NAME_SOURCES}
+    environment |= ON_PATH | (env or {})
     return subprocess.run(
         [str(LAUNCHER), *arguments],
         cwd=cwd,
         capture_output=True,
         text=True,
         check=False,
-        env=environment | (env or {}),
+        # An empty value removes the variable, so a test can unset a default.
+        env={key: value for key, value in environment.items() if value},
     )
 
 
@@ -70,6 +76,16 @@ def test_launcher_matches_the_fixture(name: str, tmp_path: Path) -> None:
     case = fixture_repos_dir(PRODUCT) / name
     repo = materialize(case, tmp_path / name)
     completed = _launch("check", "--output", "json", cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert _found(completed.stdout) == expected_findings(case)
+
+
+def test_launcher_runs_its_tools_through_mise(tmp_path: Path) -> None:
+    if shutil.which("mise") is None:
+        pytest.skip("mise is not installed")
+    case = fixture_repos_dir(PRODUCT) / "gha-07-display-name"
+    repo = materialize(case, tmp_path / "repo")
+    completed = _launch("check", "--output", "json", cwd=repo, env={"CONVENTIONS_NO_MISE": ""})
     assert completed.returncode == 0, completed.stderr
     assert _found(completed.stdout) == expected_findings(case)
 

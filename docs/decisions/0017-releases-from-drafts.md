@@ -99,10 +99,10 @@ published. Artifacts pushed somewhere other than the GitHub Release (a package r
 release itself.
 
 **One release App.** Every repository mints its release token from one dedicated GitHub App, identified by the
-organization variable `RELEASE_APP_CLIENT_ID` and the secret `RELEASE_APP_PRIVATE_KEY`, through
-`actions/create-github-app-token`'s `client-id` input. The App's permissions are contents and pull requests. It is
-the only actor that may bypass a repository's tag ruleset, and immutable releases are enabled as an organization
-policy.
+Actions variable `RELEASE_APP_CLIENT_ID` and the secret `RELEASE_APP_PRIVATE_KEY`, set on each repository that
+releases, through `actions/create-github-app-token`'s `client-id` input. The App's permissions are contents and pull
+requests, plus administration read to confirm that immutable releases are enabled. It is the only actor that may
+bypass a repository's tag ruleset, and immutable releases are enabled on every repository that releases.
 
 **Versions before 1.0.** release-please sets both `bump-minor-pre-major` and `bump-patch-for-minor-pre-major`. In 0.x,
 a breaking change bumps the minor version, and a `feat` or `fix` bumps the patch. This is the reading Cargo and npm

@@ -157,10 +157,10 @@ Checked by: conftest · Severity: warning · Since: 0.6.2
 
 **The release workflow mints its tokens from the release App, scoped to what each job needs.**
 
-The organization releases through one GitHub App, identified by the organization variable `RELEASE_APP_CLIENT_ID`
-and the secret `RELEASE_APP_PRIVATE_KEY`. One App means one bypass actor on every tag ruleset
-([REL-13](release-tags.md#rel-13)) and one place to rotate a key. `actions/create-github-app-token` names an App by
-`client-id`; `app-id` is its older input. Each job asks only for the permissions it uses (`permission-contents`,
+The organization releases through one GitHub App, identified by the Actions variable `RELEASE_APP_CLIENT_ID` and
+the secret `RELEASE_APP_PRIVATE_KEY`, set on each repository that releases. One App means one bypass actor on every
+tag ruleset ([REL-13](release-tags.md#rel-13)) and one place to rotate a key. `actions/create-github-app-token`
+names an App by `client-id`; `app-id` is its older input. Each job asks only for the permissions it uses (`permission-contents`,
 `permission-pull-requests`), so a token that leaks from a job can do only that job's work. The check reports an App
 token step in `release.yml` that uses another `client-id` or `private-key`, uses `app-id`, or requests no
 `permission-*` input.

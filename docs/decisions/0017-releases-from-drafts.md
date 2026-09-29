@@ -66,20 +66,32 @@ kebab-case `component`. Tags always carry the `v`.
 | `<component>-vX.Y.Z` | not valid | `version_prefix` | yes | `extractVersion` | rejected: the separator is also a character of kebab-case components |
 | `X.Y.Z` | not valid | stripped | yes | yes | rejected: not a Go tag; mixes with other repositories' `v` tags |
 
-**Release pull requests.** Each package gets its own release pull request (`separate-pull-requests: true`), titled
-`chore(release): release${component} ${version}`. release-please substitutes `${component}` with a leading space, or
-with nothing for a single package, so one pattern serves both. The repository's commit rules declare the `release`
-scope. The title is the commit subject when the pull request squash-merges.
+**Release pull requests.** A repository has one release pull request at a time, however many packages it releases.
+
+- **One package.** `pull-request-title-pattern` is `chore(release): release${component} ${version}`.
+  release-please substitutes `${component}` with nothing for a single package, so the title reads
+  `chore(release): release 1.4.2`.
+- **Several packages.** `separate-pull-requests` stays `false`, its default, and release-please groups every package
+  with releasable changes into one pull request. `group-pull-request-title-pattern` is
+  `chore(release): release ${branch}`, which reads `chore(release): release main`. A grouped title has no version of
+  its own: release-please's merge plugin fills `${component}` and `${version}` only from a root `"."` package and
+  leaves them empty otherwise, so the pattern names the branch (`${branch}`; `${scope}` would give `(main)`). The
+  grouped body still lists each package's changes under its own `<component>: <version>` heading.
+
+Merging the grouped pull request cuts one release per changed package, each with its own version, `<component>/vX.Y.Z`
+tag and draft release. The repository's commit rules declare the `release` scope. The title is the commit subject when
+the pull request squash-merges.
 
 **The release is drafted, filled, then published.** The config sets `draft: true` and `force-tag-creation: true`. The
 repository's `release.yml` then does everything in the run that created the release:
 
 1. The release-please job, with the release App's token, creates the tag and the draft release.
-2. A job gated on the release having been created checks out the tag and builds. It writes a `SHA256SUMS` over the
-   assets, attests them with `actions/attest` using `subject-checksums`, and uploads them to the draft without
-   overwriting anything.
-3. A last job publishes the draft with the release App's token, and fails unless the published release reports
-   `immutable: true`.
+2. A job gated on a release having been created checks out the tag and builds. With several packages it is a matrix
+   over release-please's `paths_released` output, one entry per released package, each reading that package's
+   `<path>--tag_name` output. It writes a `SHA256SUMS` over the assets, attests them with `actions/attest` using
+   `subject-checksums`, and uploads them to the draft without overwriting anything.
+3. A last job, one per released package, publishes the draft with the release App's token, and fails unless the
+   published release reports `immutable: true`.
 
 A `workflow_dispatch` input `tag` re-runs steps 2 and 3 for a release that is still a draft, and refuses one that is
 published. Artifacts pushed somewhere other than the GitHub Release (a package registry, a site) are published by a
@@ -115,8 +127,9 @@ after the release they were needed for; a `Release-As:` commit footer pins a ver
 
 ### Positive
 
-- One tag grammar that Go, mise, aqua and Renovate all read, and one release pull request title across the
-  organization.
+- One tag grammar that Go, mise, aqua and Renovate all read, and one release pull request per repository, titled the
+  same way across the organization.
+- One pull request to review and one release run per release, however many packages a repository holds.
 - A release is never visible without its assets: a draft is hidden from `releases/latest`, from mise and from
   Renovate until it is published.
 - Published bytes and tags cannot change under a consumer who verified them.
@@ -129,7 +142,11 @@ after the release they were needed for; a `Release-As:` commit footer pins a ver
 - The provenance of assets attested in `release.yml` records the push to the default branch, not the tag. Consumers
   who verify with `gh attestation verify --source-ref` or `--signer-workflow` change their command at the first release
   made this way. mise checks only the repository, and is unaffected.
-- A repository with several packages can have several release pull requests open at once.
+- Packages that change together release together: a package's release waits for the one release pull request, and
+  its version is still its own.
+- A repository that switches from one release pull request per package closes those pull requests first. release-please
+  labels each `autorelease: pending`, and a pending label on a pull request it no longer tracks stops it opening the
+  grouped one; close them and remove their `autorelease: pending` labels in the change that switches.
 - A broken published release cannot be repaired, only superseded by the next version.
 
 ### Neutral
@@ -161,7 +178,8 @@ against this record.
 | Attach, attest and publish in `release.yml` | One run from tag to published release | **chosen** |
 | Pre-1.0: minor bump for `feat` | This repository's rule until now | rejected: the minor stops meaning "may break" |
 | Pre-1.0: both flags | Breaking bumps the minor, `feat` and `fix` bump the patch | **chosen**; the rule most repositories already use |
-| One grouped release pull request | `separate-pull-requests: false` | rejected: packages could not be released on their own |
+| One release pull request for every package | `separate-pull-requests: false`, `group-pull-request-title-pattern` | **chosen** |
+| One release pull request per package | `separate-pull-requests: true` | rejected: one pull request and one release run keep the pipeline cleaner and more intuitive, which is how the platform worked originally |
 
 ## References
 
@@ -169,6 +187,8 @@ against this record.
 - [Immutable releases (GitHub Docs)](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/immutable-releases)
 - [release-please manifest releaser](https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md)
 - [release-please changelog](https://github.com/googleapis/release-please/blob/main/CHANGELOG.md), 17.2.0: `force-tag-creation`
+- [release-please: the merge plugin](https://github.com/googleapis/release-please/blob/main/src/plugins/merge.ts),
+  which groups packages into one release pull request and titles it
 - [release-please-action releases](https://github.com/googleapis/release-please-action/releases)
 - [`GITHUB_TOKEN`: triggering a workflow from a workflow](https://docs.github.com/en/actions/concepts/security/github_token)
 - [actions/create-github-app-token](https://github.com/actions/create-github-app-token)

@@ -54,9 +54,17 @@ run on (conftest, OPA, Vale), which have their own security policies.
   sha256sum -c SHA256SUMS
   gh attestation verify engineering-conventions-<version>.tar.gz \
     --repo musher-dev/engineering-conventions \
-    --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
-    --source-ref refs/tags/v<version>
+    --signer-workflow musher-dev/engineering-conventions/.github/workflows/release.yml \
+    --source-ref refs/heads/main
   ```
+
+  The release workflow attests the assets in the run that creates the tag, so
+  the attestation records the default branch. Releases up to 0.6.1 were
+  attested by `publish.yml` from their tag; verify those with
+  `--signer-workflow …/publish.yml --source-ref refs/tags/v<version>`.
+- Releases are immutable: the assets are attached to a draft release, which
+  is published last, and the release workflow fails unless GitHub reports the
+  published release as immutable. Its assets and tag cannot change afterwards.
 
 - Release tags are immutable: the `Release Tags` ruleset
   (`.github/rulesets/release-tags.json`) blocks creating, updating or deleting

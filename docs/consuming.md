@@ -43,7 +43,7 @@ conventions prose                      # lint Markdown with the MusherConvention
 With the identity declaration below, that is the whole adoption. What mise does with the line:
 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
-  proves the `Publish` workflow built it from the `v<version>` tag. `mise lock` records both in
+  proves this repository's release workflow built it. `mise lock` records both in
   `.config/mise/mise.lock`.
 - It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`) through `mise exec` at the
   versions the release was tested with, so the release pin is the only pin to maintain.
@@ -211,11 +211,16 @@ Download the release tarball, verify it, and run its launcher with conftest (and
 version=0.2.0
 gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
 gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
-  --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
-  --source-ref "refs/tags/v${version}"
+  --signer-workflow musher-dev/engineering-conventions/.github/workflows/release.yml \
+  --source-ref refs/heads/main
 tar -xzf "engineering-conventions-${version}.tar.gz"
 CONVENTIONS_NO_MISE=1 engineering-conventions/bin/conventions check
 ```
+
+Releases up to 0.6.1 were attested by `publish.yml` from their tag: verify one of those with
+`--signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml --source-ref "refs/tags/v${version}"`.
+Later releases are attested by `release.yml` in the run that cut them, on the default branch
+([decision 0017](decisions/0017-releases-from-drafts.md)).
 
 With no mise pin, the pin is `conventions.version` in the declaration; ADOPT-08 reports a declaration that names a
 different release from the one being run. The release also attaches the Vale style alone, as `MusherConventions.zip`,

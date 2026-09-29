@@ -31,7 +31,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REPO\", \"TASK\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOOL\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -74,6 +74,7 @@
   "conf-03-unindexed-file": [
     [".config/markdown/markdownlint.jsonc", "CONF-03", "warning", ".config/markdown/markdownlint.jsonc is not listed in .config/README.md; add a row for `markdown/markdownlint.jsonc` naming its tool and caller", true]
   ],
+  "conf-04-passes-named-by-config": [],
   "conf-04-uncalled-file": [
     [".config/markdown/markdownlint.jsonc", "CONF-04", "warning", "nothing names .config/markdown/markdownlint.jsonc; pass it by path from a Taskfile, the lefthook configuration, a workflow, an action or devcontainer.json, or delete it", true]
   ],
@@ -293,11 +294,18 @@
   "gha-46-force-push": [
     [".github/workflows/validate.yml", "GHA-46", "warning", "step \"Update the generated branch\" in job \"lint\" force-pushes with \"--force\", which overwrites whatever the remote holds; use --force-with-lease=<branch>:<expected-sha> so the push fails if the branch moved", true]
   ],
+  "gha-46-passes-advice-text": [],
   "gha-47-release-please-token": [
-    [".github/workflows/release.yml", "GHA-47", "warning", "step \"release\" in job \"release\" runs release-please with token: ${{ secrets.GITHUB_TOKEN }}, the default GITHUB_TOKEN; GitHub starts no workflow for what the default token creates, so the release pull request never reports its required checks and the tag never starts the publish workflow; pass a GitHub App installation token as token:", true]
+    [".github/workflows/release.yml", "GHA-47", "warning", "step \"release\" in job \"release\" runs release-please with token: ${{ secrets.GITHUB_TOKEN }}, the default GITHUB_TOKEN; GitHub starts no workflow for what the default token creates, so the release pull request never reports its required checks and the tag never starts the publish workflow; pass a GitHub App installation token as token:", true],
+    [".github/workflows/release.yml", "REL-02", "warning", "step \"release\" in job \"release\" runs release-please, but the repository has no release-please config; add .github/release-please/config.json and .github/release-please/manifest.json", true],
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without config-file: .github/release-please/config.json; pass it so the action reads the repository's release-please files", true],
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without manifest-file: .github/release-please/manifest.json; pass it so the action reads the repository's release-please files", true]
   ],
   "gha-48-terminal-skip": [
-    [".github/workflows/release.yml", "GHA-48", "warning", "job \"announce\" is the last job of a release workflow and its if: condition does not include !cancelled(); a skipped job anywhere before it skips it too and the run still reports success, so set if: ${{ !cancelled() && needs.<job>.result == 'success' }} with each result it depends on", true]
+    [".github/workflows/release.yml", "GHA-48", "warning", "job \"announce\" is the last job of a release workflow and its if: condition does not include !cancelled(); a skipped job anywhere before it skips it too and the run still reports success, so set if: ${{ !cancelled() && needs.<job>.result == 'success' }} with each result it depends on", true],
+    [".github/workflows/release.yml", "REL-02", "warning", "step \"release\" in job \"release\" runs release-please, but the repository has no release-please config; add .github/release-please/config.json and .github/release-please/manifest.json", true],
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without config-file: .github/release-please/config.json; pass it so the action reads the repository's release-please files", true],
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without manifest-file: .github/release-please/manifest.json; pass it so the action reads the repository's release-please files", true]
   ],
   "gha-49-production-push": [
     [".github/workflows/deploy-production.yml", "GHA-49", "warning", "the workflow acts on production (its filename names production) but runs on a push to a branch; a merge does not release, so it acts on or reports about the previous release; trigger it from the release (a tag, release: published, or workflow_call from the deploy), a schedule, or workflow_dispatch", true]
@@ -358,13 +366,77 @@
   "out-06-publish-workflow": [
     [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"validate.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
   ],
-  "out-06-release-workflow": [],
+  "out-06-release-workflow": [
+    [".github/workflows/release.yml", "REL-02", "warning", "step \"release\" in job \"release\" runs release-please, but the repository has no release-please config; add .github/release-please/config.json and .github/release-please/manifest.json", true],
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without config-file: .github/release-please/config.json; pass it so the action reads the repository's release-please files", true],
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without manifest-file: .github/release-please/manifest.json; pass it so the action reads the repository's release-please files", true]
+  ],
   "out-07-contract": [
-    [".repo/outputs.toml", "OUT-07", "warning", "output \"api-image\" is a contract but does not name its format or definition; add the interface format and the definition file", true]
+    [".repo/outputs.toml", "OUT-07", "warning", "output \"api-image\" is a contract but does not name its format or definition; add the interface format and the definition file", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-image) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "out-12-site-location": [
     [".repo/outputs.toml", "OUT-12", "warning", "output \"docs-site\" is a site but its location \"docs.example.com\" is not an https:// origin; give the URL people and tools fetch it from", true]
   ],
+  "rel-01-unreleased-output": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-bundle) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "rel-02-root-config": [
+    ["release-please-config.json", "REL-02", "warning", "release-please's config and release-please manifest live at .github/release-please/config.json and .github/release-please/manifest.json; move release-please-config.json there, so every repository keeps them in one place and the release workflow names them", true]
+  ],
+  "rel-03-release-type-input": [
+    [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release_please\" passes release-type, which makes release-please ignore its config and release-please manifest; remove it and set release-type in .github/release-please/config.json", true]
+  ],
+  "rel-04-unversioned-package": [
+    [".github/release-please/manifest.json", "REL-04", "warning", "the release-please manifest has no version for package \".\"; add \".\": \"<its current version>\" so release-please does not release its history again", true]
+  ],
+  "rel-05-component-tag": [
+    [".github/release-please/config.json", "REL-05", "warning", "the release-please config tags the only package with its component; set \"include-component-in-tag\": false so tags read vX.Y.Z", true]
+  ],
+  "rel-06-release-title": [
+    [".github/release-please/config.json", "REL-06", "warning", "the release-please config titles release pull requests \"chore: release ${version}\"; set \"pull-request-title-pattern\": \"chore(release): release${component} ${version}\" so every release pull request reads the same", true]
+  ],
+  "rel-07-published-release": [
+    [".github/release-please/config.json", "REL-07", "warning", "the release-please config does not set \"draft\": true; release-please must create each release as a draft, with its tag, so the assets are attached before the release is published and becomes immutable", true],
+    [".github/release-please/config.json", "REL-07", "warning", "the release-please config does not set \"force-tag-creation\": true; release-please must create each release as a draft, with its tag, so the assets are attached before the release is published and becomes immutable", true]
+  ],
+  "rel-08-pre-major-bump": [
+    [".github/release-please/config.json", "REL-08", "warning", "package \".\" is before 1.0 and does not set \"bump-patch-for-minor-pre-major\": true; in 0.x a breaking change bumps the minor version and anything else bumps the patch", true]
+  ],
+  "rel-09-visible-chore": [
+    [".github/release-please/config.json", "REL-09", "warning", "the release-please config's changelog shows \"chore\", so a chore commit cuts a release; mark its section hidden: true", true]
+  ],
+  "rel-10-release-as": [
+    [".github/release-please/config.json", "REL-10", "warning", "package \".\" still sets \"release-as\", which pins every later release; remove it now that the release it was for is cut, and pin a version with a Release-As: commit footer instead", true]
+  ],
+  "rel-12-unprotected-tags": [
+    [".github/release-please/config.json", "REL-12", "warning", "no active tag ruleset in .github/rulesets/ covers refs/tags/v1.0.0, so anyone who can push may create, move or delete it; add one with target \"tag\" whose ref_name includes refs/tags/v*", true]
+  ],
+  "rel-13-admin-bypass": [
+    [".github/rulesets/release-tags.json", "REL-13", "warning", "the tag ruleset protecting release tags lets a OrganizationAdmin bypass it; only the release App (actor_type \"Integration\") may create a release tag", true]
+  ],
+  "rel-15-second-release-workflow": [
+    [".github/workflows/release-notes.yml", "REL-15", "warning", "step \"Refresh the release pull request's notes\" in job \"notes\" runs release-please outside release.yml; run it only in .github/workflows/release.yml, so one workflow owns release pull requests, tags and releases", true]
+  ],
+  "rel-16-legacy-app-id": [
+    [".github/workflows/release.yml", "REL-16", "warning", "step \"app_token\" in job \"release_please\" mints the release token with app-id rather than client-id; mint it from the release App with client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}, private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }} and a permission-* input for each permission the job needs", true],
+    [".github/workflows/release.yml", "REL-16", "warning", "step \"app_token\" in job \"release_please\" mints the release token with private-key \"${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}\"; mint it from the release App with client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}, private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }} and a permission-* input for each permission the job needs", true]
+  ],
+  "rel-17-passes-read-only-release-event": [],
+  "rel-17-upload-after-publish": [
+    [".github/workflows/publish-assets.yml", "REL-17", "warning", "step \"Upload the extra assets to the published release\" in job \"assets\" writes to a release from a workflow started by a release event, when the release is already published and its assets can no longer change; attach assets to the draft in release.yml, and push only to other registries here", true]
+  ],
+  "rel-18-unattested-assets": [
+    [".github/workflows/release.yml", "REL-18", "warning", "job \"assets\" uploads release assets without attesting them through a SHA256SUMS file; write SHA256SUMS over the assets, upload it with them, and attest it with actions/attest subject-checksums: <dir>/SHA256SUMS", true]
+  ],
+  "rel-19-default-token-publish": [
+    [".github/workflows/release.yml", "REL-19", "warning", "step \"Publish the draft release\" in job \"finalize\" publishes the draft release with ${{ github.token }}; publish it with the release App's token, since a release published by the default token starts no workflow on its published event", true]
+  ],
+  "rel-20-no-dispatch": [
+    [".github/workflows/release.yml", "REL-20", "warning", "release.yml attaches assets to releases but cannot be dispatched for one; add workflow_dispatch with a required tag input, so a draft left by a failed run can be completed with the fixed workflow", true]
+  ],
+  "rel-conforming-multi": [],
+  "rel-conforming-single": [],
   "repo-01-undeclared": [
     [".repo/repository.toml", "REPO-01", "warning", "the repository does not declare its identity; add .repo/repository.toml with its name, system, component, kind, owner, lifecycle, audience and tier", true]
   ],
@@ -382,6 +454,9 @@
   ],
   "repo-08-grammar": [
     [".repo/repository.toml", "REPO-08", "warning", "repository name \"platform-API\" is not lowercase kebab-case; rename it to \"platform-api\"", true]
+  ],
+  "repo-08-legacy-name": [
+    [".repo/repository.toml", "REPO-08", "warning", "repository name \"gadgets\" is not <system>-<component>: a registered system, a hyphen and a component, in lowercase letters, digits and hyphens", true]
   ],
   "repo-09-unregistered-system": [
     [".repo/repository.toml", "REPO-07", "warning", "the declaration names the repository \"platform-api\", but it is \"widgets-api\"; set name to \"widgets-api\", with system and component to match, or rename the repository and its declaration together", true],
@@ -442,6 +517,7 @@
   "task-07-prefix-output": [
     ["tools/Taskfile.yml", "TASK-07", "warning", "task \"deps\" sets prefix, but no Taskfile that loads it sets output: prefixed, the only mode that prints it; set output: prefixed, or remove the prefix", true]
   ],
+  "task-08-passes-build-output": [],
   "task-08-path-variable": [
     ["tools/Taskfile.yml", "TASK-08", "warning", "variable LINT_CONFIG is \".golangci.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
   ],

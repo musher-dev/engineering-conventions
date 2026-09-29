@@ -125,6 +125,18 @@ the declared name alone. `conventions check` learns the actual name, in order, f
 
 Every finding is reported on `.repo/repository.toml`, the file a fix or a waiver starts from.
 
+## Legacy names
+
+A repository named before this grammar existed can adopt the conventions before it is renamed. It declares the name it
+has, sets `component` to what it holds (usually that same name) and `system` to the registered system it belongs to,
+and waives the naming findings the current name produces, usually REPO-08. A name that does not follow the grammar is
+not also compared with its system and component ([REPO-04](identity-declaration.md#repo-04)), so the waivers describe
+the current name only.
+
+A waiver's reason and its tracking issue say that the repository will be renamed, never what it will be renamed to. A
+planned name belongs to whoever plans it until the rename is applied, and a declaration, a waiver, an issue or a CI log
+in the repository is readable by everyone who can read the repository.
+
 ## Requirements
 
 ### REPO-07
@@ -133,7 +145,10 @@ Every finding is reported on `.repo/repository.toml`, the file a fix or a waiver
 
 The declaration is what tools read in place of the repository's settings, so a declaration that names another
 repository misleads every one of them. The usual cause is a rename that did not update the file, or a file copied
-from another repository. While a rename is pending, a waiver on REPO-07 records it.
+from another repository. GitHub applies a rename at once, so the declaration is updated in the change that
+follows it, and a waiver on REPO-07 only covers that short window. A declaration never names a planned name before
+the rename: a repository still waiting for one declares the name it has, as
+[Legacy names](#legacy-names) describes.
 
 **Correct:**
 

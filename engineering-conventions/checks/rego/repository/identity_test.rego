@@ -66,6 +66,11 @@ test_repo_04_name_is_system_and_component if {
 	])}
 }
 
+test_repo_04_leaves_a_malformed_name_to_repo_08 if {
+	docs := declared({"name": "gadgets", "component": "gadgets"})
+	count(identity.findings) == 0 with input as docs with data.conventions.index as td.index
+}
+
 test_repo_04_exempts_reserved_names if {
 	docs := declared({"name": ".github", "system": "engineering", "component": "github"})
 	count(identity.findings) == 0 with input as docs with data.conventions.index as td.index

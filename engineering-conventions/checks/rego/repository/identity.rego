@@ -45,11 +45,14 @@ findings contains lib.finding("REPO-03", files.repository_path, message) if {
 	)
 }
 
-# REPO-04. A reserved name (.github) cannot be <system>-<component>.
+# REPO-04. A reserved name (.github) cannot be <system>-<component>, and a
+# name that does not follow the grammar at all is REPO-08's: comparing it with
+# system and component would only ask for a replacement name.
 findings contains lib.finding("REPO-04", files.repository_path, message) if {
 	not repository.exempt
 	declaration := files.repository_declaration
 	is_string(declaration.name)
+	repository.well_formed(declaration.name)
 	is_string(declaration.system)
 	is_string(declaration.component)
 	expected := concat("-", [declaration.system, declaration.component])

@@ -28,7 +28,9 @@ convention names an `authority`) are changed there first and then here; see
    [decision 0005](docs/decisions/0005-status-severity-and-versioning.md#change-classification).
 5. Fill in the pull request template's consumer-impact section: requirement IDs touched, change class, breaking or not.
 
-`Validate / Required` must pass. It fails unless every job in the `Validate` workflow succeeded.
+`Validate / Required` must pass. It fails unless every job in the `Validate` workflow succeeded. The one planned
+exception is the dev container build: on a pull request that touches none of the files the image is built from, it
+skips, and the aggregate accepts that skip.
 
 ## Commits and hooks
 

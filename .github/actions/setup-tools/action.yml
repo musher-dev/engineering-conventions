@@ -45,3 +45,17 @@ runs:
         install: true
         install_args: ${{ inputs.install-args }}
         cache: ${{ inputs.cache }}
+
+    # uv's download cache, for the jobs that run the conventions CLI through
+    # `uv run`. The key names the job as well as the lockfile, because jobs
+    # sync different dependency groups (UV_NO_DEV) and the first to finish
+    # saves the entry. Off with the tool cache, for the same reason.
+    - name: Restore the uv download cache
+      if: >-
+        inputs.cache == 'true'
+        && (inputs.install-args == '' || contains(inputs.install-args, 'aqua:astral-sh/uv'))
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+      with:
+        path: ~/.cache/uv
+        key: >-
+          uv-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ hashFiles('engineering-conventions/uv.lock') }}

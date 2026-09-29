@@ -60,12 +60,28 @@ install_lefthook_hooks() {
   (cd "${REPO_ROOT}" && lefthook install)
 }
 
+# Makes the virtualenv volume writable.
+#
+# devcontainer.json mounts a named volume over engineering-conventions/.venv,
+# and Docker creates a new volume owned by root; uv then cannot create the
+# environment in it.
+#
+# Globals:
+#   REPO_ROOT — read
+# Outputs:
+#   Writes progress to stderr via log()
+setup_venv_volume() {
+  log "Ensuring the virtualenv volume is writable..."
+  ensure_writable_dir "${REPO_ROOT}/engineering-conventions/.venv"
+}
+
 # Entry point: runs the full post-create setup sequence.
 #
 # Outputs:
 #   Writes progress to stderr via log()
 main() {
   log "Starting post-create setup..."
+  setup_venv_volume
   base_setup
   install_lefthook_hooks
   log "Post-create setup completed"

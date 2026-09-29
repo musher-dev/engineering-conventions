@@ -33,10 +33,15 @@
   "shutdownAction": "stopContainer",
 
   // Named volumes so a rebuild costs neither a re-auth nor agent history.
+  // The CLI's virtualenv gets one too: its ~11,000 files stay on the
+  // container's own disk instead of the workspace bind mount, which on a
+  // Windows drive (9p) makes every import a network round trip. The path is
+  // the one uv, the editor and the docs already expect.
   "mounts": [
     "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
     "source=musher-${devcontainerId}-claude-config,target=/home/vscode/.claude,type=volume",
-    "source=musher-${devcontainerId}-codex-config,target=/home/vscode/.codex,type=volume"
+    "source=musher-${devcontainerId}-codex-config,target=/home/vscode/.codex,type=volume",
+    "source=musher-${devcontainerId}-venv,target=/workspaces/${localWorkspaceFolderBasename}/engineering-conventions/.venv,type=volume"
   ],
 
   "containerEnv": {
@@ -44,7 +49,9 @@
     // workspace lets `mise install` and the shims load it without a prompt.
     "MISE_TRUSTED_CONFIG_PATHS": "${containerWorkspaceFolder}",
 
-    "PYTHONDONTWRITEBYTECODE": "1",
+    // Bytecode is cached, but outside the workspace: no __pycache__ in the
+    // checkout, and no recompiling the virtualenv on every run.
+    "PYTHONPYCACHEPREFIX": "/home/vscode/.cache/pycache",
     "UV_LINK_MODE": "copy",
     "XDG_CACHE_HOME": "/home/vscode/.cache",
     "UV_CACHE_DIR": "/home/vscode/.cache/uv",

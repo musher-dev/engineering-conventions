@@ -1,0 +1,17 @@
+schema_version = 1
+
+[[outputs]]
+id = "api-bundle"
+kind = "bundle"
+source = "platform-api/"
+publish_workflow = "release.yml"
+location = "https://github.com/example/platform-api/releases"
+docs = "platform-api/README.md#install"
+
+[[outputs]]
+id = "api-client"
+kind = "library"
+source = "platform-api/"
+publish_workflow = "publish-api.yml"
+location = "https://www.npmjs.com/package/@example/api"
+docs = "platform-api/README.md#install"

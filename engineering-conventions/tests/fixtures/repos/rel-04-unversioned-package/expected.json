@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-04",
+    "path": ".github/release-please/manifest.json",
+    "severity": "warning"
+  }
+]

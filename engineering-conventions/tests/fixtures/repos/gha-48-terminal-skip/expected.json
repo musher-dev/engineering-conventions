@@ -3,5 +3,15 @@
     "id": "GHA-48",
     "path": ".github/workflows/release.yml",
     "severity": "warning"
+  },
+  {
+    "id": "REL-02",
+    "path": ".github/workflows/release.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-03",
+    "path": ".github/workflows/release.yml",
+    "severity": "warning"
   }
 ]

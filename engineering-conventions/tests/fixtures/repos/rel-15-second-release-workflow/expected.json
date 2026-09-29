@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-15",
+    "path": ".github/workflows/release-notes.yml",
+    "severity": "warning"
+  }
+]

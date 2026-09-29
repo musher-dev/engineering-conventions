@@ -124,14 +124,15 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-tools
         with:
-          # The test suite shells out to three of these: conftest (every
+          # The test suite shells out to four of these: conftest (every
           # fixture repository runs through `conventions check`), vale (the
-          # generated styles must load) and check-jsonschema (the schemas'
-          # relative $refs must resolve from disk). A pipx tool installs from
+          # generated styles must load), check-jsonschema (the schemas'
+          # relative $refs must resolve from disk) and jq (the launcher tests
+          # run bin/conventions on the tools on PATH). A pipx tool installs from
           # the lockfile only with the python mise pins, so python comes too.
           install-args: >-
             aqua:go-task/task aqua:astral-sh/uv python aqua:open-policy-agent/conftest
-            aqua:vale-cli/vale pipx:check-jsonschema
+            aqua:vale-cli/vale pipx:check-jsonschema aqua:jqlang/jq
       - name: Lint, type-check and test the conventions CLI
         run: task cli:lint cli:typecheck cli:test
       # The baseline is what the change builds on: the PR base, the merge

@@ -324,6 +324,19 @@ def toml_problem(text: str) -> str | None:
     return None
 
 
+def _policy_args(policies: Path) -> list[str]:
+    # The policy files the release bundle ships, never the *_test.rego files
+    # beside them: conftest compiles every file it is given, and the tests
+    # double the compile cost of a check without adding a rule. A directory
+    # with no policy file is passed whole, so conftest reports it.
+    files = sorted(
+        path for path in policies.rglob("*.rego") if not path.name.endswith("_test.rego")
+    )
+    if not files:
+        return ["-p", str(policies)]
+    return [arg for path in files for arg in ("-p", str(path))]
+
+
 def conftest_command(
     product: Path,
     scratch: Path,
@@ -333,7 +346,7 @@ def conftest_command(
     data = [index_file(product), scratch / "runtime.json"]
     if release is not None:
         data.append(release)
-    command = [_conftest(), "test", "--combine", "-p", str(rego_dir(product))]
+    command = [_conftest(), "test", "--combine", *_policy_args(rego_dir(product))]
     for path in data:
         command += ["-d", str(path)]
     return [*command, "-o", "json", "--no-color", *files, str(scratch / "inventory.json")]

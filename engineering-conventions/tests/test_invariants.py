@@ -17,13 +17,14 @@ def _with_convention(content: Content, index: int, convention: Convention) -> Co
     return replace(content, conventions=tuple(conventions))
 
 
-def test_every_invariant_holds(product: Path) -> None:
-    assert invariants.check_all(product) == []
-
-
-def test_cli_invariants_exits_zero(product: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_every_invariant_holds(
+    product: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # Through the CLI, so one pass over the content covers the command too.
     monkeypatch.setenv(HOME_ENV, str(product))
-    assert main(["invariants"]) == 0
+    exit_code = main(["invariants"])
+    assert capsys.readouterr().out == "invariants hold\n"
+    assert exit_code == 0
 
 
 def test_duplicate_requirement_id_is_reported(content: Content) -> None:

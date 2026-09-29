@@ -17,6 +17,8 @@ conventions = "conventions_tools.cli:main"
 dev = [
   "basedpyright==1.40.1",
   "pytest==9.1.1",
+  "pytest-timeout==2.4.0",
+  "pytest-xdist==3.8.0",
   "ruff==0.16.8",
   "types-jsonschema",
   "types-pyyaml",
@@ -65,4 +67,15 @@ include = ["src", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["--strict-markers", "--strict-config"]
+# Most of the suite is subprocesses (conftest, the launcher, vale), one fixture
+# repository each, so it spreads across every core; worksteal evens out the
+# slow launcher tests. -n 0 runs it serially, for a debugger.
+addopts = [
+  "--strict-markers",
+  "--strict-config",
+  "-n=auto",
+  "--dist=worksteal",
+  "--durations=15",
+]
+# A hung subprocess fails its test, well inside the CI job's timeout.
+timeout = 300

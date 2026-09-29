@@ -400,7 +400,8 @@ file to its tools, and its literal value must name something the repository hold
 moves, nothing fails at once: a linter falls back to its defaults, or a command scans an empty directory and passes.
 A `_FILE` variable may name a file a task writes, such as an ignored local `.env`, so only its directory has to
 exist. The value is resolved after `{{.ROOT_DIR}}/` or `{{.TASKFILE_DIR}}/`; a value with any other template is not
-checked. A directory that only a build creates is named for what it is instead (`DIST`, `OUT`).
+checked. A directory that only a build creates, such as ignored build output, is named for what it holds instead
+(`DIST`, `SITE`, not `SITE_DIR`), and the finding says so.
 
 **Correct:**
 

@@ -123,7 +123,8 @@ is the only one git documents as working without a tracking ref: the push succee
 commit the job read.
 
 The check reads each `git push` in a `run:` block and reports `--force`, `-f` (alone or combined, such as `-fu`),
-`--force-with-lease` without `=<ref>:<expected>`, and a `+<refspec>`.
+`--force-with-lease` without `=<ref>:<expected>`, and a `+<refspec>`. A `git push` the step only shows its reader
+is text, not a command: the body of a heredoc and a line that only runs `echo` or `printf` are not read.
 
 **Correct:**
 

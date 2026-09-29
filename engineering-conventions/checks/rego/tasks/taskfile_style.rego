@@ -115,8 +115,8 @@ findings contains lib.finding("TASK-08", path, message) if {
 	not endswith(name, "_FILE")
 	taskfiles.missing(path, value)
 	message := sprintf(
-		"%s %s is %q, which names no file or directory in the repository; correct the path, or delete the variable",
-		[where, name, value],
+		"%s %s is %q, which names no file or directory in the repository; %s",
+		[where, name, value, missing_remedy(name)],
 	)
 }
 
@@ -227,6 +227,19 @@ prefixed(path) if {
 }
 
 path_var_pattern := `_(DIR|FILE|CONFIG)$`
+
+# TASK-08's remedy for a variable naming nothing.
+default missing_remedy(_) := "correct the path, or delete the variable"
+
+# A _DIR variable may name a directory a task creates, such as build output.
+# The name then promises a directory the repository does not hold, so the
+# remedy is a name for what the directory holds.
+missing_remedy(name) := sprintf(
+	"correct the path, delete the variable, or, if a task creates the directory, rename the variable %s",
+	[trim_suffix(name, "_DIR")],
+) if {
+	endswith(name, "_DIR")
+}
 
 path_vars(path, taskfile) := {["variable", name, value] |
 	some name, value in taskfiles.vars(taskfile)

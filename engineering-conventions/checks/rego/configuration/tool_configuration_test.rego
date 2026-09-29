@@ -160,6 +160,44 @@ test_conf_04_a_fixture_is_not_a_caller if {
 	ids_at(found) == {["CONF-04", ".config/yaml/yamllint.yaml"]}
 }
 
+test_conf_04_named_by_another_config_file if {
+	paths := array.concat(conforming_files, [".config/spelling/cspell.json", ".config/spelling/musher.txt"])
+	texts := {
+		".config/README.md": index_text,
+		".config/spelling/cspell.json": concat("\n", [
+			`{`,
+			`  // The dictionary sits beside this file.`,
+			`  "dictionaryDefinitions": [{"name": "musher", "path": "./musher.txt"}],`,
+			`  "import": [".config/yaml/yamllint.yaml"]`,
+			`}`,
+		]),
+	}
+	docs := [td.file("Taskfile.yml", {"cmds": ["cspell --config .config/spelling/cspell.json"]})]
+	found := config.findings with input as repo(paths, texts, docs)
+	not "CONF-04" in {finding.id | some finding in found}
+}
+
+test_conf_04_a_chain_nothing_calls_is_reported_where_it_starts if {
+	paths := array.concat(conforming_files, [".config/spelling/cspell.json", ".config/spelling/musher.txt"])
+	texts := {
+		".config/README.md": index_text,
+		".config/spelling/cspell.json": `{"dictionaryDefinitions": [{"path": "musher.txt"}]}`,
+	}
+	found := config.findings with input as repo(paths, texts, [])
+	{path | some [id, path] in ids_at(found); id == "CONF-04"} == {
+		".config/spelling/cspell.json",
+		".config/yaml/yamllint.yaml",
+	}
+}
+
+test_conf_04_a_file_does_not_name_itself if {
+	paths := array.concat(conforming_files, [".config/spelling/words.txt"])
+	texts := {".config/README.md": index_text, ".config/spelling/words.txt": "words.txt\n./words.txt"}
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml"]})]
+	found := config.findings with input as repo(paths, texts, docs)
+	{path | some [id, path] in ids_at(found); id == "CONF-04"} == {".config/spelling/words.txt"}
+}
+
 test_conf_05_leading_dot if {
 	paths := array.concat(conforming_files, [".config/yaml/.yamllint.yaml"])
 	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/yaml/.yamllint.yaml"]})]

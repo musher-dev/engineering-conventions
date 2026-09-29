@@ -82,7 +82,7 @@ findings contains lib.finding("GHA-49", path, message) if {
 
 # One `git push` command per match, to the end of its command line.
 push_commands(step) := {match |
-	some line in steps.lines(step)
+	some line in steps.command_lines(step)
 	some match in regex.find_n(`\bgit\s+push\b[^;&|]*`, line, -1)
 }
 

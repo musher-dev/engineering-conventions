@@ -154,6 +154,9 @@ TEXTS="${TEXTS}|"'^\.config/README\.md$'
 TEXTS="${TEXTS}|"'(^|/)(decisions|adrs)/.+\.md$'
 TEXTS="${TEXTS}|"'(^|/)\.(trivyignore|gitleaksignore|nvmrc|node-version|python-version|tool-versions)$'
 TEXTS="${TEXTS}|"'^\.config/(.+/)?(trivyignore|gitleaksignore)$'
+# The configuration in .config/ itself, whatever its format, for the files it
+# names beside it (CONF-04).
+TEXTS="${TEXTS}|"'^\.config/.+\.(jsonc?|ya?ml|toml|ini)$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.

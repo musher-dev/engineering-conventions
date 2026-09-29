@@ -1,0 +1,12 @@
+schema_version = 1
+name = "gadgets"
+system = "platform"
+component = "gadgets"
+kind = "service"
+owner = "@musher-dev/platform"
+lifecycle = "production"
+audience = "internal"
+tier = 1
+
+[layout]
+product = ""

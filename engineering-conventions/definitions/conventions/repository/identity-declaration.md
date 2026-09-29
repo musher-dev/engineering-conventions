@@ -266,6 +266,10 @@ Checked by: conftest · Severity: warning · Since: 0.5.0
 the name. If they disagree, one of them is wrong, and every reader that trusts a different field reaches a different
 answer. The repositories GitHub reserves, `.github` and `.github-private`, are exempt.
 
+A name that does not follow the grammar at all, such as a single word from before the grammar existed, is reported
+by [REPO-08](repository-names.md#repo-08) instead. Comparing it with `system` and `component` would only ask for a
+replacement name, which is chosen when the repository is renamed, not by this check.
+
 **Correct:**
 
 ```toml

@@ -8,7 +8,7 @@ how to apply them.
 | File | GitHub Ruleset | Scope |
 | --- | --- | --- |
 | `main-branch.json` | `Main Branch` | The default branch: PR required, squash-only, linear history, code-owner review, the two required checks, deletion and force-push blocked |
-| `release-tags.json` | `Release Tags` | Release tags (`v*`): creation, deletion and non-fast-forward updates blocked for everyone but the musher-automation App |
+| `release-tags.json` | `Release Tags` | Release tags (`v*`): creation, deletion and non-fast-forward updates blocked for everyone but the musher-release App |
 
 Org-level rulesets may also apply. Every rule that actually binds this
 repository is listed at <https://github.com/musher-dev/engineering-conventions/checks>.
@@ -59,15 +59,14 @@ bundle prints points at, so a tag must never move or disappear.
 `release-tags.json` blocks tag creation as well as deletion and force-updates,
 and exempts exactly one actor:
 
-- `Integration` `4691573`, `bypass_mode: always`: the org-owned
-  **musher-automation** GitHub App. `release.yml` creates the tag and its draft
-  GitHub Release with the release App's installation token when the release PR
-  merges, and publishes the draft with it once the bundle is attached. A release
-  published with the default `GITHUB_TOKEN` would start no workflow on its
-  `published` event; that is why an App, and not GitHub Actions, is the bypass
-  actor. Decision 0017 moves releases to one dedicated release App, the one
-  `vars.RELEASE_APP_CLIENT_ID` names. Its integration ID replaces this one, and
-  the ruleset is re-applied, before `release.yml` next creates a tag.
+- `Integration` `4991671`, `bypass_mode: always`: the org-owned
+  **musher-release** GitHub App, the one `vars.RELEASE_APP_CLIENT_ID` names
+  (decision 0017). `release.yml` creates the tag and its draft GitHub Release
+  with this App's installation token when the release PR merges, and publishes
+  the draft with it once the bundle is attached. A release published with the
+  default `GITHUB_TOKEN` would start no workflow on its `published` event; that
+  is why an App, and not GitHub Actions, is the bypass actor. It replaced the
+  musher-automation App (`4691573`), which no workflow here uses any more.
 
 There is no `OrganizationAdmin` bypass: an administrator cannot push a `v*` tag
 by hand either. Cutting a release outside `release.yml` means changing this

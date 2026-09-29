@@ -4,6 +4,7 @@ date: 2026-09-23
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0017"]
 ---
 
 # 0005 — Status, severity and versioning
@@ -63,7 +64,7 @@ is the one authoritative classification**; every other document links here rathe
 | Change | Commit type | Bump from 1.0.0 | Bump in 0.x |
 | --- | --- | --- | --- |
 | A requirement becomes `error`; a check changes so code that passed now fails at `error`; a term, token or display form is removed or renamed; an alias is banned where its finding is an error (a prose alias in the Vale style); the declaration schema tightens so a valid declaration becomes invalid | `feat!` | major | minor |
-| A new requirement at `warning`; a proposed requirement activated at `warning`; a new term, token, display form or profile; an alias newly banned where its finding is a warning; the declaration schema relaxed to accept something new | `feat` | minor | minor |
+| A new requirement at `warning`; a proposed requirement activated at `warning`; a new term, token, display form or profile; an alias newly banned where its finding is a warning; the declaration schema relaxed to accept something new | `feat` | minor | patch |
 | A false positive fixed; a check relaxed so it reports less; a diagnostic message changed without changing when it fires | `fix` | patch | patch |
 | Prose clarified without changing what is checked or reported | `docs` | none | none |
 | Authoring tooling, tests or CI of this repository | `chore`, `test`, `ci`, `refactor` | none | none |
@@ -78,9 +79,10 @@ the first line of the table.
 
 **Start at 0.1.0.** Until 1.0.0 the repository follows the SemVer convention for initial development. release-please
 is configured with `initial-version: 0.1.0`, so the first release is 0.1.0 whatever it contains, and with
-`bump-minor-pre-major`, so a breaking change bumps the minor version while the major is 0; a `feat` also bumps the
-minor. 0.x consumers should therefore read every minor release's notes. In 0.x every requirement is `proposed` at
-`warning`. The first release that makes any requirement `error` is the first major-class change.
+`bump-minor-pre-major` and `bump-patch-for-minor-pre-major`, so while the major is 0 a breaking change bumps the
+minor version and a `feat` bumps the patch ([decision 0017](0017-releases-from-drafts.md)). 0.x consumers should
+therefore read every minor release's notes. In 0.x every requirement is `proposed` at `warning`. The first release
+that makes any requirement `error` is the first major-class change.
 
 ## Consequences
 

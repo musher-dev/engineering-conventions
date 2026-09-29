@@ -33,6 +33,9 @@ Until 1.0.0:
   (`--fail-on warning`, or a profile that raises severity).
 - A breaking change bumps the **minor** version, following the SemVer convention for initial development. Read the
   notes of every minor release.
+- A new requirement, term or profile, and a fix, bump the **patch** version
+  ([decision 0017](decisions/0017-releases-from-drafts.md)). A 0.x patch release can bring new warnings; it cannot
+  bring new failures.
 - A `provisional` term may still change in a minor release. From 1.0.0, removing any term is a major change.
 - The GitHub Actions conventions remain owned by `musher-dev/platform` until the handoff in
   [decision 0002](decisions/0002-authority-and-migration.md).

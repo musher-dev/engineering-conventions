@@ -205,6 +205,12 @@ raw_findings contains finding if {
 
 raw_findings contains finding if {
 	some convention
+	package_findings := data.conventions.checks.dev_containers[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
 	package_findings := data.conventions.checks.agents[convention].findings
 	some finding in package_findings
 }

@@ -117,8 +117,9 @@ repository_name() {
 
 # What conftest reads: workflows, actions, rulesets, the release-please config
 # and release-please manifest, the commit rules, the TOML declarations under
-# .repo/ (conventions, outputs and repository identity), and the mise
-# configuration ADOPT-09 looks for a pin in (lib/files.rego).
+# .repo/ (conventions, outputs and repository identity), the mise
+# configuration ADOPT-09 looks for a pin in (lib/files.rego), and a dev
+# container's lockfile and the compose stacks beside it (DEVC).
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
@@ -134,6 +135,8 @@ INPUTS="${INPUTS}|"'^(\.config/)?\.?lefthook(-local)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}env\.schema\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}package\.json$'
 INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
+INPUTS="${INPUTS}|"'^\.devcontainer(/[^/]+)?/devcontainer-lock\.json$|^\.devcontainer-lock\.json$'
+INPUTS="${INPUTS}|"'^\.devcontainer/(.+/)?(docker-)?compose(\.[^/]+)?\.ya?ml$'
 
 # Files conftest cannot choose a parser for by name, parsed before the check
 # with the parser named and added to the inventory (decision 0015):

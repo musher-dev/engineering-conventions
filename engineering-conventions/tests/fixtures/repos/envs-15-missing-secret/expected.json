@@ -1,0 +1,3 @@
+[
+  {"id": "ENVS-15", "path": ".devcontainer/devcontainer.json", "severity": "warning"}
+]

@@ -1,0 +1,4 @@
+[
+  {"id": "DEVC-04", "path": ".devcontainer/Dockerfile", "severity": "warning"},
+  {"id": "DEVC-04", "path": ".devcontainer/devcontainer.json", "severity": "warning"}
+]

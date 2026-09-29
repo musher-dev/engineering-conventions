@@ -54,3 +54,43 @@ test_envs_02_needs_a_layout if {
 	docs := [td.repository(td.identity), td.inventory([".repo/repository.toml", "api/env.schema.yaml"])]
 	count(env_contract.findings) == 0 with input as docs
 }
+
+dev_schema(bindings) := td.file(".devcontainer/env.schema.yaml", {"service": "devcontainer", "bindings": bindings})
+
+host_binding := {"type": "string", "sensitivity": "secret", "source": "host", "description": "x"}
+
+dev_container(secrets) := td.file(".devcontainer/devcontainer.json", {"name": "x", "secrets": secrets})
+
+test_envs_15_missing_and_undeclared_secrets if {
+	docs := [
+		dev_schema({"MODEL_API_KEY": host_binding, "LOG_LEVEL": {"type": "string", "sensitivity": "internal"}}),
+		dev_container({"OTHER_TOKEN": {}}),
+	]
+	found := env_contract.findings with input as docs
+	td.pairs(found) == {["ENVS-15", ".devcontainer/devcontainer.json"]}
+	{f.message | some f in found} == {
+		concat(" ", [
+			"MODEL_API_KEY comes from the host (source: host in .devcontainer/env.schema.yaml) but is not in secrets;",
+			"add it so Codespaces asks for it",
+		]),
+		concat(" ", [
+			"secrets names OTHER_TOKEN, which .devcontainer/env.schema.yaml does not declare with source: host;",
+			"declare it there, or remove it",
+		]),
+	}
+}
+
+test_envs_15_no_secrets_block if {
+	docs := [dev_schema({"MODEL_API_KEY": host_binding}), td.file(".devcontainer/devcontainer.json", {"name": "x"})]
+	td.ids(env_contract.findings) == {"ENVS-15"} with input as docs
+}
+
+test_envs_15_matching_secrets if {
+	docs := [dev_schema({"MODEL_API_KEY": host_binding}), dev_container({"MODEL_API_KEY": {"description": "x"}})]
+	count(env_contract.findings) == 0 with input as docs
+}
+
+test_envs_15_needs_the_dev_schema if {
+	docs := [dev_container({"MODEL_API_KEY": {}}), td.file(".devcontainer.json", {"secrets": {"A": {}}})]
+	count(env_contract.findings) == 0 with input as docs
+}

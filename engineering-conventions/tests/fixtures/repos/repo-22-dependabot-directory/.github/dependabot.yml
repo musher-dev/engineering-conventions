@@ -10,3 +10,7 @@ updates:
     directory: "/platform-api"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"

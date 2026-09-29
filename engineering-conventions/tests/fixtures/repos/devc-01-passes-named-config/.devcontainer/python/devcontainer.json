@@ -1,0 +1,6 @@
+// A second configuration, one directory down, where editors find it.
+{
+  "name": "Platform API (Python)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "remoteUser": "vscode",
+}

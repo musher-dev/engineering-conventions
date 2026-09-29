@@ -15,15 +15,16 @@ description: >-
   with setup, check and lint, the git hooks of any repository that uses
   lefthook, the agent context of any repository that has one, the shape
   of its decision records if it keeps any, and the format of any
-  environment schema it holds.
+  environment schema it holds, and the dev container of any repository
+  that has one.
 include:
-  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC]
+  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
   # schema. Of EC-0016 and EC-0019, only what every repository shares is
   # selected here; the kind profiles add the rest by ID, because an
   # exclude here would win over their includes.
   conventions: [EC-0015, EC-0020]
-  requirements: [TASK-10, TASK-13, ENVS-02]
+  requirements: [TASK-10, TASK-13, ENVS-02, ENVS-15]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

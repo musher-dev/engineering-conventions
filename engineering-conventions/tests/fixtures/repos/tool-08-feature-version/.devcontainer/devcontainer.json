@@ -1,6 +1,8 @@
 {
   // node from a Feature, at a version mise does not pin
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
   },
+  "remoteUser": "vscode",
 }

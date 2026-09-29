@@ -1,0 +1,6 @@
+// The root form, beside the directory.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "remoteUser": "vscode",
+}

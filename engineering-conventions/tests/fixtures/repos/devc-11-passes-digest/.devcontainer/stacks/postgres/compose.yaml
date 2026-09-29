@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg17
+    ports:
+      - "127.0.0.1:15432:5432"
+  azimutt:
+    image: ghcr.io/azimuttapp/azimutt:main@sha256:f5a8a650b6d4199ae09b796b2b414b3830e215f09861c5d49e887cb8a4a7d9e6
+  worker:
+    image: ${WORKER_IMAGE:-localhost/worker:dev}
+  builder:
+    build: ./builder

@@ -1,0 +1,15 @@
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "secrets": { "MODEL_API_KEY": { "description": "Key for the hosted model API" } },
+  "remoteEnv": { "MODEL_API_KEY": "${localEnv:MODEL_API_KEY}", "LOG_LEVEL": "debug" },
+  "containerEnv": { "MODEL_API_KEY": "" },
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

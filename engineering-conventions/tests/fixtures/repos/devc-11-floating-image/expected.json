@@ -1,0 +1,3 @@
+[
+  {"id": "DEVC-11", "path": ".devcontainer/stacks/postgres/compose.yaml", "severity": "warning"}
+]

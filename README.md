@@ -101,7 +101,8 @@ Start from the part of your repository you are working on:
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `CLAUDE.md`, `.claude/rules/`, `AGENTS.md` | EC-0013 | AGENT-01 – AGENT-08 |
 | [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-12 |
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
-| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml` | EC-0019, EC-0020 | ENVS-01 – ENVS-14 |
+| [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-13 |
+| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml` | EC-0019, EC-0020 | ENVS-01 – ENVS-15 |
 | [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-11 |
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-49 |
 | [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-12 |

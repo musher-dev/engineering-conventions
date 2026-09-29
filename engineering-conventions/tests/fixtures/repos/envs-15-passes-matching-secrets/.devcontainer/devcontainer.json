@@ -1,0 +1,16 @@
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  // SESSION_SECRET is generated locally, so Codespaces need not ask for it.
+  "secrets": {
+    "MODEL_API_KEY": { "description": "Key for the hosted model API" },
+  },
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

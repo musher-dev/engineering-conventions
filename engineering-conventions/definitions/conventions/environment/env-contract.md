@@ -14,6 +14,7 @@ applies_to:
     - "*/env.schema.yaml"
     - "**/env.schema.yaml"
     - "**/env.schema.yml"
+    - .devcontainer/**/devcontainer.json
 created: 2026-09-28
 owners:
   - "@justinmerrell"
@@ -25,6 +26,9 @@ implementations:
     mode: blocking
   - repo: musher-dev/development-container
     check: LAYOUT-11
+    mode: blocking
+  - repo: musher-dev/development-container
+    check: ENV-06
     mode: blocking
 references:
   - title: "The Twelve-Factor App: Config"
@@ -48,6 +52,15 @@ requirements:
       engine: conftest
       package: conventions.checks.environment.env_contract
     aliases: ["development-container:LAYOUT-11"]
+  - id: ENVS-15
+    title: A dev container's secrets name exactly the variables its environment schema takes from the host
+    status: proposed
+    severity: warning
+    since: 0.6.2
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_contract
+    aliases: ["development-container:ENV-06"]
 ---
 
 # Environment contract
@@ -81,7 +94,8 @@ This convention is a **draft** owned by this repository (`authority: self`). It 
 `musher-dev/development-container`, which keep their IDs as aliases
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
 Its requirements are `proposed` at severity `warning`. ENVS-01 applies to repositories whose kind is `service`; the
-`service` profile selects it. ENVS-02 applies to every repository.
+`service` profile selects it. ENVS-02 and ENVS-15 apply to every repository. ENVS-15 adopts ENV-06 from the same
+repository.
 
 ## Requirements
 
@@ -137,6 +151,39 @@ env.schema.yml
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container LAYOUT-11
+
+### ENVS-15
+
+**A dev container's `secrets` name exactly the variables its environment schema takes from the host.**
+
+A binding in `.devcontainer/env.schema.yaml` with `source: host` is a value each developer supplies from their own
+machine, such as an API key. On a laptop it comes from the shell; in Codespaces it arrives only if `devcontainer.json`
+lists it under `secrets`, which is what makes Codespaces ask for it when the container is created. A host binding
+missing from `secrets` silently arrives empty for everyone not on a machine that exports it, and a name in `secrets`
+that the schema does not declare is a variable nothing documents. The check applies to each `devcontainer.json` under
+`.devcontainer/` when the dev environment schema exists.
+
+**Correct:**
+
+```yaml
+# .devcontainer/env.schema.yaml
+bindings:
+  OPENAI_API_KEY: {type: string, sensitivity: secret, source: host, description: "…"}
+```
+
+```jsonc
+// .devcontainer/devcontainer.json
+"secrets": { "OPENAI_API_KEY": { "description": "An OpenAI API key for local runs" } }
+```
+
+**Incorrect:**
+
+```jsonc
+// .devcontainer/devcontainer.json: OPENAI_API_KEY is missing
+"secrets": {}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.6.2 · Formerly: development-container ENV-06
 
 ## References
 

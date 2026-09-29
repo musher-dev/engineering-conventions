@@ -1,0 +1,5 @@
+{
+  "name": "Platform API (built)",
+  "build": { "dockerfile": "Dockerfile", "context": ".." },
+  "remoteUser": "vscode",
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    { "source": "musher-${devcontainerId}-claude-config", "target": "/home/vscode/.claude", "type": "volume" },
+    "src=musher-${devcontainerId}-gh-config,dst=/home/vscode/.config/gh,type=volume",
+    "source=${localWorkspaceFolder}/.cache,target=/home/vscode/.cache,type=bind",
+    "target=/tmp/scratch,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

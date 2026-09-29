@@ -211,7 +211,7 @@ def fixtures_cover(content: Content) -> list[str]:
     cases = case_dirs(content.product)
     expected: dict[str, set[str]] = {}
     for case in cases:
-        for _, rid, _ in expected_findings(case):
+        for _, rid, _, _ in expected_findings(case):
             expected.setdefault(rid, set()).add(case.name)
     requirements = {req.id: req for req in content.requirements}
     found = [

@@ -47,6 +47,8 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
+| [ADOPT-10](adoption/conventions-declaration.md#adopt-10) | Every family a staged adoption enforces is one the release defines | EC-0001 | proposed | warning | conftest |
+| [ADOPT-11](adoption/conventions-declaration.md#adopt-11) | A staged adoption ends within 180 days, and then every family is enforced | EC-0001 | proposed | warning | conftest |
 | [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | proposed | warning | conftest |
 | [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
 | [AGENT-03](agents/agent-context.md#agent-03) | Every rule under .claude/rules/ is scoped by a non-empty paths list | EC-0013 | proposed | warning | conftest |

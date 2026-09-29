@@ -55,13 +55,13 @@ POSIX `sh` and `git`.
 | `--output` | For | Prints |
 | --- | --- | --- |
 | `text` (default) | A person at a terminal | The report below, in colour on a terminal unless `NO_COLOR` is set |
-| `json` | A program, through a pipe | A JSON array of findings: `convention`, `id`, `message`, `path`, `severity`, `url` |
+| `json` | A program, through a pipe | A JSON array of findings: `convention`, `enforced`, `id`, `message`, `path`, `severity`, `url` |
 | `github`, `sarif`, `junit`, `tap`, `table` | CI tools | conftest's own format, passed through |
 
 The report goes to stdout. The progress line, and mise's messages when it installs a tool, go to stderr, and the
 progress line only to a terminal, so `conventions check --output json | jq …` receives JSON alone. The exit status is
-the same for every format: `0` when nothing is at or above `--fail-on`, `1` when something is, and `2` when the check
-could not run.
+the same for every format: `0` when no enforced finding is at or above `--fail-on`, `1` when one is, and `2` when the
+check could not run. Every finding is enforced unless the repository is [adopting in stages](#adopt-in-stages).
 
 A Taskfile needs no more than one task:
 
@@ -312,6 +312,31 @@ A waiver needs a reason of at least 20 characters, a tracking issue URL and an e
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.
 A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
 are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
+
+## Adopt in stages
+
+An established repository usually meets some families of requirements long before others. To make CI block on the
+families it has cleaned up, while it still sees everything else, list those families in an `[adoption]` table:
+
+```toml
+[adoption]
+enforce = ["ADOPT", "REPO", "OUT", "GHA"]
+tracking = "https://github.com/your-org/your-repo/issues/2"
+expires = "2027-01-31"
+```
+
+Until `expires`, only findings in the listed families count toward `--fail-on`. `ADOPT` findings and files that do not
+parse always count. Every other finding is still printed, marked `not enforced`: the text report says
+`warning (not enforced)` on the requirement's block and counts those findings in its summary, `--output json` sets
+`"enforced": false`, and conftest's formats carry the mark in each message. So CI can run
+`conventions check --fail-on warning` from the first day.
+
+Adopting another family is one line: add it to `enforce` in the pull request that fixes its findings, or that retires
+the local check it replaces. Delete the table once every family is enforced. Like a waiver, a staged adoption lasts
+at most 180 days. When it expires, every family is enforced again and ADOPT-11 reports it. A family a later release
+adds is not enforced until you list it. The rules are in
+[EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md#staged-adoption), and
+[`examples/staged-consumer`](../engineering-conventions/examples/staged-consumer/) is a worked example.
 
 ## Upgrading
 

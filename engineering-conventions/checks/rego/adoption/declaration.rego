@@ -3,13 +3,15 @@
 # description: >-
 #   A repository pins the release it is checked against (ADOPT-09), and its
 #   optional .repo/conventions.toml is valid (ADOPT-02) with every waiver
-#   known, time-boxed, in force and still needed.
+#   known, time-boxed, in force and still needed, and any staged adoption
+#   naming real families and time-boxed too (ADOPT-10, ADOPT-11).
 # scope: package
 # custom:
 #   convention: EC-0001
 package conventions.checks.adoption.declaration
 
 import data.conventions.lib.dates
+import data.conventions.lib.enforcement
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.names
@@ -123,6 +125,40 @@ findings contains lib.finding("ADOPT-08", files.declaration_path, message) if {
 			"set conventions.version to %q, or run the %s bundle",
 		]),
 		[declared, running, running, declared],
+	)
+}
+
+# ADOPT-10
+findings contains lib.finding("ADOPT-10", files.declaration_path, message) if {
+	some family in enforcement.declared_families
+	not family in enforcement.known_families
+	message := sprintf(
+		"[adoption] enforce names %q, which is not a family this release defines; use one of %s",
+		[family, names.quoted_list(enforcement.known_families)],
+	)
+}
+
+# ADOPT-11. The router already enforces every family once the adoption has
+# expired; this names the table to finish or renew.
+findings contains lib.finding("ADOPT-11", files.declaration_path, message) if {
+	enforcement.expired
+	message := sprintf(
+		concat(" ", [
+			"the staged adoption expired on %s, so every family is enforced again; enforce the",
+			"remaining families and delete the [adoption] table, or renew it with a new expires date",
+		]),
+		[enforcement.adoption.expires],
+	)
+}
+
+findings contains lib.finding("ADOPT-11", files.declaration_path, message) if {
+	enforcement.too_long
+	message := sprintf(
+		concat(" ", [
+			"the staged adoption expires on %s, more than %d days away; set expires to %s or earlier",
+			"and renew it if families are still left to adopt then",
+		]),
+		[enforcement.adoption.expires, dates.max_term_days, dates.latest_allowed_date],
 	)
 }
 
@@ -275,7 +311,7 @@ else := sprintf(
 	"`%s` is the bare TOML date %s; quote it as \"%s\", because the declaration's dates are strings.",
 	[error.field, value, substring(value, 0, 10)],
 ) if {
-	regex.match(`^waivers\.[0-9]+\.expires$`, error.field)
+	regex.match(`^(waivers\.[0-9]+|adoption)\.expires$`, error.field)
 	value := object.get(contents, field_path(error.field), "")
 	is_string(value)
 	regex.match(`^[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z$`, value)

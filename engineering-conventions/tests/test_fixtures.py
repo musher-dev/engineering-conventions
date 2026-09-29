@@ -10,7 +10,7 @@ from conventions_tools.fixtures import (
     run_case,
 )
 from conventions_tools.paths import product_dir
-from conventions_tools.run import check
+from conventions_tools.run import check, fails
 
 CASES = case_dirs(product_dir())
 
@@ -56,3 +56,14 @@ def test_removing_a_file_clean_does_not_have_fails(tmp_path: Path) -> None:
 def test_the_example_consumer_meets_every_check(product: Path) -> None:
     report = check(product, product / "examples" / "consumer", FIXTURE_NOW)
     assert [*report.findings, *report.errors] == []
+
+
+def test_the_staged_example_reports_what_it_does_not_enforce(product: Path) -> None:
+    # A staged adoption: the waiver is used (no ADOPT-06), and the one finding
+    # left is in a family the build does not enforce yet, so it cannot fail.
+    report = check(product, product / "examples" / "staged-consumer", FIXTURE_NOW)
+    assert report.errors == []
+    assert [(f.id, f.path, f.enforced) for f in report.findings] == [
+        ("TASK-05", "Taskfile.yml", False)
+    ]
+    assert not fails(report.findings, "warning")

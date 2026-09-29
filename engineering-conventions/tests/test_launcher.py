@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import tomllib
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -56,10 +57,15 @@ def _launch(
     )
 
 
-def _found(stdout: str) -> list[tuple[str, str, str]]:
+def _found(stdout: str) -> list[tuple[str, str, str, bool]]:
     findings = [as_map(finding) for finding in as_list(json.loads(stdout))]
     found = {
-        (get_str(finding, "path"), get_str(finding, "id"), get_str(finding, "severity"))
+        (
+            get_str(finding, "path"),
+            get_str(finding, "id"),
+            get_str(finding, "severity"),
+            finding.get("enforced") is not False,
+        )
         for finding in findings
     }
     return sorted(found)
@@ -120,7 +126,7 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     case = fixture_repos_dir(PRODUCT) / "gha-07-display-name"
     completed = _launch("check", "--output", "json", "-C", str(case), cwd=PRODUCT)
     assert completed.returncode == 0, completed.stderr
-    found = {finding_id for _, finding_id, _ in _found(completed.stdout)}
+    found = {finding_id for _, finding_id, _, _ in _found(completed.stdout)}
     # The case holds no .repo/ declarations and no Taskfile, so they are
     # reported missing: this repository's own were not read.
     assert found == {"GHA-07", "ADOPT-09", "REPO-01", "TASK-10"}
@@ -161,7 +167,7 @@ def test_conftest_formats_pass_through(tmp_path: Path) -> None:
 
 
 def _ids(stdout: str) -> set[str]:
-    return {finding_id for _, finding_id, _ in _found(stdout)}
+    return {finding_id for _, finding_id, _, _ in _found(stdout)}
 
 
 def test_a_file_parsed_first_is_reported_alike(tmp_path: Path) -> None:
@@ -177,7 +183,7 @@ def test_a_file_parsed_first_is_reported_alike(tmp_path: Path) -> None:
     (repo / "docker" / "build.Dockerfile.dockerignore").write_text("**/node_modules\n")
     completed = _launch("check", "--output", "json", cwd=repo)
     assert completed.returncode == 1, completed.stderr
-    assert _found(completed.stdout) == [("docker/build.Dockerfile", "PARSE", "error")]
+    assert _found(completed.stdout) == [("docker/build.Dockerfile", "PARSE", "error", True)]
     assert completed.stdout == render_json(check(PRODUCT, repo, utc_now()))
     text = _launch("check", cwd=repo).stdout
     assert text == render_text(check(PRODUCT, repo, utc_now()), requirement_titles(PRODUCT))
@@ -232,3 +238,46 @@ def test_an_unusable_name_is_unknown(tmp_path: Path) -> None:
     completed = _launch("check", "--output", "json", "--repository", "not a name", cwd=repo)
     assert _ids(completed.stdout) == set()
     assert repository_name(repo, "not a name") is None
+
+
+def _stage(repo: Path, families: list[str]) -> None:
+    """Declare a staged adoption of `families`, in force for the next 30 days."""
+    expires = (datetime.now(UTC) + timedelta(days=30)).strftime("%Y-%m-%d")
+    enforce = ", ".join(f'"{family}"' for family in families)
+    (repo / ".repo" / "conventions.toml").write_text(
+        "schema_version = 1\n"
+        "\n"
+        "[conventions]\n"
+        'version = "0.1.0"\n'
+        "\n"
+        "[adoption]\n"
+        f"enforce = [{enforce}]\n"
+        'tracking = "https://github.com/example/repo/issues/1"\n'
+        f'expires = "{expires}"\n',
+        encoding="utf-8",
+    )
+
+
+@pytest.mark.parametrize("output", ["text", "json", "github"])
+def test_only_enforced_families_fail(output: str, tmp_path: Path) -> None:
+    # A staged adoption reports every family but fails only on the ones it
+    # enforces, with the same exit status for every output format.
+    repo = materialize(fixture_repos_dir(PRODUCT) / "gha-07-display-name", tmp_path / "repo")
+    _stage(repo, ["ADOPT", "OUT"])
+    unenforced = _launch("check", "--fail-on", "warning", "--output", output, cwd=repo)
+    assert unenforced.returncode == 0, unenforced.stderr
+    assert "not enforced" in unenforced.stdout or output == "json"
+    _stage(repo, ["ADOPT", "GHA"])
+    enforced = _launch("check", "--fail-on", "warning", "--output", output, cwd=repo)
+    assert enforced.returncode == 1, enforced.stderr
+    assert "not enforced" not in enforced.stdout
+
+
+def test_a_staged_report_matches_the_runner(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "gha-07-display-name", tmp_path / "repo")
+    _stage(repo, ["ADOPT", "OUT"])
+    report = check(PRODUCT, repo, utc_now())
+    assert [finding.enforced for finding in report.findings] == [False]
+    text = _launch("check", "--fail-on", "warning", cwd=repo)
+    assert text.stdout == render_text(report, requirement_titles(PRODUCT), "warning"), text.stderr
+    assert _launch("check", "--output", "json", cwd=repo).stdout == render_json(report)

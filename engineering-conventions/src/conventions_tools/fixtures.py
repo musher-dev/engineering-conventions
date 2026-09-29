@@ -15,7 +15,9 @@ from conventions_tools.run import check
 
 FIXTURE_NOW = "2026-09-23T00:00:00Z"
 
-type Expectation = tuple[str, str, str]
+# (path, id, severity, enforced). A finding in a family a staged adoption does
+# not enforce is expected with "enforced": false; the key is omitted otherwise.
+type Expectation = tuple[str, str, str, bool]
 
 
 @dataclass(frozen=True)
@@ -40,10 +42,7 @@ class CaseResult:
             return f"ok   {self.name}"
 
         def render(items: list[Expectation]) -> str:
-            return json.dumps(
-                [{"id": id_, "path": path, "severity": severity} for path, id_, severity in items],
-                indent=2,
-            )
+            return json.dumps([as_entry(item) for item in items], indent=2)
 
         return (
             f"FAIL {self.name}\n"
@@ -57,10 +56,24 @@ def case_dirs(product: Path) -> list[Path]:
     return sorted(path.parent for path in root.glob("*/expected.json"))
 
 
+def as_entry(item: Expectation) -> dict[str, object]:
+    """One expectation as expected.json writes it."""
+    path, id_, severity, enforced = item
+    entry: dict[str, object] = {"id": id_, "path": path, "severity": severity}
+    if not enforced:
+        entry["enforced"] = False
+    return entry
+
+
 def expected_findings(case: Path) -> list[Expectation]:
     return sorted(
         {
-            (get_str(item, "path"), get_str(item, "id"), get_str(item, "severity"))
+            (
+                get_str(item, "path"),
+                get_str(item, "id"),
+                get_str(item, "severity"),
+                item.get("enforced") is not False,
+            )
             for item in map(as_map, as_list(read_json(case / "expected.json")))
         }
     )
@@ -137,5 +150,7 @@ def run_case(product: Path, case: Path) -> CaseResult:
     return CaseResult(
         name=case.name,
         expected=expected_findings(case),
-        actual=sorted({(finding.path, finding.id, finding.severity) for finding in findings}),
+        actual=sorted(
+            {(finding.path, finding.id, finding.severity, finding.enforced) for finding in findings}
+        ),
     )

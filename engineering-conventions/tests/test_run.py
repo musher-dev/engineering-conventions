@@ -126,6 +126,31 @@ def test_fail_on_threshold(severities: list[str], fail_on: str, *, fails: bool) 
     assert run.fails(findings, fail_on) is fails
 
 
+@pytest.mark.parametrize("severity", ["warning", "error"])
+def test_an_unenforced_finding_never_fails(severity: str) -> None:
+    # A staged adoption reports a family it does not enforce yet, but its
+    # findings do not count toward --fail-on (lib/enforcement.rego).
+    unenforced = Finding("GHA-07", "a", "m", severity, "u", "EC-0002", enforced=False)
+    assert not run.fails([unenforced], "warning")
+    enforced = replace(unenforced, id="OUT-06", enforced=True)
+    assert run.fails([unenforced, enforced], "warning")
+
+
+def test_enforced_is_read_from_the_result() -> None:
+    metadata = {
+        "id": "GHA-07",
+        "path": "a",
+        "message": "m",
+        "severity": "warning",
+        "url": "u",
+        "convention": "EC-0002",
+    }
+    stdout = json.dumps(
+        [{"warnings": [{"metadata": metadata}, {"metadata": metadata | {"enforced": False}}]}]
+    )
+    assert [finding.enforced for finding in run.parse_conftest_output(stdout)] == [True, False]
+
+
 def test_findings_sort_by_path_then_id() -> None:
     findings = [
         Finding("GHA-10", "b.yml", "m", "warning", "u", "c"),
@@ -146,6 +171,7 @@ def test_render_json_is_an_array_of_findings() -> None:
     assert rendered == [
         {
             "convention": "EC-0002",
+            "enforced": True,
             "id": "GHA-07",
             "message": WARNING.message,
             "path": WARNING.path,
@@ -154,6 +180,7 @@ def test_render_json_is_an_array_of_findings() -> None:
         },
         {
             "convention": "",
+            "enforced": True,
             "id": "PARSE",
             "message": "not valid YAML: line 1, column 1: x",
             "path": ".github/workflows/bad.yml",
@@ -598,3 +625,17 @@ def test_render_text_summary() -> None:
         "Warnings do not fail the check; --fail-on warning makes them fail.\n"
     )
     assert "Warnings do not fail" not in run.render_text(run.Report([WARNING], []), {}, "warning")
+
+
+def test_render_text_marks_unenforced_families() -> None:
+    unenforced = replace(WARNING, enforced=False)
+    other = replace(WARNING, id="HOOKS-01", path=".config/lefthook.yml", enforced=False)
+    rendered = run.render_text(run.Report([unenforced, other], []), {}, "warning")
+    assert rendered.startswith("GHA-07  warning (not enforced)  1 finding\n")
+    assert "HOOKS-01  warning (not enforced)  1 finding\n" in rendered
+    assert rendered.endswith(
+        "2 warnings, 0 errors in 2 requirements.\n"
+        "2 of them are in families this repository does not enforce yet (GHA, HOOKS), "
+        "so they do not fail the check.\n"
+    )
+    assert unenforced.line().startswith("warning (not enforced) [GHA-07] ")

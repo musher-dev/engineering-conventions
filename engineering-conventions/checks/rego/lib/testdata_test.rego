@@ -13,7 +13,7 @@ requirement_ids := [
 	"GHA-10", "GHA-11", "GHA-12", "GHA-13", "GHA-14", "GHA-15", "GHA-16", "GHA-17",
 	"GHA-20", "GHA-21", "GHA-22", "GHA-23",
 	"GHA-24", "GHA-26", "GHA-27", "GHA-28", "GHA-29", "GHA-30", "GHA-31", "GHA-32", "GHA-38",
-	"OUT-01", "OUT-02", "OUT-03", "OUT-04", "OUT-05", "OUT-06", "OUT-07",
+	"OUT-01", "OUT-02", "OUT-03", "OUT-04", "OUT-05", "OUT-06", "OUT-07", "OUT-12",
 ]
 
 # In the index but outside base-repo here, so the tests of the other
@@ -80,7 +80,7 @@ index := {
 		},
 		"schedule_tokens": ["nightly", "scheduled"],
 		"display_forms": {"api": "API", "pr": "PR", "devcontainer": "Dev Container"},
-		"output_kinds": ["bundle", "cli", "contract", "image", "library"],
+		"output_kinds": ["bundle", "cli", "contract", "image", "library", "site", "vmimage"],
 		"repository_systems": ["engineering", "platform", "sdk"],
 		"repository_kinds": ["library", "service", "specification"],
 		"repository_lifecycles": ["deprecated", "experimental", "production"],

@@ -184,7 +184,7 @@ checks the file against its schema as part of `conventions check`; no separate v
 ## Declare what you publish
 
 A repository with a `publish` workflow lists what it publishes in `.repo/outputs.toml`, one entry per container image,
-library, command-line tool, contract or bundle:
+library, command-line tool, contract, bundle, site or machine image:
 
 ```toml
 schema_version = 1

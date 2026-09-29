@@ -159,6 +159,7 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-09](outputs/publishing-and-consuming.md#out-09) | A version is published only from a release tag and is never overwritten | EC-0008 | proposed | warning | review |
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
+| [OUT-12](outputs/outputs-declaration.md#out-12) | A site output's location is an https:// origin | EC-0007 | proposed | warning | conftest |
 | [REPO-01](repository/identity-declaration.md#repo-01) | A repository declares its identity in .repo/repository.toml | EC-0009 | proposed | warning | conftest |
 | [REPO-02](repository/identity-declaration.md#repo-02) | The identity declaration is valid against its schema | EC-0009 | proposed | warning | conftest |
 | [REPO-03](repository/identity-declaration.md#repo-03) | The declared system, kind, lifecycle and audience are registered values | EC-0009 | proposed | warning | conftest |

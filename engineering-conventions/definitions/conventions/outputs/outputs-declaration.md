@@ -80,6 +80,14 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.outputs.declaration
+  - id: OUT-12
+    title: A site output's location is an https:// origin
+    status: proposed
+    severity: warning
+    since: 0.6.2
+    validation:
+      engine: conftest
+      package: conventions.checks.outputs.declaration
 ---
 
 # Outputs declaration
@@ -146,8 +154,8 @@ each output is one `[[outputs]]` table, and `outputs[]` below means a key in one
 | `outputs[].kind` | yes | An output kind from the table below (OUT-03). |
 | `outputs[].description` | no | One line on what the output is for. |
 | `outputs[].source` | yes | The file or directory it is built from (OUT-05). |
-| `outputs[].publish_workflow` | yes | The filename of the workflow under `.github/workflows/` that publishes it: a `publish` or `release` workflow (OUT-06). |
-| `outputs[].location` | yes | Where a consumer gets it: an image repository, a package name, a release URL. |
+| `outputs[].publish_workflow` | yes | The filename of the workflow under `.github/workflows/` that publishes it: a `publish` or `release` workflow, or for a site a `deploy` workflow (OUT-06). |
+| `outputs[].location` | yes | Where a consumer gets it: an image repository, a package name, a release URL, or a site's `https://` origin (OUT-12). |
 | `outputs[].docs` | yes | The document, with an optional `#anchor`, that says how to consume it (OUT-05, OUT-08). |
 | `outputs[].format` | contract | The interface format, such as `openapi`, `asyncapi`, `protobuf` or `json-schema` (OUT-07). |
 | `outputs[].definition` | contract | The machine-readable definition file consumers build against (OUT-05, OUT-07). |
@@ -158,8 +166,8 @@ The authoritative shape is `checks/schemas/outputs.schema.json`, and OUT-02 chec
 
 The kinds are terms in `definitions/terminology/global.yml`, tagged `outputs.kind`, so a new kind is a terminology
 change, not a schema change. Each maps onto the Backstage descriptor format, so a catalog that speaks it can be
-generated from the declaration. Backstage types are free-form: `tool` and `bundle` are not among its well-known types,
-and are named here so every catalog uses the same ones.
+generated from the declaration. Backstage types are free-form: `tool`, `bundle` and `machine-image` are not among its
+well-known types, and are named here so every catalog uses the same ones.
 
 | Kind | Is | Backstage entity |
 | --- | --- | --- |
@@ -168,6 +176,8 @@ and are named here so every catalog uses the same ones.
 | `cli` | An executable released as assets, pinned with a tool manager | `Component` of type `tool` |
 | `contract` | An interface definition other repositories build against | `API`, with `spec.type` from `format` and `spec.definition` from `definition` |
 | `bundle` | A versioned archive of files, consumed by pinning | `Component` of type `bundle` |
+| `site` | Files served at a stable HTTPS origin, fetched by URL, such as a schema host or a documentation site | `Component` of type `website` |
+| `vmimage` | A bootable machine image, such as a cloud provider snapshot, that hosts are created from | `Resource` of type `machine-image` |
 
 ## Requirements
 
@@ -314,6 +324,9 @@ and its responsibility must be `publish` or `release`: a workflow that builds wi
 is not the one that makes the output available. A `release` workflow qualifies because it may publish the artifacts of
 the release it cuts, in the same run, when the version is known only there
 ([decision 0014](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0014-release-workflows-may-publish.md)).
+A `site` is the one exception: its host is the environment it is served from, so the `deploy` workflow that pushes its
+files there is what makes it available, and a `deploy` workflow qualifies for a site and for nothing else
+([decision 0018](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0018-a-site-is-an-output.md)).
 
 **Correct:**
 
@@ -325,10 +338,19 @@ publish_workflow = "publish-api.yml"
 publish_workflow = "release.yml"      # cuts the release, then publishes its image
 ```
 
+```toml
+kind = "site"
+publish_workflow = "deploy-docs.yml"  # pushes the site's files to the host that serves them
+```
+
 **Incorrect:**
 
 ```toml
 publish_workflow = "validate.yml"     # validates; does not publish
+```
+
+```toml
+kind = "image"
 publish_workflow = "deploy.yml"       # deploys; changes what runs, publishes nothing
 ```
 
@@ -356,6 +378,31 @@ kind = "contract"                     # which file, in which format?
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
+
+### OUT-12
+
+**A site output's location is an https:// origin.**
+
+A site is consumed by URL: a person opens it, and a tool such as a JSON Schema validator or an editor fetches from it.
+Its location is the origin those URLs start with, so it must be one a client can request. A host name without a
+scheme is not a URL, and an `http://` origin serves bytes that anyone on the path can change, which defeats a consumer
+that pins a versioned path on the site.
+
+**Correct:**
+
+```toml
+kind = "site"
+location = "https://docs.example.com"
+```
+
+**Incorrect:**
+
+```toml
+kind = "site"
+location = "docs.example.com"         # no scheme: not a URL a client can fetch
+```
+
+Checked by: conftest · Severity: warning · Since: 0.6.2
 
 ## References
 

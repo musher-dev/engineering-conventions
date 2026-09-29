@@ -340,6 +340,25 @@ terms:
       pinning, such as this repository's release.
     tags: [outputs.kind]
     stability: provisional
+  - id: outputs.kind.site
+    display_name: site
+    token: site
+    definition: >-
+      Files served at a stable HTTPS origin that people or tools fetch by
+      URL, such as a schema host or a documentation site. Its versioned
+      paths never change once served; aliases such as a major version may
+      move.
+    tags: [outputs.kind]
+    stability: provisional
+  - id: outputs.kind.vmimage
+    display_name: machine image
+    token: vmimage
+    definition: >-
+      A bootable virtual machine disk image, such as a cloud provider
+      snapshot, that hosts are created from, consumed by referring to its
+      version.
+    tags: [outputs.kind]
+    stability: provisional
 
   # Systems: the first token of a repository's name (REPO-09) and the system
   # field of .repo/repository.toml (REPO-03). A system groups repositories by

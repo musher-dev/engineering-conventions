@@ -11,11 +11,13 @@ from pathlib import Path
 
 import pytest
 
+from conventions_tools.cli import main
 from conventions_tools.fixtures import expected_findings, materialize
 from conventions_tools.loading import as_list, as_map, get_str
-from conventions_tools.paths import fixture_repos_dir, product_dir
+from conventions_tools.paths import HOME_ENV, fixture_repos_dir, product_dir
 from conventions_tools.run import (
     check,
+    fails,
     render_json,
     render_text,
     repository_name,
@@ -281,3 +283,89 @@ def test_a_staged_report_matches_the_runner(tmp_path: Path) -> None:
     text = _launch("check", "--fail-on", "warning", cwd=repo)
     assert text.stdout == render_text(report, requirement_titles(PRODUCT), "warning"), text.stderr
     assert _launch("check", "--output", "json", cwd=repo).stdout == render_json(report)
+
+
+# Each format the launcher prints, with a line only that format prints: its
+# own two, and conftest's, which it passes through.
+FORMATS = {
+    "text": "GHA-07  warning",
+    "json": '"id": "GHA-07"',
+    "github": "::warning file=",
+    "sarif": '"runs":',
+    "junit": "<testsuites>",
+    "tap": "not ok ",
+    "table": "│",
+    "azuredevops": "##vso[task.logissue type=warning]",
+    "stdout": "WARN - ",
+}
+
+
+@pytest.mark.parametrize("output", sorted(FORMATS))
+def test_every_output_format_reports_the_finding(output: str, tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "gha-07-display-name", tmp_path / "repo")
+    completed = _launch("check", "--output", output, cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert FORMATS[output] in completed.stdout
+    assert "GHA-07" in completed.stdout
+
+
+def test_fail_on_warning_fails_a_passed_through_format(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "gha-07-display-name", tmp_path / "repo")
+    completed = _launch("check", "--fail-on", "warning", "--output", "github", cwd=repo)
+    assert completed.returncode == 1, completed.stderr
+    assert "::warning file=" in completed.stdout
+
+
+def _strict_product(tmp_path: Path) -> Path:
+    """A copy of the release in which every profile raises GHA-07 to error, as a profile may."""
+    rego = PRODUCT / "checks" / "rego"
+    strict = tmp_path / "strict"
+    shutil.copytree(PRODUCT / "bin", strict / "bin")
+    for source in rego.rglob("*.rego"):
+        if not source.name.endswith("_test.rego"):
+            target = strict / "checks" / "rego" / source.relative_to(rego)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+    document = as_map(json.loads((PRODUCT / "checks" / "data" / "index.json").read_text()))
+    index = as_map(as_map(document["conventions"])["index"])
+    for profile in as_map(index["profiles"]).values():
+        as_map(as_map(profile)["severity"])["GHA-07"] = "error"
+    (strict / "checks" / "data").mkdir(parents=True)
+    (strict / "checks" / "data" / "index.json").write_text(json.dumps(document))
+    return strict
+
+
+def test_an_error_fails_the_check_end_to_end(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Every real requirement is a warning today, so nothing else runs the path
+    # an error takes: a profile raising one must fail the check through both
+    # runners and every output format.
+    strict = _strict_product(tmp_path)
+    repo = materialize(fixture_repos_dir(PRODUCT) / "gha-07-display-name", tmp_path / "repo")
+
+    report = check(strict, repo, utc_now())
+    assert [(f.id, f.severity) for f in report.findings] == [("GHA-07", "error")]
+    assert fails(report.findings, "error")
+    monkeypatch.setenv(HOME_ENV, str(strict))
+    assert main(["check", str(repo)]) == 1
+
+    environment = {key: value for key, value in os.environ.items() if key not in NAME_SOURCES}
+
+    def launch(*arguments: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [str(strict / "bin" / "conventions"), "check", *arguments],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+            check=False,
+            env=environment,
+        )
+
+    as_json = launch("--output", "json")
+    assert as_json.returncode == 1, as_json.stderr
+    assert _found(as_json.stdout) == [(".github/workflows/validate.yml", "GHA-07", "error", True)]
+    github = launch("--output", "github")
+    assert github.returncode == 1, github.stderr
+    assert "::error file=" in github.stdout
+    assert launch().returncode == 1

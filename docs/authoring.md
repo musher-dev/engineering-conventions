@@ -97,7 +97,24 @@ repository, the proposal carries `authority` pointing there
 
    `clean/` itself must still produce no findings. A requirement with no fixture fails the invariants: a check that
    is never seen to fire could be checking nothing.
-6. **Regenerate and check.**
+
+   A requirement first released after 0.6.2 also needs a **near-miss**: a case named `gha-38-passes-<slug>/` that
+   comes as close to the requirement as a conforming repository can, and expects none of its findings. It proves the
+   check stays quiet where it should, which is where false positives come from: which files it selects, how a parser
+   reads them, a pattern, a threshold or a date boundary. The invariants fail on a new requirement without one.
+6. **Update the findings snapshot.** `engineering-conventions/tests/fixtures/findings.snapshot.json` records every
+   case's findings with their messages, duplicates included. `expected.json` says which requirements fire where; the
+   snapshot says what each finding tells the reader, so a new case, a reworded message or a finding reported twice
+   shows up as a diff in review. After a change that adds a case or changes a message:
+
+   ```sh
+   uv run --project engineering-conventions conventions fixtures --update-snapshot
+   ```
+
+   Read the diff before committing it: a message change is a `fix` ([decision
+   0005](decisions/0005-status-severity-and-versioning.md#change-classification)), and a line you did not expect to
+   change is a regression.
+7. **Regenerate and check.**
 
    ```sh
    task generate

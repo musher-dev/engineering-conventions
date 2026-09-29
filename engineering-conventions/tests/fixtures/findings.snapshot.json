@@ -1,0 +1,500 @@
+{
+  "adopt-02-bare-date": [
+    [".repo/conventions.toml", "ADOPT-02", "warning", "`waivers.0.expires` is the bare TOML date 2026-12-01T00:00:00Z; quote it as \"2026-12-01\", because the declaration's dates are strings.", true]
+  ],
+  "adopt-02-invalid-declaration": [
+    [".repo/conventions.toml", "ADOPT-02", "warning", "the declaration: Additional property waiver is not allowed.", true]
+  ],
+  "adopt-03-expired-waiver": [
+    [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
+    [".repo/conventions.toml", "ADOPT-03", "warning", "waiver 1 (GHA-07) expired on 2026-09-01 and no longer suppresses its finding; fix the finding and delete the waiver, or renew it with a new expires date and a tracking link", true]
+  ],
+  "adopt-04-legacy-alias": [
+    [".repo/conventions.toml", "ADOPT-04", "warning", "waiver 1 (CI-14) names a requirement that does not exist; it is an alias of GHA-01, GHA-02, GHA-03, GHA-04; name one of those", true]
+  ],
+  "adopt-04-unknown-requirement": [
+    [".repo/conventions.toml", "ADOPT-04", "warning", "waiver 1 (GHA-00) names a requirement that does not exist; use a requirement ID from the conventions catalog, such as GHA-07", true]
+  ],
+  "adopt-05-waiver-too-long": [
+    [".repo/conventions.toml", "ADOPT-05", "warning", "waiver 1 (GHA-07) expires on 2027-06-01, more than 180 days away; set expires to 2027-03-22 or earlier and renew it if the work is still open then", true]
+  ],
+  "adopt-06-stale-waiver": [
+    [".repo/conventions.toml", "ADOPT-06", "warning", "waiver 1 (GHA-08) matches no finding, so it suppresses nothing; delete it", true]
+  ],
+  "adopt-07-unknown-profile": [
+    [".repo/conventions.toml", "ADOPT-07", "warning", "profile \"base-repository\" is not defined by this release, so service applies instead; use one of \"base-repo\", \"content\", \"documentation\", \"infrastructure\", \"library\", \"service\", \"specification\", \"template\", \"tool\", \"website\"", true]
+  ],
+  "adopt-08-version-mismatch": [
+    [".repo/conventions.toml", "ADOPT-08", "warning", "conventions.version is \"0.1.0\" but this is release 0.2.0, so the findings are this release's; set conventions.version to \"0.2.0\", or run the 0.1.0 bundle", true]
+  ],
+  "adopt-09-unpinned": [
+    [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
+  ],
+  "adopt-10-unknown-family": [
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REPO\", \"TASK\", \"TOOL\"", true]
+  ],
+  "adopt-11-adoption-expired": [
+    [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
+    [".repo/conventions.toml", "ADOPT-11", "warning", "the staged adoption expired on 2026-09-01, so every family is enforced again; enforce the remaining families and delete the [adoption] table, or renew it with a new expires date", true]
+  ],
+  "adoption-enforce-subset": [
+    [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", false]
+  ],
+  "agent-01-two-project-memories": [
+    [".claude/CLAUDE.md", "AGENT-01", "warning", "the repository has both CLAUDE.md and .claude/CLAUDE.md, and Claude Code loads both as project memory; merge them into one of the two", true]
+  ],
+  "agent-02-readme-not-imported": [
+    ["CLAUDE.md", "AGENT-02", "warning", "CLAUDE.md does not import README.md; add the line @README.md so the orientation is written once, in the README", true]
+  ],
+  "agent-03-unscoped-rule": [
+    [".claude/rules/everywhere.md", "AGENT-03", "warning", "the rule has no paths: frontmatter, so Claude Code loads it in every session; add a paths: list naming the files the rule governs", true]
+  ],
+  "agent-04-over-budget": [
+    ["CLAUDE.md", "AGENT-04", "warning", "the context Claude Code loads at every launch is 49760 bytes, over the 40960-byte budget: CLAUDE.md (49 bytes), README.md (49711 bytes); move content into path-scoped rules, or trim the project memory and what it imports", true]
+  ],
+  "agent-05-unresolved-import": [
+    ["CLAUDE.md", "AGENT-05", "warning", "@docs/testing.md does not name a file in the repository; correct the path, or put the text in backticks if it is not meant as an import", true]
+  ],
+  "agent-06-missing-root-agents-md": [
+    ["AGENTS.md", "AGENT-06", "warning", "the repository has project memory but no AGENTS.md; add a root AGENTS.md that points coding agents other than Claude Code at it", true]
+  ],
+  "agent-06-nested-agents-md": [
+    ["docs/api/AGENTS.md", "AGENT-06", "warning", "an AGENTS.md below the root is a second set of agent instructions; move what it says into a CLAUDE.md or a path-scoped rule, and keep one AGENTS.md at the root", true]
+  ],
+  "agent-07-personal-settings": [
+    [".claude/settings.local.json", "AGENT-07", "warning", "settings.local.json is one person's local agent configuration; remove it from git and add it to .gitignore", true]
+  ],
+  "clean": [],
+  "conf-01-root-config": [
+    [".yamllint.yaml", "CONF-01", "warning", "yamllint configuration sits at the repository root; move it to .config/<concern>/yamllint.yaml and pass that path to yamllint explicitly", true]
+  ],
+  "conf-02-missing-index": [
+    [".config/README.md", "CONF-02", "warning", ".config/ holds tool configuration but no index; add .config/README.md with one row per file naming the tool, what it configures and its caller", true]
+  ],
+  "conf-03-unindexed-file": [
+    [".config/markdown/markdownlint.jsonc", "CONF-03", "warning", ".config/markdown/markdownlint.jsonc is not listed in .config/README.md; add a row for `markdown/markdownlint.jsonc` naming its tool and caller", true]
+  ],
+  "conf-04-uncalled-file": [
+    [".config/markdown/markdownlint.jsonc", "CONF-04", "warning", "nothing names .config/markdown/markdownlint.jsonc; pass it by path from a Taskfile, the lefthook configuration, a workflow, an action or devcontainer.json, or delete it", true]
+  ],
+  "conf-05-leading-dot": [
+    [".config/markdown/.markdownlint.jsonc", "CONF-05", "warning", ".config/markdown/.markdownlint.jsonc has a leading dot inside .config/; rename it to markdownlint.jsonc and update its callers", true]
+  ],
+  "conf-06-root-lefthook": [
+    ["lefthook.yml", "CONF-06", "warning", "lefthook.yml at the root wins lefthook's search over .config/lefthook.yml, so the hooks you edit there never run; move its jobs into .config/lefthook.yml and delete it", true]
+  ],
+  "conf-07-top-level-file": [
+    [".config/markdownlint.jsonc", "CONF-07", "warning", ".config/markdownlint.jsonc sits at the top level of .config/, which holds only README.md, lefthook.yml and lefthook-local.yml; move it to .config/<concern>/markdownlint.jsonc", true]
+  ],
+  "conf-08-program": [
+    [".config/scripts/banner.sh", "CONF-08", "warning", ".config/scripts/banner.sh is a program, and .config/ holds only declarations; move it beside what runs it, such as a scripts/ directory", true]
+  ],
+  "conf-09-missing-path": [
+    [".devcontainer/devcontainer.json", "CONF-09", "warning", "names .config/markdown/vale.ini, which does not exist; correct the path or remove the reference", true]
+  ],
+  "conf-10-trivyignore-entry": [
+    [".config/security/trivyignore.yaml", "CONF-10", "warning", "vulnerabilities CVE-2026-0002: add a statement saying why the finding is acceptable; add an expired_at date, or Trivy ignores the finding forever", true]
+  ],
+  "conf-11-trivyignore-line": [
+    [".config/security/trivyignore", "CONF-11", "warning", "line 4 (CVE-2026-0002): add exp:YYYY-MM-DD after the ID, or Trivy ignores the finding forever; add a # comment directly above it saying why the finding is acceptable", true]
+  ],
+  "conf-12-gitleaksignore-line": [
+    [".config/security/gitleaksignore", "CONF-12", "warning", "line 4 (9b8c7d6:tests/data/sample.json:generic-api-key:7) has no rationale; add a # comment directly above it saying why the finding is not a secret", true]
+  ],
+  "dec-01-directory-form": [
+    ["docs/adrs/0002-loose.md", "DEC-01", "warning", "docs/adrs/0002-loose.md is a file in docs/adrs, whose records are directories; move it to docs/adrs/NNNN-slug/+page.md, or out of the decisions directory", true]
+  ],
+  "dec-01-file-name": [
+    ["docs/decisions/0002_Use_Redis.md", "DEC-01", "warning", "decision record \"0002_Use_Redis\" is not named NNNN-kebab-slug; rename it to a four-digit number and a lowercase, hyphenated slug, such as 0007-store-sessions-in-the-database", true]
+  ],
+  "dec-02-frontmatter": [
+    ["docs/decisions/0001-use-one-queue.md", "DEC-02", "warning", "`status`: status must be one of the following: \"proposed\", \"accepted\", \"rejected\", \"deprecated\", \"superseded\".", true]
+  ],
+  "dec-03-gap": [
+    ["docs/decisions/0003-later.md", "DEC-03", "warning", "no decision record is numbered 0002, the number before 0003; a record is never deleted, so restore it (a withdrawn decision stays, with status rejected or deprecated), or renumber this record if it is new", true]
+  ],
+  "dec-04-one-sided-link": [
+    ["docs/decisions/0000-keep-decision-records.md", "DEC-04", "warning", "0001 lists 0000 in amends, but this record's amended_by does not list 0001; add \"0001\" to amended_by", true]
+  ],
+  "dec-05-sections": [
+    ["docs/decisions/0001-use-one-queue.md", "DEC-05", "warning", "the decision record has no `## Consequences` section; add it (Context, Decision and Consequences are required)", true]
+  ],
+  "dec-06-enforcement": [
+    ["docs/decisions/0001-use-one-queue.md", "DEC-06", "warning", "the decision record has no `## Enforcement` section; add one naming the check that holds the decision, or saying review-only and what a reviewer looks for", true]
+  ],
+  "dec-07-unlinked-record": [
+    ["docs/decisions/README.md", "DEC-07", "warning", "the index does not link decision record 0001-use-one-queue; add a link to it", true]
+  ],
+  "envs-01-missing-contract": [
+    ["platform-api/env.schema.yaml", "ENVS-01", "warning", "the service declares no environment contract; add platform-api/env.schema.yaml with every variable the product reads", true]
+  ],
+  "envs-02-misplaced-schema": [
+    ["platform-api/config/env.schema.yaml", "ENVS-02", "warning", "an environment schema lives at platform-api/env.schema.yaml or .devcontainer/env.schema.yaml, nowhere else; move this one to platform-api/env.schema.yaml", true]
+  ],
+  "envs-03-invalid-schema": [
+    ["platform-api/env.schema.yaml", "ENVS-03", "warning", "`bindings.API_PORT.type`: bindings.API_PORT.type must be one of the following: \"string\", \"integer\", \"number\", \"boolean\", \"enum\", \"list\".", true]
+  ],
+  "envs-04-unknown-component": [
+    ["platform-api/env.schema.yaml", "ENVS-04", "warning", "binding SERVER_PORT does not start with a declared component (API, DATABASE); rename it, or add its component to naming.components", true]
+  ],
+  "envs-05-retired-name": [
+    ["platform-api/env.schema.yaml", "ENVS-05", "warning", "API_LEGACY_TOKEN was retired on 2026-05-01 and is declared in bindings again: Requests authenticate with signed service tokens instead. Remove it, or delete its retired entry in the same change, deliberately", true]
+  ],
+  "envs-06-secret-default": [
+    ["platform-api/env.schema.yaml", "ENVS-06", "warning", "secret binding DATABASE_URL commits a local_default; leave it empty or point it at a loopback host, and use local_generate for per-developer secret material", true]
+  ],
+  "envs-07-contradiction": [
+    ["platform-api/env.schema.yaml", "ENVS-07", "warning", "binding DATABASE_POOL_URL: allow_empty: true needs default: \"\"", true]
+  ],
+  "envs-08-shared-mismatch": [
+    [".devcontainer/env.schema.yaml", "ENVS-08", "warning", "shared variable API_SIGNING_KEY has sensitivity internal here but secret in platform-api/env.schema.yaml; make every copy agree", true],
+    ["platform-api/env.schema.yaml", "ENVS-08", "warning", "shared variable API_SIGNING_KEY has sensitivity secret here but internal in .devcontainer/env.schema.yaml; make every copy agree", true]
+  ],
+  "envs-09-boolean-prefix": [
+    ["platform-api/env.schema.yaml", "ENVS-09", "warning", "boolean API_AUDIT_LOG does not start with ENABLE_, IS_, HAS_ or SHOULD_; rename it, e.g. ENABLE_...", true]
+  ],
+  "envs-10-unit-suffix": [
+    ["platform-api/env.schema.yaml", "ENVS-10", "warning", "binding API_REQUEST_TIMEOUT_SECONDS spells out its unit; end it in _SEC instead of _SECONDS", true]
+  ],
+  "envs-11-stutter": [
+    ["platform-api/env.schema.yaml", "ENVS-11", "warning", "binding API_API_PORT repeats API; say it once", true]
+  ],
+  "envs-12-url-suffix": [
+    ["platform-api/env.schema.yaml", "ENVS-12", "warning", "binding API_ENDPOINT holds a URL; end its name in _URL or _BASE_URL", true]
+  ],
+  "envs-13-nested-delimiter": [
+    ["platform-api/env.schema.yaml", "ENVS-13", "warning", "binding API_EXPORT_BATCH_SIZE is nested, so its name separates group, sub-model and field with __, e.g. API__BATCH_SIZE", true]
+  ],
+  "envs-14-client-prefix": [
+    ["platform-api/env.schema.yaml", "ENVS-14", "warning", "binding API_PUBLIC_BASE_URL is read by the browser, so it starts with a client prefix (PUBLIC_, VITE_)", true]
+  ],
+  "gha-01-filename-grammar": [
+    [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
+  ],
+  "gha-02-responsibility-token": [
+    [".github/workflows/add-to-project.yml", "GHA-02", "warning", "first filename token \"add\" is not a responsibility; start the filename with one of \"audit\", \"deploy\", \"maintain\", \"monitor\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\"", true]
+  ],
+  "gha-03-reusable-prefix": [
+    [".github/workflows/reusable-build-image.yml", "GHA-03", "warning", "the reusable- prefix promises the workflow is triggered only by workflow_call, but it is also triggered by \"workflow_dispatch\"; drop the prefix and name the workflow for the responsibility it owns, or make workflow_call its only trigger", true]
+  ],
+  "gha-04-reusable-token": [
+    [".github/workflows/reusable-frobnicate.yml", "GHA-04", "warning", "reusable workflow token \"frobnicate\" is neither a responsibility nor a capability; use one of \"audit\", \"build\", \"check\", \"deploy\", \"maintain\", \"monitor\", \"promote\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\" after reusable-", true]
+  ],
+  "gha-05-banned-token": [
+    [".github/workflows/lint-docs.yml", "GHA-05", "warning", "filename token \"lint\" names a trigger, schedule, tool or synonym rather than a responsibility; replace \"lint\" with \"validate\" (e.g. \"validate-docs.yml\")", true]
+  ],
+  "gha-06-mixed-extension": [
+    [".github/workflows/validate-pull-request.yaml", "GHA-06", "warning", "this repository's workflows mix .yml and .yaml and most use .yml; rename this file to \"validate-pull-request.yml\"", true]
+  ],
+  "gha-07-display-name": [
+    [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true]
+  ],
+  "gha-08-duplicate-name": [
+    [".github/workflows/validate-docs.yml", "GHA-07", "warning", "name \"Validate\" should be \"Validate Docs\": a workflow's name is its filename stem in Title Case", true],
+    [".github/workflows/validate-docs.yml", "GHA-08", "warning", "name \"Validate\" is also used by \".github/workflows/validate.yml\"; give each workflow the Title-Cased stem of its own filename (\"Validate Docs\")", true],
+    [".github/workflows/validate.yml", "GHA-08", "warning", "name \"Validate\" is also used by \".github/workflows/validate-docs.yml\"; give each workflow the Title-Cased stem of its own filename (\"Validate\")", true]
+  ],
+  "gha-09-workflow-run-target": [
+    [".github/workflows/deploy-docs.yml", "GHA-09", "warning", "workflow_run names \"Build Docs\", which is not the name of any workflow in this repository; use one of \"Deploy Docs\", \"Reusable Build Image\", \"Validate\", \"Validate Pull Request\"", true]
+  ],
+  "gha-10-snake-case-ids": [
+    [".github/workflows/validate.yml", "GHA-10", "warning", "job id \"repository-lint\" is not snake_case; rename it to \"repository_lint\" and update every needs: that names it", true]
+  ],
+  "gha-11-duplicate-name": [
+    [".github/workflows/validate.yml", "GHA-11", "warning", "jobs \"image\", \"lint\" all report as \"Lint\", so a failure cannot say which one it was; give each job its own name", true]
+  ],
+  "gha-11-job-name": [
+    [".github/workflows/reusable-build-image.yml", "GHA-11", "warning", "job \"push\" has no name, so its check reports as the bare id; add name: \"Push\"", true]
+  ],
+  "gha-12-entry-point-job-name": [
+    [".github/workflows/validate.yml", "GHA-12", "warning", "job \"lint\" is named \"Validate / Lint\", but GitHub already shows the workflow name before the job's, so it reads twice; rename it to \"Lint\" (only a required-check job leads with its workflow's name)", true]
+  ],
+  "gha-13-called-job-name": [
+    [".github/workflows/reusable-build-image.yml", "GHA-13", "warning", "job \"build\" is named \"Reusable Build Image / Build\" in a workflow callable through workflow_call; GitHub prefixes a called job with its caller's job name, so use a bare name such as \"Build\"", true]
+  ],
+  "gha-14-aggregate-job": [
+    [".github/workflows/validate.yml", "GHA-14", "warning", "aggregate job \"required\" has no if: always() (or !cancelled()), so it is skipped when a job it needs fails and the required check never reports; add if: always() and fail on any result but success", true]
+  ],
+  "gha-15-duplicate-context": [
+    [".github/rulesets/main-branch.json", "GHA-15", "warning", "requires context \"Validate Pull Request / Title\", which 2 jobs emit (job \"title\" in .github/workflows/validate-pull-request.yml, job \"title_again\" in .github/workflows/validate-pull-request.yml), so the ruleset cannot tell them apart; give each job its own name", true],
+    [".github/rulesets/main-branch.json", "GHA-16", "warning", "requires \"Validate Pull Request / Title\" from individual jobs of \".github/workflows/validate-pull-request.yml\"; a workflow is required only through its aggregate, so add an aggregate job named \"Validate Pull Request / Required\" that runs if: always() and needs every other job, and require that instead", true],
+    [".github/workflows/validate-pull-request.yml", "GHA-11", "warning", "jobs \"title\", \"title_again\" all report as \"Validate Pull Request / Title\", so a failure cannot say which one it was; give each job its own name", true]
+  ],
+  "gha-15-required-context": [
+    [".github/rulesets/main-branch.json", "GHA-15", "warning", "requires context \"Validate / Tests\", which no job emits, so every pull request waits on it forever; rename the job to this context or require the context an existing job emits (names built from ${{ }} or a matrix never match)", true]
+  ],
+  "gha-16-aggregate-required": [
+    [".github/rulesets/main-branch.json", "GHA-16", "warning", "requires \"Lint\" from individual jobs of \".github/workflows/validate.yml\"; a workflow is required only through its aggregate, so require its aggregate \"Validate / Required\" instead", true]
+  ],
+  "gha-17-run-step-name": [
+    [".github/workflows/validate.yml", "GHA-17", "warning", "step 3 of job \"lint\" runs a command but has no name; add name: with an imperative phrase saying what it does", true]
+  ],
+  "gha-20-action-directory": [
+    [".github/actions/tools", "GHA-20", "warning", "action directory \"tools\" is not <action-token>-<object> in lowercase kebab-case; start it with one of \"authenticate\", \"check\", \"install\", \"setup\" followed by what it acts on", true]
+  ],
+  "gha-21-action-metadata-file": [
+    [".github/actions/setup-tools/action.yaml", "GHA-21", "warning", "rename \".github/actions/setup-tools/action.yaml\" to \".github/actions/setup-tools/action.yml\": an action's metadata file is action.yml", true]
+  ],
+  "gha-22-action-name": [
+    [".github/actions/setup-tools/action.yml", "GHA-22", "warning", "name \"Tools Setup\" should be \"Setup Tools\": an action's name is its directory name in Title Case", true]
+  ],
+  "gha-23-action-description": [
+    [".github/actions/setup-tools/action.yml", "GHA-23", "warning", "input \"tool-version\" has no description; add description: saying what the caller passes", true]
+  ],
+  "gha-24-sha-pin": [
+    [".github/workflows/reusable-build-image.yml", "GHA-24", "warning", "job \"build\" uses \"actions/checkout@v5\" by a movable reference; pin it to the full 40-character commit SHA that v5 resolves to and keep \"# v5\" as a trailing comment", true]
+  ],
+  "gha-26-workflow-permissions": [
+    [".github/workflows/validate-pull-request.yml", "GHA-26", "warning", "the workflow declares no top-level permissions, so every job gets the repository's default token scope; add permissions: {contents: read} (or {}) and widen per job", true]
+  ],
+  "gha-27-least-privilege": [
+    [".github/workflows/validate-pull-request.yml", "GHA-27", "warning", "workflow-level permissions grant write access to \"pull-requests\"; keep the workflow level read-only ({contents: read} or {}) and grant anything wider on the job that needs it", true]
+  ],
+  "gha-28-persist-credentials": [
+    [".github/workflows/reusable-build-image.yml", "GHA-28", "warning", "step \"Check out the repository\" in job \"build\" checks out without persist-credentials: false, leaving the token in .git/config for every later step; add with: {persist-credentials: false}", true]
+  ],
+  "gha-29-timeout-minutes": [
+    [".github/workflows/validate-pull-request.yml", "GHA-29", "warning", "job \"title\" runs steps without timeout-minutes, so a hung step holds a runner for six hours; add timeout-minutes: set a little above its normal duration", true]
+  ],
+  "gha-30-concurrency-group": [
+    [".github/workflows/validate-pull-request.yml", "GHA-30", "warning", "the concurrency group \"pr-${{ github.event.number }}\" does not start with the standard prefix; set concurrency: {group: \"${{ github.workflow }}-${{ github.ref }}\", cancel-in-progress: ${{ github.event_name == 'pull_request' }}} so a newer push supersedes an older run of the same ref", true]
+  ],
+  "gha-31-callable-concurrency": [
+    [".github/workflows/reusable-build-image.yml", "GHA-31", "warning", "the workflow is triggered only by workflow_call yet declares concurrency; inside a called workflow github.workflow is the caller's name, so callers share one group and cancel each other; remove concurrency: and let the caller set it", true]
+  ],
+  "gha-32-paths-filter": [
+    [".github/workflows/validate.yml", "GHA-32", "warning", "on.pull_request has a paths filter, but this workflow emits a required check; when the filter skips the run the check never reports and the pull request cannot merge; remove the filter and skip work inside the jobs instead", true]
+  ],
+  "gha-38-kebab-case-io": [
+    [".github/actions/setup-tools/action.yml", "GHA-38", "warning", "input \"tool_version\" is not kebab-case; rename it to \"tool-version\" and update every inputs.tool_version reference", true]
+  ],
+  "gha-39-latest-runner": [
+    [".github/workflows/validate.yml", "GHA-39", "warning", "job \"lint\" runs on \"ubuntu-latest\", a label GitHub moves to a new image on its own schedule, so the job's toolchain changes on a day nobody chose; name the image it was proven on: ubuntu-24.04, or ubuntu-slim for a short job that runs no Docker", true]
+  ],
+  "gha-40-slim-docker": [
+    [".github/workflows/reusable-build-image.yml", "GHA-40", "warning", "job \"build\" runs on ubuntu-slim but step \"Build the image\" runs Docker, and that runner has no Docker; run it on ubuntu-24.04", true]
+  ],
+  "gha-41-swallowed-failure": [
+    [".github/workflows/validate.yml", "GHA-41", "warning", "step \"Lint the repository\" in job \"lint\" swallows a failure: \"task lint || true\"; let the command fail, or capture its exit code and test it, so a broken check cannot report success", true]
+  ],
+  "gha-42-actions-cache": [
+    [".github/workflows/reusable-build-image.yml", "GHA-42", "warning", "step \"Build the image\" in job \"build\" uses the type=gha build cache in its cache-from input; Docker layers fill the repository's 10 GB Actions cache and evict every other cache, so keep the build cache in a registry (type=registry) instead", true],
+    [".github/workflows/reusable-build-image.yml", "GHA-42", "warning", "step \"Build the image\" in job \"build\" uses the type=gha build cache in its cache-to input; Docker layers fill the repository's 10 GB Actions cache and evict every other cache, so keep the build cache in a registry (type=registry) instead", true]
+  ],
+  "gha-43-caller-permissions": [
+    [".github/workflows/validate.yml", "GHA-43", "warning", "job \"image\" calls .github/workflows/reusable-build-image.yml, which asks for packages: write, but grants it packages: none; GitHub refuses to start the run or the called job fails at its first API call, so grant packages: write on the job", true]
+  ],
+  "gha-44-paths-filter-base": [
+    [".github/workflows/validate.yml", "GHA-44", "warning", "step \"changes\" in job \"lint\" runs dorny/paths-filter in a workflow triggered by push without a base input; on push it diffs against the commit before the push, which a shallow checkout does not hold; set with: {base: ...} (for example the default branch)", true]
+  ],
+  "gha-45-working-directory": [
+    [".github/workflows/validate.yml", "GHA-45", "warning", "step \"Lint the repository\" in job \"lint\" sets working-directory \"apps/api\", which is not a directory in the repository; name one that exists", true]
+  ],
+  "gha-46-force-push": [
+    [".github/workflows/validate.yml", "GHA-46", "warning", "step \"Update the generated branch\" in job \"lint\" force-pushes with \"--force\", which overwrites whatever the remote holds; use --force-with-lease=<branch>:<expected-sha> so the push fails if the branch moved", true]
+  ],
+  "gha-47-release-please-token": [
+    [".github/workflows/release.yml", "GHA-47", "warning", "step \"release\" in job \"release\" runs release-please with token: ${{ secrets.GITHUB_TOKEN }}, the default GITHUB_TOKEN; GitHub starts no workflow for what the default token creates, so the release pull request never reports its required checks and the tag never starts the publish workflow; pass a GitHub App installation token as token:", true]
+  ],
+  "gha-48-terminal-skip": [
+    [".github/workflows/release.yml", "GHA-48", "warning", "job \"announce\" is the last job of a release workflow and its if: condition does not include !cancelled(); a skipped job anywhere before it skips it too and the run still reports success, so set if: ${{ !cancelled() && needs.<job>.result == 'success' }} with each result it depends on", true]
+  ],
+  "gha-49-production-push": [
+    [".github/workflows/deploy-production.yml", "GHA-49", "warning", "the workflow acts on production (its filename names production) but runs on a push to a branch; a merge does not release, so it acts on or reports about the previous release; trigger it from the release (a tag, release: published, or workflow_call from the deploy), a schedule, or workflow_dispatch", true]
+  ],
+  "hooks-01-assert-installed": [
+    [".config/lefthook.yml", "HOOKS-01", "warning", "assert_lefthook_installed is not true, so where the lefthook executable is missing the hooks skip without a word; set assert_lefthook_installed: true", true]
+  ],
+  "hooks-02-min-version": [
+    [".config/lefthook.yml", "HOOKS-02", "warning", "min_version is \"2.1.4\" but .config/mise/config.toml installs lefthook 2.1.14; set min_version to \"2.1.14\" so the floor is the version everyone runs", true]
+  ],
+  "hooks-03-glob-matcher": [
+    [".config/lefthook.yml", "HOOKS-03", "warning", "glob_matcher is not doublestar, so `**/` needs at least one directory and misses root files; set glob_matcher: doublestar", true]
+  ],
+  "hooks-04-root-only-glob": [
+    [".config/lefthook.yml", "HOOKS-04", "warning", "pre-commit job \"markdown\": glob \"*.md\" matches only files at the repository root under doublestar; write \"**/*.md\" to match at any depth", true]
+  ],
+  "hooks-05-commands": [
+    [".config/lefthook.yml", "HOOKS-05", "warning", "pre-commit defines commands:, the form lefthook replaced; move each entry into jobs:, as run: or script:", true]
+  ],
+  "hooks-06-fail-text": [
+    [".config/lefthook.yml", "HOOKS-06", "warning", "pre-commit job \"yaml\" has no fail_text; add one sentence saying what to run or change when it fails", true]
+  ],
+  "hooks-07-stage-fixed-check": [
+    [".config/lefthook.yml", "HOOKS-07", "warning", "pre-commit job \"yaml\" sets stage_fixed: true but only checks, so nothing is fixed to restage; run the fixing form or drop stage_fixed", true]
+  ],
+  "hooks-08-test-in-pre-commit": [
+    [".config/lefthook.yml", "HOOKS-08", "warning", "pre-commit job \"yaml\" runs tests, which is too slow for every commit; move it to pre-push or CI", true]
+  ],
+  "hooks-09-remotes": [
+    [".config/lefthook.yml", "HOOKS-09", "warning", "remotes: merges configuration from elsewhere into the hooks; write the jobs in this file", true]
+  ],
+  "hooks-10-swallowed-exit": [
+    [".config/lefthook.yml", "HOOKS-10", "warning", "pre-commit job \"yaml\" discards its command's exit code, so a failure passes; remove the || true (or set +e) and let it fail", true]
+  ],
+  "hooks-11-glob-matches-nothing": [
+    [".config/lefthook.yml", "HOOKS-11", "warning", "pre-commit job \"yaml\": glob \"src/**/*.py\" matches no file in the repository, so the job never runs; correct the pattern or remove the job", true]
+  ],
+  "mise-pin-without-declaration": [],
+  "out-01-undeclared-outputs": [
+    [".github/workflows/publish.yml", "OUT-01", "warning", "publish.yml publishes an output, but the repository has no .repo/outputs.toml; declare each output it publishes there", true]
+  ],
+  "out-02-invalid-declaration": [
+    [".repo/outputs.toml", "OUT-02", "warning", "`outputs.0`: Additional property name is not allowed.", true]
+  ],
+  "out-03-unknown-kind": [
+    [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"docker\", which is not an output kind; use one of \"bundle\", \"cli\", \"contract\", \"image\", \"library\", \"site\", \"vmimage\"", true]
+  ],
+  "out-04-duplicate-id": [
+    [".repo/outputs.toml", "OUT-04", "warning", "output ID \"api-image\" is used more than once; give each output its own ID", true]
+  ],
+  "out-05-missing-path": [
+    [".repo/outputs.toml", "OUT-05", "warning", "output \"api-image\" names docs \"api/USAGE.md\", which the repository does not hold; point it at the file or directory", true]
+  ],
+  "out-06-deploy-image": [
+    [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"deploy.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
+  ],
+  "out-06-deploy-site": [],
+  "out-06-publish-workflow": [
+    [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"validate.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
+  ],
+  "out-06-release-workflow": [],
+  "out-07-contract": [
+    [".repo/outputs.toml", "OUT-07", "warning", "output \"api-image\" is a contract but does not name its format or definition; add the interface format and the definition file", true]
+  ],
+  "out-12-site-location": [
+    [".repo/outputs.toml", "OUT-12", "warning", "output \"docs-site\" is a site but its location \"docs.example.com\" is not an https:// origin; give the URL people and tools fetch it from", true]
+  ],
+  "repo-01-undeclared": [
+    [".repo/repository.toml", "REPO-01", "warning", "the repository does not declare its identity; add .repo/repository.toml with its name, system, component, kind, owner, lifecycle, audience and tier", true]
+  ],
+  "repo-02-invalid-declaration": [
+    [".repo/repository.toml", "REPO-02", "warning", "`tier`: Must be less than or equal to 3.", true]
+  ],
+  "repo-03-unregistered-kind": [
+    [".repo/repository.toml", "REPO-03", "warning", "kind \"microservice\" is not a registered kind; use one of \"content\", \"documentation\", \"infrastructure\", \"library\", \"service\", \"specification\", \"template\", \"tool\", \"website\"", true]
+  ],
+  "repo-04-name-mismatch": [
+    [".repo/repository.toml", "REPO-04", "warning", "name is \"platform-api\", but system and component make \"platform-server\"; a repository's name is <system>-<component>, so correct whichever is wrong", true]
+  ],
+  "repo-07-actual-name": [
+    [".repo/repository.toml", "REPO-07", "warning", "the declaration names the repository \"platform-api\", but it is \"platform-web\"; set name to \"platform-web\", with system and component to match, or rename the repository and its declaration together", true]
+  ],
+  "repo-08-grammar": [
+    [".repo/repository.toml", "REPO-08", "warning", "repository name \"platform-API\" is not lowercase kebab-case; rename it to \"platform-api\"", true]
+  ],
+  "repo-09-unregistered-system": [
+    [".repo/repository.toml", "REPO-07", "warning", "the declaration names the repository \"platform-api\", but it is \"widgets-api\"; set name to \"widgets-api\", with system and component to match, or rename the repository and its declaration together", true],
+    [".repo/repository.toml", "REPO-09", "warning", "repository name \"widgets-api\" starts with \"widgets\", which is not a registered system; start it with one of \"brand\", \"catalog\", \"company\", \"engineering\", \"host\", \"infra\", \"observability\", \"platform\", \"sdk\"", true]
+  ],
+  "repo-10-banned-token": [
+    [".repo/repository.toml", "REPO-10", "warning", "repository name \"platform-api-v2\" holds the token \"v2\". Names a version, which changes while the name must not; drop the token and version what the repository publishes instead.", true]
+  ],
+  "repo-11-long-name": [
+    [".repo/repository.toml", "REPO-11", "warning", "repository name \"platform-organization-membership-reconciler\" is 43 characters, more than 40; shorten the component so the name stays readable in paths, image names and URLs", true]
+  ],
+  "repo-14-no-layout": [
+    [".repo/repository.toml", "REPO-14", "warning", "the identity declaration does not say where the product lives; add [layout] with product = \"<repository-name>\", or product = \"\" when the repository has no product directory", true]
+  ],
+  "repo-15-missing-product": [
+    [".repo/repository.toml", "REPO-15", "warning", "the declared product directory platform-api/ does not exist; create it, or correct [layout] product", true]
+  ],
+  "repo-16-product-name": [
+    [".repo/repository.toml", "REPO-16", "warning", "the product directory api/ is not named after the repository; rename it to platform-api/ and set [layout] product = \"platform-api\"", true]
+  ],
+  "repo-17-no-manifest": [
+    ["platform-api", "REPO-17", "warning", "platform-api/ holds no build manifest; move the product's manifest into it (one of Cargo.toml, build.gradle, build.gradle.kts, deno.json, deno.jsonc, go.mod, package.json, pom.xml, pyproject.toml, settings.gradle, settings.gradle.kts)", true]
+  ],
+  "repo-18-root-content": [
+    ["go.sum", "REPO-18", "warning", "go.sum is product content at the repository root; move it into platform-api/, or list it under [layout.root_exceptions] with the reason it stays", true]
+  ],
+  "repo-19-exception-reason": [
+    [".repo/repository.toml", "REPO-19", "warning", "the root exception \"go.sum\" gives no reason; say why it stays at the root, or remove the entry", true]
+  ],
+  "repo-20-dependabot-root": [
+    [".github/dependabot.yml", "REPO-20", "warning", "the gomod update scans \"/\", the repository root, which holds no go.mod; set its directory to /platform-api", true]
+  ],
+  "repo-21-product-dir-var": [
+    ["Taskfile.yml", "REPO-21", "warning", "vars.PRODUCT_DIR is '{{.ROOT_DIR}}/.github'; set it to '{{.ROOT_DIR}}/platform-api' so tasks reach the product through dir: '{{.PRODUCT_DIR}}'", true]
+  ],
+  "repo-22-dependabot-directory": [
+    [".github/dependabot.yml", "REPO-22", "warning", "the github-actions update names the directory \"/.github/actions/setup\", which does not exist; correct it, or remove it", true]
+  ],
+  "repository-github-exempt": [],
+  "task-01-version": [
+    ["tools/Taskfile.yml", "TASK-01", "warning", "version is the number 3; quote it as version: '3', the schema version Task reads", true]
+  ],
+  "task-02-variable-names": [
+    ["tools/Taskfile.yml", "TASK-02", "warning", "global variable \"binaryName\" is not UPPER_SNAKE; rename it \"BINARY_NAME\" and every reference to it", true]
+  ],
+  "task-03-task-names": [
+    ["tools/Taskfile.yml", "TASK-03", "warning", "task name \"docker_build\" is not kebab-case; use lowercase words joined by hyphens, with `:` between a namespace and a name, such as \"docker-build\"", true]
+  ],
+  "task-04-template-spaces": [
+    ["tools/Taskfile.yml", "TASK-04", "warning", "template {{ .BINARY }} has spaces inside its delimiters; write {{.BINARY}}", true]
+  ],
+  "task-05-description": [
+    ["tools/Taskfile.yml", "TASK-05", "warning", "task \"fmt\" has no desc; add a one-line desc so task --list shows what it does", true]
+  ],
+  "task-06-uncalled-internal": [
+    ["tools/Taskfile.yml", "TASK-06", "warning", "internal task \"_generate\" is called by no task; an internal task cannot be run on its own, so delete it or call it", true]
+  ],
+  "task-07-prefix-output": [
+    ["tools/Taskfile.yml", "TASK-07", "warning", "task \"deps\" sets prefix, but no Taskfile that loads it sets output: prefixed, the only mode that prints it; set output: prefixed, or remove the prefix", true]
+  ],
+  "task-08-path-variable": [
+    ["tools/Taskfile.yml", "TASK-08", "warning", "variable LINT_CONFIG is \".golangci.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
+  ],
+  "task-09-missing-include": [
+    ["tools/Taskfile.yml", "TASK-09", "warning", "include \"docs\" loads \"./documentation\", which does not exist; Task refuses to run any task until it does, so correct the path", true]
+  ],
+  "task-10-no-taskfile": [
+    ["Taskfile.yml", "TASK-10", "warning", "the repository has no root Taskfile; add Taskfile.yml defining \"setup\", \"check\", \"lint\", so `task <verb>` works the same in every repository", true]
+  ],
+  "task-11-build-test": [
+    ["Taskfile.yml", "TASK-11", "warning", "the root Taskfile does not define \"build\", \"test\"; add those tasks, or an alias of an existing task, so `task <verb>` works the same in every repository", true]
+  ],
+  "task-12-dev": [
+    ["Taskfile.yml", "TASK-12", "warning", "the root Taskfile does not define \"dev\"; add that task, or an alias of an existing task, so `task <verb>` works the same in every repository", true]
+  ],
+  "task-14-missing-source": [
+    ["tools/Taskfile.yml", "TASK-14", "warning", "task \"install\" lists source \"package.json\", which does not exist; Task ignores a source that matches nothing, so the task stops noticing changes to it; correct the path or remove it", true]
+  ],
+  "tool-01-second-config": [
+    ["mise.toml", "TOOL-01", "warning", "mise.toml is a mise configuration outside .config/mise/config.toml; move its settings and [tools] there and delete it, so one file pins every tool", true]
+  ],
+  "tool-02-unqualified-backend": [
+    [".config/mise/config.toml", "TOOL-02", "warning", "[tools] names \"uv\" without a backend, so mise's registry decides what it installs; name the backend, such as \"aqua:<owner>/<repo>\"", true]
+  ],
+  "tool-03-floating-version": [
+    [".config/mise/config.toml", "TOOL-03", "warning", "[tools] pins \"node\" to \"lts\", which resolves to a different release over time; pin one exact version, such as \"1.2.3\"", true]
+  ],
+  "tool-04-min-version": [
+    [".config/mise/config.toml", "TOOL-04", "warning", "the mise configuration sets no min_version, so an older mise loads it and may resolve it differently; set min_version to the mise version CI and the dev container install", true]
+  ],
+  "tool-05-lockfile": [
+    [".config/mise/config.toml", "TOOL-05", "warning", "no .config/mise/mise.lock beside the mise configuration, so each install resolves download URLs and checksums afresh; run `mise lock` and commit it", true]
+  ],
+  "tool-06-floating-argument": [
+    ["Dockerfile", "TOOL-06", "warning", "ARG NODE_VERSION defaults to \"24\", which is not one release; set an exact version, such as NODE_VERSION=1.2.3", true]
+  ],
+  "tool-07-runtime-image": [
+    ["Dockerfile", "TOOL-07", "warning", "node:22.1.0-slim runs node 22.1.0 but mise pins 24.21.0; use the 24.21.0 tag of node", true]
+  ],
+  "tool-08-feature-version": [
+    [".devcontainer/devcontainer.json", "TOOL-08", "warning", "Feature ghcr.io/devcontainers/features/node:1 installs node lts but mise pins 24.21.0; set its version to 24.21.0", true]
+  ],
+  "tool-09-package-manager": [
+    ["platform-api/package.json", "TOOL-09", "warning", "packageManager is bun@1.3.9 but mise pins bun 1.3.14; set packageManager to bun@1.3.14", true]
+  ],
+  "tool-10-setup-action": [
+    [".github/actions/setup-tools/action.yml", "TOOL-10", "warning", "step \"install_node\" installs node 22.1.0 with actions/setup-node but mise pins 24.21.0; set node-version: 24.21.0, or install it with jdx/mise-action", true]
+  ],
+  "tool-11-tool-versions": [
+    [".tool-versions", "TOOL-11", "warning", ".tool-versions is a second place to pin tool versions; move its pins to .config/mise/config.toml and delete it", true]
+  ],
+  "tool-11-version-file": [
+    ["platform-api/.nvmrc", "TOOL-11", "warning", "platform-api/.nvmrc says node 22 but mise pins 24.21.0; write 24.21.0, or delete the file if nothing but mise reads it", true]
+  ],
+  "waiver-active-suppresses": []
+}

@@ -138,6 +138,38 @@ def test_missing_fixture_coverage_is_reported(
     assert not any(p.startswith("GHA-25") for p in problems)
 
 
+def _released_later(content: Content, requirement_id: str) -> Content:
+    """`content` with one requirement released after the near-miss policy began."""
+    for index, convention in enumerate(content.conventions):
+        requirements = tuple(
+            replace(req, since="9.9.9") if req.id == requirement_id else req
+            for req in convention.requirements
+        )
+        if requirements != convention.requirements:
+            return _with_convention(content, index, replace(convention, requirements=requirements))
+    raise AssertionError(f"{requirement_id} is not declared")
+
+
+def test_a_new_requirement_without_a_near_miss_is_reported(content: Content) -> None:
+    problems = invariants.near_misses_cover(_released_later(content, "GHA-07"))
+    assert problems == [
+        "GHA-07: no passing near-miss; add tests/fixtures/repos/gha-07-passes-<slug>/ "
+        "that comes close to the requirement and expects none of its findings"
+    ]
+
+
+@pytest.mark.parametrize(("expected", "problems"), [("[]", 0), ('[{"id": "GHA-07"}]', 1)])
+def test_a_near_miss_must_not_expect_its_requirement(
+    content: Content, product: Path, tmp_path: Path, expected: str, problems: int
+) -> None:
+    copy = _product_copy(product, tmp_path)
+    near = copy / "tests" / "fixtures" / "repos" / "gha-07-passes-title-case"
+    near.mkdir()
+    (near / "expected.json").write_text(expected, encoding="utf-8")
+    later = replace(_released_later(content, "GHA-07"), product=copy)
+    assert len(invariants.near_misses_cover(later)) == problems
+
+
 def test_missing_clean_fixture_is_reported(content: Content, product: Path, tmp_path: Path) -> None:
     copy = _product_copy(product, tmp_path)
     shutil.rmtree(copy / "tests" / "fixtures" / "repos" / "clean", ignore_errors=True)

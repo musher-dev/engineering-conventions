@@ -233,6 +233,51 @@ def fixtures_cover(content: Content) -> list[str]:
     return found
 
 
+# Requirements first released after this version ship a passing near-miss
+# fixture. Earlier ones are not backfilled: their Rego unit tests already cover
+# the logic, and the near-misses that exist were added where a false positive
+# was found.
+NEAR_MISS_AFTER = "0.6.2"
+NEAR_MISS_INFIX = "-passes-"
+
+
+def _version(text: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in re.findall(r"\d+", text)[:3])
+
+
+def near_misses_cover(content: Content) -> list[str]:
+    """Every conftest requirement released after NEAR_MISS_AFTER has a passing near-miss.
+
+    A near-miss is a case named <id-lower>-passes-<slug> that comes close to
+    the requirement without breaking it, and expects no finding of it. It
+    proves the check does not fire where it should not: the false positives
+    a file selection, a parser, a pattern, a threshold or a date boundary
+    produce.
+    """
+    cases = {case.name: case for case in case_dirs(content.product)}
+    found: list[str] = []
+    for req in content.requirements:
+        if (
+            req.engine != "conftest"
+            or req.status == "retired"
+            or _version(req.since) <= _version(NEAR_MISS_AFTER)
+        ):
+            continue
+        prefix = f"{req.id.lower()}{NEAR_MISS_INFIX}"
+        near = [case for name, case in cases.items() if name.startswith(prefix)]
+        if not near:
+            found.append(
+                f"{req.id}: no passing near-miss; add tests/fixtures/repos/{prefix}<slug>/ "
+                "that comes close to the requirement and expects none of its findings"
+            )
+        found += [
+            f"fixture {case.name} is a near-miss of {req.id} but expects it"
+            for case in near
+            if any(rid == req.id for _, rid, _, _ in expected_findings(case))
+        ]
+    return found
+
+
 def _alias_owners(terminology: Terminology) -> dict[tuple[str, str], set[str]]:
     owners: dict[tuple[str, str], set[str]] = {}
     for term in terminology.terms:
@@ -386,6 +431,7 @@ CHECKS: tuple[Check, ...] = (
     rego_ids,
     waivers_see_every_family,
     fixtures_cover,
+    near_misses_cover,
     terminology_consistent,
     profiles_resolve,
     kinds_have_profiles,

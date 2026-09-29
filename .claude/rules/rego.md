@@ -25,6 +25,17 @@ conftest and nothing else, so what is written here is what a consumer executes.
   on `clean/` holding only the files that differ (plus `removed.txt`), with an
   `expected.json` that names it. A requirement no fixture expects is unproven;
   `task invariants` fails on it.
+- **MUST** ship a passing near-miss for a requirement first released after 0.6.2:
+  `tests/fixtures/repos/<id-lower>-passes-<slug>/`, the closest conforming
+  repository, whose `expected.json` has none of the requirement's findings.
+  Aim it at where the check could misfire (file selection, parser, pattern,
+  threshold, date boundary). `task invariants` fails without one.
+- **MUST** keep `tests/fixtures/findings.snapshot.json` current: it records
+  every case's findings with their messages, so run
+  `conventions fixtures --update-snapshot` after a new case or a changed
+  message, and review the diff. A changed message is a `fix`.
+- **MUST** keep the shared test index in `lib/testdata_test.rego` to the real
+  index's shape; `lib/testdata_shape_test.rego` fails when it drifts.
 - **MUST** put a `*_test.rego` beside every policy file. `task checks:test` fails
   below 80% coverage and on zero tests.
 - **MUST** use OPA v1 syntax (`if`, `contains`) and no conftest-only builtins
@@ -45,4 +56,7 @@ conftest and nothing else, so what is written here is what a consumer executes.
 | Lint, v1 syntax | `task checks:lint` (Regal), `task checks:check` (`opa check --strict`) |
 | Tests exist and cover | `task checks:test` (coverage threshold, zero-test guard, `conftest verify`) |
 | Declared IDs, fixture per requirement | `task cli:test` (fixture repos), `task invariants` |
+| Near-miss per new requirement | `task invariants` |
+| Messages, links, duplicate findings | `task cli:test` (findings snapshot, per-finding checks in `fixtures.py`) |
+| Shared test index matches the real one | `task checks:test` (`lib/testdata_shape_test.rego`) |
 | Purity, actionable messages | Review |

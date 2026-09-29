@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/musher-dev/engineering-conventions/compare/v0.6.2...v0.6.3) (2026-09-29)
+
+
+### Features
+
+* **conventions:** add dev container conventions (DEVC) and decision 0020 ([#59](https://github.com/musher-dev/engineering-conventions/issues/59)) ([99907a2](https://github.com/musher-dev/engineering-conventions/commit/99907a29d72c53c8051da4a38287b9d3a5d9be76))
+
 ## [0.6.2](https://github.com/musher-dev/engineering-conventions/compare/v0.6.1...v0.6.2) (2026-09-29)
 
 

@@ -43,6 +43,6 @@ conftest and nothing else, so what is written here is what a consumer executes.
 | --- | --- |
 | Formatting | `task checks:fmt:check` (opa fmt) |
 | Lint, v1 syntax | `task checks:lint` (Regal), `task checks:check` (`opa check --strict`) |
-| Tests exist and cover | `task checks:test` (coverage threshold, zero-test guard, `conftest verify`) |
+| Tests exist and cover | `task checks:test` (`conftest verify`, then one `opa test` pass with the coverage threshold and `--fail-on-empty`) |
 | Declared IDs, fixture per requirement | `task cli:test` (fixture repos), `task invariants` |
 | Purity, actionable messages | Review |

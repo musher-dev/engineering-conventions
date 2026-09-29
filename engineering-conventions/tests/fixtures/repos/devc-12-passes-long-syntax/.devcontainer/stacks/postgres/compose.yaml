@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg17
+    ports:
+      - target: 5432
+        published: "15432"
+        host_ip: 127.0.0.1
+        protocol: tcp
+      - "[::1]:15434:9000"
+      - "127.0.0.1:15435:9001/udp"
+      - "${POSTGRES_PORT:-15436}:5432"
+    expose:
+      - "5432"

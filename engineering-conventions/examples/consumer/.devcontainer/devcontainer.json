@@ -1,0 +1,21 @@
+// The dev container, as the DEVC requirements check it (EC-0027). Every value
+// that moves is fixed: the image by tag, the Features by the lockfile beside
+// this file, which `devcontainer upgrade` rewrites and Renovate raises.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+  },
+
+  // Tools run as vscode, so files written into the workspace stay yours.
+  "remoteUser": "vscode",
+
+  // Named for this container, so a rebuild keeps the gh login and another
+  // repository's container never shares it.
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

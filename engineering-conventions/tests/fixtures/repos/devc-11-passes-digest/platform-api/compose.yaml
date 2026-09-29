@@ -1,0 +1,4 @@
+# The product's own compose file, not the dev environment's.
+services:
+  api:
+    image: platform-api:latest

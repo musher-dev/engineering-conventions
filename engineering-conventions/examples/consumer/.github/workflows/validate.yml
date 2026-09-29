@@ -64,12 +64,27 @@ jobs:
       - name: Check the repository against its conventions
         run: conventions check --fail-on warning
 
+  dev_container:
+    name: Dev Container
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Proves the dev container still builds (DEVC-10). --frozen-lockfile
+      # fails when devcontainer-lock.json no longer matches devcontainer.json.
+      - name: Build the dev container
+        run: npx -y @devcontainers/cli@0.89.0 build --workspace-folder . --frozen-lockfile
+
   required:
     name: Validate / Required
     if: always()
     needs:
       - workflows
       - conventions
+      - dev_container
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

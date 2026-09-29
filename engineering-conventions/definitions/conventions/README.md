@@ -36,6 +36,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0024](releases/release-configuration.md) | Release configuration | releases | draft |
 | [EC-0025](releases/release-tags.md) | Release tags | releases | draft |
 | [EC-0026](releases/release-workflows.md) | Release workflows | releases | draft |
+| [EC-0027](dev-containers/dev-container-configuration.md) | Dev container configuration | dev-containers | draft |
+| [EC-0028](dev-containers/dev-container-stacks.md) | Dev container stacks | dev-containers | draft |
 
 ## Requirements
 
@@ -79,6 +81,19 @@ ID is permanent: it is never renumbered or reused.
 | [DEC-05](decisions/decision-records.md#dec-05) | A decision record has Context, Decision and Consequences sections | EC-0021 | proposed | warning | conftest |
 | [DEC-06](decisions/decision-records.md#dec-06) | A decision record says how it is enforced in an Enforcement section | EC-0021 | proposed | warning | conftest |
 | [DEC-07](decisions/decision-records.md#dec-07) | The decisions directory's index links every record | EC-0021 | proposed | warning | conftest |
+| [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
+| [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
+| [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |
+| [DEVC-04](dev-containers/dev-container-configuration.md#devc-04) | A dev container's base image names a fixed tag or a digest | EC-0027 | proposed | warning | conftest |
+| [DEVC-05](dev-containers/dev-container-configuration.md#devc-05) | A dev container sets remoteUser, and neither remoteUser nor containerUser is root | EC-0027 | proposed | warning | conftest |
+| [DEVC-06](dev-containers/dev-container-configuration.md#devc-06) | Every script a lifecycle command runs is a file the repository holds | EC-0027 | proposed | warning | conftest |
+| [DEVC-07](dev-containers/dev-container-configuration.md#devc-07) | A dev container commits no value for a variable an environment schema marks secret | EC-0027 | proposed | warning | conftest |
+| [DEVC-08](dev-containers/dev-container-configuration.md#devc-08) | A named volume a dev container mounts is musher-${devcontainerId}-\<purpose\> | EC-0027 | proposed | warning | conftest |
+| [DEVC-09](dev-containers/dev-container-configuration.md#devc-09) | Dependabot's devcontainers ecosystem or Renovate keeps a dev container's image and Features current | EC-0027 | proposed | warning | conftest |
+| [DEVC-10](dev-containers/dev-container-configuration.md#devc-10) | A workflow builds the dev container, with --frozen-lockfile when it has a lockfile | EC-0027 | proposed | warning | conftest |
+| [DEVC-11](dev-containers/dev-container-stacks.md#devc-11) | A dev container stack's service runs an image with a fixed tag or a digest | EC-0028 | proposed | warning | conftest |
+| [DEVC-12](dev-containers/dev-container-stacks.md#devc-12) | A dev container stack publishes its ports on the loopback address only | EC-0028 | proposed | warning | conftest |
+| [DEVC-13](dev-containers/dev-container-stacks.md#devc-13) | A dev container stack publishes its host ports from the reserved range 15432-15460 | EC-0028 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
@@ -93,6 +108,7 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-12](environment/env-schema.md#envs-12) | A URL binding's name ends in _URL | EC-0020 | proposed | warning | conftest |
 | [ENVS-13](environment/env-schema.md#envs-13) | A nested binding's name separates its parts with __ | EC-0020 | proposed | warning | conftest |
 | [ENVS-14](environment/env-schema.md#envs-14) | A binding the browser reads starts with a client prefix | EC-0020 | proposed | warning | conftest |
+| [ENVS-15](environment/env-contract.md#envs-15) | A dev container's secrets name exactly the variables its environment schema takes from the host | EC-0019 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -249,3 +265,4 @@ ID is permanent: it is never renumbered or reused.
 | DEC | Decision records | decisions |
 | TOOL | Toolchain | toolchain |
 | REL | Releases | releases |
+| DEVC | Dev containers | dev-containers |

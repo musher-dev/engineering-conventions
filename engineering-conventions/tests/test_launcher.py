@@ -191,9 +191,9 @@ def _ids(stdout: str) -> set[str]:
 def test_a_file_parsed_first_is_reported_alike(tmp_path: Path) -> None:
     # devcontainer.json and Dockerfiles are parsed before the check (decision
     # 0015); one that does not parse is a PARSE error from either runner.
+    # The clean case's devcontainer.json has comments and trailing commas.
     repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
-    (repo / ".devcontainer").mkdir()
-    (repo / ".devcontainer" / "devcontainer.json").write_text('// fine\n{"name": "x",}\n')
+    assert "\n  },\n" in (repo / ".devcontainer" / "devcontainer.json").read_text()
     (repo / "Dockerfile").write_text("FROM scratch\n")
     (repo / "docker").mkdir()
     (repo / "docker" / "build.Dockerfile").write_text("")

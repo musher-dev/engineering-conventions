@@ -1,7 +1,7 @@
 # Example consumer
 
-A miniature repository that meets every GitHub Actions, adoption, repository, output, release, task, environment and
-toolchain requirement in this release. Copy from it; the comments explain the choices that are not obvious.
+A miniature repository that meets every GitHub Actions, adoption, repository, output, release, task, environment,
+toolchain and dev container requirement in this release. Copy from it; the comments explain the choices that are not obvious.
 
 | File | Shows |
 | --- | --- |
@@ -19,6 +19,8 @@ toolchain requirement in this release. Copy from it; the comments explain the ch
 | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) | An entry-point `validate` workflow: derived `name:`, `<Subject>` job names that GitHub shows after the workflow's name, snake_case IDs, least-privilege permissions, the standard concurrency group, timeouts, SHA pins, and a `Validate / Required` aggregate, the one job that leads with its workflow's name because a ruleset requires it, that treats anything but success as failure |
 | [`.github/workflows/validate-pull-request.yml`](.github/workflows/validate-pull-request.yml) | A single-job workflow that is its own required check, with workflow permissions `{}` widened by the job |
 | [`.github/rulesets/main-branch.json`](.github/rulesets/main-branch.json) | A ruleset that requires only aggregates (`Validate / Required`) and single-job workflows |
+| [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) | A dev container ([EC-0027](../../definitions/conventions/dev-containers/dev-container-configuration.md)): an image with a fixed tag, its one Feature locked in [`devcontainer-lock.json`](.devcontainer/devcontainer-lock.json), a user other than root, a volume named for the container, and a post-create script the repository holds. It shows what the requirements accept; it is not a template to copy, and the organization's scaffold is `musher-dev/development-container` |
+| [`.github/renovate.json`](.github/renovate.json) | Renovate, whose devcontainer and mise managers raise the dev container's image and Features and the release pin (DEVC-09) |
 
 ## What the Validate workflow runs
 
@@ -26,9 +28,10 @@ toolchain requirement in this release. Copy from it; the comments explain the ch
 | --- | --- |
 | `Workflows` | actionlint and zizmor at medium severity (GHA-33), at the versions in `.config/mise/config.toml` |
 | `Conventions` | `conventions check --fail-on warning`, the command a developer runs locally |
-| `Validate / Required` | fails unless both jobs above succeeded |
+| `Dev Container` | builds the dev container with `--frozen-lockfile` (DEVC-10) |
+| `Validate / Required` | fails unless every job above succeeded |
 
-Both jobs install their tools with `jdx/mise-action`, so CI and a local run use the same versions. A real repository
+The first two jobs install their tools with `jdx/mise-action`, so CI and a local run use the same versions. A real repository
 adds its own jobs (`API / Tests`, `Repository / Lint`) and lists each in the aggregate's `needs:`. The ruleset does not
 change: it requires the aggregate.
 

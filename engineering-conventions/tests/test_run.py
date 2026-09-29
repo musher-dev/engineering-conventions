@@ -222,6 +222,13 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/dependabot.yml",
         ".config/security/trivyignore.yaml",
         ".devcontainer/devcontainer.json",
+        ".devcontainer/devcontainer-lock.json",
+        ".devcontainer/python/devcontainer-lock.json",
+        ".devcontainer-lock.json",
+        ".devcontainer/stacks/postgres/compose.yaml",
+        ".devcontainer/docker-compose.override.yml",
+        ".devcontainer/stacks/observability/config/tempo-config.yaml",
+        "platform-api/compose.yaml",
         "CLAUDE.md",
     ):
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
@@ -229,7 +236,12 @@ def test_input_files(tmp_path: Path) -> None:
     assert run.input_files(tmp_path) == [
         ".config/lefthook.yml",
         ".config/security/trivyignore.yaml",
+        ".devcontainer-lock.json",
+        ".devcontainer/devcontainer-lock.json",
+        ".devcontainer/docker-compose.override.yml",
         ".devcontainer/mise.toml",
+        ".devcontainer/python/devcontainer-lock.json",
+        ".devcontainer/stacks/postgres/compose.yaml",
         ".github/actions/nested/deeper/action.yaml",
         ".github/actions/setup-tools/action.yml",
         ".github/conventional-commits.yaml",

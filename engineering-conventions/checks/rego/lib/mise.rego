@@ -186,6 +186,20 @@ image(reference) := {"name": name, "tag": parts[2], "digest": parts[3]} if {
 	name := regex.replace(parts[1], `^(docker\.io/|index\.docker\.io/)?(library/)?`, "")
 }
 
+# An image reference that moves without a commit: its tag is missing or a
+# moving keyword, and no digest fixes it. A reference written with a variable
+# is left alone, since the build decides it.
+floating_image(reference) if {
+	not contains(reference, "$")
+	parts := image(reference)
+	parts.digest == ""
+	moving_tag(parts.tag)
+}
+
+moving_tag("")
+
+moving_tag(tag) if lower(tag) in floating_keywords
+
 # The official images of runtimes mise pins, by image name.
 image_tools := {
 	"node": "node",

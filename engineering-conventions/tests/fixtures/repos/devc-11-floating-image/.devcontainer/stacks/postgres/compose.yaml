@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: pgvector/pgvector:latest
+    ports:
+      - "127.0.0.1:15432:5432"
+  cache:
+    image: redis
+    ports:
+      - "127.0.0.1:15433:6379"

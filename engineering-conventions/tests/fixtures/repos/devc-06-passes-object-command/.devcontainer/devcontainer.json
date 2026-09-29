@@ -1,0 +1,17 @@
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": {
+    "setup": ["bash", "./.devcontainer/scripts/post-create.sh"],
+    "tools": "git --version && echo \"see docs/setup.md\"",
+    "home": "bash ${containerWorkspaceFolder}/.devcontainer/scripts/missing.sh",
+  },
+  "postStartCommand": "bash /usr/local/share/docker-init.sh",
+}

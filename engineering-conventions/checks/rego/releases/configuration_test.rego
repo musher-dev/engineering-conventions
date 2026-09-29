@@ -25,8 +25,7 @@ several := {
 	"$schema": schema,
 	"release-type": "simple",
 	"tag-separator": "/",
-	"separate-pull-requests": true,
-	"pull-request-title-pattern": title,
+	"group-pull-request-title-pattern": "chore(release): release ${branch}",
 	"draft": true,
 	"force-tag-creation": true,
 	"packages": {
@@ -178,12 +177,44 @@ test_rel_05_several_tags if {
 	has(found, `package "b" leaves the component out of the tags of one of several packages`)
 }
 
-test_rel_06_release_pull_requests if {
-	grouped := object.union(several, {"separate-pull-requests": false, "pull-request-title-pattern": "chore: release"})
+test_rel_06_single_package_title if {
+	untitled := object.union(single, {"pull-request-title-pattern": "chore: release ${version}"})
+	results := checks.findings with input as [config(untitled), one_manifest] with data.conventions.index as td.index
+	messages(results, "REL-06") == {concat(" ", [
+		`the release-please config titles release pull requests "chore: release ${version}"; set`,
+		`"pull-request-title-pattern": "chore(release): release${component} ${version}" so every release pull request`,
+		"reads the same",
+	])}
+}
+
+test_rel_06_one_grouped_pull_request if {
+	separate := replaced(several, {
+		"separate-pull-requests": true,
+		"group-pull-request-title-pattern": "chore: release ${branch}",
+		"packages": {
+			"schemas/blueprint": {"component": "blueprint"},
+			"schemas/listing": {"component": "listing", "separate-pull-requests": true},
+		},
+	})
+	versions := manifest({"schemas/blueprint": "1.0.0", "schemas/listing": "1.0.0"})
+	results := checks.findings with input as [config(separate), versions] with data.conventions.index as td.index
+	found := messages(results, "REL-06")
+	count(found) == 3
+	has(found, `the release-please config sets "separate-pull-requests": true`)
+	has(found, `package "schemas/listing" sets "separate-pull-requests": true`)
+	has(found, `titles the grouped release pull request "chore: release ${branch}"`)
+	titled := object.union(several, {"pull-request-title-pattern": "chore: release ${version}"})
+	results_titled := checks.findings with input as [config(titled), versions] with data.conventions.index as td.index
+	count(messages(results_titled, "REL-06")) == 0
+	untitled := object.remove(several, ["group-pull-request-title-pattern"])
+	results_untitled := checks.findings with input as [config(untitled), versions] with data.conventions.index as td.index
+	has(messages(results_untitled, "REL-06"), `with release-please's default, "chore: release ${branch}"`)
+}
+
+test_rel_06_commit_rules if {
 	rules := td.file(".github/conventional-commits.yaml", {"types": ["feat", "fix"], "scopes": ["repo"]})
-	docs := [config(grouped), manifest({"schemas/blueprint": "1.0.0", "schemas/listing": "1.0.0"}), rules]
-	results := checks.findings with input as docs with data.conventions.index as td.index
-	count(messages(results, "REL-06")) == 4
+	results := checks.findings with input as [config(single), one_manifest, rules] with data.conventions.index as td.index
+	count(messages(results, "REL-06")) == 2
 	commit_rules := {f.message | some f in results; f.path == ".github/conventional-commits.yaml"}
 	commit_rules == {
 		concat(" ", [

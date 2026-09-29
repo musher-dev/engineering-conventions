@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "simple",
   "tag-separator": "/",
+  "separate-pull-requests": true,
   "group-pull-request-title-pattern": "chore(release): release ${branch}",
   "draft": true,
   "force-tag-creation": true,

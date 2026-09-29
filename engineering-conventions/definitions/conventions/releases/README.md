@@ -29,7 +29,8 @@ records why each choice was made.
 | Config and release-please manifest | `.github/release-please/config.json`, `manifest.json` | REL-02 |
 | Tag, one package | `vX.Y.Z` (`include-component-in-tag: false`) | REL-05 |
 | Tag, several packages | `<component>/vX.Y.Z` (`tag-separator: "/"`) | REL-05 |
-| Release pull request | `chore(release): release${component} ${version}`, one per package | REL-06 |
+| Release pull request, one package | `chore(release): release${component} ${version}` | REL-06 |
+| Release pull request, several packages | One grouped pull request, `chore(release): release ${branch}` | REL-06 |
 | Releases | `draft: true`, `force-tag-creation: true` | REL-07 |
 | 0.x | `bump-minor-pre-major`, `bump-patch-for-minor-pre-major` | REL-08 |
 | Changelog | `feat`, `fix` shown; `chore`, `ci`, `test`, `build`, `style`, `refactor` hidden | REL-09 |

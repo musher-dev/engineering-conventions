@@ -3,7 +3,7 @@
 # description: >-
 #   A repository that publishes versioned outputs releases them with
 #   release-please, configured in .github/release-please/: tags vX.Y.Z or
-#   <component>/vX.Y.Z, one titled release pull request per package, drafts
+#   <component>/vX.Y.Z, one titled release pull request for every package, drafts
 #   with their tag, explicit 0.x bumps, a changelog that shows what releases,
 #   and no one-off overrides left behind.
 # scope: package
@@ -20,7 +20,12 @@ import data.conventions.lib.steps
 # digest or served continuously, not cut as releases.
 versioned_kinds := {"bundle", "cli", "contract", "library"}
 
+# The release pull request's title: one package's names its version; a
+# grouped one names the branch, since release-please fills ${version} in a
+# grouped title only from a root "." package.
 title_pattern := "chore(release): release${component} ${version}"
+
+group_title_pattern := "chore(release): release ${branch}"
 
 # REL-01
 findings contains lib.finding("REL-01", files.outputs_path, message) if {
@@ -245,6 +250,7 @@ findings contains lib.finding("REL-05", rp.config_path, message) if {
 
 # REL-06
 findings contains lib.finding("REL-06", rp.config_path, message) if {
+	not rp.several
 	some path, settings in rp.settings
 	pattern := object.get(settings, "pull-request-title-pattern", "")
 	pattern != title_pattern
@@ -259,11 +265,28 @@ findings contains lib.finding("REL-06", rp.config_path, message) if {
 
 findings contains lib.finding("REL-06", rp.config_path, message) if {
 	rp.several
-	object.get(rp.config, "separate-pull-requests", false) != true
-	message := concat(" ", [
-		"the config releases several packages in one pull request; set \"separate-pull-requests\": true",
-		"so each package is reviewed and released on its own",
-	])
+	some path, settings in rp.settings
+	settings["separate-pull-requests"] == true
+	message := sprintf(
+		concat(" ", [
+			"%s sets \"separate-pull-requests\": true, so each package opens its own release pull request;",
+			"remove it so every package is released from one grouped pull request and one release run",
+		]),
+		[setter(path, "separate-pull-requests")],
+	)
+}
+
+findings contains lib.finding("REL-06", rp.config_path, message) if {
+	rp.several
+	pattern := object.get(rp.config, "group-pull-request-title-pattern", "")
+	pattern != group_title_pattern
+	message := sprintf(
+		concat(" ", [
+			"the release-please config titles the grouped release pull request %s; set",
+			"\"group-pull-request-title-pattern\": %q so every release pull request reads the same",
+		]),
+		[group_title_label(pattern), group_title_pattern],
+	)
 }
 
 findings contains lib.finding("REL-06", path, message) if {
@@ -372,6 +395,10 @@ findings contains lib.finding("REL-10", rp.config_path, message) if {
 setter(path, key) := rp.label(path) if key in object.keys(rp.packages[path])
 
 setter(path, key) := "the release-please config" if not key in object.keys(rp.packages[path])
+
+group_title_label("") := "with release-please's default, \"chore: release ${branch}\""
+
+group_title_label(pattern) := sprintf("%q", [pattern]) if pattern != ""
 
 versioned(value) if {
 	is_string(value)

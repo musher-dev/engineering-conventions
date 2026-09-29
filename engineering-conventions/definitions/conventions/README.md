@@ -167,7 +167,7 @@ ID is permanent: it is never renumbered or reused.
 | [REL-03](releases/release-configuration.md#rel-03) | The release-please action reads those two files and sets no release type of its own | EC-0024 | proposed | warning | conftest |
 | [REL-04](releases/release-configuration.md#rel-04) | The release-please config and release-please manifest agree on the packages, each with a release type and a version | EC-0024 | proposed | warning | conftest |
 | [REL-05](releases/release-configuration.md#rel-05) | Release tags are vX.Y.Z, or \<component\>/vX.Y.Z when a repository releases several packages | EC-0024 | proposed | warning | conftest |
-| [REL-06](releases/release-configuration.md#rel-06) | Each package gets its own release pull request, titled chore(release): release${component} ${version} | EC-0024 | proposed | warning | conftest |
+| [REL-06](releases/release-configuration.md#rel-06) | A repository releases every package from one release pull request, titled chore(release) with a set pattern | EC-0024 | proposed | warning | conftest |
 | [REL-07](releases/release-configuration.md#rel-07) | release-please creates each release as a draft, together with its tag | EC-0024 | proposed | warning | conftest |
 | [REL-08](releases/release-configuration.md#rel-08) | A package before 1.0 bumps the minor for a breaking change and the patch for anything else | EC-0024 | proposed | warning | conftest |
 | [REL-09](releases/release-configuration.md#rel-09) | The changelog shows the commit types that cut a release and hides the rest | EC-0024 | proposed | warning | conftest |

@@ -5,7 +5,7 @@ summary: >-
   A repository that publishes versioned outputs releases them with
   release-please in manifest mode, configured in .github/release-please/. It
   tags vX.Y.Z, or <component>/vX.Y.Z when it releases several packages; opens
-  one release pull request per package with one title; drafts each release
+  one release pull request for all of them, titled the same way everywhere; drafts each release
   with its tag; bumps 0.x versions explicitly; shows in its changelog exactly
   the commits that cut a release; and keeps no one-off override.
 status: draft
@@ -76,7 +76,7 @@ requirements:
       engine: conftest
       package: conventions.checks.releases.configuration
   - id: REL-06
-    title: "Each package gets its own release pull request, titled chore(release): release${component} ${version}"
+    title: A repository releases every package from one release pull request, titled chore(release) with a set pattern
     status: proposed
     severity: warning
     since: 0.6.2
@@ -161,13 +161,14 @@ records why each choice was made and which alternatives were rejected.
 }
 ```
 
-A repository with several packages sets `"tag-separator": "/"` and `"separate-pull-requests": true` instead of
-`include-component-in-tag`, and gives each package a `component`:
+A repository with several packages sets `"tag-separator": "/"` and `group-pull-request-title-pattern` instead of
+`include-component-in-tag` and `pull-request-title-pattern`, leaves `separate-pull-requests` at its default, and gives
+each package a `component`:
 
 ```json
 {
   "tag-separator": "/",
-  "separate-pull-requests": true,
+  "group-pull-request-title-pattern": "chore(release): release ${branch}",
   "packages": {
     "schemas/blueprint": { "component": "blueprint" },
     "schemas/listing": { "component": "listing" }
@@ -305,29 +306,44 @@ Checked by: conftest · Severity: warning · Since: 0.6.2
 
 ### REL-06
 
-**Each package gets its own release pull request, titled `chore(release): release${component} ${version}`.**
+**A repository releases every package from one release pull request, titled `chore(release)` with a set pattern.**
 
-The release pull request's title becomes the commit on the default branch when it squash-merges, so it is the line
-every history and every changelog shows. release-please substitutes `${component}` with a space and the component, or
-with nothing for a single package, so the one pattern reads `chore(release): release 1.4.2` and
-`chore(release): release blueprint 1.6.0`. A package released on its own gets its own pull request
-(`separate-pull-requests: true`), so a change to one does not wait for another's review. The title's type and scope
-must pass the repository's commit rules, or the release pull request is the one pull request that cannot merge.
+One release pull request and one release run, however many packages a repository holds, is the simplest pipeline to
+follow: one thing to review, one run to watch, and each package still gets its own version, `<component>/vX.Y.Z` tag
+and draft release when it is merged. So a repository with several packages leaves `separate-pull-requests` at its
+default, `false`, and release-please groups every package with releasable changes into one pull request whose body
+lists each package's version.
 
-The check reports a package whose effective `pull-request-title-pattern` is not the pattern above; a config with
-several packages that does not set `separate-pull-requests: true`; and a `.github/conventional-commits.yaml` whose
-`types` list leaves out `chore` or whose `scopes` list leaves out `release`.
+The title becomes the commit on the default branch when the pull request squash-merges, so it is the line every
+history and every changelog shows, and it reads the same everywhere:
+
+| Packages | Setting | Title |
+| --- | --- | --- |
+| One | `pull-request-title-pattern`: `chore(release): release${component} ${version}` | `chore(release): release 1.4.2` |
+| Several | `group-pull-request-title-pattern`: `chore(release): release ${branch}` | `chore(release): release main` |
+
+A grouped title names the branch, not a version: release-please fills `${component}` and `${version}` in it only from a
+root `"."` package. The title's type and scope must pass the repository's commit rules, or the release pull request is
+the one pull request that cannot merge. A repository that switches from one pull request per package closes those pull
+requests and removes their `autorelease: pending` labels, or release-please opens no grouped one.
+
+The check reports a single package whose effective `pull-request-title-pattern` is not the one above; with several
+packages, a `separate-pull-requests: true` at the top level or on a package, and a `group-pull-request-title-pattern`
+that is not the one above; and a `.github/conventional-commits.yaml` whose `types` list leaves out `chore` or whose
+`scopes` list leaves out `release`.
 
 **Correct:**
 
 ```json
-{ "pull-request-title-pattern": "chore(release): release${component} ${version}" }
+{ "group-pull-request-title-pattern": "chore(release): release ${branch}",
+  "packages": { "schemas/blueprint": { "component": "blueprint" }, "schemas/listing": { "component": "listing" } } }
 ```
 
 **Incorrect:**
 
 ```json
-{ "pull-request-title-pattern": "chore${scope}: release${component} ${version}" }
+{ "separate-pull-requests": true,
+  "packages": { "schemas/blueprint": { "component": "blueprint" }, "schemas/listing": { "component": "listing" } } }
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.2

@@ -99,6 +99,9 @@ flowchart LR
   finalize -. "release: published" .-> publish["publish-&lt;output&gt;.yml<br/>registries, sites"]
 ```
 
+With several packages, one merged release pull request can cut several releases in one run: the asset and publish jobs
+are a matrix over release-please's `paths_released` output, each entry reading its package's `<path>--tag_name`.
+
 A package registry or a site is published by a separate `publish-<output>.yml` or `deploy-<output>.yml` triggered by
 `release: published`. Those workflows read the release; they never write to it.
 

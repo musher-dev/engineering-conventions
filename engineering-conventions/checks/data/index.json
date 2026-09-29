@@ -6727,7 +6727,7 @@
           "severity": "warning",
           "since": "0.6.2",
           "status": "proposed",
-          "title": "Each package gets its own release pull request, titled chore(release): release${component} ${version}",
+          "title": "A repository releases every package from one release pull request, titled chore(release) with a set pattern",
           "waivable": true
         },
         "REL-07": {

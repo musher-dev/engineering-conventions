@@ -1,0 +1,12 @@
+{
+  "version": "0.2",
+  "globRoot": "../..",
+  "dictionaryDefinitions": [
+    {
+      "name": "musher",
+      "path": "./musher.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": ["musher"]
+}

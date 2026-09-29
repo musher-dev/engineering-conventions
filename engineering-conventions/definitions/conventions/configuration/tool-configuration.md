@@ -316,8 +316,11 @@ Configuration is passed by path, so a file no caller names is either dead or rea
 to avoid. Either way it still reads as authoritative. The check looks for the path in the strings of the files that
 run tools: Taskfiles, lefthook configuration, workflows, composite actions, `devcontainer.json` and `package.json`. A
 caller may name the file or a directory that holds it, and may prefix it with a variable for the repository root
-(`{{.ROOT_DIR}}/`, `${workspaceFolder}/`). Files a tool finds inside `.config/` on its own are exempt:
-`lefthook.yml`, `lefthook-local.yml`, `mise/config.toml`, `mise/mise.lock` and `mise/locks/`.
+(`{{.ROOT_DIR}}/`, `${workspaceFolder}/`). A file that another file in `.config/` names, by its `.config/` path or
+relative to that file's own directory, is named too: a cspell dictionary its `cspell.json` lists, a style directory
+`vale.ini` points at. The naming file still needs a caller of its own, so a chain nothing runs is reported where it
+starts. Files a tool finds inside `.config/` on its own are exempt: `lefthook.yml`, `lefthook-local.yml`,
+`mise/config.toml`, `mise/mise.lock` and `mise/locks/`.
 
 **Correct:**
 

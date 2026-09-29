@@ -34,6 +34,33 @@ test_code_drops_comments_and_joins_continuations if {
 	not steps.code({"uses": "x"})
 }
 
+test_command_lines_drop_heredoc_bodies_and_printed_text if {
+	run := concat("\n", [
+		"cat >&2 <<- 'MSG'",
+		"  To fix it: git push --force-with-lease",
+		"MSG",
+		"echo 'then git push -f'",
+		"printf '%s\\n' 'git push -f'",
+		"git push origin HEAD",
+		"cat <<<\"here string\"",
+		"git status",
+	])
+	steps.command_lines({"run": run}) == [
+		"cat >&2 <<- 'MSG'",
+		"git push origin HEAD",
+		"cat <<<\"here string\"",
+		"git status",
+	]
+}
+
+test_command_lines_keep_a_printed_line_that_chains_a_command if {
+	steps.command_lines({"run": "echo pushing && git push -f"}) == ["echo pushing && git push -f"]
+}
+
+test_command_lines_keep_what_follows_an_unclosed_heredoc_out if {
+	steps.command_lines({"run": "cat <<EOF\ngit push -f"}) == ["cat <<EOF"]
+}
+
 test_literal if {
 	steps.literal("ubuntu-24.04")
 	steps.literal(15)

@@ -40,6 +40,43 @@ without_comments(text) := concat("\n", [line |
 # Each non-empty line of a step's code.
 lines(step) := [trim_space(line) | some line in split(code(step), "\n"); trim_space(line) != ""]
 
+# The lines of a step's code that the shell runs as commands: lines(step)
+# without the body of a heredoc, and without a line that only prints text
+# (echo, printf). A command a step shows its reader, such as the fix it asks
+# for in an error message, is not a command it runs.
+command_lines(step) := [line |
+	code_lines := lines(step)
+	quoted := heredoc_body(code_lines)
+	some index, line in code_lines
+	not index in quoted
+	not printed(line)
+]
+
+# The indexes of the lines between a heredoc's opening line (`<<WORD`,
+# `<<-WORD`, `<< 'WORD'`, not a `<<<` here-string) and its closing WORD,
+# the closing line included.
+heredoc_body(code_lines) := {index |
+	some opening, line in code_lines
+	some match in regex.find_all_string_submatch_n(`(?:^|[^<])<<-?\s*["']?([A-Za-z_][A-Za-z0-9_]*)["']?`, line, -1)
+	some index, _ in code_lines
+	index > opening
+	not closed_before(code_lines, opening, index, match[1])
+}
+
+closed_before(code_lines, opening, index, word) if {
+	some between, line in code_lines
+	between > opening
+	between < index
+	line == word
+}
+
+# A line that only prints: it starts with echo or printf and chains no
+# further command after it.
+printed(line) if {
+	regex.match(`^(echo|printf)(\s|$)`, line)
+	not regex.match(`(&&|\|\||;)`, line)
+}
+
 # A value written into the file, not computed when the workflow runs.
 literal(value) if {
 	is_string(value)

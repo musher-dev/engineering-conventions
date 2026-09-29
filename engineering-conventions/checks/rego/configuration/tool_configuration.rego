@@ -178,6 +178,42 @@ called(path) if {
 	covers(reference.path, path)
 }
 
+# A file another file in .config/ names: a cspell dictionary its cspell.json
+# lists, a Vale style its vale.ini points at. The naming file is judged on its
+# own, so a chain nothing calls is still reported where it starts.
+called(path) if {
+	some reference in config_references
+	reference.caller != path
+	covers(reference.path, path)
+}
+
+# The paths a .config/ file names, by its .config/ path or relative to its own
+# directory. Read from the file's text, since configuration comes in formats
+# conftest does not parse; only a path that exists is taken, so a word that
+# happens to match a file name elsewhere is never a reference.
+config_references contains {"path": target, "caller": path} if {
+	some path, text in files.texts
+	startswith(path, ".config/")
+	not readme(path)
+	some token in regex.split(`[\s"'=:(,\[\]{}<>]+`, text)
+	some target in named_targets(path, token)
+	exists(target)
+}
+
+named_targets(_, token) := {target} if {
+	startswith(token, ".config/")
+	target := trim_suffix(token, "/")
+}
+
+named_targets(path, token) := {target} if {
+	not startswith(token, ".config/")
+	not startswith(token, "/")
+	relative_token := trim_suffix(trim_prefix(token, "./"), "/")
+	relative_token != ""
+	not contains(relative_token, "..")
+	target := concat("/", [regex.replace(path, `/[^/]*$`, ""), relative_token])
+}
+
 covers(reference, path) if reference == path
 
 covers(reference, path) if startswith(path, concat("", [reference, "/"]))

@@ -32,6 +32,8 @@ test_gha_46_force_push if {
 		{"name": "Lease", "run": `git push --force-with-lease="main:${EXPECTED}" origin main`},
 		{"name": "Plain", "run": "git push origin main && echo -f"},
 		{"name": "Comment", "run": "# never git push --force\ngit push --follow-tags"},
+		{"name": "Advice", "run": "cat >&2 <<- 'MSG'\n  To fix it: git push --force-with-lease\nMSG\nexit 1"},
+		{"name": "Printed", "run": "echo 'then run git push -f'"},
 	]})}
 	action := {"runs": {"steps": [{"name": "Force", "run": "git push -f", "shell": "bash"}]}}
 	docs := [

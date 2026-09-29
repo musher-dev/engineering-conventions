@@ -133,7 +133,7 @@ test_task_08_path_variables if {
 	messages(found, "TASK-08") == {
 		concat("", [
 			`variable DOCS_DIR is "docs", which names no file or directory in the repository; `,
-			"correct the path, or delete the variable",
+			"correct the path, delete the variable, or, if a task creates the directory, rename the variable DOCS",
 		]),
 		concat("", [
 			`variable REPORT_FILE is "{{.ROOT_DIR}}/reports/today.txt", whose directory the repository does not hold; `,
@@ -141,9 +141,22 @@ test_task_08_path_variables if {
 		]),
 		concat("", [
 			`task "build" variable SRC_DIR is "source", which names no file or directory in the repository; `,
-			"correct the path, or delete the variable",
+			"correct the path, delete the variable, or, if a task creates the directory, rename the variable SRC",
 		]),
 	}
+}
+
+test_task_08_a_config_variable_keeps_the_short_remedy if {
+	found := style.findings with input as with_root({"vars": {"LINT_CONFIG": ".golangci.yml"}})
+	messages(found, "TASK-08") == {concat("", [
+		`variable LINT_CONFIG is ".golangci.yml", which names no file or directory in the repository; `,
+		"correct the path, or delete the variable",
+	])}
+}
+
+test_task_08_build_output_named_for_what_it_holds if {
+	found := style.findings with input as with_root({"vars": {"SITE": "site", "DIST": "{{.ROOT_DIR}}/dist"}})
+	not "TASK-08" in {finding.id | some finding in found}
 }
 
 test_task_08_skips_a_task_with_its_own_dir if {

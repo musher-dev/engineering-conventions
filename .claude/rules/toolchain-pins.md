@@ -41,7 +41,7 @@ pairs below, which mise cannot express.
 | Rule | How |
 | --- | --- |
 | Installed versions match the pins | `task tools:doctor` (`verify-toolchain.sh`), the Dev Container CI job |
-| opa and conftest agree | `task checks:test` (`conftest verify` reruns the tests under conftest's OPA) |
+| opa and conftest agree | `task checks:test` (`conftest verify` runs the tests under conftest's OPA) |
 | lefthook is new enough | lefthook refuses to run below `min_version` |
 | mise is new enough | mise refuses to load the config below `min_version` |
 | The lockfile covers every pin | `mise install --locked` (`task tools:install`, `setup-tools`) |

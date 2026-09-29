@@ -35,25 +35,23 @@ tasks:
       - opa check --strict {{.REGO_DIR}} {{.INDEX}}
 
   checks:test:
-    desc: Run the Rego unit tests, fail below {{.COVERAGE_THRESHOLD}}% coverage or on zero tests, then conftest verify.
+    desc: Run the Rego unit tests under conftest and opa; fail below {{.COVERAGE_THRESHOLD}}% coverage or on zero tests.
     cmds:
-      - opa test {{.REGO_DIR}} {{.INDEX}}
-      # `opa test` exits 0 when it finds no tests at all, so a renamed test
-      # package or a broken glob would pass silently.
-      - |
-        count="$(opa test --format json {{.REGO_DIR}} {{.INDEX}} | opa eval --stdin-input --format raw 'count(input)')"
-        if [[ "${count}" -eq 0 ]]; then
-          echo "checks:test: opa test found zero tests under {{.REGO_DIR}}" >&2
-          exit 1
-        fi
-      # --coverage writes a JSON report to stdout; only the total is useful here.
+      # The tests under conftest's embedded OPA: consumers run the rules with
+      # conftest, so this is what catches opa and conftest drifting apart
+      # (.claude/rules/toolchain-pins.md) before a consumer does. It prints
+      # each failing test by name.
+      - conftest verify --no-color --policy {{.REGO_DIR}} --data {{.INDEX}}
+      # The same tests under the pinned opa, in one pass that also measures
+      # coverage. A failing test still fails the run and prints its name.
+      # --fail-on-empty: without it `opa test` exits 0 when it finds no tests
+      # at all, so a renamed test package or a broken glob would pass
+      # silently. --coverage-runs= skips the extra annotation passes, which
+      # only label uncovered lines in a report nothing here reads.
       - |
         report="$(mktemp)"
         trap 'rm -f "${report}"' EXIT
-        opa test --coverage --threshold {{.COVERAGE_THRESHOLD}} {{.REGO_DIR}} {{.INDEX}} > "${report}"
+        opa test --fail-on-empty --coverage --coverage-runs= --threshold {{.COVERAGE_THRESHOLD}} \
+          {{.REGO_DIR}} {{.INDEX}} > "${report}"
         coverage="$(opa eval --stdin-input --format raw 'input.coverage' < "${report}")"
         echo "Rego coverage: ${coverage}% (threshold {{.COVERAGE_THRESHOLD}}%)"
-      # The same tests again under conftest's embedded OPA: consumers run the
-      # rules with conftest, so this is what catches opa and conftest drifting
-      # apart (.claude/rules/toolchain-pins.md) before a consumer does.
-      - conftest verify --no-color --policy {{.REGO_DIR}} --data {{.INDEX}}

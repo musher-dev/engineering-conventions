@@ -56,3 +56,20 @@ def test_removing_a_file_clean_does_not_have_fails(tmp_path: Path) -> None:
 def test_the_example_consumer_meets_every_check(product: Path) -> None:
     report = check(product, product / "examples" / "consumer", FIXTURE_NOW)
     assert [*report.findings, *report.errors] == []
+
+
+# The example passes the output and release checks only by holding the files
+# they read; without them those checks have nothing to report, and the example
+# would stop showing adopters how to declare and release an output.
+EXAMPLE_RELEASE_FILES = (
+    ".repo/outputs.toml",
+    ".github/release-please/config.json",
+    ".github/release-please/manifest.json",
+    ".github/rulesets/release-tags.json",
+    ".github/workflows/release.yml",
+)
+
+
+@pytest.mark.parametrize("relative", EXAMPLE_RELEASE_FILES)
+def test_the_example_consumer_declares_and_releases_an_output(product: Path, relative: str) -> None:
+    assert (product / "examples" / "consumer" / relative).is_file()

@@ -1,0 +1,13 @@
+# What the repository publishes for others to consume (EC-0007). The image is
+# built from the product directory and pushed by the Release workflow, from the
+# tag it creates, only when a release was cut (OUT-09).
+schema_version = 1
+
+[[outputs]]
+id = "api-image"
+kind = "image"
+description = "The platform API service, one image per release."
+source = "platform-api"
+publish_workflow = "release.yml"
+location = "ghcr.io/musher-dev/platform-api"
+docs = "platform-api/README.md#run-the-image"

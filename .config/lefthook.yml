@@ -110,6 +110,8 @@ pre-commit:
       run: task checks:lint checks:check
       fail_text: "Rego lint or type-check failed. Run 'task checks:lint checks:check'."
 
+    # The content schemas run as a whole, through the task: their files go
+    # through yq first, which a staged-file list cannot reproduce.
     - name: schemas
       glob:
         - "engineering-conventions/checks/schemas/*.json"
@@ -118,11 +120,47 @@ pre-commit:
         - "engineering-conventions/definitions/conventions/**/*.{md,yml}"
         - "docs/decisions/*.md"
         - ".repo/*.toml"
-        - ".github/**/*.{yml,yaml}"
-        - "Taskfile.yml"
-        - "taskfiles/*.yml"
       run: task schemas:check schemas:validate
       fail_text: "Schema validation failed. Run 'task schemas:check schemas:validate'."
+
+    # GitHub and Task configuration is checked against check-jsonschema's
+    # built-in schemas, file by file, so these run on the staged files only:
+    # the same tool and schema as the matching step of `task schemas:validate`.
+    - name: workflow-schemas
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: >-
+        check-jsonschema --builtin-schema vendor.github-workflows {staged_files} &&
+        check-jsonschema --builtin-schema custom.github-workflows-require-timeout {staged_files}
+      fail_text: "A workflow fails its schema. Run 'task schemas:validate'."
+
+    - name: action-schemas
+      glob: ".github/actions/*/action.{yml,yaml}"
+      run: check-jsonschema --builtin-schema vendor.github-actions {staged_files}
+      fail_text: "A composite action fails its schema. Run 'task schemas:validate'."
+
+    - name: dependabot-schema
+      glob: ".github/dependabot.yml"
+      run: check-jsonschema --builtin-schema vendor.dependabot {staged_files}
+      fail_text: "The Dependabot config fails its schema. Run 'task schemas:validate'."
+
+    - name: issue-form-schemas
+      glob: ".github/ISSUE_TEMPLATE/*.yml"
+      exclude:
+        - ".github/ISSUE_TEMPLATE/config.yml"
+      run: check-jsonschema --builtin-schema vendor.github-issue-forms {staged_files}
+      fail_text: "An issue form fails its schema. Run 'task schemas:validate'."
+
+    - name: issue-config-schema
+      glob: ".github/ISSUE_TEMPLATE/config.yml"
+      run: check-jsonschema --builtin-schema vendor.github-issue-config {staged_files}
+      fail_text: "The issue template config fails its schema. Run 'task schemas:validate'."
+
+    - name: taskfile-schemas
+      glob:
+        - "Taskfile.yml"
+        - "taskfiles/*.yml"
+      run: check-jsonschema --builtin-schema vendor.taskfile {staged_files}
+      fail_text: "A Taskfile fails its schema. Run 'task schemas:validate'."
 
     - name: generate
       # The generated files are outputs, never staged inputs, so stage_fixed

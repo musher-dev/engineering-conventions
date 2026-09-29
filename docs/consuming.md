@@ -111,14 +111,15 @@ any other file. `conventions check` reports REPO-01 until the file exists, and c
 registered ones. The format is
 [EC-0009](../engineering-conventions/definitions/conventions/repository/identity-declaration.md), and the naming rules
 are [EC-0010](../engineering-conventions/definitions/conventions/repository/repository-names.md). A repository that is
-still to be renamed keeps its current name in the declaration and waives the REPO findings about the name until the
-rename.
+still to be renamed keeps its current name in the declaration: see [Legacy repository names](#legacy-repository-names).
 
 The `[layout]` table says where the product lives: `product` is the directory, named after the repository, that holds
 the product's build manifest, or `""` for a repository with no product directory. The root then holds no manifest,
 lockfile or source tree, and Dependabot and the Taskfile's `PRODUCT_DIR` name the same directory. The rules are
 [EC-0018](../engineering-conventions/definitions/conventions/repository/layout.md); a repository with several products
-under one workspace root declares `product = ""` and waives REPO-18 until it is split.
+under one workspace root declares `product = ""` and waives REPO-18 until it is split. A repository that holds data
+rather than a build, such as documents, schemas or configuration, also declares `product = ""`: it has no build
+manifest for a product directory to hold, and its tooling, if any, lives in a directory of its own.
 
 ### How the checks learn the repository's name
 
@@ -132,6 +133,21 @@ order, from:
 A directory checked with `-C` inside another work tree, or a copy with no remote, has no actual name: REPO-07 is not
 checked, and the other naming requirements judge the declared name. Pass `--repository` when the remote does not carry
 the repository's name, such as a mirror.
+
+### Legacy repository names
+
+A repository created before the naming grammar can adopt the conventions before it is renamed:
+
+1. Declare the name the repository has today, and set `component` to what the repository holds, usually that same
+   name. Set `system` to the registered system the repository belongs to.
+2. Run `conventions check` and waive only the naming findings the current name actually produces. A waiver of a
+   requirement that reports nothing is itself a finding (ADOPT-06).
+3. Write each waiver's `reason` and its tracking issue about the current name, never about the next one.
+
+Never declare, waive or write down a planned name in a repository before the rename happens. Declarations, waivers,
+issues and CI logs are all readable by everyone who can read the repository, and a planned name belongs to whoever
+plans it until the rename is applied. Update the declaration in the pull request after the rename, when REPO-07 starts
+comparing it with the new name.
 
 ## Define the standard tasks
 
@@ -208,7 +224,7 @@ promises its consumers is [EC-0008](../engineering-conventions/definitions/conve
 Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:
 
 ```sh
-version=0.2.0
+version=0.6.1  # x-release-please-version
 gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
 gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
   --signer-workflow musher-dev/engineering-conventions/.github/workflows/publish.yml \
@@ -238,7 +254,7 @@ The report has one block per requirement, errors first, then a summary:
 ```text
 GHA-07  warning  1 finding
 A workflow's name is its filename stem in Title Case
-https://github.com/musher-dev/engineering-conventions/blob/v0.3.0/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
+https://github.com/musher-dev/engineering-conventions/blob/vX.Y.Z/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
   .github/workflows/ci.yml
     name "CI" should be "Validate Code": a workflow's name is its filename stem in Title Case
 

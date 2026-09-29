@@ -1,6 +1,7 @@
-# This repository's own outputs declaration (EC-0007): what the Publish
-# workflow attaches to each GitHub Release. `task conventions:self` holds it
-# to OUT-01 to OUT-07 like any other repository.
+# This repository's own outputs declaration (EC-0007): what the Release
+# workflow attaches to each draft GitHub Release before it publishes it
+# (decision 0017). `task conventions:self` holds it to OUT-01 to OUT-07 like
+# any other repository.
 schema_version = 1
 
 [[outputs]]
@@ -8,7 +9,7 @@ id = "engineering-conventions"
 kind = "bundle"
 description = "The conventions, terminology, profiles and checks, with the launcher that runs them."
 source = "engineering-conventions/"
-publish_workflow = "publish.yml"
+publish_workflow = "release.yml"
 location = "https://github.com/musher-dev/engineering-conventions/releases"
 docs = "docs/consuming.md#adopt-it"
 
@@ -17,6 +18,6 @@ id = "musher-conventions-vale"
 kind = "bundle"
 description = "The MusherConventions Vale style alone, for a repository that runs Vale itself."
 source = "engineering-conventions/checks/vale/"
-publish_workflow = "publish.yml"
+publish_workflow = "release.yml"
 location = "https://github.com/musher-dev/engineering-conventions/releases"
 docs = "docs/consuming.md#without-mise"

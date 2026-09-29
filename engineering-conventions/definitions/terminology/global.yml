@@ -662,6 +662,14 @@ terms:
       repository's name after the system token, such as api in platform-api.
     tags: [meta]
     stability: provisional
+  - id: conventions.release-component
+    display_name: release component
+    definition: >-
+      One package a repository versions and releases on its own, one entry
+      of its release-please config's packages, named by the component its
+      tags carry, such as blueprint in blueprint/v1.6.0.
+    tags: [meta]
+    stability: provisional
   - id: conventions.repository-name
     display_name: repository name
     definition: >-

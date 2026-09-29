@@ -33,6 +33,9 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0021](decisions/decision-records.md) | Decision records | decisions | draft |
 | [EC-0022](github-actions/runners-and-step-outcomes.md) | Runners and step outcomes | github-actions | draft |
 | [EC-0023](github-actions/releases-and-deployments.md) | Releases and deployments | github-actions | draft |
+| [EC-0024](releases/release-configuration.md) | Release configuration | releases | draft |
+| [EC-0025](releases/release-tags.md) | Release tags | releases | draft |
+| [EC-0026](releases/release-workflows.md) | Release workflows | releases | draft |
 
 ## Requirements
 
@@ -159,6 +162,26 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-09](outputs/publishing-and-consuming.md#out-09) | A version is published only from a release tag and is never overwritten | EC-0008 | proposed | warning | review |
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
+| [REL-01](releases/release-configuration.md#rel-01) | A repository that declares a versioned output releases it with release-please | EC-0024 | proposed | warning | conftest |
+| [REL-02](releases/release-configuration.md#rel-02) | The release-please config and release-please manifest are .github/release-please/config.json and manifest.json | EC-0024 | proposed | warning | conftest |
+| [REL-03](releases/release-configuration.md#rel-03) | The release-please action reads those two files and sets no release type of its own | EC-0024 | proposed | warning | conftest |
+| [REL-04](releases/release-configuration.md#rel-04) | The release-please config and release-please manifest agree on the packages, each with a release type and a version | EC-0024 | proposed | warning | conftest |
+| [REL-05](releases/release-configuration.md#rel-05) | Release tags are vX.Y.Z, or \<component\>/vX.Y.Z when a repository releases several packages | EC-0024 | proposed | warning | conftest |
+| [REL-06](releases/release-configuration.md#rel-06) | Each package gets its own release pull request, titled chore(release): release${component} ${version} | EC-0024 | proposed | warning | conftest |
+| [REL-07](releases/release-configuration.md#rel-07) | release-please creates each release as a draft, together with its tag | EC-0024 | proposed | warning | conftest |
+| [REL-08](releases/release-configuration.md#rel-08) | A package before 1.0 bumps the minor for a breaking change and the patch for anything else | EC-0024 | proposed | warning | conftest |
+| [REL-09](releases/release-configuration.md#rel-09) | The changelog shows the commit types that cut a release and hides the rest | EC-0024 | proposed | warning | conftest |
+| [REL-10](releases/release-configuration.md#rel-10) | No release-as or last-release-sha stays in the release-please config | EC-0024 | proposed | warning | conftest |
+| [REL-11](releases/release-configuration.md#rel-11) | The version lives in the file release-please owns, and every other copy is marked for it | EC-0024 | proposed | warning | review |
+| [REL-12](releases/release-tags.md#rel-12) | An active tag ruleset covers every release tag | EC-0025 | proposed | warning | conftest |
+| [REL-13](releases/release-tags.md#rel-13) | The ruleset blocks creating, moving and deleting a release tag, and only an App may bypass it | EC-0025 | proposed | warning | conftest |
+| [REL-14](releases/release-tags.md#rel-14) | Published releases are immutable | EC-0025 | proposed | warning | review |
+| [REL-15](releases/release-workflows.md#rel-15) | Only release.yml runs release-please, on a push, in a concurrency group that never cancels | EC-0026 | proposed | warning | conftest |
+| [REL-16](releases/release-workflows.md#rel-16) | The release workflow mints its tokens from the release App, scoped to what each job needs | EC-0026 | proposed | warning | conftest |
+| [REL-17](releases/release-workflows.md#rel-17) | Nothing writes to a release once it is published | EC-0026 | proposed | warning | conftest |
+| [REL-18](releases/release-workflows.md#rel-18) | A job that uploads release assets attests them through a SHA256SUMS file | EC-0026 | proposed | warning | conftest |
+| [REL-19](releases/release-workflows.md#rel-19) | A draft release is published last, with the release App's token | EC-0026 | proposed | warning | conftest |
+| [REL-20](releases/release-workflows.md#rel-20) | A release workflow that attaches assets can be dispatched to finish a draft | EC-0026 | proposed | warning | conftest |
 | [REPO-01](repository/identity-declaration.md#repo-01) | A repository declares its identity in .repo/repository.toml | EC-0009 | proposed | warning | conftest |
 | [REPO-02](repository/identity-declaration.md#repo-02) | The identity declaration is valid against its schema | EC-0009 | proposed | warning | conftest |
 | [REPO-03](repository/identity-declaration.md#repo-03) | The declared system, kind, lifecycle and audience are registered values | EC-0009 | proposed | warning | conftest |
@@ -222,3 +245,4 @@ ID is permanent: it is never renumbered or reused.
 | TASK | Tasks | tasks |
 | DEC | Decision records | decisions |
 | TOOL | Toolchain | toolchain |
+| REL | Releases | releases |

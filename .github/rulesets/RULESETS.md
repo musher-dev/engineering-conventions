@@ -60,11 +60,14 @@ bundle prints points at, so a tag must never move or disappear.
 and exempts exactly one actor:
 
 - `Integration` `4691573`, `bypass_mode: always`: the org-owned
-  **musher-automation** GitHub App. `release.yml` creates the tag and its GitHub
-  Release with that App's installation token when the release PR merges. A tag
-  created with the default `GITHUB_TOKEN` would start no workflow, so `Publish`
-  would never attach the bundle; that is why the App, and not GitHub Actions, is
-  the bypass actor.
+  **musher-automation** GitHub App. `release.yml` creates the tag and its draft
+  GitHub Release with the release App's installation token when the release PR
+  merges, and publishes the draft with it once the bundle is attached. A release
+  published with the default `GITHUB_TOKEN` would start no workflow on its
+  `published` event; that is why an App, and not GitHub Actions, is the bypass
+  actor. Decision 0017 moves releases to one dedicated release App, the one
+  `vars.RELEASE_APP_CLIENT_ID` names. Its integration ID replaces this one, and
+  the ruleset is re-applied, before `release.yml` next creates a tag.
 
 There is no `OrganizationAdmin` bypass: an administrator cannot push a `v*` tag
 by hand either. Cutting a release outside `release.yml` means changing this

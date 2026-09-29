@@ -29,7 +29,9 @@
   },
   "include-component-in-tag": false,
   "include-v-in-tag": true,
-  "pull-request-title-pattern": "chore(release): release ${version}",
+  "pull-request-title-pattern": "chore(release): release${component} ${version}",
+  "draft": true,
+  "force-tag-creation": true,
   "changelog-sections": [
     { "type": "feat", "section": "Features", "hidden": false },
     { "type": "fix", "section": "Bug Fixes", "hidden": false },
@@ -42,5 +44,6 @@
     { "type": "build", "section": "Build System", "hidden": true },
     { "type": "style", "section": "Styles", "hidden": true }
   ],
-  "bump-minor-pre-major": true
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true
 }

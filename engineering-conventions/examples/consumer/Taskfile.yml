@@ -7,6 +7,9 @@ version: '3'
 # (TASK-13).
 
 vars:
+  # The declared product directory (REPO-21): the product's toolchain runs
+  # there, never from the root.
+  PRODUCT_DIR: '{{.ROOT_DIR}}/platform-api'
   IMAGE: platform-api
 
 tasks:
@@ -36,14 +39,16 @@ tasks:
   build:
     desc: Build the service image.
     cmds:
-      - docker build --tag {{.IMAGE}} .
+      - docker build --tag {{.IMAGE}} {{.PRODUCT_DIR}}
 
   test:
     desc: Run the tests.
+    dir: '{{.PRODUCT_DIR}}'
     cmds:
       - go test ./...
 
   dev:
     desc: Run the service locally.
+    dir: '{{.PRODUCT_DIR}}'
     cmds:
       - go run .

@@ -1,0 +1,9 @@
+schema_version = 1
+
+[[outputs]]
+id = "api-bundle"
+kind = "bundle"
+source = "platform-api/"
+publish_workflow = "publish-assets.yml"
+location = "https://github.com/example/platform-api/releases"
+docs = "platform-api/README.md#install"

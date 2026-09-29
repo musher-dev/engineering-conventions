@@ -14,6 +14,7 @@ import data.conventions.lib.filenames
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.names
+import data.conventions.lib.release_please
 import data.conventions.lib.steps
 
 # GHA-46
@@ -33,7 +34,7 @@ findings contains lib.finding("GHA-46", entry.path, message) if {
 # GHA-47
 findings contains lib.finding("GHA-47", entry.path, message) if {
 	some entry in steps.entries
-	steps.action(entry.step) in release_please_actions
+	steps.action(entry.step) in release_please.actions
 	problem := token_problem(entry.step)
 	message := sprintf(
 		concat(" ", [
@@ -105,8 +106,6 @@ unleased(argument) if {
 
 # A `+` refspec forces that one ref.
 unleased(argument) if regex.match(`^\+[^\s+]`, argument)
-
-release_please_actions := {"googleapis/release-please-action", "google-github-actions/release-please-action"}
 
 token_problem(step) := "without a token input, so it uses the default GITHUB_TOKEN" if {
 	not files.has_string(steps.inputs(step), "token")

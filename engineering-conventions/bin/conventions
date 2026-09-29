@@ -115,12 +115,15 @@ repository_name() {
   esac
 }
 
-# What conftest reads: workflows, actions, rulesets, the TOML declarations
-# under .repo/ (conventions, outputs and repository identity), and the mise
+# What conftest reads: workflows, actions, rulesets, the release-please config
+# and release-please manifest, the commit rules, the TOML declarations under
+# .repo/ (conventions, outputs and repository identity), and the mise
 # configuration ADOPT-09 looks for a pin in (lib/files.rego).
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
+INPUTS="${INPUTS}|"'^\.github/release-please/(config|manifest)\.json$'
+INPUTS="${INPUTS}|"'^\.github/conventional-commits\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.repo/(conventions|outputs|repository)\.toml$'
 INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
 INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'

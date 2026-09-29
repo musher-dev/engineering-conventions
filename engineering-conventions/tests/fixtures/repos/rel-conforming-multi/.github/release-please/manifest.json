@@ -1,0 +1,5 @@
+{
+  "schemas/blueprint": "1.6.0",
+  "schemas/listing": "1.0.0",
+  "schemas/core": "0.2.0"
+}

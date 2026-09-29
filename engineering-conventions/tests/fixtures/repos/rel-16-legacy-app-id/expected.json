@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-16",
+    "path": ".github/workflows/release.yml",
+    "severity": "warning"
+  }
+]

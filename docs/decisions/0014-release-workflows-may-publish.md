@@ -4,6 +4,7 @@ date: 2026-09-27
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0017"]
 ---
 
 # 0014 — A release workflow may publish what it releases

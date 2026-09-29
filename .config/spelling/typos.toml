@@ -35,5 +35,6 @@ extend-exclude = [
   ".config/mise/mise.lock",
   ".config/mise/locks/**",
   "engineering-conventions/examples/consumer/.config/mise/mise.lock",
+  "engineering-conventions/examples/staged-consumer/.config/mise/mise.lock",
   "dist/**",
 ]

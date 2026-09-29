@@ -1,0 +1,7 @@
+[
+  {
+    "id": "OUT-06",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

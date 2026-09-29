@@ -35,8 +35,16 @@ tasks:
   cli:test:
     desc: Run the CLI's pytest suite, which covers the content invariants and every fixture repo.
     dir: engineering-conventions
+    vars:
+      # Measured at 91% branch coverage when the floor was set; raise it as
+      # coverage rises, never lower it to let a change through.
+      COVERAGE_FLOOR: 89
     cmds:
-      - '{{.UV_RUN}} pytest'
+      # Coverage is measured here, not in addopts, so running one test stays
+      # fast and never fails on the floor.
+      - >-
+        {{.UV_RUN}} pytest --cov=conventions_tools --cov-branch
+        --cov-report=term-missing:skip-covered --cov-fail-under={{.COVERAGE_FLOOR}}
 
   invariants:
     desc: Check the content invariants, with IDs append-only against BASELINE (a git ref; default HEAD).

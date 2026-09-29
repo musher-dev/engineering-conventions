@@ -73,7 +73,7 @@ test_out_03_unknown_kind if {
 		with data.conventions.index as td.index
 	messages(found, "OUT-03") == {concat(" ", [
 		`output "api-image" has kind "docker", which is not an output kind; use one of`,
-		`"bundle", "cli", "contract", "image", "library"`,
+		`"bundle", "cli", "contract", "image", "library", "site", "vmimage"`,
 	])}
 }
 
@@ -145,6 +145,58 @@ test_out_06_deploy_workflow_does_not_publish if {
 		`output "api-image" names "deploy.yml", whose responsibility is neither publish nor release;`,
 		"name the workflow that publishes it",
 	])}
+}
+
+site_output := {
+	"id": "docs-site",
+	"kind": "site",
+	"source": "api",
+	"publish_workflow": "deploy-docs.yml",
+	"location": "https://docs.example.com",
+	"docs": "api/README.md",
+}
+
+with_deploy_docs := td.inventory(array.concat(tree_paths, [".github/workflows/deploy-docs.yml"]))
+
+test_out_06_deploy_workflow_publishes_a_site if {
+	found := declaration.findings with input as [publish, with_deploy_docs, td.outputs([site_output])]
+		with data.conventions.index as td.index
+	count(found) == 0
+}
+
+test_out_06_validate_workflow_does_not_publish_a_site if {
+	output := object.union(site_output, {"publish_workflow": "validate.yml"})
+	found := declaration.findings with input as [publish, with_deploy_docs, td.outputs([output])]
+		with data.conventions.index as td.index
+	messages(found, "OUT-06") == {concat(" ", [
+		`output "docs-site" names "validate.yml", whose responsibility is not publish, release or deploy;`,
+		"name the workflow that publishes it",
+	])}
+}
+
+test_out_12_site_location_without_scheme if {
+	output := object.union(site_output, {"location": "docs.example.com"})
+	found := declaration.findings with input as [publish, with_deploy_docs, td.outputs([output])]
+		with data.conventions.index as td.index
+	td.pairs(found) == {["OUT-12", ".repo/outputs.toml"]}
+	messages(found, "OUT-12") == {concat(" ", [
+		`output "docs-site" is a site but its location "docs.example.com" is not an https:// origin;`,
+		"give the URL people and tools fetch it from",
+	])}
+}
+
+test_out_12_plain_http_is_not_an_origin if {
+	output := object.union(site_output, {"location": "http://docs.example.com"})
+	found := declaration.findings with input as [publish, with_deploy_docs, td.outputs([output])]
+		with data.conventions.index as td.index
+	td.pairs(found) == {["OUT-12", ".repo/outputs.toml"]}
+}
+
+test_out_12_other_kinds_are_not_sites if {
+	output := object.union(td.image_output, {"location": "ghcr.io/example/api"})
+	found := declaration.findings with input as [publish, tree, td.outputs([output])]
+		with data.conventions.index as td.index
+	count(messages(found, "OUT-12")) == 0
 }
 
 test_out_07_contract_without_format_or_definition if {

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-12",
+    "path": ".github/release-please/config.json",
+    "severity": "warning"
+  }
+]

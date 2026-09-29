@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-13",
+    "path": ".github/rulesets/release-tags.json",
+    "severity": "warning"
+  }
+]

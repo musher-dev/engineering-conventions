@@ -1,7 +1,7 @@
 version: '3'
 
-# The release bundle: what a consumer downloads and pins. `Publish` builds it
-# from a tag and attaches dist/* to the GitHub Release; `Validate / Bundle`
+# The release bundle: what a consumer downloads and pins. `Release / Bundle`
+# builds it from a tag and attaches dist/* to the draft release; `Validate / Bundle`
 # builds and verifies it on every change so a broken bundle never reaches a
 # tag.
 #

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-17",
+    "path": ".github/workflows/publish-assets.yml",
+    "severity": "warning"
+  }
+]

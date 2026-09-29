@@ -1,0 +1,50 @@
+version: '3'
+
+# The task interface (EC-0016): setup, check and lint in every repository,
+# build and test because the kind is service, and dev because a service is
+# something people run while they work on it. `task check` runs every gate
+# the Validate workflow runs, so a change that passes here passes there
+# (TASK-13).
+
+vars:
+  IMAGE: platform-api
+
+tasks:
+  setup:
+    desc: Install the tools pinned in mise.toml.
+    cmds:
+      - mise install
+
+  check:
+    desc: Run every gate the Validate workflow runs.
+    cmds:
+      - task: lint
+      - task: test
+      - task: conventions
+
+  lint:
+    desc: Lint the workflows with actionlint and zizmor.
+    cmds:
+      - actionlint
+      - zizmor --min-severity medium .github
+
+  conventions:
+    desc: Check the repository against its pinned conventions release.
+    cmds:
+      - conventions check --fail-on warning
+
+  build:
+    desc: Build the service image.
+    cmds:
+      - docker build --tag {{.IMAGE}} .
+
+  test:
+    desc: Run the tests.
+    cmds:
+      - go test ./...
+
+  # No desc yet: TASK-05 reports it, but the staged adoption in
+  # .repo/conventions.toml does not enforce TASK, so the build still passes.
+  dev:
+    cmds:
+      - go run .

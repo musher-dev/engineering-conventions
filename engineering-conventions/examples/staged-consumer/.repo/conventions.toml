@@ -1,0 +1,26 @@
+# How the repository adopts the conventions (EC-0001). It is part-way
+# through: its build enforces the families below, and every other family is
+# still reported, marked "not enforced", until the adoption is finished.
+
+schema_version = 1
+
+# A staged adoption (decision 0019). Only these families count toward
+# `conventions check --fail-on warning` until `expires`. The rest are reported
+# without failing the build, like the TASK-05 finding in Taskfile.yml.
+# Adopting a family means adding it here; the table goes once every family
+# is enforced (ADOPT-10, ADOPT-11).
+[adoption]
+enforce = ["ADOPT", "REPO", "OUT", "GHA"]
+tracking = "https://github.com/your-org/platform-api/issues/2"
+expires = "2027-03-20" # quoted: a bare TOML date is not a string (ADOPT-02)
+
+# A waiver inside an enforced family: one requirement, one path, until a date
+# (ADOPT-03 to ADOPT-06).
+[[waivers]]
+requirement = "GHA-39"
+paths = [".github/workflows/validate.yml"]
+reason = """\
+  The workflows job stays on ubuntu-latest until actionlint and zizmor are \
+  proven on the image it will pin."""
+tracking = "https://github.com/your-org/platform-api/issues/3"
+expires = "2027-03-20"

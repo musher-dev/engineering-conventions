@@ -28,13 +28,31 @@ convention names an `authority`) are changed there first and then here; see
    [decision 0005](docs/decisions/0005-status-severity-and-versioning.md#change-classification).
 5. Fill in the pull request template's consumer-impact section: requirement IDs touched, change class, breaking or not.
 
-`Validate / Required` must pass. It fails unless every job in the `Validate` workflow succeeded.
+`Validate / Required` must pass. It fails unless every job in the `Validate` workflow succeeded. The one planned
+exception is the dev container build: on a pull request that touches none of the files the image is built from, it
+skips, and the aggregate accepts that skip.
 
 ## Commits and hooks
 
 `task setup` installs git hooks: fast checks run before each commit, the commit message is checked against the
 Conventional Commit types and scopes in `.github/conventional-commits.yaml`, and the Rego tests and the self-check run
 before each push. Pull requests are squash-merged, so the pull request title becomes the commit on `main`.
+
+### Fast local checks
+
+Where the checkout lives decides how long `task check` takes. On a Windows drive bind-mounted into the dev container
+(WSL2 serves it over 9p), every file read is a round trip: the full check takes about 20 minutes, against about 3 on
+a native filesystem. Clone the repository inside the WSL filesystem (for example `~/src`), or open it with **Dev
+Containers: Clone Repository in Named Container Volume**, and reopen it in the container from there. The dev container
+already keeps the CLI's virtualenv on a volume of its own.
+
+On a slow disk the pre-push jobs also compete for it. Run them one at a time with a personal
+`.config/lefthook-local.yml`, which git ignores:
+
+```yaml
+pre-push:
+  parallel: false
+```
 
 ## Decisions
 

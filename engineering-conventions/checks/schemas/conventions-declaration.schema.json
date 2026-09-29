@@ -73,6 +73,29 @@
         }
       }
     },
+    "adoption": {
+      "description": "A staged adoption: while it is in force, only findings in the listed families (and always ADOPT) count toward --fail-on; the rest are reported as not enforced. Once it expires, every family is enforced (ADOPT-10, ADOPT-11).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enforce", "tracking", "expires"],
+      "properties": {
+        "enforce": {
+          "description": "The requirement families enforced, by ID prefix, e.g. [\"ADOPT\", \"REPO\", \"OUT\", \"GHA\"].",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]{1,7}$" }
+        },
+        "tracking": {
+          "description": "The issue that tracks enforcing the remaining families.",
+          "$ref": "common.schema.json#/definitions/httpsUrl"
+        },
+        "expires": {
+          "description": "The last day the staged adoption applies, as a quoted \"YYYY-MM-DD\" string, at most 180 days ahead. After it, every family is enforced.",
+          "$ref": "common.schema.json#/definitions/date"
+        }
+      }
+    },
     "waivers": {
       "description": "Time-boxed, tracked deviations from a requirement. Requirements in the ADOPT family cannot be waived.",
       "type": "array",

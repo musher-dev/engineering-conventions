@@ -110,7 +110,15 @@ def test_vocabulary_projection(content: Content) -> None:
     ]
     assert projected["capability_tokens"] == ["build", "check", "promote"]
     assert projected["action_tokens"] == ["authenticate", "check", "install", "setup"]
-    assert projected["output_kinds"] == ["bundle", "cli", "contract", "image", "library"]
+    assert projected["output_kinds"] == [
+        "bundle",
+        "cli",
+        "contract",
+        "image",
+        "library",
+        "site",
+        "vmimage",
+    ]
     assert projected["display_forms"] == {
         "api": "API",
         "ci": "CI",

@@ -11,12 +11,13 @@ version: 2
 updates:
   # SHA pins in the workflows, plus the one composite action that installs
   # the toolchain (Dependabot does not look inside .github/actions/ by itself),
-  # and the example consumer's workflows, which consumers copy pins from.
+  # and the example consumers' workflows, which consumers copy pins from.
   - package-ecosystem: "github-actions"
     directories:
       - "/"
       - "/.github/actions/setup-tools"
       - "/engineering-conventions/examples/consumer"
+      - "/engineering-conventions/examples/staged-consumer"
     schedule:
       interval: "weekly"
       day: "sunday"

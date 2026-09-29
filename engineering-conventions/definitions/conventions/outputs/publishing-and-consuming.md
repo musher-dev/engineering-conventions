@@ -111,6 +111,14 @@ Moving aliases such as `latest` or a major-version tag may move; a full version 
 publishes in the run that creates the tag, as release-please does, publishes from that tag: it checks out the tag it
 just created and publishes only when a release was created
 ([decision 0014](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0014-release-workflows-may-publish.md)).
+For GitHub Release assets, the release conventions check this: the release is drafted with its tag
+([REL-07](../releases/release-configuration.md#rel-07)), its assets are attached before it is published
+([REL-19](../releases/release-workflows.md#rel-19)), and nothing writes to it afterwards
+([REL-17](../releases/release-workflows.md#rel-17)).
+
+For a `site`, the versions are its versioned paths: once a path such as `/schema/v1.2.0/` is served, its bytes never
+change, while aliases such as `/schema/v1/` may move
+([decision 0018](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0018-a-site-is-an-output.md)).
 
 **Correct:**
 

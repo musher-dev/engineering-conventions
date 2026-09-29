@@ -1,0 +1,92 @@
+name: Validate
+
+# Decides whether a change may merge. The one context the ruleset requires is
+# `Validate / Required`, which fails unless every other job succeeded. Only it
+# leads with the workflow's name: a ruleset matches the job name alone, so a
+# required context must be unique across the repository, while GitHub already
+# shows every other job as `Validate / <job name>`.
+#
+# No workflow-level `paths:` filter: a filtered-out run reports nothing, and a
+# required context that never reports blocks the pull request (GHA-32).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  workflows:
+    name: Workflows
+    # ubuntu-latest until the image is proven; waived in .repo/conventions.toml.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Installs the tools pinned in .config/mise/config.toml, the same versions a
+      # local run uses. Its version is the configuration's min_version (TOOL-04).
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+        with:
+          version: 2026.9.12
+
+      - name: Check workflow syntax and expressions
+        run: actionlint
+
+      - name: Check workflow security
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: zizmor --min-severity medium --persona regular .github/
+
+  conventions:
+    name: Conventions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+        with:
+          version: 2026.9.12
+
+      # The same command a developer runs locally. --fail-on warning holds the
+      # repository to every finding; drop it to report warnings without failing.
+      - name: Check the repository against its conventions
+        run: conventions check --fail-on warning
+
+  required:
+    name: Validate / Required
+    if: always()
+    needs:
+      - workflows
+      - conventions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Every job above is unconditional, so anything but success is a
+      # failure: a skipped job has proved nothing.
+      - name: Fail unless every job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          failed=0
+          while read -r job result; do
+            echo "${job}: ${result}"
+            if [ "$result" != "success" ]; then
+              echo "::error title=Validate / Required::job '${job}' reported '${result}'; only success passes"
+              failed=1
+            fi
+          done < <(jq -r 'to_entries[] | "\(.key) \(.value.result)"' <<<"$RESULTS")
+          exit "$failed"

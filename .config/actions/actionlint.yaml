@@ -9,6 +9,9 @@
 self-hosted-runner:
   labels: []
 
-# An empty list, not null: the workflows here read no `vars.*`, so actionlint
-# rejects any reference to one. Add a name here when a workflow first needs it.
-config-variables: []
+# Every `vars.*` a workflow reads; actionlint rejects any other. Add a name
+# here when a workflow first needs it.
+config-variables:
+  # The release App's client ID, an organization variable (decision 0017). A
+  # client ID is not a secret; its private key is RELEASE_APP_PRIVATE_KEY.
+  - RELEASE_APP_CLIENT_ID

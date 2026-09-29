@@ -40,9 +40,22 @@ test_result_object_shape if {
 		"path": ".github/workflows/validate.yml",
 		"message": message,
 		"severity": "warning",
+		"enforced": true,
 		"url": url,
 		"convention": "EC-0002",
 	}
+}
+
+test_unenforced_family_is_reported_and_marked if {
+	adoption := {"enforce": ["OUT"], "tracking": "https://github.com/example/repo/issues/1", "expires": "2026-12-01"}
+	docs := [misnamed, td.pin, declaration({"adoption": adoption})]
+	warnings := main.warn with input as docs
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	some result in warnings
+	result.id == "GHA-07"
+	result.enforced == false
+	startswith(result.msg, "warning (not enforced) [GHA-07] .github/workflows/validate.yml — ")
 }
 
 test_deny_at_error_severity if {

@@ -162,8 +162,10 @@ token (for example with `actions/create-github-app-token`, scoped to `contents` 
   id: app_token
   uses: actions/create-github-app-token@<sha>  # pinned as GHA-24 asks
   with:
-    app-id: ${{ secrets.RELEASE_APP_ID }}
+    client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}  # the release App (REL-16)
     private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+    permission-contents: write
+    permission-pull-requests: write
 - name: Open or update the release pull request
   uses: googleapis/release-please-action@<sha>  # pinned as GHA-24 asks
   with:

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from conventions_tools import generate, invariants, run
 from conventions_tools.content import load_content
-from conventions_tools.fixtures import case_dirs, run_case
+from conventions_tools.fixtures import case_dirs, read_snapshot, run_case, write_snapshot
 from conventions_tools.loading import ContentError
 from conventions_tools.paths import product_dir
 from conventions_tools.profiles import ProfileError
@@ -59,13 +59,19 @@ def _check(arguments: argparse.Namespace) -> int:
     return EXIT_FINDINGS if run.fails(report.findings, arguments.fail_on) else EXIT_OK
 
 
-def _fixtures(_: argparse.Namespace) -> int:
+def _fixtures(arguments: argparse.Namespace) -> int:
     product = product_dir()
     cases = case_dirs(product)
     if not cases:
         print("no fixture repositories found under tests/fixtures/repos/", file=sys.stderr)
         return EXIT_FINDINGS
-    results = [run_case(product, case) for case in cases]
+    if arguments.update_snapshot:
+        results = [run_case(product, case) for case in cases]
+        path = write_snapshot(product, results)
+        print(f"wrote {path.relative_to(product)}")
+    else:
+        recorded = read_snapshot(product)
+        results = [run_case(product, case, recorded) for case in cases]
     for result in results:
         print(result.report())
     failed = [result.name for result in results if not result.passed]
@@ -154,7 +160,16 @@ def build_parser() -> argparse.ArgumentParser:
     check_parser.set_defaults(handler=_check)
 
     fixtures_parser = commands.add_parser(
-        "fixtures", help="run every tests/fixtures/repos case and compare with expected.json"
+        "fixtures",
+        help=(
+            "run every tests/fixtures/repos case and compare with expected.json and "
+            "tests/fixtures/findings.snapshot.json"
+        ),
+    )
+    fixtures_parser.add_argument(
+        "--update-snapshot",
+        action="store_true",
+        help="rewrite findings.snapshot.json from what the checks report now, then compare",
     )
     fixtures_parser.set_defaults(handler=_fixtures)
     return parser

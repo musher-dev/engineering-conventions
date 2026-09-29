@@ -18,6 +18,7 @@ It has three layers. `definitions/` is the source of truth; `checks/` validates 
 | Checked | `checks/data/index.json` | Requirements, profiles and vocabulary, read by the Rego checks | yes |
 | Checked | `checks/vale/MusherConventions/` | The Vale style for prose-scope aliases | yes |
 | Shown | `examples/consumer/` | A worked repository that meets every check | |
+| Shown | `examples/staged-consumer/` | The same repository part-way through a staged adoption, with a waiver | |
 | Tooling | `bin/conventions` | The launcher a consumer runs; mise puts `bin/` on PATH | |
 
 Not shipped in the bundle (tooling): `src/` and `tests/` (the `conventions` authoring CLI and its tests),

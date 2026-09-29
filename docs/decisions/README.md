@@ -30,6 +30,8 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0015](0015-the-runner-reads-what-conftest-cannot-select.md) | The runner reads what conftest cannot select | accepted |
 | [0016](0016-adopted-rules-get-new-families.md) | Rules adopted from other repositories get new families, and keep their old IDs as aliases | accepted |
 | [0017](0017-releases-from-drafts.md) | Repositories release with release-please from a draft, and tag vX.Y.Z or \<component\>/vX.Y.Z | accepted |
+| [0018](0018-a-site-is-an-output.md) | A site is an output, and a deploy workflow may publish it | accepted |
+| [0019](0019-staged-adoption.md) | A repository may adopt the conventions one family at a time, for a limited time | accepted |
 
 ## Writing a decision
 

@@ -50,6 +50,8 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-07](adoption/conventions-declaration.md#adopt-07) | The declaration names a profile the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-08](adoption/conventions-declaration.md#adopt-08) | The declared version is the version of the bundle being run | EC-0001 | proposed | warning | conftest |
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
+| [ADOPT-10](adoption/conventions-declaration.md#adopt-10) | Every family a staged adoption enforces is one the release defines | EC-0001 | proposed | warning | conftest |
+| [ADOPT-11](adoption/conventions-declaration.md#adopt-11) | A staged adoption ends within 180 days, and then every family is enforced | EC-0001 | proposed | warning | conftest |
 | [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | proposed | warning | conftest |
 | [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
 | [AGENT-03](agents/agent-context.md#agent-03) | Every rule under .claude/rules/ is scoped by a non-empty paths list | EC-0013 | proposed | warning | conftest |
@@ -162,6 +164,7 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-09](outputs/publishing-and-consuming.md#out-09) | A version is published only from a release tag and is never overwritten | EC-0008 | proposed | warning | review |
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
+| [OUT-12](outputs/outputs-declaration.md#out-12) | A site output's location is an https:// origin | EC-0007 | proposed | warning | conftest |
 | [REL-01](releases/release-configuration.md#rel-01) | A repository that declares a versioned output releases it with release-please | EC-0024 | proposed | warning | conftest |
 | [REL-02](releases/release-configuration.md#rel-02) | The release-please config and release-please manifest are .github/release-please/config.json and manifest.json | EC-0024 | proposed | warning | conftest |
 | [REL-03](releases/release-configuration.md#rel-03) | The release-please action reads those two files and sets no release type of its own | EC-0024 | proposed | warning | conftest |

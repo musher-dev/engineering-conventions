@@ -18,6 +18,10 @@
         },
         {
           "type": "generic",
+          "path": "engineering-conventions/examples/staged-consumer/.config/mise/config.toml"
+        },
+        {
+          "type": "generic",
           "path": "README.md"
         },
         {

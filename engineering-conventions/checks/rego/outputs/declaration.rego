@@ -3,8 +3,9 @@
 # description: >-
 #   A repository with a publish workflow declares its outputs in
 #   .repo/outputs.toml (OUT-01), and the declaration is valid, names known
-#   kinds, unique IDs, existing paths and real publish workflows, and says
-#   what each contract is (OUT-02 to OUT-07).
+#   kinds, unique IDs, existing paths and real publish workflows, says what
+#   each contract is (OUT-02 to OUT-07), and serves each site from an HTTPS
+#   origin (OUT-12).
 # scope: package
 # custom:
 #   convention: EC-0007
@@ -80,10 +81,10 @@ findings contains lib.finding("OUT-06", files.outputs_path, message) if {
 	files.has_string(output, "publish_workflow")
 	path := workflow_path(output.publish_workflow)
 	path in files.workflow_files
-	not path in publishing_workflows
+	not publishes(output, path)
 	message := sprintf(
-		"%s names %q, whose responsibility is neither publish nor release; name the workflow that publishes it",
-		[label(output, index), output.publish_workflow],
+		"%s names %q, whose responsibility is %s; name the workflow that publishes it",
+		[label(output, index), output.publish_workflow, accepted_responsibilities(output)],
 	)
 }
 
@@ -96,6 +97,18 @@ findings contains lib.finding("OUT-07", files.outputs_path, message) if {
 	message := sprintf(
 		"%s is a contract but does not name its %s; add the interface format and the definition file",
 		[label(output, index), concat(" or ", missing)],
+	)
+}
+
+# OUT-12
+findings contains lib.finding("OUT-12", files.outputs_path, message) if {
+	some index, output in outputs
+	output.kind == "site"
+	files.has_string(output, "location")
+	not regex.match(`^https://[^/\s]+`, output.location)
+	message := sprintf(
+		"%s is a site but its location %q is not an https:// origin; give the URL people and tools fetch it from",
+		[label(output, index), output.location],
 	)
 }
 
@@ -113,6 +126,25 @@ publishing_workflows := publish_workflows | {path |
 	some path in files.workflow_files
 	filenames.slot(lower(files.stem(path))) == "release"
 }
+
+# Whether the workflow at path may publish the output (OUT-06). A site is
+# also published by a deploy workflow: pushing its files to the host that
+# serves them is what makes it available.
+publishes(_, path) if path in publishing_workflows
+
+publishes(output, path) if {
+	output.kind == "site"
+	path in deploy_workflows
+}
+
+deploy_workflows contains path if {
+	some path in files.workflow_files
+	filenames.slot(lower(files.stem(path))) == "deploy"
+}
+
+accepted_responsibilities(output) := "not publish, release or deploy" if output.kind == "site"
+
+else := "neither publish nor release"
 
 output_kinds := {kind | some kind in data.conventions.index.vocabulary.output_kinds}
 

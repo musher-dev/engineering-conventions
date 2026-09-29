@@ -60,9 +60,13 @@ class Finding:
     severity: str
     url: str
     convention: str
+    # False for a finding in a family a staged adoption does not enforce yet:
+    # reported, but never counted toward --fail-on (lib/enforcement.rego).
+    enforced: bool = True
 
     def line(self) -> str:
-        return f"{self.severity} [{self.id}] {self.path} — {self.message} {self.url}"
+        mark = "" if self.enforced else " (not enforced)"
+        return f"{self.severity}{mark} [{self.id}] {self.path} — {self.message} {self.url}"
 
 
 @dataclass(frozen=True, order=True)
@@ -370,6 +374,7 @@ def _finding_from_result(result: dict[str, object], bucket: str) -> Finding:
         severity=severity,
         url=get_str(metadata, "url"),
         convention=get_str(metadata, "convention"),
+        enforced=metadata.get("enforced") is not False,
     )
 
 
@@ -506,7 +511,10 @@ def _conftest_findings(
 
 def fails(findings: list[Finding], fail_on: str) -> bool:
     threshold = SEVERITY_RANK[fail_on]
-    return any(SEVERITY_RANK.get(finding.severity, 0) >= threshold for finding in findings)
+    return any(
+        finding.enforced and SEVERITY_RANK.get(finding.severity, 0) >= threshold
+        for finding in findings
+    )
 
 
 PARSE_TITLE = "A file that does not parse cannot be checked"
@@ -543,7 +551,8 @@ def render_text(report: Report, titles: dict[str, str], fail_on: str = "error") 
     ):
         group.sort(key=lambda item: (item.path, item.message))
         title = PARSE_TITLE if requirement_id == PARSE_ID else titles.get(requirement_id, "")
-        lines = [f"{requirement_id}  {group[0].severity}  {_plural(len(group), 'finding')}"]
+        mark = "" if group[0].enforced else " (not enforced)"
+        lines = [f"{requirement_id}  {group[0].severity}{mark}  {_plural(len(group), 'finding')}"]
         lines += [text for text in (title, group[0].url) if text]
         path = None
         for finding in group:
@@ -560,6 +569,14 @@ def render_text(report: Report, titles: dict[str, str], fail_on: str = "error") 
     )
     if fail_on == "error" and errors == 0:
         summary += "\nWarnings do not fail the check; --fail-on warning makes them fail."
+    unenforced = [finding for finding in findings if not finding.enforced]
+    if unenforced:
+        families = ", ".join(sorted({finding.id.split("-")[0] for finding in unenforced}))
+        verb = "is" if len(unenforced) == 1 else "are"
+        summary += (
+            f"\n{len(unenforced)} of them {verb} in families this repository does not enforce "
+            f"yet ({families}), so they do not fail the check."
+        )
     return "\n\n".join([*blocks, summary]) + "\n"
 
 

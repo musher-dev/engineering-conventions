@@ -236,8 +236,7 @@ check() {
     esac
   done
   case ${fail_on} in
-    error) strict='' ;;
-    warning) strict=--fail-on-warn ;;
+    error | warning) ;;
     *) die "--fail-on must be error or warning, not ${fail_on}" ;;
   esac
 
@@ -269,14 +268,19 @@ EOF
   fi
 
   # Any other format is conftest's own (github, sarif, junit, tap, table),
-  # passed through with conftest's exit status.
+  # passed through as conftest renders it. Its exit status is not the check's:
+  # conftest counts every finding, and a staged adoption enforces only some
+  # (lib/enforcement.rego), so the status comes from the evaluation below, the
+  # same for every format.
   case ${output} in
     text | json) ;;
     *)
-      # shellcheck disable=SC2086 # strict is empty or one flag
+      shown=0
       tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" test --combine --no-color \
-        ${strict} -o "${output}" -p "${bundle}/checks/rego" "$@" "${scratch}/inventory.json"
-      return
+        -o "${output}" -p "${bundle}/checks/rego" "$@" "${scratch}/inventory.json" || shown=$?
+      if [ "${shown}" -gt 1 ]; then
+        die "conftest could not check the repository (exit ${shown})"
+      fi
       ;;
   esac
 
@@ -294,9 +298,10 @@ EOF
   if [ "${output}" = text ] && [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != dumb ]; then
     colour=true
   fi
-  flags=-r
-  if [ "${output}" = json ]; then flags=-Sa; fi
-  report "${flags}" "${output}"
+  case ${output} in
+    text) report -r text ;;
+    json) report -Sa json ;;
+  esac
   if report -e fails > /dev/null; then
     return 1
   fi

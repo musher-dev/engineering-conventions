@@ -5,6 +5,8 @@
 #   object and the one-line diagnostic of the diagnostic contract.
 package conventions.lib.findings
 
+import data.conventions.lib.enforcement
+
 finding(id, path, message) := {"id": id, "path": path, "message": message}
 
 index := data.conventions.index
@@ -25,13 +27,24 @@ urls[id] := sprintf("%s/blob/%s/%s/%s#%s", [
 	some id, requirement in index.requirements
 }
 
-line(severity, finding) := sprintf("%s [%s] %s — %s %s", [
+line(severity, finding) := sprintf("%s%s [%s] %s — %s %s", [
 	severity,
+	enforcement_mark(finding.id),
 	finding.id,
 	finding.path,
 	finding.message,
 	urls[finding.id],
 ])
+
+# A finding in a family a staged adoption does not enforce yet is reported,
+# but does not count toward --fail-on (lib/enforcement.rego).
+enforced(id) if enforcement.enforced(id)
+
+else := false
+
+enforcement_mark(id) := "" if enforcement.enforced(id)
+
+else := " (not enforced)"
 
 result(finding, severity) := {
 	"msg": line(severity, finding),
@@ -39,6 +52,7 @@ result(finding, severity) := {
 	"path": finding.path,
 	"message": finding.message,
 	"severity": severity,
+	"enforced": enforced(finding.id),
 	"url": urls[finding.id],
 	"convention": index.requirements[finding.id].convention,
 }

@@ -1,0 +1,16 @@
+# What the repository is (EC-0009). The kind selects the service profile, so
+# no .repo/conventions.toml is needed to choose one.
+schema_version = 1
+name = "platform-api"
+system = "platform"
+component = "api"
+kind = "service"
+owner = "@musher-dev/platform"
+lifecycle = "production"
+audience = "internal"
+tier = 1
+
+# Where the product lives (EC-0018): one directory named after the
+# repository, holding its build manifest. The root keeps what acts on it.
+[layout]
+product = "platform-api"

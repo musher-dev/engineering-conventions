@@ -94,6 +94,56 @@ test_active_matching_waiver_is_quiet if {
 		with data.conventions.runtime.now as td.now
 }
 
+with_adoption(enforce, expires) := [misnamed, td.pin, td.declaration({"adoption": {
+	"enforce": enforce,
+	"tracking": "https://github.com/example/repo/issues/1",
+	"expires": expires,
+}})]
+
+test_adopt_10_unknown_family if {
+	found := declaration.findings with input as with_adoption(["OUT", "CI"], "2026-12-01")
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	td.pairs(found) == {["ADOPT-10", ".repo/conventions.toml"]}
+	some message in messages(found, "ADOPT-10")
+	startswith(message, `[adoption] enforce names "CI", which is not a family this release defines; use one of "ADOPT",`)
+}
+
+test_adopt_11_expired_adoption if {
+	found := declaration.findings with input as with_adoption(["OUT"], "2026-09-01")
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	td.pairs(found) == {["ADOPT-11", ".repo/conventions.toml"]}
+	messages(found, "ADOPT-11") == {concat(" ", [
+		"the staged adoption expired on 2026-09-01, so every family is enforced again; enforce the",
+		"remaining families and delete the [adoption] table, or renew it with a new expires date",
+	])}
+}
+
+test_adopt_11_adoption_too_long if {
+	found := declaration.findings with input as with_adoption(["OUT"], "2027-06-01")
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	some message in messages(found, "ADOPT-11")
+	startswith(message, "the staged adoption expires on 2027-06-01, more than 180 days away;")
+	contains(message, "set expires to 2027-03-22 or earlier")
+}
+
+test_adopt_11_quiet_within_term if {
+	found := declaration.findings with input as with_adoption(["OUT"], "2026-12-01")
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	count(found) == 0
+}
+
+test_adopt_02_bare_adoption_date if {
+	found := declaration.findings with input as with_adoption(["OUT"], "2026-12-01T00:00:00Z")
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+	some message in messages(found, "ADOPT-02")
+	startswith(message, "`adoption.expires` is the bare TOML date 2026-12-01T00:00:00Z;")
+}
+
 test_adopt_03_expired_waiver if {
 	docs := with_waivers([waiver("GHA-07", "2026-09-01")])
 	found := declaration.findings with input as docs

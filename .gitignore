@@ -9,6 +9,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+# pytest-cov's data file (`task cli:test`)
+.coverage
 
 # Personal git-hook overrides (auto-merged by lefthook)
 .config/lefthook-local.yml

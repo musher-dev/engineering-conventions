@@ -20,7 +20,7 @@ Both conventions are **drafts**, owned by this repository, and every requirement
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0007 Outputs declaration](outputs-declaration.md) | OUT-01 – OUT-07 | The file, the output kinds, and the checks on it |
+| [EC-0007 Outputs declaration](outputs-declaration.md) | OUT-01 – OUT-07, OUT-12 | The file, the output kinds, and the checks on it |
 | [EC-0008 Publishing and consuming outputs](publishing-and-consuming.md) | OUT-08 – OUT-11 | Consumption docs, immutable versions, image provenance, exact pins |
 
 The reasoning is recorded in
@@ -31,7 +31,7 @@ The reasoning is recorded in
 | Field | Example |
 | --- | --- |
 | `id` | `api-image` |
-| `kind` | `image`, `library`, `cli`, `contract`, `bundle` |
+| `kind` | `image`, `library`, `cli`, `contract`, `bundle`, `site`, `vmimage` |
 | `source` | `api/` |
 | `publish_workflow` | `publish-api.yml` |
 | `location` | `ghcr.io/your-org/api` |

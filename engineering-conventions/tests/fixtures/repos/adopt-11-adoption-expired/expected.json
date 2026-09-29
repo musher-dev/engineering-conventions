@@ -1,0 +1,12 @@
+[
+  {
+    "id": "GHA-07",
+    "path": ".github/workflows/validate.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "ADOPT-11",
+    "path": ".repo/conventions.toml",
+    "severity": "warning"
+  }
+]

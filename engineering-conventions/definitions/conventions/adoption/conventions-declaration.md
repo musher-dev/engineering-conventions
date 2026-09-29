@@ -89,6 +89,22 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.adoption.declaration
+  - id: ADOPT-10
+    title: Every family a staged adoption enforces is one the release defines
+    status: proposed
+    severity: warning
+    since: 0.6.2
+    validation:
+      engine: conftest
+      package: conventions.checks.adoption.declaration
+  - id: ADOPT-11
+    title: A staged adoption ends within 180 days, and then every family is enforced
+    status: proposed
+    severity: warning
+    since: 0.6.2
+    validation:
+      engine: conftest
+      package: conventions.checks.adoption.declaration
 ---
 
 # Conventions declaration
@@ -139,6 +155,13 @@ version = "0.1.0"
 grpc = "gRPC"
 sbom = "SBOM"
 
+# Optional: a staged adoption. Until it expires, only these families count
+# toward --fail-on; the rest are reported as not enforced.
+[adoption]
+enforce = ["ADOPT", "REPO", "OUT", "GHA"]
+tracking = "https://github.com/your-org/your-repo/issues/2"
+expires = "2027-01-31"
+
 # Optional: time-boxed deviations, one [[waivers]] table each. Leave them out
 # when there are none.
 [[waivers]]
@@ -163,6 +186,7 @@ ADOPT-02 reports.
 | `profile` | no | The convention profile that selects which requirements apply and at what severity. It overrides the profile of the repository's kind ([EC-0009](../repository/identity-declaration.md)); without either, `base-repo` applies. It must be one the pinned release defines (ADOPT-07). |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
 | `decisions` | no | Where the repository keeps its decision records, when not in `docs/decisions/` as one `NNNN-slug.md` file each: `path`, `form` and `page`, described in [EC-0021](../decisions/decision-records.md#where-the-records-are). |
+| `adoption` | no | A staged adoption: the families enforced until a date, described below. |
 | `waivers` | no | A list of waivers, described below. |
 
 The authoritative shape is `checks/schemas/conventions-declaration.schema.json`, and ADOPT-02 checks the file against
@@ -183,6 +207,24 @@ A waiver suppresses the findings of one requirement, optionally only on some pat
 A waiver is a promise to fix something, with a date on it. When the date passes, the waived findings return and the
 declaration itself reports the lapse (ADOPT-03). Extending a waiver is a new review: change `expires`, and say in the
 pull request why the fix slipped.
+
+### Staged adoption
+
+A repository that is adopting the conventions family by family lists, in `[adoption]`, the families its build
+enforces. While the table is in force, only findings in those families count toward `--fail-on`. The `ADOPT` family
+and files that do not parse always count. Every other finding is still reported, marked `not enforced`
+([decision 0019](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0019-staged-adoption.md)).
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `enforce` | yes | The families enforced, by requirement-ID prefix, such as `["ADOPT", "REPO", "OUT", "GHA"]`. Each must be one the release defines (ADOPT-10). |
+| `tracking` | yes | The URL of the issue that tracks enforcing the remaining families. |
+| `expires` | yes | The last day the staged adoption applies, as a quoted `"YYYY-MM-DD"` string, at most 180 days after the day the check runs (ADOPT-11). |
+
+A staged adoption is a waiver for whole families that still shows every finding. When `expires` passes, every family
+is enforced again and ADOPT-11 reports the lapse. Adopting another family means adding it to `enforce`; the table is
+deleted once every family is enforced. A family that a later release adds is not enforced until the repository lists
+it.
 
 ### Profile selection
 
@@ -443,9 +485,58 @@ mise exec github:musher-dev/engineering-conventions@latest -- conventions check
 
 Checked by: conftest · Severity: warning · Since: 0.2.0
 
+### ADOPT-10
+
+**Every family a staged adoption enforces is one the release defines.**
+
+A family in `enforce` that the release does not define enforces nothing. A typo such as `GHA` written as `GH`, or a
+family that a repository expects but a later release has not shipped yet, leaves the findings the repository meant to
+block on as advisory, and the build passes when it should not.
+
+**Correct:**
+
+```toml
+[adoption]
+enforce = ["ADOPT", "REPO", "OUT", "GHA"]
+```
+
+**Incorrect:**
+
+```toml
+[adoption]
+enforce = ["ADOPT", "REPO", "OUT", "GH"]   # no family is named GH
+```
+
+Checked by: conftest · Severity: warning · Since: 0.6.2
+
+### ADOPT-11
+
+**A staged adoption ends within 180 days, and then every family is enforced.**
+
+A staged adoption is a promise to finish adopting, with a date on it, like a waiver (ADOPT-05). Without an end, a
+repository could enforce a few families forever and report the rest as advice nobody acts on. The 180-day ceiling,
+measured from the day the check runs, forces the remaining work to be looked at twice a year. When the date passes,
+every family is enforced again, so the build fails on whatever is still left, and this finding names the table to
+finish or renew.
+
+**Correct:**
+
+```toml
+expires = "2027-01-31"        # within 180 days of a run on 2026-09-23
+```
+
+**Incorrect:**
+
+```toml
+expires = "2028-01-01"        # more than 180 days out
+```
+
+Checked by: conftest · Severity: warning · Since: 0.6.2
+
 ## References
 
 - [Consuming the conventions](https://github.com/musher-dev/engineering-conventions/blob/main/docs/consuming.md)
 - [Decision 0005: Status, severity and versioning](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0005-status-severity-and-versioning.md)
+- [Decision 0019: A repository may adopt the conventions one family at a time, for a limited time](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0019-staged-adoption.md)
 - `checks/schemas/conventions-declaration.schema.json`
 - `definitions/profiles/README.md`

@@ -221,7 +221,8 @@ def test_action_synonyms_do_not_leak_into_other_scopes(content: Content) -> None
 
 def test_action_synonyms_need_an_action_term(content: Content) -> None:
     term = next(t for t in content.terminology.terms if t.id == "gha.responsibility.notify")
-    stray = replace(term, aliases=(vocabulary.Alias("tell", "banned", ("action-token",), None, None),))
+    alias = vocabulary.Alias("tell", "banned", ("action-token",), None, None)
+    stray = replace(term, aliases=(alias,))
     terms = tuple(stray if t.id == term.id else t for t in content.terminology.terms)
     with pytest.raises(vocabulary.ContentError):
         vocabulary.action_synonyms(replace(content.terminology, terms=terms))

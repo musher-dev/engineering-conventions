@@ -242,7 +242,12 @@ def test_prose_aliases_do_not_leak_into_identifier_tokens(content: Content) -> N
 
 # Requirements only a kind's own profile selects: the build, test and dev
 # tasks (EC-0016) and a service's environment contract (EC-0019).
-KIND_SPECIFIC = {"TASK-11": "library", "TASK-12": "service", "ENVS-01": "service"}
+KIND_SPECIFIC = {
+    "TASK-11": "library",
+    "TASK-12": "service",
+    "ENVS-01": "service",
+    "TOFU-01": "infrastructure",
+}
 
 
 def test_base_profile_includes_every_non_retired_requirement(content: Content) -> None:

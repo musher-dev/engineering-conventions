@@ -201,7 +201,8 @@ Four words are deliberately absent:
 `notify` (`notify-pull-requests.yml`). An action that changes external state to match the repository is the `sync`
 action token (`sync-bootstrap-config`, [EC-0004](composite-actions.md#action-tokens)). Neither fits an older token:
 a notification changes nothing, which rules out `repository` and `maintain`, and a sync changes what it finds, which
-rules out `check`.
+rules out `check`
+([decision 0021](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0021-notify-and-sync-join-the-token-sets.md)).
 
 ### Capability tokens
 

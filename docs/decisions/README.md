@@ -33,6 +33,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0018](0018-a-site-is-an-output.md) | A site is an output, and a deploy workflow may publish it | accepted |
 | [0019](0019-staged-adoption.md) | A repository may adopt the conventions one family at a time, for a limited time | accepted |
 | [0020](0020-dev-container-files-get-their-own-family.md) | Dev container files get their own family, and the scaffold is consumed by pinning an image | accepted |
+| [0021](0021-notify-and-sync-join-the-token-sets.md) | A notification workflow is notify, a syncing action is sync, and action synonyms are terminology | accepted |
 
 ## Writing a decision
 

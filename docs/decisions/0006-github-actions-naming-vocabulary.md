@@ -4,6 +4,7 @@ date: 2026-09-23
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0021"]
 ---
 
 # 0006 — GitHub Actions naming vocabulary
@@ -36,13 +37,6 @@ GHA-38 in [EC-0002](../../engineering-conventions/definitions/conventions/github
 | Responsibility | `validate`, `release`, `publish`, `deploy`, `verify`, `monitor`, `audit`, `maintain`, `repository` | first token of an entry-point workflow |
 | Capability | `build`, `promote`, `check` | after `reusable-` only |
 | Action | `setup`, `install`, `authenticate`, `check` | first token of an action directory |
-
-> **Amended 2026-09-30.** The two gaps recorded under Neutral consequences are closed: `notify` joins the
-> responsibility set, for a workflow that only sends a message and changes nothing, and `sync` joins the action set,
-> for an action that changes external state to match the repository, the counterpart of `check`
-> ([#11](https://github.com/musher-dev/engineering-conventions/issues/11)). The words GHA-20 maps to an action token
-> (`auth`, `validate`, `verify`) moved from its Rego into the terminology. The sets stay closed; the terminology is
-> their source.
 
 The choices within them:
 
@@ -124,9 +118,9 @@ alternative, splitting it into a `reusable-` workflow and a thin dispatch wrappe
 
 ### Neutral
 
-- Two kinds of automation had no token when this was decided: notification workflows (a Slack digest, say) and
-  actions that mutate external state to keep it in sync. No token was invented for them here. They are now `notify`
-  and `sync` (see the 2026-09-30 amendment above).
+- Two kinds of automation have no token yet: notification workflows (a Slack digest, say) and actions that mutate
+  external state to keep it in sync. Both are tracked as follow-up. No token is invented for them here; a repository
+  that needs one before it is published records a waiver.
 
 ## Enforcement
 

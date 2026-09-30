@@ -74,9 +74,10 @@ requirements:
       package: conventions.checks.outputs.declaration
   - id: OUT-07
     title: A contract output names its format and its definition file
-    status: proposed
+    status: retired
     severity: warning
     since: 0.3.0
+    replaced_by: [IFACE-02, IFACE-04]
     validation:
       engine: conftest
       package: conventions.checks.outputs.declaration
@@ -93,7 +94,7 @@ requirements:
 # Outputs declaration
 
 A repository that publishes something other repositories depend on, such as a container image, a library, a
-command-line tool, a contract or a bundle, says so in one file: `.repo/outputs.toml`. Each entry answers the questions a
+command-line tool, a bundle or a site, says so in one file: `.repo/outputs.toml`. Each entry answers the questions a
 consumer asks first. What is it? Where is it built from? What publishes it? Where do I get it? How do I use it?
 Without the file, the answers are scattered across workflows, READMEs and registry pages, and nobody can tell which
 repository produces what without reading all of them.
@@ -110,7 +111,9 @@ no declaration. One with a workflow whose responsibility is `publish`
 ([EC-0002](../github-actions/workflow-files.md)) is taken to publish something, and must declare it (OUT-01).
 
 The formats an output carries are out of scope: OCI defines images, OpenAPI and AsyncAPI define API contracts, and
-each registry defines its packages. This convention says only which of them a repository publishes, and where.
+each registry defines its packages. This convention says only which of them a repository publishes, and where. The
+interfaces an output delivers, such as each OpenAPI document of an API, are declared in the same file under
+`[[interfaces]]` ([EC-0030](../interfaces/interfaces-declaration.md)).
 
 ## Status and authority
 
@@ -122,7 +125,7 @@ series ([decision 0010](https://github.com/musher-dev/engineering-conventions/bl
 
 ```toml
 # .repo/outputs.toml
-schema_version = 1
+schema_version = 2
 
 [[outputs]]
 id = "api-image"
@@ -134,14 +137,20 @@ location = "ghcr.io/your-org/api"
 docs = "api/README.md#run-the-image"
 
 [[outputs]]
-id = "api-contract"
-kind = "contract"
-format = "openapi"
-definition = "api/openapi.yaml"
-source = "api/"
-publish_workflow = "publish-api.yml"
+id = "contracts"
+kind = "bundle"
+description = "Each release's interfaces, with their release record."
+source = "api/contracts/"
+publish_workflow = "release.yml"
 location = "https://github.com/your-org/your-repo/releases"
-docs = "api/README.md#the-contract"
+docs = "api/contracts/README.md"
+
+[[interfaces]]
+id = "public-http"
+format = "openapi"
+definitions = ["api/contracts/openapi/public.json"]
+delivered_by = "contracts"
+compatibility = "gated"
 ```
 
 The file is TOML ([decision 0011](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0011-declarations-are-toml.md)):
@@ -149,7 +158,7 @@ each output is one `[[outputs]]` table, and `outputs[]` below means a key in one
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| `schema_version` | yes | The file format version. Always `1`. |
+| `schema_version` | yes | The file format version: `2`, which adds `[[interfaces]]`. `1`, without them, is accepted in this release series. |
 | `outputs[].id` | yes | The output's name within the repository, in kebab-case and unique (OUT-04). |
 | `outputs[].kind` | yes | An output kind from the table below (OUT-03). |
 | `outputs[].description` | no | One line on what the output is for. |
@@ -157,8 +166,7 @@ each output is one `[[outputs]]` table, and `outputs[]` below means a key in one
 | `outputs[].publish_workflow` | yes | The filename of the workflow under `.github/workflows/` that publishes it: a `publish` or `release` workflow, or for a site a `deploy` workflow (OUT-06). |
 | `outputs[].location` | yes | Where a consumer gets it: an image repository, a package name, a release URL, or a site's `https://` origin (OUT-12). |
 | `outputs[].docs` | yes | The document, with an optional `#anchor`, that says how to consume it (OUT-05, OUT-08). |
-| `outputs[].format` | contract | The interface format, such as `openapi`, `asyncapi`, `protobuf` or `json-schema` (OUT-07). |
-| `outputs[].definition` | contract | The machine-readable definition file consumers build against (OUT-05, OUT-07). |
+| `interfaces` | no | The interfaces the outputs deliver, one `[[interfaces]]` table each ([EC-0030](../interfaces/interfaces-declaration.md)). |
 
 The authoritative shape is `checks/schemas/outputs.schema.json`, and OUT-02 checks the file against it.
 
@@ -174,10 +182,15 @@ well-known types, and are named here so every catalog uses the same ones.
 | `image` | An OCI container image in a registry | `Component` of type `service` |
 | `library` | A package in a language registry | `Component` of type `library` |
 | `cli` | An executable released as assets, pinned with a tool manager | `Component` of type `tool` |
-| `contract` | An interface definition other repositories build against | `API`, with `spec.type` from `format` and `spec.definition` from `definition` |
 | `bundle` | A versioned archive of files, consumed by pinning | `Component` of type `bundle` |
 | `site` | Files served at a stable HTTPS origin, fetched by URL, such as a schema host or a documentation site | `Component` of type `website` |
 | `vmimage` | A bootable machine image, such as a cloud provider snapshot, that hosts are created from | `Resource` of type `machine-image` |
+
+An interface maps to a Backstage `API`, with `spec.type` from its `format` and `spec.definition` from its
+definitions, provided by the `Component` of the output that delivers it. The `contract` kind is retired
+([decision 0022](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0022-interfaces-and-dependencies.md)):
+an interface definition is not something a repository delivers but a surface its outputs deliver, so it is declared
+as an interface. OUT-03 reports an output that still uses it.
 
 ## Requirements
 
@@ -258,6 +271,10 @@ kind = "image"
 
 ```toml
 kind = "docker"
+```
+
+```toml
+kind = "contract"      # retired: declare it in [[interfaces]] (EC-0030)
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.3.0
@@ -360,24 +377,12 @@ Checked by: conftest · Severity: warning · Since: 0.3.0
 
 **A contract output names its format and its definition file.**
 
-A contract exists to be built against, so its consumers need the machine-readable definition and the format that
-reads it. Both are what a catalog needs to present it as an API.
+Retired in 0.7.0 and replaced by [IFACE-02](../interfaces/interfaces-declaration.md#iface-02) and
+[IFACE-04](../interfaces/interfaces-declaration.md#iface-04). The `contract` output kind it applied to was retired
+with it: an interface definition is a surface an output delivers, not an output, and is declared under
+`[[interfaces]]`, where every interface names its format and the files that define it.
 
-**Correct:**
-
-```toml
-kind = "contract"
-format = "openapi"
-definition = "api/openapi.yaml"
-```
-
-**Incorrect:**
-
-```toml
-kind = "contract"                     # which file, in which format?
-```
-
-Checked by: conftest · Severity: warning · Since: 0.3.0
+Checked by: nothing (retired) · Severity: warning · Since: 0.3.0
 
 ### OUT-12
 

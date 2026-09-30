@@ -1,0 +1,12 @@
+[
+  {
+    "id": "IFACE-01",
+    "path": "platform-api/contracts/state-machines/order.mmd",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

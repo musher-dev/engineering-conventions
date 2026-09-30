@@ -1,9 +1,10 @@
 # The global terminology. Every convention uses these words with these
 # meanings.
-# `conventions generate` projects the gha.*, outputs.* and repository.*
-# tags, the identifier-scope, repository-name-scope and action-token-scope
-# aliases and the display forms into checks/data/index.json, and the
-# prose-scope aliases into the MusherConventions Vale style.
+# `conventions generate` projects the gha.*, outputs.*, repository.*,
+# interfaces.* and runtime.* tags, the identifier-scope,
+# repository-name-scope and action-token-scope aliases and the display forms
+# into checks/data/index.json, and the prose-scope aliases into the
+# MusherConventions Vale style.
 schema_version: 1
 description: >-
   Words the conventions themselves are written in, the GitHub Actions naming
@@ -367,6 +368,13 @@ terms:
       document.
     tags: [outputs.kind]
     stability: provisional
+    deprecated:
+      note: >-
+        An interface definition is not something a repository delivers but a
+        surface an output delivers. Declare it in [[interfaces]] in
+        .repo/outputs.toml (schema_version 2), delivered by a bundle, site or
+        library output (decision 0022).
+      replaced_by: conventions.interface
   - id: outputs.kind.bundle
     display_name: bundle
     token: bundle
@@ -393,6 +401,186 @@ terms:
       snapshot, that hosts are created from, consumed by referring to its
       version.
     tags: [outputs.kind]
+    stability: provisional
+
+  # Interface formats: the format field of an [[interfaces]] entry in
+  # .repo/outputs.toml (IFACE-02). Each format is defined by its own
+  # specification; the term only names it.
+  - id: interfaces.format.openapi
+    display_name: OpenAPI
+    token: openapi
+    definition: >-
+      An OpenAPI document describing an HTTP API: its paths, operations and
+      schemas (https://spec.openapis.org/oas/).
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.asyncapi
+    display_name: AsyncAPI
+    token: asyncapi
+    definition: >-
+      An AsyncAPI document describing message-driven channels and the
+      messages on them (https://www.asyncapi.com/docs/reference).
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.json-schema
+    display_name: JSON Schema
+    token: json-schema
+    definition: >-
+      One or more JSON Schema documents describing JSON values, such as
+      event payloads or a document format (https://json-schema.org).
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.protobuf
+    display_name: Protocol Buffers
+    token: protobuf
+    definition: >-
+      Protocol Buffers definitions: messages and gRPC services, in .proto
+      files (https://protobuf.dev).
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.env-schema
+    display_name: environment schema
+    token: env-schema
+    definition: >-
+      An env.schema.yaml, the variables a product reads from its
+      environment, when another repository deploys or configures it
+      (EC-0020).
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.weaver
+    display_name: Weaver registry
+    token: weaver
+    definition: >-
+      An OpenTelemetry Weaver semantic convention registry: the telemetry
+      signals and attributes a producer emits
+      (https://github.com/open-telemetry/weaver).
+    tags: [interfaces.format]
+    stability: provisional
+
+  # Interface compatibility: what a producer promises about a change to an
+  # interface, the compatibility field of an [[interfaces]] entry.
+  - id: interfaces.compatibility.gated
+    display_name: gated
+    token: gated
+    definition: >-
+      A change that breaks a consumer ships only in a major release: the
+      producer's contracts:breaking task compares each change with the last
+      release and fails on a break the release would not signal.
+    tags: [interfaces.compatibility]
+    stability: provisional
+  - id: interfaces.compatibility.versioned
+    display_name: versioned
+    token: versioned
+    definition: >-
+      Each file carries its major version in its name, as .vN., and a
+      published file never changes: a break is a new file with the next
+      number, and the old one stays for the consumers that read it.
+    tags: [interfaces.compatibility]
+    stability: provisional
+  - id: interfaces.compatibility.lockstep
+    display_name: lockstep
+    token: lockstep
+    definition: >-
+      No compatibility promise across releases: only consumers released
+      together with the producer, in the same composition, may depend on
+      it.
+    tags: [interfaces.compatibility]
+    stability: provisional
+
+  # Runtime capabilities: what an environment binding reaches when it is not
+  # another Musher service, the capability field of a binding in
+  # env.schema.yaml (ENVS-18). A capability names what the code needs, never
+  # the cluster, bucket or account that provides it in an environment.
+  - id: runtime.capability.postgresql
+    display_name: PostgreSQL
+    token: postgresql
+    definition: >-
+      A PostgreSQL database the process connects to, including a queue or notification channel it keeps in PostgreSQL.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.object-storage
+    display_name: object storage
+    token: object-storage
+    definition: >-
+      An object store the process reads or writes through an S3-compatible API or a provider's own.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.otlp
+    display_name: OTLP endpoint
+    token: otlp
+    definition: >-
+      An OpenTelemetry collector the process exports traces, metrics or logs to over OTLP.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.email-delivery
+    display_name: email delivery
+    token: email-delivery
+    definition: >-
+      A service the process sends email through, over SMTP or a provider's API.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.payments
+    display_name: payments
+    token: payments
+    definition: >-
+      A payment provider the process charges, refunds or reconciles through.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.llm
+    display_name: language model
+    token: llm
+    definition: >-
+      A hosted language model the process sends prompts to.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.oauth-identity
+    display_name: OAuth identity provider
+    token: oauth-identity
+    definition: >-
+      An OAuth or OpenID Connect provider users sign in with.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.code-hosting
+    display_name: code hosting
+    token: code-hosting
+    definition: >-
+      A source code host the process calls as an application, such as a GitHub App.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.dns
+    display_name: DNS
+    token: dns
+    definition: >-
+      A DNS provider whose records the process reads or changes.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.cdn
+    display_name: CDN
+    token: cdn
+    definition: >-
+      A content delivery network or edge platform the process configures or purges.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.vpn-mesh
+    display_name: VPN mesh
+    token: vpn-mesh
+    definition: >-
+      An overlay network the process joins or manages peers on.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.block-storage
+    display_name: block storage
+    token: block-storage
+    definition: >-
+      A block storage system whose volumes the process provisions or attaches.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.cloud-compute
+    display_name: cloud compute
+    token: cloud-compute
+    definition: >-
+      A cloud provider whose machines the process creates or destroys.
+    tags: [runtime.capability]
     stability: provisional
 
   # Systems: the first token of a repository's name (REPO-09) and the system
@@ -688,7 +876,8 @@ terms:
     definition: >-
       Something a repository publishes for other repositories or people to
       consume, such as a container image, a library, a command-line tool, a
-      contract or a bundle.
+      bundle or a site. The interfaces a repository offers are delivered by
+      its outputs.
     tags: [meta]
     stability: provisional
   - id: conventions.outputs-declaration
@@ -697,6 +886,68 @@ terms:
       The file .repo/outputs.toml in a repository that publishes, which
       lists each output with its kind, source, publishing workflow, location
       and consumption docs.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.interface
+    display_name: interface
+    definition: >-
+      A surface another repository builds or runs against, such as one
+      OpenAPI document of an API, a family of event schemas or a registry of
+      problem types, declared in [[interfaces]] in .repo/outputs.toml with
+      its format, its definition files, the output that delivers it and its
+      compatibility. It is addressed as <repository>#<interface>.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.dependency
+    display_name: dependency
+    definition: >-
+      An edge from one repository to another repository's release. One whose
+      files are vendored is declared in .repo/dependencies.toml with its
+      pin; one through a package or tool manager is read from that
+      manager's manifest; a runtime edge is read from the environment
+      binding that reaches it.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.dependencies-declaration
+    display_name: dependencies declaration
+    definition: >-
+      The file .repo/dependencies.toml in a repository that vendors another
+      repository's interfaces, which lists each vendored release with its
+      exact version.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.pin
+    display_name: pin
+    definition: >-
+      The exact release version a consumer depends on, written in exactly
+      one place: the dependencies declaration for a vendored copy, or the
+      package or tool manager's manifest otherwise. Never a commit SHA,
+      branch or range.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.release-record
+    display_name: release record
+    definition: >-
+      The release.json at the root of a bundle that delivers interfaces:
+      the release it belongs to, and each interface with the SHA-256 of
+      each of its files (release-record.schema.json).
+    tags: [meta]
+    stability: provisional
+  - id: conventions.vendored-copy
+    display_name: vendored copy
+    definition: >-
+      The files of another repository's release a consumer commits, under
+      <product>/contracts/vendor/<repository>/<output>/, with the producer's
+      release record unchanged beside them. Never edited by hand.
+    tags: [meta]
+    stability: provisional
+  - id: conventions.runtime-capability
+    display_name: runtime capability
+    definition: >-
+      Something a service needs at runtime that is not another Musher
+      service, such as PostgreSQL or object storage, named on the
+      environment binding that reaches it. Which resource provides it is a
+      fact of each environment, not of the declaration.
     tags: [meta]
     stability: provisional
   - id: conventions.system

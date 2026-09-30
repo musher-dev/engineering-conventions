@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "repository": "platform-api",
+  "output": "contracts",
+  "version": "0.36.1",
+  "tag": "v0.36.1",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "released_with": [
+    {
+      "output": "image",
+      "location": "ghcr.io/example/platform-api:0.36.1",
+      "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "public-http",
+      "format": "openapi",
+      "compatibility": "gated",
+      "files": [
+        {
+          "path": "openapi/public.json",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ]
+}

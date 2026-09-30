@@ -36,6 +36,9 @@ CASES = [
     "mise-pin-without-declaration",
     "adopt-02-invalid-declaration",
     "adopt-09-unpinned",
+    # The launcher hashes vendored copies itself (DEPS-06, decision 0022).
+    "deps-06-edited-file",
+    "deps-06-passes-every-interface-when-none-named",
 ]
 
 
@@ -385,3 +388,41 @@ def test_an_error_fails_the_check_end_to_end(
     assert github.returncode == 1, github.stderr
     assert "::error file=" in github.stdout
     assert launch().returncode == 1
+
+
+# The launcher's sha256 function, run on its own with only one hashing tool on
+# PATH, so each fallback is seen to give the same digest.
+@pytest.mark.parametrize("tool", ["sha256sum", "shasum", "openssl"])
+def test_sha256_falls_back_to_whichever_tool_exists(tool: str, tmp_path: Path) -> None:
+    found = shutil.which(tool)
+    if found is None:
+        pytest.skip(f"{tool} is not installed")
+    tools = tmp_path / "bin"
+    tools.mkdir()
+    for name in (tool, "sed"):
+        located = shutil.which(name)
+        assert located is not None
+        (tools / name).symlink_to(located)
+    text = LAUNCHER.read_text(encoding="utf-8")
+    function = re.search(r"^sha256\(\) \{\n.*?^\}\n", text, re.MULTILINE | re.DOTALL)
+    assert function is not None
+    (tmp_path / "file").write_text("")
+    completed = subprocess.run(
+        [
+            "/bin/sh",
+            "-c",
+            'die() { echo "$*" >&2; exit 2; }\n' + function.group(0) + 'sha256 "$1"',
+            "sh",
+            "file",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+        env={"PATH": str(tools)},
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert (
+        completed.stdout.strip()
+        == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    )

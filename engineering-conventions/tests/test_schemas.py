@@ -23,6 +23,8 @@ FIXTURES = PRODUCT / "tests" / "fixtures"
 KINDS = {
     "declarations": (schemas.DECLARATION, "valid", "invalid"),
     "outputs": (schemas.OUTPUTS, "valid", "invalid"),
+    "dependencies": (schemas.DEPENDENCIES, "valid", "invalid"),
+    "release-records": (schemas.RELEASE_RECORD, "valid", "invalid"),
     "repository": (schemas.REPOSITORY, "valid", "invalid"),
     "env-schema": (schemas.ENV_SCHEMA, "valid", "invalid"),
     "profiles": (schemas.PROFILE, "valid", "invalid/schema"),

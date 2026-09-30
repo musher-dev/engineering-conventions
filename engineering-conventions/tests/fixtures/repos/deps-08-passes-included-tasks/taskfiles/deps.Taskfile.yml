@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  check:
+    desc: Verify every vendored copy against its release record.
+    cmds:
+      - go run ./cmd/deps check
+
+  sync:
+    desc: Vendor each pinned release again.
+    cmds:
+      - go run ./cmd/deps sync

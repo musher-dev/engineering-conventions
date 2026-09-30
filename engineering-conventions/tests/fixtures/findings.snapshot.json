@@ -31,7 +31,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -126,6 +126,47 @@
   "dec-07-unlinked-record": [
     ["docs/decisions/README.md", "DEC-07", "warning", "the index does not link decision record 0001-use-one-queue; add a link to it", true]
   ],
+  "deps-01-passes-two-declared-outputs": [],
+  "deps-01-undeclared-copy": [
+    ["platform-api/contracts/vendor/catalog/corpus", "DEPS-01", "warning", "platform-api/contracts/vendor/catalog/corpus/ is a vendored copy of catalog's \"corpus\", but .repo/dependencies.toml declares no such dependency; declare it with the release it is, or remove the copy", true]
+  ],
+  "deps-02-invalid-declaration": [
+    [".repo/dependencies.toml", "DEPS-02", "warning", "`dependencies.0`: Additional property path is not allowed.", true]
+  ],
+  "deps-02-passes-without-optional-fields": [],
+  "deps-03-declared-twice": [
+    [".repo/dependencies.toml", "DEPS-03", "warning", "specifications's \"schemas\" is declared more than once; declare each vendored output once, with one version", true],
+    ["platform-api/contracts/vendor/specifications/schemas/release.json", "DEPS-05", "warning", "the release record says version \"1.6.0\", but .repo/dependencies.toml declares \"1.5.0\"; vendor the declared release with `task deps:sync`, or declare the one that is vendored", true]
+  ],
+  "deps-03-passes-other-repository-same-output": [],
+  "deps-04-package-range": [
+    ["platform-api/package.json", "DEPS-04", "warning", "platform-api/package.json pins @musher-dev/ui to \"^1.0.2\" in dependencies; pin the exact version it released, so the repository builds against one release until it chooses another", true]
+  ],
+  "deps-04-passes-exact-and-workspace-packages": [],
+  "deps-05-passes-prerelease-version": [],
+  "deps-05-record-of-another-release": [
+    ["platform-api/contracts/vendor/specifications/schemas/release.json", "DEPS-05", "warning", "the release record says version \"1.5.0\", but .repo/dependencies.toml declares \"1.6.0\"; vendor the declared release with `task deps:sync`, or declare the one that is vendored", true]
+  ],
+  "deps-06-edited-file": [
+    ["platform-api/contracts/vendor/specifications/schemas/component/component.v1.schema.json", "DEPS-06", "warning", "platform-api/contracts/vendor/specifications/schemas/component/component.v1.schema.json is not the file specifications's \"schemas\" 1.6.0 released: its sha256 is 25ea4931e3fe684f2f9269c5e3f7b561a2353e837dcf356d02aa0e3a5d15b72b, not 0ac9dac9527eaa3f2c1a5bf6999c900e74328f1b94495297909d0f97adeb97f0; a vendored copy is never edited, so vendor the release again with `task deps:sync`", true]
+  ],
+  "deps-06-passes-every-interface-when-none-named": [],
+  "deps-07-passes-ref-outside-config": [],
+  "deps-07-ref-pin": [
+    ["platform-api/config/catalog.ref", "DEPS-07", "warning", "platform-api/config/catalog.ref keeps a pin in a file of its own; declare the release in .repo/dependencies.toml and vendor it with `task deps:sync`, so every pin has one place and one form", true]
+  ],
+  "deps-08-missing-sync-task": [
+    ["Taskfile.yml", "DEPS-08", "warning", "the repository declares dependencies in .repo/dependencies.toml but its root Taskfile does not define \"deps:sync\"; add them, so every consumer verifies and updates its vendored copies the same way", true]
+  ],
+  "deps-08-passes-included-tasks": [],
+  "deps-09-passes-check-among-other-tasks": [],
+  "deps-09-validate-without-check": [
+    [".repo/dependencies.toml", "DEPS-09", "warning", "the repository vendors dependencies but no validate workflow runs `task deps:check`; run it in a validate workflow, so an edited or half-updated copy cannot merge", true]
+  ],
+  "deps-10-no-maintain-workflow": [
+    [".repo/dependencies.toml", "DEPS-10", "warning", "the repository vendors dependencies but has no maintain-dependencies.yml; add it, on a schedule, to run `task deps:sync` and open a pull request for each new release", true]
+  ],
+  "deps-10-passes-schedule-only": [],
   "devc-01-passes-named-config": [],
   "devc-01-root-config": [
     [".devcontainer.json", "DEVC-01", "warning", "move the dev container configuration to .devcontainer/devcontainer.json, beside the files it names", true],
@@ -233,6 +274,18 @@
     [".devcontainer/devcontainer.json", "ENVS-15", "warning", "MODEL_API_KEY comes from the host (source: host in .devcontainer/env.schema.yaml) but is not in secrets; add it so Codespaces asks for it", true]
   ],
   "envs-15-passes-matching-secrets": [],
+  "envs-16-passes-provider-with-capability": [],
+  "envs-16-provider-without-capability": [
+    ["platform-api/env.schema.yaml", "ENVS-16", "warning", "binding DATABASE_URL names a provider but no capability; name the capability the provider offers, or drop the provider", true]
+  ],
+  "envs-17-malformed-target": [
+    ["platform-api/env.schema.yaml", "ENVS-17", "warning", "binding DATABASE_URL has target \"database\"; write it as <repository>#<interface>, the repository's name and the interface it serves, such as platform-api#public-http", true]
+  ],
+  "envs-17-passes-other-repository-target": [],
+  "envs-18-passes-registered-capability": [],
+  "envs-18-unregistered-capability": [
+    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"dns\", \"email-delivery\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"vpn-mesh\", or propose a new one", true]
+  ],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],
@@ -409,6 +462,84 @@
   "hooks-11-glob-matches-nothing": [
     [".config/lefthook.yml", "HOOKS-11", "warning", "pre-commit job \"yaml\": glob \"src/**/*.py\" matches no file in the repository, so the job never runs; correct the pattern or remove the job", true]
   ],
+  "iface-01-passes-documents-and-dotfiles": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-01-undeclared-file": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["platform-api/contracts/state-machines/order.mmd", "IFACE-01", "warning", "platform-api/contracts/state-machines/order.mmd is in platform-api/contracts/, which holds only what other repositories build against, but no interface in .repo/outputs.toml covers it; add it to an interface's definitions, or move it out of platform-api/contracts/", true]
+  ],
+  "iface-02-passes-lockstep-internal": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-02-unregistered-format": [
+    [".repo/outputs.toml", "IFACE-02", "warning", "interface \"public-http\" has format \"swagger\", which is not registered; use one of \"asyncapi\", \"env-schema\", \"json-schema\", \"openapi\", \"protobuf\", \"weaver\"", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-03-duplicate-id": [
+    [".repo/outputs.toml", "IFACE-03", "warning", "interface ID \"public-http\" is used more than once; give each interface its own ID, which consumers address as <repository>#<id>", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-03-passes-output-and-interface-share-an-id": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-04-definition-matches-nothing": [
+    [".repo/outputs.toml", "IFACE-04", "warning", "interface \"events\" names definitions \"platform-api/contracts/event/*.schema.json\", which matches no file the repository holds; point it at the files that define the interface", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["platform-api/contracts/events/order.created.v1.schema.json", "IFACE-01", "warning", "platform-api/contracts/events/order.created.v1.schema.json is in platform-api/contracts/, which holds only what other repositories build against, but no interface in .repo/outputs.toml covers it; add it to an interface's definitions, or move it out of platform-api/contracts/", true]
+  ],
+  "iface-04-passes-directory-without-slash": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-05-file-in-two-interfaces": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["platform-api/contracts/events/order.created.v1.schema.json", "IFACE-05", "warning", "platform-api/contracts/events/order.created.v1.schema.json belongs to interfaces \"events\", \"public-http\"; narrow their definitions so each file belongs to one interface", true]
+  ],
+  "iface-05-passes-disjoint-globs": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-06-delivered-by-unknown-output": [
+    [".repo/outputs.toml", "IFACE-06", "warning", "interface \"public-http\" is delivered by \"api-bundle\", which is not an output in .repo/outputs.toml; name the bundle, site or library output that delivers it", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-06-passes-library-output": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (client, contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-07-passes-several-majors": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-07-unversioned-file": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["platform-api/contracts/events/order.paid.schema.json", "IFACE-07", "warning", "platform-api/contracts/events/order.paid.schema.json belongs to versioned interface \"events\" but its name carries no .vN.; name it for its major version, such as order.paid.v1.schema.json", true]
+  ],
+  "iface-08-definitions-outside-contracts": [
+    [".repo/outputs.toml", "IFACE-08", "warning", "interface \"grpc\" names definitions \"platform-api/proto/\" outside platform-api/contracts/; keep every interface the repository offers there, so its consumers and checks find it in one place", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-08-passes-proto-in-contracts": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-11-missing-bundle-task": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["Taskfile.yml", "IFACE-11", "warning", "the repository declares interfaces in .repo/outputs.toml but its root Taskfile does not define \"contracts:bundle\"; add them, so every producer regenerates, checks, compares and bundles its interfaces the same way", true]
+  ],
+  "iface-11-passes-included-tasks": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-12-passes-separate-steps": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-12-validate-skips-breaking": [
+    [".repo/outputs.toml", "IFACE-12", "warning", "the repository declares interfaces but no validate workflow runs `task contracts:breaking`; run it in a validate workflow, so a change that drifts from or breaks an interface cannot merge", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-13-passes-task-flags": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-13-publish-without-bundle-task": [
+    [".github/workflows/publish-contracts.yml", "IFACE-13", "warning", "publish-contracts.yml publishes bundle \"contracts\", which delivers interfaces, but does not run `task contracts:bundle`; build the bundle and its release.json with that task in the workflow that publishes it", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
   "mise-pin-without-declaration": [],
   "out-01-undeclared-outputs": [
     [".github/workflows/publish.yml", "OUT-01", "warning", "publish.yml publishes an output, but the repository has no .repo/outputs.toml; declare each output it publishes there", true]
@@ -416,8 +547,12 @@
   "out-02-invalid-declaration": [
     [".repo/outputs.toml", "OUT-02", "warning", "`outputs.0`: Additional property name is not allowed.", true]
   ],
+  "out-03-retired-contract-kind": [
+    [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"contract\", which is retired; declare the definition as an [[interfaces]] entry (schema_version = 2) delivered by the bundle, site or library output that ships it", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-image) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
   "out-03-unknown-kind": [
-    [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"docker\", which is not an output kind; use one of \"bundle\", \"cli\", \"contract\", \"image\", \"library\", \"site\", \"vmimage\"", true]
+    [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"docker\", which is not an output kind; use one of \"bundle\", \"cli\", \"image\", \"library\", \"site\", \"vmimage\"", true]
   ],
   "out-04-duplicate-id": [
     [".repo/outputs.toml", "OUT-04", "warning", "output ID \"api-image\" is used more than once; give each output its own ID", true]
@@ -436,10 +571,6 @@
     [".github/workflows/release.yml", "REL-02", "warning", "step \"release\" in job \"release\" runs release-please, but the repository has no release-please config; add .github/release-please/config.json and .github/release-please/manifest.json", true],
     [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without config-file: .github/release-please/config.json; pass it so the action reads the repository's release-please files", true],
     [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without manifest-file: .github/release-please/manifest.json; pass it so the action reads the repository's release-please files", true]
-  ],
-  "out-07-contract": [
-    [".repo/outputs.toml", "OUT-07", "warning", "output \"api-image\" is a contract but does not name its format or definition; add the interface format and the definition file", true],
-    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-image) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "out-12-site-location": [
     [".repo/outputs.toml", "OUT-12", "warning", "output \"docs-site\" is a site but its location \"docs.example.com\" is not an https:// origin; give the URL people and tools fetch it from", true]

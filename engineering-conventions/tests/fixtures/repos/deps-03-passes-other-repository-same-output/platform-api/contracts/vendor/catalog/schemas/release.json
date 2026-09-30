@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "repository": "catalog",
+  "output": "schemas",
+  "version": "2.0.0",
+  "tag": "v2.0.0",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "interfaces": [
+    {
+      "id": "items",
+      "format": "json-schema",
+      "compatibility": "gated",
+      "files": [
+        {
+          "path": "items.json",
+          "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+        }
+      ]
+    }
+  ]
+}

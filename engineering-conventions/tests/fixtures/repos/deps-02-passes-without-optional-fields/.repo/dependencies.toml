@@ -1,0 +1,6 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "specifications"
+output = "schemas"
+version = "1.6.0"

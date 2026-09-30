@@ -1,0 +1,15 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "specifications"
+output = "schemas"
+interfaces = ["component-schema"]
+version = "1.6.0"
+description = "The API validates component documents against the component schema."
+
+[[dependencies]]
+repository = "specifications"
+output = "schemas"
+interfaces = ["component-schema"]
+version = "1.5.0"
+description = "The API validates component documents against the component schema."

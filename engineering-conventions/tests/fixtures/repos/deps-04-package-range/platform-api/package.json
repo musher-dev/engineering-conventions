@@ -1,0 +1,7 @@
+{
+  "name": "platform-api-console",
+  "private": true,
+  "dependencies": {
+    "@musher-dev/ui": "^1.0.2"
+  }
+}

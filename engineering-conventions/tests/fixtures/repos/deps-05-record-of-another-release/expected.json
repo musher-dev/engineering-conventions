@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEPS-05",
+    "path": "platform-api/contracts/vendor/specifications/schemas/release.json",
+    "severity": "warning"
+  }
+]

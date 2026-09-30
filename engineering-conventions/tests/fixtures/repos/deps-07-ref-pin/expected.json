@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEPS-07",
+    "path": "platform-api/config/catalog.ref",
+    "severity": "warning"
+  }
+]

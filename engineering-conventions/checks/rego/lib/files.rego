@@ -53,6 +53,13 @@ sizes[normalise(path)] := size if {
 	is_number(size)
 }
 
+# The SHA-256 of each file of a vendored copy, in lower-case hex (DEPS-06).
+digests[normalise(path)] := digest if {
+	some doc in inventory_documents
+	some path, digest in doc.contents.conventions_inventory.digests
+	is_string(digest)
+}
+
 # Files the runner tried to parse first and could not; it reports them itself.
 unparsed contains normalise(entry.path) if {
 	some doc in inventory_documents
@@ -173,6 +180,25 @@ outputs_declaration := doc.contents if {
 outputs_documents := [doc.contents |
 	some doc in documents
 	doc.path == outputs_path
+]
+
+dependencies_path := ".repo/dependencies.toml"
+
+dependencies_declared if dependencies_path in repository_files
+
+# The dependencies declaration (EC-0032), read like the other declarations: a
+# non-mapping reads as empty, and DEPS-02 reports its shape.
+default dependencies_declaration := {}
+
+dependencies_declaration := doc.contents if {
+	some doc in documents
+	doc.path == dependencies_path
+	is_object(doc.contents)
+}
+
+dependencies_documents := [doc.contents |
+	some doc in documents
+	doc.path == dependencies_path
 ]
 
 repository_path := ".repo/repository.toml"

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "repository": "platform-api",
+  "output": "contracts",
+  "version": "0.36.1",
+  "tag": "v0.36.1",
+  "commit": "main",
+  "interfaces": [
+    {
+      "id": "public-http",
+      "format": "openapi",
+      "compatibility": "gated",
+      "files": [{"path": "openapi/public.json", "sha256": "e3b0c442"}]
+    }
+  ]
+}

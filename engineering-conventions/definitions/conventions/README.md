@@ -39,6 +39,10 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0027](dev-containers/dev-container-configuration.md) | Dev container configuration | dev-containers | draft |
 | [EC-0028](dev-containers/dev-container-stacks.md) | Dev container stacks | dev-containers | draft |
 | [EC-0029](opentofu/state-keys.md) | OpenTofu state keys | opentofu | draft |
+| [EC-0030](interfaces/interfaces-declaration.md) | Interfaces declaration | interfaces | draft |
+| [EC-0031](interfaces/publishing-interfaces.md) | Publishing interfaces | interfaces | draft |
+| [EC-0032](dependencies/dependencies-declaration.md) | Dependencies declaration | dependencies | draft |
+| [EC-0033](dependencies/keeping-dependencies-current.md) | Keeping dependencies current | dependencies | draft |
 
 ## Requirements
 
@@ -82,6 +86,16 @@ ID is permanent: it is never renumbered or reused.
 | [DEC-05](decisions/decision-records.md#dec-05) | A decision record has Context, Decision and Consequences sections | EC-0021 | proposed | warning | conftest |
 | [DEC-06](decisions/decision-records.md#dec-06) | A decision record says how it is enforced in an Enforcement section | EC-0021 | proposed | warning | conftest |
 | [DEC-07](decisions/decision-records.md#dec-07) | The decisions directory's index links every record | EC-0021 | proposed | warning | conftest |
+| [DEPS-01](dependencies/dependencies-declaration.md#deps-01) | Every vendored copy is declared as a dependency | EC-0032 | proposed | warning | conftest |
+| [DEPS-02](dependencies/dependencies-declaration.md#deps-02) | The dependencies declaration is valid against its schema | EC-0032 | proposed | warning | conftest |
+| [DEPS-03](dependencies/dependencies-declaration.md#deps-03) | A dependency is declared once, and never on the repository itself | EC-0032 | proposed | warning | conftest |
+| [DEPS-04](dependencies/dependencies-declaration.md#deps-04) | A dependency on another Musher repository pins an exact release | EC-0032 | proposed | warning | conftest |
+| [DEPS-05](dependencies/dependencies-declaration.md#deps-05) | A dependency's vendored copy carries the producer's release record for the pinned release | EC-0032 | proposed | warning | conftest |
+| [DEPS-06](dependencies/dependencies-declaration.md#deps-06) | A vendored copy holds exactly the released files of the interfaces it depends on | EC-0032 | proposed | warning | conftest |
+| [DEPS-07](dependencies/dependencies-declaration.md#deps-07) | A pin lives in the dependencies declaration or a package manifest, never in a file of its own | EC-0032 | proposed | warning | conftest |
+| [DEPS-08](dependencies/keeping-dependencies-current.md#deps-08) | A repository that vendors dependencies defines deps:check and deps:sync | EC-0033 | proposed | warning | conftest |
+| [DEPS-09](dependencies/keeping-dependencies-current.md#deps-09) | A validate workflow runs deps:check | EC-0033 | proposed | warning | conftest |
+| [DEPS-10](dependencies/keeping-dependencies-current.md#deps-10) | A scheduled maintain-dependencies workflow runs deps:sync | EC-0033 | proposed | warning | conftest |
 | [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
 | [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
 | [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |
@@ -110,6 +124,10 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-13](environment/env-schema.md#envs-13) | A nested binding's name separates its parts with __ | EC-0020 | proposed | warning | conftest |
 | [ENVS-14](environment/env-schema.md#envs-14) | A binding the browser reads starts with a client prefix | EC-0020 | proposed | warning | conftest |
 | [ENVS-15](environment/env-contract.md#envs-15) | A dev container's secrets name exactly the variables its environment schema takes from the host | EC-0019 | proposed | warning | conftest |
+| [ENVS-16](environment/env-schema.md#envs-16) | A binding names at most one of target and capability, and a provider only with a capability | EC-0020 | proposed | warning | conftest |
+| [ENVS-17](environment/env-schema.md#envs-17) | A binding's target is another repository's interface, written \<repository\>#\<interface\> | EC-0020 | proposed | warning | conftest |
+| [ENVS-18](environment/env-schema.md#envs-18) | A binding's capability is a registered runtime capability | EC-0020 | proposed | warning | conftest |
+| [ENVS-19](environment/env-schema.md#envs-19) | A binding that reaches another service or an outside capability names it | EC-0020 | proposed | warning | review |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -170,13 +188,27 @@ ID is permanent: it is never renumbered or reused.
 | [HOOKS-09](git-hooks/lefthook.md#hooks-09) | A lefthook configuration uses neither remotes nor extends | EC-0014 | proposed | warning | conftest |
 | [HOOKS-10](git-hooks/lefthook.md#hooks-10) | A job never discards its command's exit code | EC-0014 | proposed | warning | conftest |
 | [HOOKS-11](git-hooks/lefthook.md#hooks-11) | Every job glob matches a file in the repository | EC-0014 | proposed | warning | conftest |
+| [IFACE-01](interfaces/interfaces-declaration.md#iface-01) | Every file in the contracts directory belongs to a declared interface | EC-0030 | proposed | warning | conftest |
+| [IFACE-02](interfaces/interfaces-declaration.md#iface-02) | An interface's format, compatibility and audience are registered values | EC-0030 | proposed | warning | conftest |
+| [IFACE-03](interfaces/interfaces-declaration.md#iface-03) | Interface IDs are unique within a repository | EC-0030 | proposed | warning | conftest |
+| [IFACE-04](interfaces/interfaces-declaration.md#iface-04) | Every definitions entry of an interface matches a file the repository holds | EC-0030 | proposed | warning | conftest |
+| [IFACE-05](interfaces/interfaces-declaration.md#iface-05) | No file belongs to two interfaces | EC-0030 | proposed | warning | conftest |
+| [IFACE-06](interfaces/interfaces-declaration.md#iface-06) | An interface is delivered by a bundle, site or library output the declaration lists | EC-0030 | proposed | warning | conftest |
+| [IFACE-07](interfaces/interfaces-declaration.md#iface-07) | Every file of a versioned interface carries its major version in its name | EC-0030 | proposed | warning | conftest |
+| [IFACE-08](interfaces/interfaces-declaration.md#iface-08) | An interface's definitions live in the product's contracts directory | EC-0030 | proposed | warning | conftest |
+| [IFACE-09](interfaces/publishing-interfaces.md#iface-09) | An interface's references resolve inside the files it delivers | EC-0031 | proposed | warning | review |
+| [IFACE-10](interfaces/publishing-interfaces.md#iface-10) | A change to an interface keeps its compatibility promise | EC-0031 | proposed | warning | review |
+| [IFACE-11](interfaces/publishing-interfaces.md#iface-11) | A repository that declares interfaces defines the contracts tasks | EC-0031 | proposed | warning | conftest |
+| [IFACE-12](interfaces/publishing-interfaces.md#iface-12) | A validate workflow runs contracts:check and contracts:breaking | EC-0031 | proposed | warning | conftest |
+| [IFACE-13](interfaces/publishing-interfaces.md#iface-13) | The workflow that publishes a bundle of interfaces runs contracts:bundle | EC-0031 | proposed | warning | conftest |
+| [IFACE-14](interfaces/publishing-interfaces.md#iface-14) | A bundle of interfaces carries a release record of every file it delivers | EC-0031 | proposed | warning | review |
 | [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
 | [OUT-04](outputs/outputs-declaration.md#out-04) | Output IDs are unique within a repository | EC-0007 | proposed | warning | conftest |
 | [OUT-05](outputs/outputs-declaration.md#out-05) | Every path an output names exists | EC-0007 | proposed | warning | conftest |
 | [OUT-06](outputs/outputs-declaration.md#out-06) | An output names a publish workflow that exists | EC-0007 | proposed | warning | conftest |
-| [OUT-07](outputs/outputs-declaration.md#out-07) | A contract output names its format and its definition file | EC-0007 | proposed | warning | conftest |
+| [OUT-07](outputs/outputs-declaration.md#out-07) | A contract output names its format and its definition file | EC-0007 | retired | warning | conftest |
 | [OUT-08](outputs/publishing-and-consuming.md#out-08) | An output's docs say how to consume it | EC-0008 | proposed | warning | review |
 | [OUT-09](outputs/publishing-and-consuming.md#out-09) | A version is published only from a release tag and is never overwritten | EC-0008 | proposed | warning | review |
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
@@ -269,3 +301,5 @@ ID is permanent: it is never renumbered or reused.
 | REL | Releases | releases |
 | DEVC | Dev containers | dev-containers |
 | TOFU | OpenTofu | opentofu |
+| IFACE | Interfaces | interfaces |
+| DEPS | Dependencies | dependencies |

@@ -5,7 +5,8 @@ id: tool
 display_name: Tool
 description: >-
   Repositories whose kind is tool: everything base-repo applies, and a
-  root Taskfile that also defines build and test (TASK-11).
+  root Taskfile that also defines build and test (TASK-11), and every
+  interface it offers in its contracts directory (IFACE-08).
 inherits: [base-repo]
 include:
-  requirements: [TASK-11]
+  requirements: [TASK-11, IFACE-08]

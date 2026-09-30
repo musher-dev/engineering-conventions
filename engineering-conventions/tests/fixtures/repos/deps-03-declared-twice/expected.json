@@ -1,0 +1,12 @@
+[
+  {
+    "id": "DEPS-03",
+    "path": ".repo/dependencies.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "DEPS-05",
+    "path": "platform-api/contracts/vendor/specifications/schemas/release.json",
+    "severity": "warning"
+  }
+]

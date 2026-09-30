@@ -1,0 +1,7 @@
+[
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

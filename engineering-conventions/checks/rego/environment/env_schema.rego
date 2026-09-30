@@ -4,8 +4,9 @@
 #   Every env.schema.yaml is valid against the published format (ENVS-03),
 #   never declares a retired name again (ENVS-05), commits no secret value
 #   (ENVS-06), keeps the invariants the format cannot express (ENVS-07),
-#   and agrees with the repository's other schemas on shared variables
-#   (ENVS-08).
+#   agrees with the repository's other schemas on shared variables
+#   (ENVS-08), and names what a binding reaches as either a Musher
+#   interface or a registered capability (ENVS-16 to ENVS-18).
 # scope: package
 # custom:
 #   convention: EC-0020
@@ -13,6 +14,7 @@ package conventions.checks.environment.env_schema
 
 import data.conventions.lib.env
 import data.conventions.lib.findings as lib
+import data.conventions.lib.repository
 import data.conventions.lib.schema
 
 # ENVS-03. One finding per schema: the first problem, and how many more.
@@ -69,6 +71,66 @@ findings contains lib.finding("ENVS-07", path, message) if {
 findings contains lib.finding("ENVS-07", path, problem) if {
 	some path, contents in env.documents
 	some problem in schema_problems(contents)
+}
+
+# ENVS-16
+findings contains lib.finding("ENVS-16", entry.path, message) if {
+	some entry in env.bindings
+	files_has(entry.binding, "target")
+	files_has(entry.binding, "capability")
+	message := sprintf(
+		"binding %s names both a target and a capability; a value reaches one thing, so keep the one it reaches",
+		[entry.name],
+	)
+}
+
+findings contains lib.finding("ENVS-16", entry.path, message) if {
+	some entry in env.bindings
+	files_has(entry.binding, "provider")
+	not files_has(entry.binding, "capability")
+	message := sprintf(
+		"binding %s names a provider but no capability; name the capability the provider offers, or drop the provider",
+		[entry.name],
+	)
+}
+
+# ENVS-17
+findings contains lib.finding("ENVS-17", entry.path, message) if {
+	some entry in env.bindings
+	is_string(entry.binding.target)
+	not regex.match(target_pattern, entry.binding.target)
+	message := sprintf(
+		concat(" ", [
+			"binding %s has target %q; write it as <repository>#<interface>, the repository's name and",
+			"the interface it serves, such as platform-api#public-http",
+		]),
+		[entry.name, entry.binding.target],
+	)
+}
+
+findings contains lib.finding("ENVS-17", entry.path, message) if {
+	some entry in env.bindings
+	is_string(entry.binding.target)
+	regex.match(target_pattern, entry.binding.target)
+	split(entry.binding.target, "#")[0] == repository.declared_name
+	message := sprintf(
+		concat(" ", [
+			"binding %s targets %q in this repository; a target is another service, so leave a value",
+			"that addresses the service itself without one",
+		]),
+		[entry.name, entry.binding.target],
+	)
+}
+
+# ENVS-18
+findings contains lib.finding("ENVS-18", entry.path, message) if {
+	some entry in env.bindings
+	is_string(entry.binding.capability)
+	not entry.binding.capability in capabilities
+	message := sprintf(
+		"binding %s has capability %q, which is not a registered capability; use one of %s, or propose a new one",
+		[entry.name, entry.binding.capability, concat(", ", sort([sprintf("%q", [c]) | some c in capabilities]))],
+	)
 }
 
 # ENVS-08. Each copy of a shared variable agrees with every other copy.
@@ -308,3 +370,9 @@ sharing_pairs contains {"path": path, "other": other, "name": name} if {
 	is_object(env.bindings_of(path)[name])
 	is_object(env.bindings_of(other)[name])
 }
+
+target_pattern := `^[A-Za-z0-9][A-Za-z0-9._-]*#[a-z][a-z0-9]*(-[a-z0-9]+)*$`
+
+capabilities := {token | some token in object.get(data.conventions.index.vocabulary, "runtime_capabilities", [])}
+
+files_has(binding, key) if is_string(binding[key])

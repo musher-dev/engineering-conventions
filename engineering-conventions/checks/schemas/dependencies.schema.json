@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dependencies declaration",
+  "description": "A repository's .repo/dependencies.toml: each release of another Musher repository whose interfaces it vendors, with the exact version it pins (EC-0032). Dependencies through a package or tool manager are read from that manager's manifest and are not listed. DEPS-02 checks a declaration against this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dependencies"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "dependencies": {
+      "description": "The vendored dependencies, at least one.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/dependency"
+      }
+    }
+  },
+  "definitions": {
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "output",
+        "version"
+      ],
+      "properties": {
+        "repository": {
+          "description": "The producing repository's name on GitHub, without the organization, e.g. platform-api.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "output": {
+          "description": "The id of the producer's output that delivers the interfaces, e.g. contracts.",
+          "$ref": "common.schema.json#/definitions/slug"
+        },
+        "interfaces": {
+          "description": "The ids of the producer's interfaces this repository vendors; all of the output's interfaces when omitted.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/definitions/slug"
+          }
+        },
+        "version": {
+          "description": "The exact release version pinned, without a leading v, e.g. 0.36.1. The only copy of the pin (DEPS-04).",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "description": "One line on what this repository uses it for.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        }
+      }
+    }
+  }
+}

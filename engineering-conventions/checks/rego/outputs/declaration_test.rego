@@ -20,13 +20,8 @@ tree_paths := [
 tree := td.inventory(tree_paths)
 
 test_conforming_outputs if {
-	contract := object.union(td.image_output, {
-		"id": "api-contract",
-		"kind": "contract",
-		"format": "openapi",
-		"definition": "api/openapi.yaml",
-	})
-	count(declaration.findings) == 0 with input as [publish, tree, td.outputs([td.image_output, contract])]
+	bundle := object.union(td.image_output, {"id": "api-contracts", "kind": "bundle", "source": "api/openapi.yaml"})
+	count(declaration.findings) == 0 with input as [publish, tree, td.outputs([td.image_output, bundle])]
 		with data.conventions.index as td.index
 }
 
@@ -73,7 +68,7 @@ test_out_03_unknown_kind if {
 		with data.conventions.index as td.index
 	messages(found, "OUT-03") == {concat(" ", [
 		`output "api-image" has kind "docker", which is not an output kind; use one of`,
-		`"bundle", "cli", "contract", "image", "library", "site", "vmimage"`,
+		`"bundle", "cli", "image", "library", "site", "vmimage"`,
 	])}
 }
 
@@ -199,12 +194,13 @@ test_out_12_other_kinds_are_not_sites if {
 	count(messages(found, "OUT-12")) == 0
 }
 
-test_out_07_contract_without_format_or_definition if {
-	output := object.union(td.image_output, {"kind": "contract"})
+test_out_03_retired_contract_kind if {
+	output := object.union(td.image_output, {"kind": "contract", "format": "openapi", "definition": "api/openapi.yaml"})
 	found := declaration.findings with input as [publish, tree, td.outputs([output])]
 		with data.conventions.index as td.index
-	messages(found, "OUT-07") == {concat(" ", [
-		`output "api-image" is a contract but does not name its format or definition;`,
-		"add the interface format and the definition file",
+	messages(found, "OUT-03") == {concat(" ", [
+		`output "api-image" has kind "contract", which is retired; declare the definition as an [[interfaces]]`,
+		"entry (schema_version = 2) delivered by the bundle, site or library output that ships it",
 	])}
+	count(messages(found, "OUT-07")) == 0
 }

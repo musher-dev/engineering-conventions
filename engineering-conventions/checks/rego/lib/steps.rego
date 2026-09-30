@@ -86,3 +86,12 @@ literal(value) if {
 literal(value) if is_number(value)
 
 literal(value) if is_boolean(value)
+
+# Whether some step of a workflow runs `task <name>`, alone or among other
+# tasks on the same command line.
+runs_task(workflow, name) if {
+	some job in files.jobs(workflow)
+	some step in files.steps(job)
+	some line in command_lines(step)
+	regex.match(sprintf(`(^|[\s;&|(])task\s([^;&|]*\s)?%s(\s|$)`, [name]), line)
+}

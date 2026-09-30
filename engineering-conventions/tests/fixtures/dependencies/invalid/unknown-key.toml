@@ -1,0 +1,7 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "platform-api"
+output = "contracts"
+version = "0.36.1"
+path = "config/vendor/platform-api/"

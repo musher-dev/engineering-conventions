@@ -1,0 +1,12 @@
+[
+  {
+    "id": "IFACE-07",
+    "path": "platform-api/contracts/events/order.paid.schema.json",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

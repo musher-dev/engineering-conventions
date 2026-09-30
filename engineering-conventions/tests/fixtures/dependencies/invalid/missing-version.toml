@@ -1,0 +1,5 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "platform-api"
+output = "contracts"

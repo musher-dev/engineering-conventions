@@ -108,6 +108,21 @@
           "type": "string",
           "enum": ["url", "email", "path", "json"]
         },
+        "target": {
+          "description": "The other Musher service the value reaches, as <repository>#<interface>: the repository's name and the ID of the interface it serves, e.g. platform-api#public-http (ENVS-17). Never with capability.",
+          "type": "string",
+          "minLength": 1
+        },
+        "capability": {
+          "description": "What the value reaches when it is not a Musher service: a runtime-capability token from the terminology, e.g. postgresql or object-storage (ENVS-18). It names what the code needs, never the resource that provides it. Never with target.",
+          "type": "string",
+          "minLength": 1
+        },
+        "provider": {
+          "description": "The vendor whose API the code speaks for the capability, as a lower-case slug, e.g. stripe. Only with capability (ENVS-16).",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
         "default": {
           "description": "The value the product uses when the variable is unset. It ships to production."
         },

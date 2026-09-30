@@ -1,22 +1,44 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Outputs declaration",
-  "description": "A repository's .repo/outputs.toml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented. OUT-02 checks a declaration against this schema.",
+  "description": "A repository's .repo/outputs.toml: every output it publishes for other repositories or people to consume, where it is built from, which workflow publishes it, where consumers get it and where its consumption is documented; and, from schema_version 2, every interface its outputs deliver (EC-0030). OUT-02 checks a declaration against this schema.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "outputs"],
   "properties": {
     "schema_version": {
-      "description": "Version of this file's shape. Always 1.",
-      "const": 1
+      "description": "Version of this file's shape. 2 adds [[interfaces]] and drops an output's format and definition; 1 is accepted until the contract kind's transition ends (decision 0022).",
+      "enum": [1, 2]
     },
     "outputs": {
       "description": "The outputs this repository publishes, at least one.",
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/definitions/output" }
+    },
+    "interfaces": {
+      "description": "The interfaces this repository's outputs deliver: each surface another repository builds or runs against (EC-0030). Only in schema_version 2.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/interface" }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "schema_version": { "const": 1 } } },
+      "then": { "not": { "required": ["interfaces"] } }
+    },
+    {
+      "if": { "properties": { "schema_version": { "const": 2 } } },
+      "then": {
+        "properties": {
+          "outputs": {
+            "items": { "not": { "anyOf": [{ "required": ["format"] }, { "required": ["definition"] }] } }
+          }
+        }
+      }
+    }
+  ],
   "definitions": {
     "output": {
       "type": "object",
@@ -28,7 +50,7 @@
           "$ref": "common.schema.json#/definitions/slug"
         },
         "kind": {
-          "description": "What kind of output it is: an output-kind token from the terminology, e.g. image, library, cli, contract or bundle. OUT-03 checks the token.",
+          "description": "What kind of output it is: an output-kind token from the terminology, e.g. image, library, cli, bundle, site or vmimage. OUT-03 checks the token.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*$"
         },
@@ -54,11 +76,57 @@
           "$ref": "common.schema.json#/definitions/repoPath"
         },
         "format": {
-          "description": "A contract's interface format, e.g. openapi, asyncapi, protobuf or json-schema. Required when kind is contract (OUT-07).",
+          "description": "Only in schema_version 1: a contract output's interface format. Declare an interface instead (EC-0030).",
           "$ref": "common.schema.json#/definitions/slug"
         },
         "definition": {
-          "description": "A contract's machine-readable definition file, relative to the repository root, e.g. api/openapi.yaml. Required when kind is contract (OUT-07).",
+          "description": "Only in schema_version 1: a contract output's definition file. Declare an interface instead (EC-0030).",
+          "$ref": "common.schema.json#/definitions/repoPath"
+        }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "format", "definitions", "delivered_by", "compatibility"],
+      "properties": {
+        "id": {
+          "description": "The interface's name within this repository, unique, e.g. public-http. Other repositories address it as <repository>#<id>.",
+          "$ref": "common.schema.json#/definitions/slug"
+        },
+        "format": {
+          "description": "The format its definitions are written in: an interface-format token from the terminology, e.g. openapi, json-schema or protobuf. IFACE-02 checks the token.",
+          "$ref": "common.schema.json#/definitions/slug"
+        },
+        "description": {
+          "description": "One line on what the interface is for and who builds against it.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "definitions": {
+          "description": "The files that define it, relative to the repository root: a file, a directory ending in /, or a glob in which * stays within one path segment and ** crosses them, e.g. platform-api/contracts/events/*.schema.json.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/repoPath" }
+        },
+        "delivered_by": {
+          "description": "The ID of the output in this declaration that delivers its definitions to consumers: a bundle, site or library (IFACE-06).",
+          "$ref": "common.schema.json#/definitions/slug"
+        },
+        "compatibility": {
+          "description": "What the producer promises about a change: an interface-compatibility token from the terminology, gated, versioned or lockstep. IFACE-02 checks the token.",
+          "$ref": "common.schema.json#/definitions/slug"
+        },
+        "audience": {
+          "description": "Who may build against it: internal or public, as in the identity declaration. IFACE-02 checks the token.",
+          "$ref": "common.schema.json#/definitions/slug"
+        },
+        "generated": {
+          "description": "true when its definitions are generated from the product's code, so the contracts:generate task writes them and contracts:check proves they are current (IFACE-11).",
+          "type": "boolean"
+        },
+        "docs": {
+          "description": "The document that says how to build against it, relative to the repository root, with an optional #anchor.",
           "$ref": "common.schema.json#/definitions/repoPath"
         }
       }

@@ -13,6 +13,9 @@ SYSTEM_TAG = "repository.system"
 KIND_TAG = "repository.kind"
 LIFECYCLE_TAG = "repository.lifecycle"
 AUDIENCE_TAG = "repository.audience"
+INTERFACE_FORMAT_TAG = "interfaces.format"
+COMPATIBILITY_TAG = "interfaces.compatibility"
+RUNTIME_CAPABILITY_TAG = "runtime.capability"
 # Every tag whose terms carry a token the checks read; a token is unique
 # within each (invariants.terminology_consistent).
 TOKEN_TAGS = (
@@ -24,6 +27,9 @@ TOKEN_TAGS = (
     KIND_TAG,
     LIFECYCLE_TAG,
     AUDIENCE_TAG,
+    INTERFACE_FORMAT_TAG,
+    COMPATIBILITY_TAG,
+    RUNTIME_CAPABILITY_TAG,
 )
 REPOSITORY_NAME_SCOPE = "repository-name"
 # Words that stand in for an action token as the first token of a composite
@@ -147,11 +153,14 @@ def project(terminology: Terminology) -> dict[str, object]:
         "banned_repository_tokens": banned_repository_tokens(terminology),
         "capability_tokens": tokens(terminology, CAPABILITY_TAG),
         "display_forms": display_forms(terminology),
+        "interface_compatibilities": tokens(terminology, COMPATIBILITY_TAG),
+        "interface_formats": tokens(terminology, INTERFACE_FORMAT_TAG),
         "output_kinds": tokens(terminology, OUTPUT_KIND_TAG),
         "repository_audiences": tokens(terminology, AUDIENCE_TAG),
         "repository_kinds": tokens(terminology, KIND_TAG),
         "repository_lifecycles": tokens(terminology, LIFECYCLE_TAG),
         "repository_systems": tokens(terminology, SYSTEM_TAG),
         "responsibility_tokens": tokens(terminology, RESPONSIBILITY_TAG),
+        "runtime_capabilities": tokens(terminology, RUNTIME_CAPABILITY_TAG),
         "schedule_tokens": schedule_tokens(terminology),
     }

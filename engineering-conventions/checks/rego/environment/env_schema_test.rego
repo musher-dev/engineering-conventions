@@ -225,3 +225,66 @@ test_generated_length if {
 	env_schema.generated_length("base64:32") == 44
 	env_schema.generated_length("base64url:1") == 4
 }
+
+reaching := {
+	"API_BASE_URL": binding({"format": "url", "target": "platform-api#public-http"}),
+	"DATABASE_URL": binding({"format": "url", "sensitivity": "secret", "capability": "postgresql"}),
+	"API_STRIPE_KEY": binding({"sensitivity": "secret", "capability": "payments", "provider": "stripe"}),
+}
+
+reach_input(bindings) := array.concat(
+	[td.repository(object.union(td.identity, {"name": "platform-web"}))],
+	one(bindings),
+)
+
+test_bindings_that_name_what_they_reach if {
+	found := env_schema.findings with input as reach_input(reaching)
+		with data.conventions.index as index
+	count({f | some f in found; f.id in {"ENVS-16", "ENVS-17", "ENVS-18"}}) == 0
+}
+
+test_envs_16_target_and_capability if {
+	given := reach_input({"API_BASE_URL": binding({"target": "platform-api#public-http", "capability": "postgresql"})})
+	found := env_schema.findings with input as given
+		with data.conventions.index as index
+	messages(found, "ENVS-16") == {concat(" ", [
+		"binding API_BASE_URL names both a target and a capability; a value reaches one thing, so keep",
+		"the one it reaches",
+	])}
+}
+
+test_envs_16_provider_without_capability if {
+	found := env_schema.findings with input as reach_input({"API_STRIPE_KEY": binding({"provider": "stripe"})})
+		with data.conventions.index as index
+	messages(found, "ENVS-16") == {concat(" ", [
+		"binding API_STRIPE_KEY names a provider but no capability; name the capability the provider offers,",
+		"or drop the provider",
+	])}
+}
+
+test_envs_17_malformed_target if {
+	found := env_schema.findings with input as reach_input({"API_BASE_URL": binding({"target": "api"})})
+		with data.conventions.index as index
+	messages(found, "ENVS-17") == {concat(" ", [
+		`binding API_BASE_URL has target "api"; write it as <repository>#<interface>, the repository's name and`,
+		"the interface it serves, such as platform-api#public-http",
+	])}
+}
+
+test_envs_17_target_in_the_same_repository if {
+	found := env_schema.findings with input as reach_input({"API_BASE_URL": binding({"target": "platform-web#site"})})
+		with data.conventions.index as index
+	messages(found, "ENVS-17") == {concat(" ", [
+		`binding API_BASE_URL targets "platform-web#site" in this repository; a target is another service, so leave`,
+		"a value that addresses the service itself without one",
+	])}
+}
+
+test_envs_18_unregistered_capability if {
+	found := env_schema.findings with input as reach_input({"DATABASE_URL": binding({"capability": "postgres"})})
+		with data.conventions.index as index
+	messages(found, "ENVS-18") == {concat(" ", [
+		`binding DATABASE_URL has capability "postgres", which is not a registered capability; use one of`,
+		`"object-storage", "payments", "postgresql", or propose a new one`,
+	])}
+}

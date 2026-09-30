@@ -40,10 +40,12 @@ def test_index_top_level_shape(content: Content) -> None:
         "conventions",
         "decision_schema",
         "declaration_schema",
+        "dependencies_schema",
         "env_schema",
         "outputs_schema",
         "product_dir",
         "profiles",
+        "release_record_schema",
         "repository",
         "repository_schema",
         "requirements",
@@ -119,7 +121,6 @@ def test_vocabulary_projection(content: Content) -> None:
     assert projected["output_kinds"] == [
         "bundle",
         "cli",
-        "contract",
         "image",
         "library",
         "site",
@@ -155,6 +156,16 @@ def test_vocabulary_projection(content: Content) -> None:
     for alias in ("scheduled", "nightly", "cron", "weekly", "daily"):
         assert banned[alias] == "audit, monitor or maintain"
     assert projected["schedule_tokens"] == ["cron", "daily", "nightly", "scheduled", "weekly"]
+    assert projected["interface_formats"] == [
+        "asyncapi",
+        "env-schema",
+        "json-schema",
+        "openapi",
+        "protobuf",
+        "weaver",
+    ]
+    assert projected["interface_compatibilities"] == ["gated", "lockstep", "versioned"]
+    assert "postgresql" in as_list(projected["runtime_capabilities"])
 
 
 def test_repository_vocabulary_projection(content: Content) -> None:
@@ -247,6 +258,7 @@ KIND_SPECIFIC = {
     "TASK-12": "service",
     "ENVS-01": "service",
     "TOFU-01": "infrastructure",
+    "IFACE-08": "service",
 }
 
 
@@ -273,10 +285,10 @@ def test_kind_profiles_add_their_own_task_verbs(content: Content) -> None:
         for name in ("library", "tool", "website", "service", "specification")
     }
     assert added == {
-        "library": {"TASK-11"},
-        "tool": {"TASK-11"},
-        "website": {"TASK-11"},
-        "service": {"TASK-11", "TASK-12", "ENVS-01"},
+        "library": {"TASK-11", "IFACE-08"},
+        "tool": {"TASK-11", "IFACE-08"},
+        "website": {"TASK-11", "IFACE-08"},
+        "service": {"TASK-11", "TASK-12", "ENVS-01", "IFACE-08"},
         "specification": set(),
     }
 

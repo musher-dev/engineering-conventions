@@ -1,7 +1,7 @@
 # What the repository publishes for others to consume (EC-0007). The image is
 # built from the product directory and pushed by the Release workflow, from the
 # tag it creates, only when a release was cut (OUT-09).
-schema_version = 1
+schema_version = 2
 
 [[outputs]]
 id = "api-image"

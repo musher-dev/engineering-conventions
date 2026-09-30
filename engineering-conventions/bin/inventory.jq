@@ -5,6 +5,7 @@
 #   --arg name        the repository's actual name, or empty when unknown
 #   named arguments   "text:PATH" (--rawfile, the file's text),
 #                     "size:PATH" (--arg, its size in bytes),
+#                     "digest:PATH" (--arg, its SHA-256 in lower-case hex),
 #                     "parsed:PATH" (--slurpfile, conftest parse --combine output),
 #                     "unparsed:PATH" (--rawfile, conftest parse's error)
 #
@@ -31,6 +32,7 @@ def reason:
     + {
       texts: (named("text:") | from_entries),
       sizes: (named("size:") | map(.value |= tonumber) | from_entries),
+      digests: (named("digest:") | from_entries),
       parsed: (named("parsed:") | map({path: .key, contents: .value[0][0].contents})),
       unparsed: (named("unparsed:") | map({path: .key, reason: ("conftest cannot parse it: " + (.value | reason))}))
     }

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "IFACE-01",
+    "path": "platform-api/contracts/events/order.created.v1.schema.json",
+    "severity": "warning"
+  },
+  {
+    "id": "IFACE-04",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

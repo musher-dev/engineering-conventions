@@ -82,7 +82,10 @@ index := {
 		},
 		"schedule_tokens": ["nightly", "scheduled"],
 		"display_forms": {"api": "API", "pr": "PR", "devcontainer": "Dev Container"},
-		"output_kinds": ["bundle", "cli", "contract", "image", "library", "site", "vmimage"],
+		"output_kinds": ["bundle", "cli", "image", "library", "site", "vmimage"],
+		"interface_formats": ["asyncapi", "env-schema", "json-schema", "openapi", "protobuf", "weaver"],
+		"interface_compatibilities": ["gated", "lockstep", "versioned"],
+		"runtime_capabilities": ["object-storage", "payments", "postgresql"],
 		"repository_systems": ["engineering", "platform", "sdk"],
 		"repository_kinds": ["library", "service", "specification"],
 		"repository_lifecycles": ["deprecated", "experimental", "production"],
@@ -94,8 +97,40 @@ index := {
 	},
 	"declaration_schema": declaration_schema,
 	"outputs_schema": outputs_schema,
+	"dependencies_schema": dependencies_schema,
+	"release_record_schema": release_record_schema,
 	"repository_schema": repository_schema,
 	"decision_schema": decision_schema,
+}
+
+# A cut-down dependencies schema with the shapes DEPS-02's messages depend on:
+# a missing version and an unknown key.
+dependencies_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["schema_version", "dependencies"],
+	"properties": {
+		"schema_version": {"const": 1},
+		"dependencies": {"type": "array", "items": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["repository", "output", "version"],
+			"properties": {
+				"repository": {"type": "string"},
+				"output": {"type": "string"},
+				"interfaces": {"type": "array"},
+				"version": {"type": "string"},
+			},
+		}},
+	},
+}
+
+# A cut-down release-record schema: DEPS-05 reports a commit that is not a
+# full SHA.
+release_record_schema := {
+	"type": "object",
+	"required": ["schema_version", "repository", "output", "version", "commit", "interfaces"],
+	"properties": {"commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}},
 }
 
 # A cut-down decision-record schema with the shapes DEC-02's messages depend

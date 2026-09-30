@@ -6,7 +6,8 @@ id: base-repo
 display_name: Base repository
 description: >-
   Every repository in the organisation: declaring its conventions, its
-  outputs and its identity, releasing what it versions with release-please
+  outputs, the interfaces they deliver, the dependencies it vendors and
+  its identity, releasing what it versions with release-please
   from drafts, a name from the registered systems, where its
   product lives, tool configuration kept in .config/ with every
   suppression reasoned and time-boxed, every tool version pinned once in
@@ -18,13 +19,16 @@ description: >-
   environment schema it holds, and the dev container of any repository
   that has one.
 include:
-  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC]
+  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
   # schema. Of EC-0016 and EC-0019, only what every repository shares is
   # selected here; the kind profiles add the rest by ID, because an
-  # exclude here would win over their includes.
-  conventions: [EC-0015, EC-0020]
-  requirements: [TASK-10, TASK-13, ENVS-02, ENVS-15]
+  # exclude here would win over their includes. Of EC-0030, IFACE-08 (the
+  # contracts directory) is added by the kinds whose product is not itself
+  # the interfaces.
+  conventions: [EC-0015, EC-0020, EC-0031]
+  requirements:
+    [TASK-10, TASK-13, ENVS-02, ENVS-15, IFACE-01, IFACE-02, IFACE-03, IFACE-04, IFACE-05, IFACE-06, IFACE-07]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

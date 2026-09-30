@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.7.0](https://github.com/musher-dev/engineering-conventions/compare/v0.6.4...v0.7.0) (2026-09-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **conventions:** declare interfaces and vendored dependencies, and what each binding reaches
+
+### Features
+
+* **conventions:** add the OpenTofu state key convention (TOFU-01, EC-0029) ([21d71d8](https://github.com/musher-dev/engineering-conventions/commit/21d71d8ffe7e18eccaa8a9412f634f96dbb83175))
+* **conventions:** declare interfaces and vendored dependencies, and what each binding reaches ([cc6d5a4](https://github.com/musher-dev/engineering-conventions/commit/cc6d5a4d90710abd67f57e93747f31418f1a5df9))
+* **conventions:** forbid fixed dev container names and foreign home volumes (DEVC-14, DEVC-15) ([cc6d5a4](https://github.com/musher-dev/engineering-conventions/commit/cc6d5a4d90710abd67f57e93747f31418f1a5df9))
+* **terminology:** add the notify workflow and sync action tokens, and keep action synonyms as data ([21d71d8](https://github.com/musher-dev/engineering-conventions/commit/21d71d8ffe7e18eccaa8a9412f634f96dbb83175))
+
+
+### Bug Fixes
+
+* **checks:** accept an OpenTofu root as REPO-17's build manifest ([cc6d5a4](https://github.com/musher-dev/engineering-conventions/commit/cc6d5a4d90710abd67f57e93747f31418f1a5df9))
+* **checks:** resolve Taskfile paths under dir: and map-form includes as go-task does (TASK-08) ([21d71d8](https://github.com/musher-dev/engineering-conventions/commit/21d71d8ffe7e18eccaa8a9412f634f96dbb83175))
+* **checks:** tell URL-shaped identifiers to leave format unset (ENVS-12) ([21d71d8](https://github.com/musher-dev/engineering-conventions/commit/21d71d8ffe7e18eccaa8a9412f634f96dbb83175))
+
 ## [0.6.4](https://github.com/musher-dev/engineering-conventions/compare/v0.6.3...v0.6.4) (2026-09-30)
 
 

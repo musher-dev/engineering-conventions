@@ -161,7 +161,7 @@ Pin a release in `.config/mise/config.toml` and run one command, the same locall
 min_version = "2026.9.12"
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.6.4"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.7.0"  # x-release-please-version
 ```
 
 ```sh
@@ -172,7 +172,7 @@ It prints a report grouped by requirement; `--output json` prints the findings f
 the release's checksum and build provenance, and Renovate raises the pin. To try it without changing anything:
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.6.4 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.7.0 -- conventions check  # x-release-please-version
 ```
 
 The details, and the path without mise, are in [Consuming the conventions](docs/consuming.md).

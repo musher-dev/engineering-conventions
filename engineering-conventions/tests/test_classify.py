@@ -102,7 +102,7 @@ def test_profile_changes(index: dict[str, object]) -> None:
     profiles["new-kind"] = {"display_name": "New", "requirements": [], "severity": {}}
     del profiles["website"]
     assert _ranked(before, after) == [
-        (Rank.BREAKING, "profile base-repo makes GHA-07 error"),
+        (Rank.BREAKING, "profile base-repo reports GHA-07 at error"),
         (Rank.BREAKING, "profile website removed"),
         (Rank.FEAT, "profile base-repo now selects GHA-99"),
         (Rank.FEAT, "new profile new-kind"),
@@ -111,6 +111,51 @@ def test_profile_changes(index: dict[str, object]) -> None:
         (Rank.FIX, "profile base-repo display_name changed"),
         (Rank.FIX, "profile tool changes severity of GHA-07"),
     ]
+
+
+def test_newly_selected_requirements_at_error_break() -> None:
+    # GHA-95 is selected already and gains an error override; GHA-96 is newly
+    # selected with one; GHA-97 is newly selected and is error on its own.
+    requirements: dict[str, object] = {
+        "GHA-95": {"severity": "warning"},
+        "GHA-96": {"severity": "warning"},
+        "GHA-97": {"severity": "error"},
+    }
+    before: dict[str, object] = {
+        "requirements": requirements,
+        "profiles": {"p": {"requirements": ["GHA-95"], "severity": {}}},
+    }
+    after: dict[str, object] = {
+        "requirements": requirements,
+        "profiles": {
+            "p": {
+                "requirements": ["GHA-95", "GHA-96", "GHA-97"],
+                "severity": {"GHA-95": "error", "GHA-96": "error"},
+            },
+            "new-kind": {"requirements": ["GHA-96", "GHA-97"], "severity": {}},
+        },
+    }
+    assert _ranked(before, after) == [
+        (Rank.BREAKING, "profile new-kind reports GHA-97 at error"),
+        (Rank.BREAKING, "profile p reports GHA-95, GHA-96, GHA-97 at error"),
+        (Rank.FEAT, "new profile new-kind"),
+        (Rank.FEAT, "profile p now selects GHA-96, GHA-97"),
+    ]
+
+
+def test_action_synonyms_only_change_a_suggestion() -> None:
+    absent: dict[str, object] = {"vocabulary": {}}
+    added: dict[str, object] = {"vocabulary": {"action_synonyms": {"make": "build"}}}
+    assert _ranked(absent, added) == [(Rank.FIX, "action_synonyms: added make")]
+    before: dict[str, object] = {
+        "vocabulary": {"action_synonyms": {"make": "build", "run": "check"}}
+    }
+    after: dict[str, object] = {"vocabulary": {"action_synonyms": {"make": "setup"}}}
+    assert _ranked(before, after) == [
+        (Rank.FIX, "action_synonyms: removed run"),
+        (Rank.FIX, "action_synonyms: suggestion changed for make"),
+    ]
+    assert _ranked(before, absent) == [(Rank.FIX, "action_synonyms: removed make, run")]
 
 
 def test_vocabulary_changes(index: dict[str, object]) -> None:

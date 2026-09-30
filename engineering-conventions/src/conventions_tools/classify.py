@@ -75,11 +75,17 @@ class Title:
 _TITLE = re.compile(r"(?P<type>[a-z]+)(?:\((?P<scope>[^()]*)\))?(?P<bang>!)?: \S")
 
 # Vocabulary lists that ban an alias: growing one is a new banned alias at
-# warning (feat), shrinking one reports less (fix). Every other vocabulary
-# entry is a term's tokens or display forms, whose removal or rename breaks.
+# warning (feat), shrinking one reports less (fix). Every vocabulary entry not
+# here or in SUGGESTION_VOCABULARY is a term's tokens or display forms, whose
+# removal or rename breaks.
 BANNED_VOCABULARY = frozenset(
     {"banned_identifier_tokens", "banned_repository_tokens", "schedule_tokens"}
 )
+
+# Vocabulary maps that only feed a diagnostic's suggestion (action_synonyms:
+# a stand-in word to the action token GHA-20 suggests). None is a term, so
+# any change to one changes a message or reports less: fix.
+SUGGESTION_VOCABULARY = frozenset({"action_synonyms"})
 
 # Schema keywords that describe rather than constrain: a change to only these
 # changes no declaration's validity.
@@ -147,10 +153,37 @@ def _requirement_field(rid: str, key: str, old: object, new: object) -> Change:
     return Change(Rank.FIX, f"requirement {rid} {key} changed")
 
 
+def _severities(profile: dict[str, object], requirements: dict[str, object]) -> dict[str, str]:
+    """Each requirement a profile selects, at its severity there: its override, else its own."""
+    overrides = as_map(profile.get("severity"))
+    return {
+        rid: get_str(overrides, rid) or get_str(as_map(requirements.get(rid)), "severity")
+        for rid in _strings(profile.get("requirements"))
+    }
+
+
+def _severity_changes(pid: str, old: dict[str, str], new: dict[str, str]) -> list[Change]:
+    """A requirement the profile now reports at error, newly selected or not, breaks."""
+    raised = {rid for rid, level in new.items() if level == "error" and old.get(rid) != "error"}
+    lowered = {rid for rid in set(old) & set(new) if old[rid] != new[rid]} - raised
+    changes: list[Change] = []
+    if raised:
+        changes.append(Change(Rank.BREAKING, f"profile {pid} reports {_ids(raised)} at error"))
+    if lowered:
+        changes.append(Change(Rank.FIX, f"profile {pid} changes severity of {_ids(lowered)}"))
+    return changes
+
+
 def _profile_changes(
-    before: dict[str, object], after: dict[str, object], published: set[str]
+    before: dict[str, object],
+    after: dict[str, object],
+    requirements: tuple[dict[str, object], dict[str, object]],
 ) -> list[Change]:
-    """`published` is the requirements the baseline had: selecting a new one is already listed."""
+    """`requirements` is the index's requirements before and after, for their own severities.
+
+    Selecting a requirement new to the index is already listed as that new requirement.
+    """
+    published = set(requirements[0])
     changes: list[Change] = []
     for pid in sorted(set(before) | set(after)):
         if pid not in after:
@@ -158,6 +191,7 @@ def _profile_changes(
             continue
         if pid not in before:
             changes.append(Change(Rank.FEAT, f"new profile {pid}"))
+            changes += _severity_changes(pid, {}, _severities(as_map(after[pid]), requirements[1]))
             continue
         old, new = as_map(before[pid]), as_map(after[pid])
         selected_old = _strings(old.get("requirements"))
@@ -166,13 +200,9 @@ def _profile_changes(
             changes.append(Change(Rank.FEAT, f"profile {pid} now selects {_ids(added)}"))
         if dropped := selected_old - selected_new:
             changes.append(Change(Rank.FIX, f"profile {pid} no longer selects {_ids(dropped)}"))
-        severity_old, severity_new = as_map(old.get("severity")), as_map(new.get("severity"))
-        shared = set(severity_old) & set(severity_new)
-        raised = {r for r in shared if severity_old[r] != "error" and severity_new[r] == "error"}
-        if raised:
-            changes.append(Change(Rank.BREAKING, f"profile {pid} makes {_ids(raised)} error"))
-        if lowered := {r for r in shared if severity_old[r] != severity_new[r]} - raised:
-            changes.append(Change(Rank.FIX, f"profile {pid} changes severity of {_ids(lowered)}"))
+        changes += _severity_changes(
+            pid, _severities(old, requirements[0]), _severities(new, requirements[1])
+        )
         changes += [
             Change(Rank.FIX, f"profile {pid} {key} changed")
             for key in sorted((set(old) | set(new)) - {"requirements", "severity"})
@@ -194,21 +224,30 @@ def _vocabulary_changes(before: dict[str, object], after: dict[str, object]) -> 
             for key in _strings(old) & _strings(new)
             if as_map(old).get(key) != as_map(new).get(key)
         )
-        if name in BANNED_VOCABULARY:
-            if added:
-                changes.append(Change(Rank.FEAT, f"{name}: newly banned {_ids(added)}"))
-            if removed:
-                changes.append(Change(Rank.FIX, f"{name}: no longer banned {_ids(removed)}"))
-            if renamed:
-                changes.append(Change(Rank.FIX, f"{name}: advice changed for {_ids(renamed)}"))
-            continue
-        if removed:
-            changes.append(Change(Rank.BREAKING, f"{name}: removed {_ids(removed)}"))
-        if renamed:
-            changes.append(Change(Rank.BREAKING, f"{name}: changed {_ids(renamed)}"))
-        if added:
-            changes.append(Change(Rank.FEAT, f"{name}: added {_ids(added)}"))
+        ranks = _VOCABULARY_RANKS.get(name, _TERM_RANKS)
+        for keys, (rank, verb) in zip((added, removed, renamed), ranks, strict=True):
+            if keys:
+                changes.append(Change(rank, f"{name}: {verb} {_ids(keys)}"))
     return changes
+
+
+# How each kind of vocabulary entry ranks its added, removed and changed keys.
+type _Ranks = tuple[tuple[Rank, str], tuple[Rank, str], tuple[Rank, str]]
+_TERM_RANKS: _Ranks = ((Rank.FEAT, "added"), (Rank.BREAKING, "removed"), (Rank.BREAKING, "changed"))
+_BANNED_RANKS: _Ranks = (
+    (Rank.FEAT, "newly banned"),
+    (Rank.FIX, "no longer banned"),
+    (Rank.FIX, "advice changed for"),
+)
+_SUGGESTION_RANKS: _Ranks = (
+    (Rank.FIX, "added"),
+    (Rank.FIX, "removed"),
+    (Rank.FIX, "suggestion changed for"),
+)
+_VOCABULARY_RANKS: dict[str, _Ranks] = {
+    **dict.fromkeys(BANNED_VOCABULARY, _BANNED_RANKS),
+    **dict.fromkeys(SUGGESTION_VOCABULARY, _SUGGESTION_RANKS),
+}
 
 
 def _without_annotations(schema: object) -> object:
@@ -256,8 +295,11 @@ def diff(before: dict[str, object], after: dict[str, object]) -> list[Change]:
         if key == "requirements":
             changes += _requirement_changes(as_map(old), as_map(new))
         elif key == "profiles":
-            published = set(as_map(before.get("requirements")))
-            changes += _profile_changes(as_map(old), as_map(new), published)
+            requirements = (
+                as_map(before.get("requirements")),
+                as_map(after.get("requirements")),
+            )
+            changes += _profile_changes(as_map(old), as_map(new), requirements)
         elif key == "vocabulary":
             changes += _vocabulary_changes(as_map(old), as_map(new))
         elif key == "conventions":

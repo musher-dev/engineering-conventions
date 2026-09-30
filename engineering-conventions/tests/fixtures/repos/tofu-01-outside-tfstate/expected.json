@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOFU-01",
+    "path": "terraform/organization/Taskfile.yml",
+    "severity": "warning"
+  }
+]

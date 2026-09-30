@@ -38,6 +38,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0026](releases/release-workflows.md) | Release workflows | releases | draft |
 | [EC-0027](dev-containers/dev-container-configuration.md) | Dev container configuration | dev-containers | draft |
 | [EC-0028](dev-containers/dev-container-stacks.md) | Dev container stacks | dev-containers | draft |
+| [EC-0029](opentofu/state-keys.md) | OpenTofu state keys | opentofu | draft |
 
 ## Requirements
 
@@ -237,6 +238,7 @@ ID is permanent: it is never renumbered or reused.
 | [TASK-12](tasks/task-interface.md#task-12) | The root Taskfile of a service also defines dev | EC-0016 | proposed | warning | conftest |
 | [TASK-13](tasks/task-interface.md#task-13) | The check task runs every gate CI runs | EC-0016 | proposed | warning | review |
 | [TASK-14](tasks/taskfile-style.md#task-14) | Every literal sources entry names something the repository holds | EC-0015 | proposed | warning | conftest |
+| [TOFU-01](opentofu/state-keys.md#tofu-01) | An OpenTofu root's state key is tfstate/\<repository\>/\<root\>/terraform.tfstate | EC-0029 | proposed | warning | conftest |
 | [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
 | [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |
 | [TOOL-03](toolchain/tool-pins.md#tool-03) | Every tool in the mise configuration is pinned to one exact version | EC-0017 | proposed | warning | conftest |
@@ -266,3 +268,4 @@ ID is permanent: it is never renumbered or reused.
 | TOOL | Toolchain | toolchain |
 | REL | Releases | releases |
 | DEVC | Dev containers | dev-containers |
+| TOFU | OpenTofu | opentofu |

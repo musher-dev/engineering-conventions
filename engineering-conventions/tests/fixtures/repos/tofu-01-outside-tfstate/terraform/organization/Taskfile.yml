@@ -1,0 +1,7 @@
+version: '3'
+
+vars:
+  TOFU_DIR: .
+  TOFU_STATE_KEY: platform-api/organization/terraform.tfstate
+
+tasks: {}

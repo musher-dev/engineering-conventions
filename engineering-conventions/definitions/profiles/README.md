@@ -20,7 +20,7 @@ next choice rather than switching every check off.
 | [`website`](website.yml) | `kind = "website"`; adds TASK-11 |
 | [`library`](library.yml) | `kind = "library"`; adds TASK-11 |
 | [`tool`](tool.yml) | `kind = "tool"`; adds TASK-11 |
-| [`infrastructure`](infrastructure.yml) | `kind = "infrastructure"` |
+| [`infrastructure`](infrastructure.yml) | `kind = "infrastructure"`; adds the TOFU family |
 | [`specification`](specification.yml) | `kind = "specification"` |
 | [`content`](content.yml) | `kind = "content"` |
 | [`documentation`](documentation.yml) | `kind = "documentation"` |
@@ -28,9 +28,10 @@ next choice rather than switching every check off.
 
 Every registered kind has a profile of the same name, and `task invariants`
 fails when one is missing. Each kind's profile inherits `base-repo` and adds
-only the requirements specific to its kind, selected by ID, such as the task
-verbs of [EC-0016](../conventions/tasks/task-interface.md) and, for a service,
-its runtime environment ([EC-0019](../conventions/environment/env-contract.md)).
+only the requirements specific to its kind: the task verbs of
+[EC-0016](../conventions/tasks/task-interface.md), selected by ID, and, for a service, its runtime
+environment ([EC-0019](../conventions/environment/env-contract.md)), or for infrastructure, its OpenTofu
+state keys ([EC-0029](../conventions/opentofu/state-keys.md)).
 A kind with none of its own applies exactly what `base-repo` does.
 
 Profiles are validated against

@@ -1,0 +1,11 @@
+version: '3'
+
+includes:
+  tofu:
+    taskfile: ../../../taskfiles/tofu-layer.yml
+    flatten: true
+    vars:
+      TOFU_DIR: .
+      TOFU_STATE_KEY: tfstate/platform-api/terraform.tfstate
+
+tasks: {}

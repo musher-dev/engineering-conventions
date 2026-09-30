@@ -56,3 +56,7 @@ families:
     title: Dev containers
     topic: dev-containers
     owner: "@justinmerrell"
+  - prefix: TOFU
+    title: OpenTofu
+    topic: opentofu
+    owner: "@justinmerrell"

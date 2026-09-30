@@ -212,6 +212,13 @@
           "status": "draft",
           "title": "Dev container stacks",
           "topic": "dev-containers"
+        },
+        "EC-0029": {
+          "authority": "self",
+          "path": "definitions/conventions/opentofu/state-keys.md",
+          "status": "draft",
+          "title": "OpenTofu state keys",
+          "topic": "opentofu"
         }
       },
       "decision_schema": {
@@ -2560,6 +2567,7 @@
             "TASK-10",
             "TASK-13",
             "TASK-14",
+            "TOFU-01",
             "TOOL-01",
             "TOOL-02",
             "TOOL-03",
@@ -2763,6 +2771,7 @@
             "TASK-10": "warning",
             "TASK-13": "warning",
             "TASK-14": "warning",
+            "TOFU-01": "warning",
             "TOOL-01": "warning",
             "TOOL-02": "warning",
             "TOOL-03": "warning",
@@ -8029,6 +8038,19 @@
           "since": "0.6.0",
           "status": "proposed",
           "title": "Every literal sources entry names something the repository holds",
+          "waivable": true
+        },
+        "TOFU-01": {
+          "aliases": [],
+          "anchor": "tofu-01",
+          "convention": "EC-0029",
+          "engine": "conftest",
+          "package": "conventions.checks.opentofu.state",
+          "path": "definitions/conventions/opentofu/state-keys.md",
+          "severity": "warning",
+          "since": "0.6.5",
+          "status": "proposed",
+          "title": "An OpenTofu root's state key is tfstate/<repository>/<root>/terraform.tfstate",
           "waivable": true
         },
         "TOOL-01": {

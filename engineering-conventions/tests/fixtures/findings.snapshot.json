@@ -31,7 +31,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -605,6 +605,17 @@
   "task-14-missing-source": [
     ["tools/Taskfile.yml", "TASK-14", "warning", "task \"install\" lists source \"package.json\", which does not exist; Task ignores a source that matches nothing, so the task stops noticing changes to it; correct the path or remove it", true]
   ],
+  "tofu-01-no-repository": [
+    ["taskfiles/tofu.Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/organization/terraform.tfstate\" names no repository after tfstate/, so it is unique only by luck and says nothing of its owner; name the state key tfstate/platform-api/organization/terraform.tfstate, or tfstate/platform-api/organization/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+  ],
+  "tofu-01-no-root": [
+    ["terraform/platform/network/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/platform-api/terraform.tfstate\" names no root, so a second root in the repository has nowhere to go; name the state key tfstate/platform-api/network/terraform.tfstate, or tfstate/platform-api/network/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+  ],
+  "tofu-01-outside-tfstate": [
+    ["terraform/organization/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"platform-api/organization/terraform.tfstate\" is outside tfstate/, so the bucket's lifecycle rule and every tool that scans tfstate/ miss it; name the state key tfstate/platform-api/organization/terraform.tfstate, or tfstate/platform-api/organization/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+  ],
+  "tofu-01-passes-env-segment": [],
+  "tofu-01-passes-root-directory": [],
   "tool-01-second-config": [
     ["mise.toml", "TOOL-01", "warning", "mise.toml is a mise configuration outside .config/mise/config.toml; move its settings and [tools] there and delete it, so one file pins every tool", true]
   ],

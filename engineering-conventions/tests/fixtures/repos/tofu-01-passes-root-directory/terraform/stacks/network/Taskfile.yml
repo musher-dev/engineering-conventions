@@ -3,7 +3,7 @@ version: '3'
 # Three directories deep, so it is read only because it sits under terraform/.
 includes:
   tofu:
-    taskfile: ../../../taskfiles/tofu-layer.yml
+    taskfile: ../../../taskfiles/layer.yml
     flatten: true
     vars:
       TOFU_DIR: .

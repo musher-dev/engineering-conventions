@@ -2,7 +2,7 @@ version: '3'
 
 includes:
   tofu:
-    taskfile: ../../../taskfiles/tofu-layer.yml
+    taskfile: ../../../taskfiles/layer.yml
     flatten: true
     vars:
       TOFU_DIR: .

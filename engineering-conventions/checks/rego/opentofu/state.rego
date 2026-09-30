@@ -109,7 +109,7 @@ matches(segment, want) if segment == want
 file := "terraform.tfstate"
 
 # What is wrong with a key, the first thing only.
-problem(key) := "is outside tfstate/, so the bucket's lifecycle rule and every tool that scans tfstate/ miss it" if {
+problem(key) := "is outside tfstate/, so retention rules and tools that scan tfstate/ miss it" if {
 	not startswith(key.value, "tfstate/")
 } else := sprintf("does not end in /%s", [file]) if {
 	not endswith(key.value, concat("/", ["", file]))

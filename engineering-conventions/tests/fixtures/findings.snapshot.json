@@ -615,13 +615,13 @@
     ["tools/Taskfile.yml", "TASK-14", "warning", "task \"install\" lists source \"package.json\", which does not exist; Task ignores a source that matches nothing, so the task stops noticing changes to it; correct the path or remove it", true]
   ],
   "tofu-01-no-repository": [
-    ["taskfiles/tofu.Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/organization/terraform.tfstate\" names no repository after tfstate/, so it is unique only by luck and says nothing of its owner; name the state key tfstate/platform-api/organization/terraform.tfstate, or tfstate/platform-api/organization/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+    ["taskfiles/tofu.Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/dns/terraform.tfstate\" names no repository after tfstate/, so it is unique only by luck and says nothing of its owner; name the state key tfstate/platform-api/dns/terraform.tfstate, or tfstate/platform-api/dns/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
   ],
   "tofu-01-no-root": [
-    ["terraform/platform/network/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/platform-api/terraform.tfstate\" names no root, so a second root in the repository has nowhere to go; name the state key tfstate/platform-api/network/terraform.tfstate, or tfstate/platform-api/network/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+    ["terraform/stacks/network/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/platform-api/terraform.tfstate\" names no root, so a second root in the repository has nowhere to go; name the state key tfstate/platform-api/network/terraform.tfstate, or tfstate/platform-api/network/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
   ],
   "tofu-01-outside-tfstate": [
-    ["terraform/organization/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"platform-api/organization/terraform.tfstate\" is outside tfstate/, so the bucket's lifecycle rule and every tool that scans tfstate/ miss it; name the state key tfstate/platform-api/organization/terraform.tfstate, or tfstate/platform-api/organization/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+    ["terraform/network/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"platform-api/network/terraform.tfstate\" is outside tfstate/, so retention rules and tools that scan tfstate/ miss it; name the state key tfstate/platform-api/network/terraform.tfstate, or tfstate/platform-api/network/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
   ],
   "tofu-01-passes-env-segment": [],
   "tofu-01-passes-root-directory": [],

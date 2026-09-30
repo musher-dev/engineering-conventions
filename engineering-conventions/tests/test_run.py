@@ -216,8 +216,8 @@ def test_input_files(tmp_path: Path) -> None:
         "services/api/Taskfile.yml",
         "services/api/taskfiles/lint.Taskfile.yml",
         "a/b/c/Taskfile.yml",
-        "terraform/platform/network/Taskfile.yml",
-        "people/terraform/access/Taskfile.yml",
+        "terraform/stacks/network/Taskfile.yml",
+        "ops/terraform/dns/Taskfile.yml",
         "a/b/terraform/c/Taskfile.yml",
         ".config/lefthook.yml",
         "api/env.schema.yaml",
@@ -261,11 +261,11 @@ def test_input_files(tmp_path: Path) -> None:
         "Taskfile.yml",
         "api/env.schema.yaml",
         "mise.toml",
+        "ops/terraform/dns/Taskfile.yml",
         "package.json",
-        "people/terraform/access/Taskfile.yml",
         "services/api/Taskfile.yml",
         "services/api/taskfiles/lint.Taskfile.yml",
-        "terraform/platform/network/Taskfile.yml",
+        "terraform/stacks/network/Taskfile.yml",
     ]
 
 

@@ -11,7 +11,8 @@ The governing rule, in one sentence:
 ## Status
 
 The convention is a **draft**, owned by this repository, and its requirement is `proposed` at severity `warning`. It
-extends `musher-dev/foundation-bootstrap`'s rule "A state key mirrors its root directory" with the repository's name.
+extends `musher-dev/foundation-bootstrap`'s state-key rule with the repository's name, and keeps its migration runbook
+as the way a key moves.
 
 ## Who is checked
 

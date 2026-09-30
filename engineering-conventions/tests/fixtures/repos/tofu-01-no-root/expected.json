@@ -1,7 +1,7 @@
 [
   {
     "id": "TOFU-01",
-    "path": "terraform/platform/network/Taskfile.yml",
+    "path": "terraform/stacks/network/Taskfile.yml",
     "severity": "warning"
   }
 ]

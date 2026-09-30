@@ -1,0 +1,15 @@
+name: Sync Bootstrap Config
+description: Update the host's bootstrap configuration to match the repository.
+inputs:
+  config-path:
+    description: The bootstrap configuration file to apply.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Apply the bootstrap configuration
+      id: apply_config
+      shell: bash
+      env:
+        CONFIG_PATH: ${{ inputs.config-path }}
+      run: echo "applying $CONFIG_PATH"

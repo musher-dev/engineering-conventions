@@ -235,14 +235,15 @@
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],
+  "gha-02-passes-notify": [],
   "gha-02-responsibility-token": [
-    [".github/workflows/add-to-project.yml", "GHA-02", "warning", "first filename token \"add\" is not a responsibility; start the filename with one of \"audit\", \"deploy\", \"maintain\", \"monitor\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\"", true]
+    [".github/workflows/add-to-project.yml", "GHA-02", "warning", "first filename token \"add\" is not a responsibility; start the filename with one of \"audit\", \"deploy\", \"maintain\", \"monitor\", \"notify\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\"", true]
   ],
   "gha-03-reusable-prefix": [
     [".github/workflows/reusable-build-image.yml", "GHA-03", "warning", "the reusable- prefix promises the workflow is triggered only by workflow_call, but it is also triggered by \"workflow_dispatch\"; drop the prefix and name the workflow for the responsibility it owns, or make workflow_call its only trigger", true]
   ],
   "gha-04-reusable-token": [
-    [".github/workflows/reusable-frobnicate.yml", "GHA-04", "warning", "reusable workflow token \"frobnicate\" is neither a responsibility nor a capability; use one of \"audit\", \"build\", \"check\", \"deploy\", \"maintain\", \"monitor\", \"promote\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\" after reusable-", true]
+    [".github/workflows/reusable-frobnicate.yml", "GHA-04", "warning", "reusable workflow token \"frobnicate\" is neither a responsibility nor a capability; use one of \"audit\", \"build\", \"check\", \"deploy\", \"maintain\", \"monitor\", \"notify\", \"promote\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\" after reusable-", true]
   ],
   "gha-05-banned-token": [
     [".github/workflows/lint-docs.yml", "GHA-05", "warning", "filename token \"lint\" names a trigger, schedule, tool or synonym rather than a responsibility; replace \"lint\" with \"validate\" (e.g. \"validate-docs.yml\")", true]
@@ -294,8 +295,9 @@
     [".github/workflows/validate.yml", "GHA-17", "warning", "step 3 of job \"lint\" runs a command but has no name; add name: with an imperative phrase saying what it does", true]
   ],
   "gha-20-action-directory": [
-    [".github/actions/tools", "GHA-20", "warning", "action directory \"tools\" is not <action-token>-<object> in lowercase kebab-case; start it with one of \"authenticate\", \"check\", \"install\", \"setup\" followed by what it acts on", true]
+    [".github/actions/tools", "GHA-20", "warning", "action directory \"tools\" is not <action-token>-<object> in lowercase kebab-case; start it with one of \"authenticate\", \"check\", \"install\", \"setup\", \"sync\" followed by what it acts on", true]
   ],
+  "gha-20-passes-sync": [],
   "gha-21-action-metadata-file": [
     [".github/actions/setup-tools/action.yaml", "GHA-21", "warning", "rename \".github/actions/setup-tools/action.yaml\" to \".github/actions/setup-tools/action.yml\": an action's metadata file is action.yml", true]
   ],

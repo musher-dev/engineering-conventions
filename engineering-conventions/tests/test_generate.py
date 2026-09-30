@@ -102,6 +102,7 @@ def test_vocabulary_projection(content: Content) -> None:
         "deploy",
         "maintain",
         "monitor",
+        "notify",
         "publish",
         "release",
         "repository",
@@ -109,7 +110,12 @@ def test_vocabulary_projection(content: Content) -> None:
         "verify",
     ]
     assert projected["capability_tokens"] == ["build", "check", "promote"]
-    assert projected["action_tokens"] == ["authenticate", "check", "install", "setup"]
+    assert projected["action_tokens"] == ["authenticate", "check", "install", "setup", "sync"]
+    assert projected["action_synonyms"] == {
+        "auth": "authenticate",
+        "validate": "check",
+        "verify": "check",
+    }
     assert projected["output_kinds"] == [
         "bundle",
         "cli",
@@ -199,6 +205,26 @@ def test_repository_name_tokens_do_not_leak_into_other_scopes(content: Content) 
     for token in ("musher", "repo", "shared", "utils", "new", "old"):
         assert token not in identifiers
         assert token not in prose
+
+
+def test_action_synonyms_do_not_leak_into_other_scopes(content: Content) -> None:
+    # They only drive GHA-20's suggestion: validate and verify stay workflow
+    # responsibility tokens, so no banned list may carry them.
+    identifiers = vocabulary.banned_identifier_tokens(content.terminology)
+    repository = vocabulary.banned_repository_tokens(content.terminology)
+    prose = {swap.text for swap in vocabulary.prose_swaps(content.terminology, "banned")}
+    for token in ("auth", "validate", "verify"):
+        assert token not in identifiers
+        assert token not in repository
+        assert token not in prose
+
+
+def test_action_synonyms_need_an_action_term(content: Content) -> None:
+    term = next(t for t in content.terminology.terms if t.id == "gha.responsibility.notify")
+    stray = replace(term, aliases=(vocabulary.Alias("tell", "banned", ("action-token",), None, None),))
+    terms = tuple(stray if t.id == term.id else t for t in content.terminology.terms)
+    with pytest.raises(vocabulary.ContentError):
+        vocabulary.action_synonyms(replace(content.terminology, terms=terms))
 
 
 def test_index_carries_a_self_contained_repository_schema(content: Content) -> None:

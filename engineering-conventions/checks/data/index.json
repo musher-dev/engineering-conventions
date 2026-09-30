@@ -8194,11 +8194,17 @@
       },
       "schema_version": 1,
       "vocabulary": {
+        "action_synonyms": {
+          "auth": "authenticate",
+          "validate": "check",
+          "verify": "check"
+        },
         "action_tokens": [
           "authenticate",
           "check",
           "install",
-          "setup"
+          "setup",
+          "sync"
         ],
         "banned_identifier_tokens": {
           "cd": "deploy",
@@ -8298,6 +8304,7 @@
           "deploy",
           "maintain",
           "monitor",
+          "notify",
           "publish",
           "release",
           "repository",

@@ -70,5 +70,5 @@ A worked, conforming example is in [`examples/consumer`](../../../examples/consu
 | Action `name:` | directory in Title Case | `Setup Tools` |
 
 Responsibility tokens: `validate`, `release`, `publish`, `deploy`, `verify`, `monitor`, `audit`, `maintain`,
-`repository`. Capability tokens (reusable workflows only): `build`, `promote`, `check`. Action tokens: `setup`,
-`install`, `authenticate`, `check`.
+`repository`, `notify`. Capability tokens (reusable workflows only): `build`, `promote`, `check`. Action tokens:
+`setup`, `install`, `authenticate`, `check`, `sync`.

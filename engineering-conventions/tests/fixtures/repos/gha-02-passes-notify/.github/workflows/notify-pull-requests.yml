@@ -1,0 +1,24 @@
+name: Notify Pull Requests
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+permissions:
+  pull-requests: read
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+jobs:
+  digest:
+    name: Digest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Send the open pull requests to the chat channel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WEBHOOK_URL: ${{ secrets.CHAT_WEBHOOK_URL }}
+        run: |
+          gh pr list --repo "$GITHUB_REPOSITORY" --json title,url \
+            | jq '{text: (map(.title + " " + .url) | join("\n"))}' \
+            | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK_URL"

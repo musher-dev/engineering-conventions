@@ -1,9 +1,9 @@
 # The global terminology. Every convention uses these words with these
 # meanings.
 # `conventions generate` projects the gha.*, outputs.* and repository.*
-# tags, the identifier-scope and repository-name-scope aliases and the
-# display forms into checks/data/index.json, and the prose-scope aliases
-# into the MusherConventions Vale style.
+# tags, the identifier-scope, repository-name-scope and action-token-scope
+# aliases and the display forms into checks/data/index.json, and the
+# prose-scope aliases into the MusherConventions Vale style.
 schema_version: 1
 description: >-
   Words the conventions themselves are written in, the GitHub Actions naming
@@ -155,6 +155,14 @@ terms:
       filename token is called the responsibility rather than the verb.
     tags: [gha.responsibility]
     stability: provisional
+  - id: gha.responsibility.notify
+    display_name: notify
+    token: notify
+    definition: >-
+      Only sends a message, such as a digest of open pull requests to a chat
+      channel, and changes nothing in the repository or elsewhere.
+    tags: [gha.responsibility]
+    stability: provisional
 
   # Capability tokens: what a reusable workflow provides (GHA-04).
   - id: gha.capability.build
@@ -207,12 +215,39 @@ terms:
       login or an app token.
     tags: [gha.action]
     stability: provisional
+    aliases:
+      - text: auth
+        status: banned
+        scope: [action-token]
+        note: An abbreviation; GHA-20 suggests authenticate in its place.
   - id: gha.action.check
     display_name: check
     token: check
     definition: >-
       Asserts a precondition and fails the job when it does not hold,
       changing nothing.
+    tags: [gha.action]
+    stability: provisional
+    aliases:
+      - text: validate
+        status: banned
+        scope: [action-token]
+        note: >-
+          The workflow responsibility that decides a merge; an action that
+          confirms one precondition is check.
+      - text: verify
+        status: banned
+        scope: [action-token]
+        note: >-
+          The workflow responsibility that exercises a deployed environment;
+          an action that confirms one precondition is check.
+  - id: gha.action.sync
+    display_name: sync
+    token: sync
+    definition: >-
+      Changes external state to match what the repository declares, such as
+      a host's bootstrap configuration. It is the counterpart of check,
+      which changes nothing.
     tags: [gha.action]
     stability: provisional
 

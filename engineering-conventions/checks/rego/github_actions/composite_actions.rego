@@ -176,13 +176,12 @@ misnamed_directories contains directory if {
 	not directory_ok(directory)
 }
 
-# Words that stand in for an action token. A directory that starts with
-# anything else gets no suggestion: guessing the action is the author's call.
-action_synonyms := {"auth": "authenticate", "validate": "check", "verify": "check"}
-
+# A directory that starts with an action token, or with a word that stands in
+# for one (names.action_synonyms), gets a suggestion. One that starts with
+# anything else gets none: guessing the action is the author's call.
 leading_action(token) := token if token in names.action_tokens
 
-leading_action(token) := action_synonyms[token]
+leading_action(token) := names.action_synonyms[token]
 
 default directory_example(_) := ""
 

@@ -3,8 +3,9 @@
 # description: >-
 #   release.yml alone runs release-please, on a push, never cancelled; it mints
 #   its token from the release App, attests what it uploads through a
-#   SHA256SUMS file, publishes the draft last with the App's token, and can be
-#   dispatched for a draft's tag. Nothing writes to a release once published.
+#   SHA256SUMS file (a private repository uploads the file unattested),
+#   publishes the draft last with the App's token, and can be dispatched for
+#   a draft's tag. Nothing writes to a release once published.
 # scope: package
 # custom:
 #   convention: EC-0026
@@ -13,6 +14,7 @@ package conventions.checks.releases.workflows
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.release_please as rp
+import data.conventions.lib.repository
 import data.conventions.lib.steps
 
 release_workflow := ".github/workflows/release.yml"
@@ -100,12 +102,30 @@ findings contains lib.finding("REL-18", path, message) if {
 	some job_id, job in files.jobs(workflow)
 	some step in files.steps(job)
 	rp.uploads(step)
+	not repository.attestations_unavailable
 	not attests_checksums(job)
 	message := sprintf(
 		concat(" ", [
 			"job %q uploads release assets without attesting them through a SHA256SUMS file; write",
 			"SHA256SUMS over the assets, upload it with them, and attest it with actions/attest",
-			"subject-checksums: <dir>/SHA256SUMS",
+			"subject-checksums: <dir>/SHA256SUMS (a private or internal repository, where GitHub offers",
+			"no attestations, declares visibility in .repo/repository.toml and needs only SHA256SUMS)",
+		]),
+		[job_id],
+	)
+}
+
+findings contains lib.finding("REL-18", path, message) if {
+	repository.attestations_unavailable
+	some path, workflow in files.workflows
+	some job_id, job in files.jobs(workflow)
+	some step in files.steps(job)
+	rp.uploads(step)
+	not writes_checksums(job)
+	message := sprintf(
+		concat(" ", [
+			"job %q uploads release assets without a SHA256SUMS file; write SHA256SUMS over the",
+			"assets and upload it with them, so a consumer can verify each download",
 		]),
 		[job_id],
 	)
@@ -227,6 +247,20 @@ attests_checksums(job) if {
 	checksums := steps.inputs(step)["subject-checksums"]
 	is_string(checksums)
 	endswith(checksums, "SHA256SUMS")
+}
+
+# A job that names SHA256SUMS in a command or an input: it writes the file,
+# or uploads or attests it.
+writes_checksums(job) if {
+	some step in files.steps(job)
+	contains(steps.code(step), "SHA256SUMS")
+}
+
+writes_checksums(job) if {
+	some step in files.steps(job)
+	some value in steps.inputs(step)
+	is_string(value)
+	contains(value, "SHA256SUMS")
 }
 
 granted(_, job, permission) if {

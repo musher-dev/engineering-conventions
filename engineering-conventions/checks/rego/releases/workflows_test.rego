@@ -140,8 +140,12 @@ test_rel_18_attested_checksums if {
 	messages(results, "REL-18") == {concat(" ", [
 		`job "bundle" uploads release assets without attesting them through a SHA256SUMS file; write`,
 		"SHA256SUMS over the assets, upload it with them, and attest it with actions/attest",
-		"subject-checksums: <dir>/SHA256SUMS",
+		"subject-checksums: <dir>/SHA256SUMS (a private or internal repository, where GitHub offers",
+		"no attestations, declares visibility in .repo/repository.toml and needs only SHA256SUMS)",
 	])}
+	results_public := checks.findings with input as array.concat(release_with(unattested), [visible("public")])
+		with data.conventions.index as td.index
+	count(messages(results_public, "REL-18")) == 1
 	unpermitted := {"bundle": {"name": "Bundle", "permissions": {"contents": "write"}, "steps": [attest, upload]}}
 	results_unpermitted := checks.findings with input as release_with(unpermitted)
 		with data.conventions.index as td.index
@@ -157,6 +161,33 @@ test_rel_18_attested_checksums if {
 	via_api := {"bundle": {"name": "Bundle", "permissions": attest_permissions, "steps": [api_upload]}}
 	results_api := checks.findings with input as release_with(via_api) with data.conventions.index as td.index
 	count(messages(results_api, "REL-18")) == 1
+}
+
+visible(visibility) := td.repository(object.union(td.identity, {"visibility": visibility}))
+
+checksums := {"name": "Checksums", "run": "cd dist && sha256sum -- * > SHA256SUMS"}
+
+test_rel_18_private_repositories_need_only_checksums if {
+	summed := {"bundle": {"name": "Bundle", "permissions": {"contents": "write"}, "steps": [checksums, upload]}}
+	results := checks.findings with input as array.concat(release_with(summed), [visible("private")])
+		with data.conventions.index as td.index
+	count(messages(results, "REL-18")) == 0
+	listed := {"name": "Upload", "uses": "softprops/action-gh-release@x", "with": {"files": "dist/SHA256SUMS"}}
+	by_input := {"bundle": {"name": "Bundle", "permissions": {"contents": "write"}, "steps": [listed, upload]}}
+	results_input := checks.findings with input as array.concat(release_with(by_input), [visible("internal")])
+		with data.conventions.index as td.index
+	count(messages(results_input, "REL-18")) == 0
+	bare := {"bundle": {"name": "Bundle", "permissions": {"contents": "write"}, "steps": [upload]}}
+	results_bare := checks.findings with input as array.concat(release_with(bare), [visible("internal")])
+		with data.conventions.index as td.index
+	messages(results_bare, "REL-18") == {concat(" ", [
+		`job "bundle" uploads release assets without a SHA256SUMS file; write SHA256SUMS over the`,
+		"assets and upload it with them, so a consumer can verify each download",
+	])}
+	unpermitted := {"bundle": {"name": "Bundle", "permissions": {"contents": "write"}, "steps": [attest, upload]}}
+	results_unpermitted := checks.findings with input as array.concat(release_with(unpermitted), [visible("private")])
+		with data.conventions.index as td.index
+	count(messages(results_unpermitted, "REL-18")) == 2
 }
 
 test_rel_19_publish_the_draft if {

@@ -35,5 +35,5 @@ records why each choice was made.
 | Changelog | `feat`, `fix` shown; `chore`, `ci`, `test`, `build`, `style`, `refactor` hidden | REL-09 |
 | Tag ruleset | `creation`, `update`, `deletion`, `non_fast_forward`; the App bypasses | REL-12, REL-13 |
 | Token | `client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}`, `private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}` | REL-16 |
-| Assets | `SHA256SUMS`, attested with `actions/attest` `subject-checksums` | REL-18 |
+| Assets | `SHA256SUMS`, attested with `actions/attest` `subject-checksums` unless the repository is private | REL-18 |
 | Consuming a component tag with mise | `version_prefix = "<component>/v"` | |

@@ -5254,7 +5254,7 @@
             "type": "string"
           }
         },
-        "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name. The optional layout table says where the product lives (EC-0018).",
+        "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier, and optionally its visibility. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name. The optional layout table says where the product lives (EC-0018).",
         "properties": {
           "audience": {
             "$ref": "#/definitions/common_nonEmptyString",
@@ -5316,6 +5316,14 @@
             "maximum": 3,
             "minimum": 1,
             "type": "integer"
+          },
+          "visibility": {
+            "description": "The repository's visibility on GitHub: public, private or internal. Optional. REL-18 asks a public repository, and one that does not declare it, to attest its release assets.",
+            "enum": [
+              "public",
+              "private",
+              "internal"
+            ]
           }
         },
         "required": [
@@ -7490,7 +7498,7 @@
           "severity": "warning",
           "since": "0.6.2",
           "status": "proposed",
-          "title": "A job that uploads release assets attests them through a SHA256SUMS file",
+          "title": "A job that uploads release assets attests them through a SHA256SUMS file, unless the repository is private",
           "waivable": true
         },
         "REL-19": {

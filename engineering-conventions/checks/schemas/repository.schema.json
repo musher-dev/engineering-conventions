@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Identity declaration",
-  "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name. The optional layout table says where the product lives (EC-0018).",
+  "description": "A repository's .repo/repository.toml: its name, the system it belongs to and the component it is within that system, its kind, the team that owns it, its lifecycle, its audience and its tier, and optionally its visibility. REPO-02 checks a declaration against this schema; REPO-03 checks the system, kind, lifecycle and audience against the registered values, and REPO-04 and REPO-07 to REPO-11 check the name. The optional layout table says where the product lives (EC-0018).",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "name", "system", "component", "kind", "owner", "lifecycle", "audience", "tier"],
@@ -38,6 +38,10 @@
     "audience": {
       "description": "Who the repository's outputs are for: internal or public. Not the same as its visibility on GitHub. REPO-03 checks the token.",
       "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "visibility": {
+      "description": "The repository's visibility on GitHub: public, private or internal. Optional. REL-18 asks a public repository, and one that does not declare it, to attest its release assets.",
+      "enum": ["public", "private", "internal"]
     },
     "tier": {
       "description": "How much depends on the repository: 1 when its failure stops customers or the platform, 2 when it stops Musher's own work, 3 otherwise.",

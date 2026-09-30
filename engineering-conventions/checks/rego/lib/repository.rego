@@ -2,8 +2,9 @@
 # title: Repository identity and name
 # description: >-
 #   The registered systems, kinds, lifecycles and audiences, the tokens a
-#   repository name may not hold, and the name the naming checks judge: the
-#   actual name when the runner knows it, else the declared one (EC-0010).
+#   repository name may not hold, the name the naming checks judge (the
+#   actual name when the runner knows it, else the declared one, EC-0010),
+#   and the declared visibility.
 package conventions.lib.repository
 
 import data.conventions.lib.files
@@ -26,6 +27,14 @@ declared_name := files.repository_declaration.name if is_string(files.repository
 judged_name := files.actual_repository_name
 
 judged_name := declared_name if not files.actual_repository_name
+
+# The declared visibility on GitHub, when the declaration states one.
+declared_visibility := files.repository_declaration.visibility if is_string(files.repository_declaration.visibility)
+
+# GitHub attests artifacts only in public repositories unless the
+# organization is on Enterprise Cloud, so a repository that declares itself
+# private or internal is not asked to (REL-18). One that declares nothing is.
+attestations_unavailable if declared_visibility in {"private", "internal"}
 
 # GitHub reserves these names for an organization's default community
 # health files and profile, so they cannot follow the grammar.

@@ -58,7 +58,7 @@ requirements:
       engine: conftest
       package: conventions.checks.releases.workflows
   - id: REL-18
-    title: A job that uploads release assets attests them through a SHA256SUMS file
+    title: A job that uploads release assets attests them through a SHA256SUMS file, unless the repository is private
     status: proposed
     severity: warning
     since: 0.6.2
@@ -230,7 +230,7 @@ Checked by: conftest · Severity: warning · Since: 0.6.2
 
 ### REL-18
 
-**A job that uploads release assets attests them through a `SHA256SUMS` file.**
+**A job that uploads release assets attests them through a `SHA256SUMS` file, unless the repository is private.**
 
 A consumer verifies a download two ways: its digest against the release's `SHA256SUMS`, and its build provenance with
 `gh attestation verify` or mise, which checks attestations by default. One file name across the organization means one
@@ -238,6 +238,14 @@ verification command. `actions/attest` with `subject-checksums` attests every fi
 attestation, and needs `id-token: write` to sign it and `attestations: write` to store it. The check reports a job that
 uploads release assets without an `actions/attest` (or `actions/attest-build-provenance`) step whose
 `subject-checksums` names a `SHA256SUMS` file, and a job that attests that way without both permissions.
+
+GitHub offers artifact attestations only in public repositories, unless the organization is on GitHub Enterprise
+Cloud. A private or internal repository therefore declares `visibility = "private"` or `"internal"` in its
+[identity declaration](../repository/identity-declaration.md#the-declaration-file), and its release needs only the
+`SHA256SUMS` file, uploaded beside the assets: on an immutable release it still lets a consumer verify every download,
+and an image carries its build provenance and SBOM in the registry instead (`provenance: mode=max`, `sbom: true`).
+The check reports such a repository's job that uploads release assets without naming a `SHA256SUMS` file in a command
+or an input. A repository that does not declare its visibility is held to the attestation.
 
 **Correct:**
 
@@ -252,6 +260,16 @@ steps:
   - uses: actions/attest@<sha>  # v4
     with:
       subject-checksums: dist/SHA256SUMS
+  - run: gh release upload "$TAG" dist/*
+```
+
+**Correct, in a repository that declares `visibility = "private"`:**
+
+```yaml
+permissions:
+  contents: write
+steps:
+  - run: (cd dist && sha256sum -- * > SHA256SUMS)
   - run: gh release upload "$TAG" dist/*
 ```
 

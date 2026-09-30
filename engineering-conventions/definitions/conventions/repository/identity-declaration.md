@@ -114,7 +114,8 @@ tier = 1
 
 The file is TOML ([decision 0011](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0011-declarations-are-toml.md)),
 and every field above is required. An optional `[layout]` table says where the product lives; its rules are
-[EC-0018](layout.md).
+[EC-0018](layout.md). An optional `visibility` says whether the repository is `public`, `private` or `internal` on
+GitHub, which decides whether its release assets can be attested ([REL-18](../releases/release-workflows.md#rel-18)).
 
 | Field | Meaning |
 | --- | --- |
@@ -126,6 +127,7 @@ and every field above is required. An optional `[layout]` table says where the p
 | `owner` | The GitHub team that owns the repository, as `@musher-dev/<team>`. A team, never a person (REPO-05). |
 | `lifecycle` | `experimental`, `production` or `deprecated` (REPO-03). |
 | `audience` | Who the repository's outputs are for: `internal` or `public` (REPO-03). |
+| `visibility` | Optional. The repository's visibility on GitHub: `public`, `private` or `internal`. It is not the same as `audience`: an internal tool can live in a public repository. A repository that omits it is treated as public by [REL-18](../releases/release-workflows.md#rel-18). |
 | `tier` | How much depends on it: `1` when its failure stops customers or the platform, `2` when it stops Musher's own work, `3` otherwise. |
 
 The authoritative shape is `checks/schemas/repository.schema.json`, and REPO-02 checks the file against it.

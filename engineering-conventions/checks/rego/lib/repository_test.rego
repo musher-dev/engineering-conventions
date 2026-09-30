@@ -55,3 +55,13 @@ test_tokens if {
 	repository.tokens("platform-operator-console") == ["platform", "operator", "console"]
 	repository.system_token("platform-operator-console") == "platform"
 }
+
+visible(visibility) := [td.repository(object.union(td.identity, {"visibility": visibility}))]
+
+test_attestations_unavailable_only_when_declared_private_or_internal if {
+	repository.attestations_unavailable with input as visible("private")
+	repository.attestations_unavailable with input as visible("internal")
+	not repository.attestations_unavailable with input as visible("public")
+	not repository.attestations_unavailable with input as declared("platform-api")
+	not repository.attestations_unavailable with input as [td.inventory([])]
+}

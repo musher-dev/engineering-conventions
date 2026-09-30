@@ -198,7 +198,7 @@ ID is permanent: it is never renumbered or reused.
 | [REL-15](releases/release-workflows.md#rel-15) | Only release.yml runs release-please, on a push, in a concurrency group that never cancels | EC-0026 | proposed | warning | conftest |
 | [REL-16](releases/release-workflows.md#rel-16) | The release workflow mints its tokens from the release App, scoped to what each job needs | EC-0026 | proposed | warning | conftest |
 | [REL-17](releases/release-workflows.md#rel-17) | Nothing writes to a release once it is published | EC-0026 | proposed | warning | conftest |
-| [REL-18](releases/release-workflows.md#rel-18) | A job that uploads release assets attests them through a SHA256SUMS file | EC-0026 | proposed | warning | conftest |
+| [REL-18](releases/release-workflows.md#rel-18) | A job that uploads release assets attests them through a SHA256SUMS file, unless the repository is private | EC-0026 | proposed | warning | conftest |
 | [REL-19](releases/release-workflows.md#rel-19) | A draft release is published last, with the release App's token | EC-0026 | proposed | warning | conftest |
 | [REL-20](releases/release-workflows.md#rel-20) | A release workflow that attaches assets can be dispatched to finish a draft | EC-0026 | proposed | warning | conftest |
 | [REPO-01](repository/identity-declaration.md#repo-01) | A repository declares its identity in .repo/repository.toml | EC-0009 | proposed | warning | conftest |

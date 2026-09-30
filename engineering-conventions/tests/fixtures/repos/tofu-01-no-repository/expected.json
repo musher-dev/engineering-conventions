@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TOFU-01",
+    "path": "taskfiles/tofu.Taskfile.yml",
+    "severity": "warning"
+  }
+]

@@ -1,9 +1,12 @@
 # The profile the identity declaration selects for kind = "infrastructure"
-# (EC-0009). It is base-repo until requirements specific to the kind exist.
+# (EC-0009). It adds the OpenTofu conventions to what base-repo applies.
 schema_version: 1
 id: infrastructure
 display_name: Infrastructure
 description: >-
-  Repositories whose kind is infrastructure. Until requirements specific to the kind
-  exist, it applies exactly what base-repo does.
+  Repositories whose kind is infrastructure: everything base-repo applies,
+  and the OpenTofu conventions, which give each root's state key its
+  repository and its root (TOFU).
 inherits: [base-repo]
+include:
+  families: [TOFU]

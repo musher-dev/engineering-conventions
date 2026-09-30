@@ -133,15 +133,19 @@ The first token of an action directory says what kind of capability the action p
 | `setup` | A prepared workspace: one or more toolchains, dependencies and caches, ready for later steps | Not `install`: setup may do several things to make a workspace usable | `setup-tools`, `setup-api` |
 | `install` | Exactly one tool or CLI placed on the `PATH`, and nothing else | Not `setup`: an install touches no project dependencies | `install-repo-cli` |
 | `authenticate` | A credential obtained or configured: a registry login, a minted token | Not `setup`: keeping credentials in their own action keeps them out of steps that do not need them | `authenticate-registry` |
-| `check` | A precondition confirmed, failing with a clear message when it does not hold; changes nothing | Not `validate`: a check is one precondition a job relies on, not a merge decision | `check-deploy-secrets` |
+| `check` | A precondition confirmed, failing with a clear message when it does not hold; changes nothing | Not `validate`: a check is one precondition a job relies on, not a merge decision. Not `sync`, which changes what it finds | `check-deploy-secrets` |
+| `sync` | External state changed to match what the repository declares: a host's bootstrap configuration, a remote setting | Not `check`, which changes nothing. Not `authenticate`: a sync may use a credential, but obtaining one is its own action | `sync-bootstrap-config` |
 
 The object after the token names what the action acts on (`tools`, `api`, `registry`, `deploy-secrets`), not who
 calls it.
 
 When GHA-20 reports a directory, it suggests a corrected name only where the intent is plain: a directory that already
 starts with an action token, or with a common stand-in for one. `auth` maps to `authenticate`, and `validate` and
-`verify` map to `check`, so `auth-registry` is suggested `authenticate-registry`. Any other name gets no automatic
-suggestion, because guessing which capability an action provides is its author's call.
+`verify` map to `check`, so `auth-registry` is suggested `authenticate-registry`. The stand-ins are terminology data,
+the `action-token` aliases of the action terms, generated into `vocabulary.action_synonyms` in
+`checks/data/index.json`; they are not banned anywhere else, so `validate` and `verify` remain workflow responsibility
+tokens. Any other name gets no automatic suggestion, because guessing which capability an action provides is its
+author's call.
 
 ## Requirements
 
@@ -149,10 +153,10 @@ suggestion, because guessing which capability an action provides is its author's
 
 **An action directory is `<action-token>-<object>`.**
 
-The directory name is lowercase kebab-case, starts with one of `setup`, `install`, `authenticate` or `check`, and has
-at least one further word naming the object. Name the capability, not the caller: an action named after the workflow
-that first used it (`validate-code-prep`) stops describing itself the moment a second workflow uses it, which is the
-only reason to make it an action.
+The directory name is lowercase kebab-case, starts with one of `setup`, `install`, `authenticate`, `check` or `sync`,
+and has at least one further word naming the object. Name the capability, not the caller: an action named after the
+workflow that first used it (`validate-code-prep`) stops describing itself the moment a second workflow uses it, which
+is the only reason to make it an action.
 
 **Correct:**
 

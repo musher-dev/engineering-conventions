@@ -1,0 +1,7 @@
+version: '3'
+
+vars:
+  TOFU_DIR: ../terraform/dns
+  TOFU_STATE_KEY: tfstate/dns/terraform.tfstate
+
+tasks: {}

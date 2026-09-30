@@ -4,16 +4,21 @@ name: Release
 # (decision 0017). release-please keeps one open pull request on main that
 # bumps version.txt and CHANGELOG.md; a human merges it, and the next run here
 # creates the `vX.Y.Z` tag and a draft GitHub Release. The Bundle job builds
-# the conventions bundle from that tag, attests it and attaches it to the
+# the conventions bundle from that tag with read-only permissions; the Attest
+# job, which runs no repository code, verifies, attests and attaches it to the
 # draft; Finalize then publishes the draft, which from that moment is
 # immutable. Nothing here merges anything. A maintainer reads a failure here:
 # until it is fixed, no release pull request is opened or updated, or a draft
 # release waits for its assets.
 #
-# A release left in draft (a failed Bundle or Finalize) is recovered with
-# "Re-run failed jobs" on the original run, or, when the workflow itself had to
-# be fixed first, by dispatching this workflow with the draft's tag. A
+# A release left in draft (a failed Bundle, Attest or Finalize) is recovered
+# with "Re-run failed jobs" on the original run, or, when the workflow itself
+# had to be fixed first, by dispatching this workflow with the draft's tag. A
 # dispatched run refuses a release that is already published.
+#
+# The jobs that mint the release App token run in the `release` environment,
+# which holds the App's key and admits only main, so a workflow run from any
+# other branch cannot read it.
 
 on:
   push:
@@ -41,6 +46,7 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    environment: release
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -63,7 +69,7 @@ jobs:
           permission-pull-requests: write
 
       # The config drafts each release and creates its tag with it
-      # (`draft`, `force-tag-creation`), so the Bundle job can attach assets
+      # (`draft`, `force-tag-creation`), so the Attest job can attach assets
       # before anything is published.
       - name: Open or update the release pull request
         id: release
@@ -73,6 +79,8 @@ jobs:
           config-file: .github/release-please/config.json
           manifest-file: .github/release-please/manifest.json
 
+  # Runs the repository's code at the tag, so it gets no write access: it
+  # hands the built assets to the Attest job as a workflow artifact.
   bundle:
     name: Bundle
     needs: release_please
@@ -82,10 +90,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
-      contents: write  # upload the release assets to the draft
-      id-token: write  # sign the provenance attestation
-      attestations: write  # store the provenance attestation
-      artifact-metadata: write  # record the attested artifacts
+      contents: read  # check out the tag
     env:
       TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || needs.release_please.outputs.tag_name }}
     steps:
@@ -94,19 +99,6 @@ jobs:
           set -euo pipefail
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::tag '$TAG' is not a release version (vX.Y.Z)"
-            exit 1
-          fi
-
-      # A published release is immutable: its assets cannot change, so a
-      # dispatched run only ever completes a draft.
-      - name: Check the release is still a draft
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          draft="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
-          if [[ "$draft" != "true" ]]; then
-            echo "::error::release $TAG is not a draft; a published release cannot change"
             exit 1
           fi
 
@@ -133,6 +125,55 @@ jobs:
 
       - name: Build the release bundle and verify it
         run: task bundle:build bundle:verify
+
+      # Kept long enough for "Re-run failed jobs" on Attest or Finalize.
+      - name: Hand the release assets to the Attest job
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: release-assets
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  # Holds the write, signing and attestation permissions, so it runs no
+  # repository code: no checkout, no task, nothing from the Bundle job but the
+  # files it built, checked against the SHA256SUMS built with them.
+  attest:
+    name: Attest and Upload
+    needs: [release_please, bundle]
+    if: ${{ !cancelled() && needs.bundle.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write  # upload the release assets to the draft
+      id-token: write  # sign the provenance attestation
+      attestations: write  # store the provenance attestation
+      artifact-metadata: write  # record the attested artifacts
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || needs.release_please.outputs.tag_name }}
+    steps:
+      # A published release is immutable: its assets cannot change, so a
+      # dispatched run only ever completes a draft. Here rather than in Bundle,
+      # because a token without contents: write cannot see a draft release.
+      - name: Check the release is still a draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          draft="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+          if [[ "$draft" != "true" ]]; then
+            echo "::error::release $TAG is not a draft; a published release cannot change"
+            exit 1
+          fi
+
+      - name: Download the release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: release-assets
+          path: dist
+
+      - name: Check the assets against their checksums
+        run: (cd dist && sha256sum --check --strict SHA256SUMS)
 
       # One attestation over every file SHA256SUMS lists: the bundle, the Vale
       # package and the manifest.
@@ -161,10 +202,11 @@ jobs:
 
   finalize:
     name: Publish Release
-    needs: [release_please, bundle]
-    if: ${{ !cancelled() && needs.bundle.result == 'success' }}
+    needs: [release_please, attest]
+    if: ${{ !cancelled() && needs.attest.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    environment: release
     env:
       TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || needs.release_please.outputs.tag_name }}
     steps:

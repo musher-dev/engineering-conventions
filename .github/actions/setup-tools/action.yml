@@ -42,6 +42,11 @@ runs:
         # Lockstep with ARG MISE_VERSION in .devcontainer/Dockerfile and
         # min_version in .config/mise/config.toml.
         version: 2026.9.12
+        # The linux-x64 mise binary of that version, from the release's
+        # SHASUMS256.txt (`./mise-v<version>-linux-x64`): bump it with
+        # version:, and with the checksums in .devcontainer/Dockerfile. Every
+        # job that calls this action runs on x64.
+        sha256: e79ae57945034903aee8aa2ea66b4c7ca9cd4f4edd5a8a78a589cbae6d0f428a
         install: true
         install_args: ${{ inputs.install-args }}
         cache: ${{ inputs.cache }}

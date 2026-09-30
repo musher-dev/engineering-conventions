@@ -182,7 +182,8 @@ The first token of an entry-point workflow's filename is one of these. Each owns
 | `monitor` | A scheduled, report-only comparison of something this repository depends on but does not own (external links, an upstream schema, a pinned version) against what the repository expects. | Not `audit`, which examines this repository's own contents. Not `maintain`: a monitor changes nothing. |
 | `audit` | A scheduled or on-demand, report-only examination of this repository's own contents that is too slow or too noisy to gate a merge: mutation testing, full SAST sweeps, hotspot analysis. | Not `validate`: an audit never blocks a merge. Not `monitor`, which looks outward. |
 | `maintain` | Changing state that is not the product: caches, vendored copies, generated mirrors. | Not `monitor`, which only reports. Not `release` or `deploy`, which change the product or what serves it. |
-| `repository` | Automating the collaboration surface: issue intake, labels, project boards, CODEOWNERS notices. | Not `validate`: checking the repository's *files* is validation (`validate-repository.yml`). `repository-*` workflows act on the people-facing surface around the files. |
+| `repository` | Automating the collaboration surface: issue intake, labels, project boards, CODEOWNERS notices. | Not `validate`: checking the repository's *files* is validation (`validate-repository.yml`). `repository-*` workflows act on the people-facing surface around the files. Not `notify`: a repository workflow changes that surface. |
+| `notify` | Only sending a message: a chat digest of open pull requests, a weekly summary posted to a channel. It changes nothing in the repository or elsewhere. | Not `repository`, which changes the collaboration surface (labels, comments, project boards). Not `monitor` or `audit`, which examine something and report what they find; a notify workflow only relays information that already exists. |
 
 `repository` is a noun. The slot is therefore called the *responsibility* token, not the verb, and nothing in the
 grammar depends on the token being a verb.
@@ -196,10 +197,12 @@ Four words are deliberately absent:
 | `maintenance` | A noun for an activity; every other token names what the workflow does | `maintain` |
 | `test`, `lint` | They name a tool category, and a merge decision usually needs more than one | `validate` |
 
-**Not yet covered.** Two kinds of automation have no token yet: a workflow that only sends a notification (a Slack
-digest of open pull requests, say), and an action that changes external state to keep it in sync with the repository.
-Both are tracked as follow-up work. Until a token is published, a repository that needs one records a waiver for the
-finding it gets rather than bending an existing token to fit.
+**Notifications and sync.** A workflow that only sends a message, such as a Slack digest of open pull requests, is
+`notify` (`notify-pull-requests.yml`). An action that changes external state to match the repository is the `sync`
+action token (`sync-bootstrap-config`, [EC-0004](composite-actions.md#action-tokens)). Neither fits an older token:
+a notification changes nothing, which rules out `repository` and `maintain`, and a sync changes what it finds, which
+rules out `check`
+([decision 0021](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0021-notify-and-sync-join-the-token-sets.md)).
 
 ### Capability tokens
 
@@ -291,8 +294,8 @@ Checked by: conftest · Severity: warning · Since: 0.1.0 · Formerly: platform 
 
 An entry point is a workflow with any trigger other than `workflow_call`, including one that also has `workflow_call`
 (see [Scope](#scope)). Its first filename token is one of `validate`, `release`, `publish`, `deploy`, `verify`,
-`monitor`, `audit`, `maintain` or `repository`, so a reader who sees the file in a listing, a check context or a failure
-notification knows what kind of outcome it owns before opening it.
+`monitor`, `audit`, `maintain`, `repository` or `notify`, so a reader who sees the file in a listing, a check context
+or a failure notification knows what kind of outcome it owns before opening it.
 
 **Correct:**
 
@@ -300,6 +303,7 @@ notification knows what kind of outcome it owns before opening it.
 validate-pull-request.yml
 monitor-external-links.yml
 repository-project-intake.yml
+notify-pull-requests.yml
 ```
 
 **Incorrect:**

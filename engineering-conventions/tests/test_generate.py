@@ -102,6 +102,7 @@ def test_vocabulary_projection(content: Content) -> None:
         "deploy",
         "maintain",
         "monitor",
+        "notify",
         "publish",
         "release",
         "repository",
@@ -109,7 +110,12 @@ def test_vocabulary_projection(content: Content) -> None:
         "verify",
     ]
     assert projected["capability_tokens"] == ["build", "check", "promote"]
-    assert projected["action_tokens"] == ["authenticate", "check", "install", "setup"]
+    assert projected["action_tokens"] == ["authenticate", "check", "install", "setup", "sync"]
+    assert projected["action_synonyms"] == {
+        "auth": "authenticate",
+        "validate": "check",
+        "verify": "check",
+    }
     assert projected["output_kinds"] == [
         "bundle",
         "cli",
@@ -201,6 +207,27 @@ def test_repository_name_tokens_do_not_leak_into_other_scopes(content: Content) 
         assert token not in prose
 
 
+def test_action_synonyms_do_not_leak_into_other_scopes(content: Content) -> None:
+    # They only drive GHA-20's suggestion: validate and verify stay workflow
+    # responsibility tokens, so no banned list may carry them.
+    identifiers = vocabulary.banned_identifier_tokens(content.terminology)
+    repository = vocabulary.banned_repository_tokens(content.terminology)
+    prose = {swap.text for swap in vocabulary.prose_swaps(content.terminology, "banned")}
+    for token in ("auth", "validate", "verify"):
+        assert token not in identifiers
+        assert token not in repository
+        assert token not in prose
+
+
+def test_action_synonyms_need_an_action_term(content: Content) -> None:
+    term = next(t for t in content.terminology.terms if t.id == "gha.responsibility.notify")
+    alias = vocabulary.Alias("tell", "banned", ("action-token",), None, None)
+    stray = replace(term, aliases=(alias,))
+    terms = tuple(stray if t.id == term.id else t for t in content.terminology.terms)
+    with pytest.raises(vocabulary.ContentError):
+        vocabulary.action_synonyms(replace(content.terminology, terms=terms))
+
+
 def test_index_carries_a_self_contained_repository_schema(content: Content) -> None:
     schema = as_map(_index(content)["repository_schema"])
     assert "common.schema.json" not in json.dumps(schema)
@@ -215,7 +242,12 @@ def test_prose_aliases_do_not_leak_into_identifier_tokens(content: Content) -> N
 
 # Requirements only a kind's own profile selects: the build, test and dev
 # tasks (EC-0016) and a service's environment contract (EC-0019).
-KIND_SPECIFIC = {"TASK-11": "library", "TASK-12": "service", "ENVS-01": "service"}
+KIND_SPECIFIC = {
+    "TASK-11": "library",
+    "TASK-12": "service",
+    "ENVS-01": "service",
+    "TOFU-01": "infrastructure",
+}
 
 
 def test_base_profile_includes_every_non_retired_requirement(content: Content) -> None:

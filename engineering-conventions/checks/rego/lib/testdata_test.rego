@@ -69,11 +69,12 @@ index := {
 	},
 	"vocabulary": {
 		"responsibility_tokens": [
-			"audit", "deploy", "maintain", "monitor", "publish",
+			"audit", "deploy", "maintain", "monitor", "notify", "publish",
 			"release", "repository", "validate", "verify",
 		],
 		"capability_tokens": ["build", "check", "promote"],
-		"action_tokens": ["authenticate", "check", "install", "setup"],
+		"action_tokens": ["authenticate", "check", "install", "setup", "sync"],
+		"action_synonyms": {"auth": "authenticate", "validate": "check", "verify": "check"},
 		"banned_identifier_tokens": {
 			"ci": "validate", "cd": "deploy", "lint": "validate", "pr": "validate",
 			"drift": "monitor", "scheduled": "audit, monitor or maintain",

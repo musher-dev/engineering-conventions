@@ -1,0 +1,10 @@
+version: '3'
+
+# One root, one key per environment; the key the shared layer defaults to
+# is built at run time and is not judged.
+vars:
+  TOFU_DIR: .
+  TOFU_STATE_KEY: tfstate/platform-api/app/{{.ENV}}/terraform.tfstate
+  DEFAULT_STATE_KEY: '{{.TOFU_STATE_KEY | default ""}}'
+
+tasks: {}

@@ -61,6 +61,16 @@ test_envs_11_stutter if {
 test_envs_12_url if {
 	found := env_grammar.findings with input as t.one({"API_ENDPOINT": t.binding({"format": "url"})})
 	td.ids(found) == {"ENVS-12"}
+	t.messages(found, "ENVS-12") == {concat(" ", [
+		"binding API_ENDPOINT holds a URL; end its name in _URL or _BASE_URL, or leave format unset",
+		"if it names an identifier rather than an address",
+	])}
+}
+
+test_envs_12_url_identifier_without_format if {
+	identifier := t.binding({"constraints": {"pattern": "^https://"}})
+	found := env_grammar.findings with input as t.one({"API_JWT_ISSUER": identifier})
+	not "ENVS-12" in td.ids(found)
 }
 
 test_envs_13_nested if {

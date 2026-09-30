@@ -31,7 +31,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"CONF\", \"DEC\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -219,8 +219,9 @@
   "envs-11-stutter": [
     ["platform-api/env.schema.yaml", "ENVS-11", "warning", "binding API_API_PORT repeats API; say it once", true]
   ],
+  "envs-12-passes-url-identifier": [],
   "envs-12-url-suffix": [
-    ["platform-api/env.schema.yaml", "ENVS-12", "warning", "binding API_ENDPOINT holds a URL; end its name in _URL or _BASE_URL", true]
+    ["platform-api/env.schema.yaml", "ENVS-12", "warning", "binding API_ENDPOINT holds a URL; end its name in _URL or _BASE_URL, or leave format unset if it names an identifier rather than an address", true]
   ],
   "envs-13-nested-delimiter": [
     ["platform-api/env.schema.yaml", "ENVS-13", "warning", "binding API_EXPORT_BATCH_SIZE is nested, so its name separates group, sub-model and field with __, e.g. API__BATCH_SIZE", true]
@@ -235,14 +236,15 @@
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],
+  "gha-02-passes-notify": [],
   "gha-02-responsibility-token": [
-    [".github/workflows/add-to-project.yml", "GHA-02", "warning", "first filename token \"add\" is not a responsibility; start the filename with one of \"audit\", \"deploy\", \"maintain\", \"monitor\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\"", true]
+    [".github/workflows/add-to-project.yml", "GHA-02", "warning", "first filename token \"add\" is not a responsibility; start the filename with one of \"audit\", \"deploy\", \"maintain\", \"monitor\", \"notify\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\"", true]
   ],
   "gha-03-reusable-prefix": [
     [".github/workflows/reusable-build-image.yml", "GHA-03", "warning", "the reusable- prefix promises the workflow is triggered only by workflow_call, but it is also triggered by \"workflow_dispatch\"; drop the prefix and name the workflow for the responsibility it owns, or make workflow_call its only trigger", true]
   ],
   "gha-04-reusable-token": [
-    [".github/workflows/reusable-frobnicate.yml", "GHA-04", "warning", "reusable workflow token \"frobnicate\" is neither a responsibility nor a capability; use one of \"audit\", \"build\", \"check\", \"deploy\", \"maintain\", \"monitor\", \"promote\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\" after reusable-", true]
+    [".github/workflows/reusable-frobnicate.yml", "GHA-04", "warning", "reusable workflow token \"frobnicate\" is neither a responsibility nor a capability; use one of \"audit\", \"build\", \"check\", \"deploy\", \"maintain\", \"monitor\", \"notify\", \"promote\", \"publish\", \"release\", \"repository\", \"validate\", \"verify\" after reusable-", true]
   ],
   "gha-05-banned-token": [
     [".github/workflows/lint-docs.yml", "GHA-05", "warning", "filename token \"lint\" names a trigger, schedule, tool or synonym rather than a responsibility; replace \"lint\" with \"validate\" (e.g. \"validate-docs.yml\")", true]
@@ -294,8 +296,9 @@
     [".github/workflows/validate.yml", "GHA-17", "warning", "step 3 of job \"lint\" runs a command but has no name; add name: with an imperative phrase saying what it does", true]
   ],
   "gha-20-action-directory": [
-    [".github/actions/tools", "GHA-20", "warning", "action directory \"tools\" is not <action-token>-<object> in lowercase kebab-case; start it with one of \"authenticate\", \"check\", \"install\", \"setup\" followed by what it acts on", true]
+    [".github/actions/tools", "GHA-20", "warning", "action directory \"tools\" is not <action-token>-<object> in lowercase kebab-case; start it with one of \"authenticate\", \"check\", \"install\", \"setup\", \"sync\" followed by what it acts on", true]
   ],
+  "gha-20-passes-sync": [],
   "gha-21-action-metadata-file": [
     [".github/actions/setup-tools/action.yaml", "GHA-21", "warning", "rename \".github/actions/setup-tools/action.yaml\" to \".github/actions/setup-tools/action.yml\": an action's metadata file is action.yml", true]
   ],
@@ -584,7 +587,15 @@
   "task-07-prefix-output": [
     ["tools/Taskfile.yml", "TASK-07", "warning", "task \"deps\" sets prefix, but no Taskfile that loads it sets output: prefixed, the only mode that prints it; set output: prefixed, or remove the prefix", true]
   ],
+  "task-08-dir-include-missing": [
+    ["tools/taskfiles/lint.yml", "TASK-08", "warning", "variable LINT_CONFIG is \"lint.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
+  ],
+  "task-08-map-include-missing": [
+    ["tools/taskfiles/lint.yml", "TASK-08", "warning", "variable LINT_CONFIG is \"lint.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
+  ],
   "task-08-passes-build-output": [],
+  "task-08-passes-dir-include": [],
+  "task-08-passes-map-include": [],
   "task-08-path-variable": [
     ["tools/Taskfile.yml", "TASK-08", "warning", "variable LINT_CONFIG is \".golangci.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
   ],
@@ -603,6 +614,17 @@
   "task-14-missing-source": [
     ["tools/Taskfile.yml", "TASK-14", "warning", "task \"install\" lists source \"package.json\", which does not exist; Task ignores a source that matches nothing, so the task stops noticing changes to it; correct the path or remove it", true]
   ],
+  "tofu-01-no-repository": [
+    ["taskfiles/tofu.Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/dns/terraform.tfstate\" names no repository after tfstate/, so it is unique only by luck and says nothing of its owner; name the state key tfstate/platform-api/dns/terraform.tfstate, or tfstate/platform-api/dns/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+  ],
+  "tofu-01-no-root": [
+    ["terraform/stacks/network/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/platform-api/terraform.tfstate\" names no root, so a second root in the repository has nowhere to go; name the state key tfstate/platform-api/network/terraform.tfstate, or tfstate/platform-api/network/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+  ],
+  "tofu-01-outside-tfstate": [
+    ["terraform/network/Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"platform-api/network/terraform.tfstate\" is outside tfstate/, so retention rules and tools that scan tfstate/ miss it; name the state key tfstate/platform-api/network/terraform.tfstate, or tfstate/platform-api/network/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
+  ],
+  "tofu-01-passes-env-segment": [],
+  "tofu-01-passes-root-directory": [],
   "tool-01-second-config": [
     ["mise.toml", "TOOL-01", "warning", "mise.toml is a mise configuration outside .config/mise/config.toml; move its settings and [tools] there and delete it, so one file pins every tool", true]
   ],

@@ -75,7 +75,13 @@ findings contains lib.finding("ENVS-12", entry.path, message) if {
 	some entry in env.grammar_bindings
 	entry.binding.format == "url"
 	not endswith(entry.name, "_URL")
-	message := sprintf("binding %s holds a URL; end its name in _URL or _BASE_URL", [entry.name])
+	message := sprintf(
+		concat(" ", [
+			"binding %s holds a URL; end its name in _URL or _BASE_URL, or leave format unset",
+			"if it names an identifier rather than an address",
+		]),
+		[entry.name],
+	)
 }
 
 # ENVS-13

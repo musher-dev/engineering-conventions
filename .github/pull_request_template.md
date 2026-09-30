@@ -3,7 +3,8 @@
   Commit: type(scope): summary. Types and scopes live in
   .github/conventional-commits.yaml. Choose the type from the change
   classification table in docs/decisions/0005-status-severity-and-versioning.md,
-  the only copy of it. Delete sections that don't apply.
+  the only copy of it; `task classify` fails a type weaker than what the
+  index.json diff shows. Delete sections that don't apply.
 -->
 
 ## Summary

@@ -26,6 +26,10 @@ TOKEN_TAGS = (
     AUDIENCE_TAG,
 )
 REPOSITORY_NAME_SCOPE = "repository-name"
+# Words that stand in for an action token as the first token of a composite
+# action's directory. GHA-20 only suggests the term's token for them; they are
+# never banned elsewhere, so validate and verify stay workflow responsibilities.
+ACTION_TOKEN_SCOPE = "action-token"
 # The term whose identifier aliases name when a workflow runs. They are banned
 # anywhere in a filename, unlike the other banned tokens, which are synonyms
 # banned only where the responsibility goes (GHA-05).
@@ -94,6 +98,25 @@ def banned_repository_tokens(terminology: Terminology) -> dict[str, str]:
     return banned
 
 
+def action_synonyms(terminology: Terminology) -> dict[str, str]:
+    """Stand-ins for an action token, each mapped to the token GHA-20 suggests."""
+    synonyms: dict[str, str] = {}
+    missing: list[str] = []
+    for term, alias in _terms_with_aliases(terminology):
+        if alias.status != "banned" or ACTION_TOKEN_SCOPE not in alias.scope:
+            continue
+        if ACTION_TAG not in term.tags or term.token is None:
+            missing.append(
+                f"{terminology.path}: alias {alias.text!r} of {term.id} is scoped to action "
+                f"tokens but the term is not a {ACTION_TAG} term with a token"
+            )
+            continue
+        synonyms[alias.text] = term.token
+    if missing:
+        raise ContentError(missing)
+    return synonyms
+
+
 def schedule_tokens(terminology: Terminology) -> list[str]:
     return sorted(
         alias.text
@@ -118,6 +141,7 @@ def prose_swaps(terminology: Terminology, status: str) -> list[ProseSwap]:
 def project(terminology: Terminology) -> dict[str, object]:
     """The `vocabulary` object of index.json."""
     return {
+        "action_synonyms": action_synonyms(terminology),
         "action_tokens": tokens(terminology, ACTION_TAG),
         "banned_identifier_tokens": banned_identifier_tokens(terminology),
         "banned_repository_tokens": banned_repository_tokens(terminology),

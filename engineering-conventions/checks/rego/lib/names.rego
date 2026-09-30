@@ -16,6 +16,10 @@ capability_tokens := {token | some token in object.get(vocabulary, "capability_t
 
 action_tokens := {token | some token in object.get(vocabulary, "action_tokens", [])}
 
+# Words that stand in for an action token, each mapped to the token to use.
+# They only drive a suggestion (GHA-20); they are banned nowhere.
+action_synonyms := object.get(vocabulary, "action_synonyms", {})
+
 banned_tokens := object.get(vocabulary, "banned_identifier_tokens", {})
 
 # The banned tokens that name when a workflow runs. They are wrong anywhere

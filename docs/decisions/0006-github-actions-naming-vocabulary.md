@@ -4,6 +4,7 @@ date: 2026-09-23
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0021"]
 ---
 
 # 0006 — GitHub Actions naming vocabulary

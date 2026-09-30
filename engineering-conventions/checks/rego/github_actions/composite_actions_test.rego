@@ -33,8 +33,25 @@ test_gha_20_directory_grammar if {
 	count(messages(found, "GHA-20")) == 6
 	concat(" ", [
 		`action directory "registry-auth" is not <action-token>-<object> in lowercase kebab-case; start it with`,
-		`one of "authenticate", "check", "install", "setup" followed by what it acts on`,
+		`one of "authenticate", "check", "install", "setup", "sync" followed by what it acts on`,
 	]) in messages(found, "GHA-20")
+}
+
+test_gha_20_sync_is_an_action_token if {
+	path := ".github/actions/sync-bootstrap-config/action.yml"
+	docs := [td.file(path, object.union(good, {"name": "Sync Bootstrap Config"})), td.inventory([path])]
+	count(composite_actions.findings) == 0 with input as docs with data.conventions.index as td.index
+}
+
+test_gha_20_synonyms_come_from_the_index if {
+	paths := [".github/actions/auth-registry/action.yml"]
+	vocabulary := object.remove(td.index.vocabulary, ["action_synonyms"])
+	index := object.union(object.remove(td.index, ["vocabulary"]), {"vocabulary": vocabulary})
+	found := composite_actions.findings with input as [td.inventory(paths)] with data.conventions.index as index
+	count(messages(found, "GHA-20")) == 1
+	every message in messages(found, "GHA-20") {
+		not contains(message, "e.g.")
+	}
 }
 
 test_gha_22_waits_for_the_directory if {

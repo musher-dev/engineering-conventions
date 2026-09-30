@@ -35,9 +35,13 @@ An **alias** is a word to avoid in favour of the term:
   example GHA-05 for workflow filenames). `prose` means documentation, which
   the `MusherConventions` Vale style checks. `repository-name` means a token
   of a repository's own name, which REPO-10 checks; its `note` is required,
-  because the check prints it as the advice. Each scope is projected on its
-  own, so a token banned in repository names is not banned in filenames or
-  prose.
+  because the check prints it as the advice. `action-token` means a word that
+  stands in for an action token as the first token of a composite action's
+  directory, such as `auth` for `authenticate`; GHA-20 suggests the term's
+  token in its place. Each scope is projected on its own, so a token banned
+  in repository names is not banned in filenames or prose, and an
+  `action-token` alias such as `validate` stays a valid workflow
+  responsibility token.
 - `suggest` says what to write instead when that is not simply the term: its
   `token` in an identifier, its `display_name` in prose.
 
@@ -54,6 +58,7 @@ from it: `api` is written `API`, so `deploy-api.yml` is named `Deploy API`.
 | Terms tagged `repository.system`, `repository.kind`, `repository.lifecycle`, `repository.audience` | `repository_systems`, `repository_kinds`, `repository_lifecycles`, `repository_audiences` in `checks/data/index.json` |
 | Banned `identifier` aliases | `banned_identifier_tokens` in `checks/data/index.json` |
 | Banned `repository-name` aliases, with their notes | `banned_repository_tokens` in `checks/data/index.json` |
+| Banned `action-token` aliases, each with its term's token | `action_synonyms` in `checks/data/index.json` |
 | `display_forms` | `display_forms` in `checks/data/index.json` |
 | Banned `prose` aliases | `checks/vale/MusherConventions/Terms.yml` (error) |
 | Discouraged `prose` aliases | `checks/vale/MusherConventions/Discouraged.yml` (warning) |

@@ -152,6 +152,10 @@ what the change does to a consumer, using the one classification table in
 
 The pull request template asks for the requirement IDs touched, the change class, and whether it is breaking.
 
+`Validate Pull Request / Title` also runs `task classify`, which diffs `checks/data/index.json` against the pull
+request's base and fails when the title's type is weaker than what that diff shows. It is a lower bound: a diagnostic
+message or a check's logic is not in the index, so the table still decides.
+
 ## Review checklist
 
 - The requirement prevents a failure the issue demonstrates, and says so in its rationale.

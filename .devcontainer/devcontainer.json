@@ -18,7 +18,9 @@
       "configureZshAsDefaultShell": true,
       "installOhMyZsh": true,
       "installOhMyZshConfig": true,
-      "upgradePackages": true
+      // Explicitly off (the Feature defaults to on): an apt upgrade at build
+      // time would move the packages under the digest-pinned base image.
+      "upgradePackages": false
     },
     "ghcr.io/devcontainers/features/git:1": {},
     // gh is a Feature rather than a mise pin so it exists before post-create,

@@ -6,7 +6,7 @@ configuration and one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.6.4 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.7.0 -- conventions check  # x-release-please-version
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
@@ -27,7 +27,7 @@ being told ([EC-0017](../engineering-conventions/definitions/conventions/toolcha
 min_version = "2026.9.12"   # the mise that CI and the dev container install
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.6.4"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.7.0"  # x-release-please-version
 ```
 
 Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:
@@ -275,7 +275,7 @@ topic and [EC-0020](../engineering-conventions/definitions/conventions/environme
 Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:
 
 ```sh
-version=0.6.4  # x-release-please-version
+version=0.7.0  # x-release-please-version
 gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
 gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
   --signer-workflow musher-dev/engineering-conventions/.github/workflows/release.yml \

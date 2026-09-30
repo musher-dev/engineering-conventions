@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/musher-dev/engineering-conventions/compare/v0.6.3...v0.6.4) (2026-09-30)
+
+
+### Features
+
+* **conventions:** attest release assets only where attestations exist (REL-18) ([#62](https://github.com/musher-dev/engineering-conventions/issues/62)) ([068c1f6](https://github.com/musher-dev/engineering-conventions/commit/068c1f626bbd1c5c6fd8d0e267d238a51a65af49)), closes [#61](https://github.com/musher-dev/engineering-conventions/issues/61)
+
 ## [0.6.3](https://github.com/musher-dev/engineering-conventions/compare/v0.6.2...v0.6.3) (2026-09-29)
 
 

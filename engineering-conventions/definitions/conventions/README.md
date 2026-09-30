@@ -109,6 +109,8 @@ ID is permanent: it is never renumbered or reused.
 | [DEVC-11](dev-containers/dev-container-stacks.md#devc-11) | A dev container stack's service runs an image with a fixed tag or a digest | EC-0028 | proposed | warning | conftest |
 | [DEVC-12](dev-containers/dev-container-stacks.md#devc-12) | A dev container stack publishes its ports on the loopback address only | EC-0028 | proposed | warning | conftest |
 | [DEVC-13](dev-containers/dev-container-stacks.md#devc-13) | A dev container stack publishes its host ports from the reserved range 15432-15460 | EC-0028 | proposed | warning | conftest |
+| [DEVC-14](dev-containers/dev-container-configuration.md#devc-14) | A dev container does not give its container a fixed name | EC-0027 | proposed | warning | conftest |
+| [DEVC-15](dev-containers/dev-container-configuration.md#devc-15) | A volume mounted under /home belongs to remoteUser | EC-0027 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |

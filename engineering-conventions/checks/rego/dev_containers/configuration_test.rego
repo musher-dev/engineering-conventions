@@ -291,6 +291,72 @@ test_devc_10_unfrozen if {
 	contains(concat("", messages(found, "DEVC-10")), "pass --frozen-lockfile")
 }
 
+fixed_name(name) := concat("", [
+	sprintf("runArgs names the container %q; remove --name, because a fixed name collides ", [name]),
+	"across rebuilds, worktrees and second clones of the repository",
+])
+
+test_devc_14_fixed_names if {
+	config := object.union(devcontainer, {"runArgs": ["--name", "platform-api", "--name=api-dev"]})
+	found := configuration.findings with input as conforming(config)
+	td.pairs(found) == {["DEVC-14", config_path]}
+	messages(found, "DEVC-14") == {fixed_name("platform-api"), fixed_name("api-dev")}
+}
+
+test_devc_14_other_run_args_pass if {
+	config := object.union(devcontainer, {"runArgs": ["--hostname", "api", "--label=name=api", "--names", "--name"]})
+	count(configuration.findings) == 0 with input as conforming(config)
+}
+
+foreign_home(volume, owner) := concat("", [
+	sprintf("the volume %s is mounted under /home/%s, but remoteUser is vscode; ", [volume, owner]),
+	"mount it under /home/vscode, where the remote user's tools look",
+])
+
+test_devc_15_foreign_home if {
+	config := object.union(devcontainer, {"mounts": [
+		"source=musher-${devcontainerId}-gh-config,target=/home/node/.config/gh,type=volume",
+		{"source": "musher-${devcontainerId}-claude-config", "target": "/home/node", "type": "volume"},
+		"src=musher-${devcontainerId}-codex-config,dst=/home/node/.codex,type=volume",
+		"source=musher-${devcontainerId}-cache,destination=/home/root/.cache,type=volume",
+		"source=${localWorkspaceFolder}/.cache,target=/home/node/.cache,type=bind",
+		"target=/home/vscodex/scratch,type=volume",
+	]})
+	found := configuration.findings with input as conforming(config)
+	td.pairs(found) == {["DEVC-15", config_path]}
+	messages(found, "DEVC-15") == {
+		foreign_home("musher-${devcontainerId}-gh-config", "node"),
+		foreign_home("musher-${devcontainerId}-claude-config", "node"),
+		foreign_home("musher-${devcontainerId}-codex-config", "node"),
+		foreign_home("musher-${devcontainerId}-cache", "root"),
+		foreign_home("/home/vscodex/scratch", "vscodex"),
+	}
+}
+
+test_devc_15_remote_user_home_and_elsewhere_pass if {
+	config := object.union(devcontainer, {"mounts": [
+		"source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+		{"source": "musher-${devcontainerId}-claude-config", "target": "/home/vscode", "type": "volume"},
+		"source=musher-${devcontainerId}-cache,target=/var/cache/tools,type=volume",
+		"source=musher-${devcontainerId}-homes,target=/home,type=volume",
+	]})
+	count(configuration.findings) == 0 with input as conforming(config)
+}
+
+test_devc_15_silent_without_remote_user if {
+	config := object.union(object.remove(devcontainer, ["remoteUser"]), {"mounts": [
+		"source=musher-${devcontainerId}-gh-config,target=/home/node/.config/gh,type=volume",
+	]})
+	found := configuration.findings with input as conforming(config)
+	count(messages(found, "DEVC-15")) == 0
+}
+
+test_devc_15_silent_for_root if {
+	found := configuration.findings with input as with_config({"remoteUser": "root"})
+	count(messages(found, "DEVC-15")) == 0
+	count(messages(found, "DEVC-05")) == 1
+}
+
 test_devc_10_continued_line if {
 	run := "# --frozen-lockfile keeps the lock honest\ndevcontainer up \\\n  --workspace-folder . \\\n  --frozen-lockfile"
 	docs := repo(devcontainer, [git_feature], [dependabot, build_workflow(run)], [])

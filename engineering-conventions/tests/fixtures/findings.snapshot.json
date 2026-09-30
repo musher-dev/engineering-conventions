@@ -226,6 +226,14 @@
     [".devcontainer/stacks/postgres/compose.yaml", "DEVC-13", "warning", "the service postgres publishes host port 5432, outside the reserved range 15432-15460; move it into the range", true]
   ],
   "devc-13-passes-range-edges": [],
+  "devc-14-fixed-name": [
+    [".devcontainer/devcontainer.json", "DEVC-14", "warning", "runArgs names the container \"platform-api-dev\"; remove --name, because a fixed name collides across rebuilds, worktrees and second clones of the repository", true]
+  ],
+  "devc-14-passes-other-run-args": [],
+  "devc-15-other-home": [
+    [".devcontainer/devcontainer.json", "DEVC-15", "warning", "the volume musher-${devcontainerId}-gh-config is mounted under /home/node, but remoteUser is vscode; mount it under /home/vscode, where the remote user's tools look", true]
+  ],
+  "devc-15-passes-remote-user-home": [],
   "envs-01-missing-contract": [
     ["platform-api/env.schema.yaml", "ENVS-01", "warning", "the service declares no environment contract; add platform-api/env.schema.yaml with every variable the product reads", true]
   ],

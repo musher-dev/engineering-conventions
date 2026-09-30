@@ -1,0 +1,19 @@
+// Volumes in the remote user's home, by string and object form and every
+// target key, a bind mount into another home, and a volume outside /home.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+    { "source": "musher-${devcontainerId}-claude-config", "target": "/home/vscode/.claude", "type": "volume" },
+    "src=musher-${devcontainerId}-codex-config,dst=/home/vscode/.codex,type=volume",
+    "source=musher-${devcontainerId}-cache,destination=/home/vscode/.cache,type=volume",
+    "source=${localWorkspaceFolder}/.node,target=/home/node/.config,type=bind",
+    "source=musher-${devcontainerId}-tools,target=/opt/tools,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

@@ -6,6 +6,10 @@ name: Validate Pull Request
 # `Validate Pull Request / Title` is a required context in
 # .github/rulesets/main-branch.json.
 #
+# The same job fails a title whose type is weaker than the change class the
+# index.json diff against the base implies
+# (docs/decisions/0005-status-severity-and-versioning.md).
+#
 # It is a workflow of its own because it must re-run when a title is `edited`:
 # in validate.yml that event would re-run, or through the concurrency group
 # cancel, every other job.
@@ -35,14 +39,17 @@ jobs:
       contents: read
       pull-requests: write  # the sticky comment on a failing title
     runs-on: ubuntu-slim
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
+      # Full history so the change class can be read against the index.json
+      # published at the pull request's base commit.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup-tools
         with:
-          install-args: aqua:mikefarah/yq
+          install-args: aqua:mikefarah/yq aqua:go-task/task aqua:astral-sh/uv python
 
       # .github/conventional-commits.yaml is the single list of types and
       # scopes. The action takes newline-delimited lists; the comment below
@@ -113,3 +120,15 @@ jobs:
         with:
           header: pull-request-title-error
           delete: true
+
+      # Last, so the title comment above is settled first; a failure here is
+      # explained in the step's log. The title reaches the command only through
+      # the environment, never interpolated into the script, so it cannot
+      # inject into the shell.
+      - name: Check the title's type against the change class of the index diff
+        env:
+          BASELINE: ${{ github.event.pull_request.base.sha }}
+          TITLE: ${{ github.event.pull_request.title }}
+          # Classifying needs the CLI, not its linters and test runner.
+          UV_NO_DEV: "1"
+        run: task classify

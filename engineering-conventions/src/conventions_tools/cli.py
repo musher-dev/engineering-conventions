@@ -5,7 +5,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from conventions_tools import generate, invariants, run
+from conventions_tools import classify, generate, invariants, run
 from conventions_tools.content import load_content
 from conventions_tools.fixtures import case_dirs, read_snapshot, run_case, write_snapshot
 from conventions_tools.loading import ContentError
@@ -42,6 +42,12 @@ def _invariants(arguments: argparse.Namespace) -> int:
         return EXIT_FINDINGS
     print("invariants hold")
     return EXIT_OK
+
+
+def _classify(arguments: argparse.Namespace) -> int:
+    verdict = classify.classify(product_dir(), arguments.baseline, arguments.title)
+    sys.stdout.write(verdict.report())
+    return EXIT_OK if verdict.passed else EXIT_FINDINGS
 
 
 def _check(arguments: argparse.Namespace) -> int:
@@ -113,6 +119,41 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     invariants_parser.set_defaults(handler=_invariants)
+
+    classify_parser = commands.add_parser(
+        "classify",
+        help="fail a pull request whose title's type is below the change class of its index diff",
+        description=(
+            "Diff checks/data/index.json against the one published at --baseline, rank each "
+            "change by decision 0005's change classification, and compare the strongest with "
+            "the Conventional Commit type of --title."
+        ),
+        epilog=(
+            "It is a lower bound only. A diagnostic message lives in Rego and a check's logic "
+            "in its code, and neither is in the index, so a change there needs a type this "
+            "command cannot see; choose it from "
+            f"{classify.CLASSIFICATION_URL}. A higher type than the minimum always passes, and a "
+            "release pull request (chore(release): ...) is skipped. Exit status: 0 when the "
+            "type meets the minimum, 1 when it is below it, 2 when the title is not a "
+            "Conventional Commit or the baseline does not resolve."
+        ),
+    )
+    classify_parser.add_argument(
+        "--baseline",
+        required=True,
+        metavar="REF",
+        help=(
+            "git ref whose published index.json the change builds on, such as the pull "
+            "request's base commit. A ref that does not resolve fails; an empty or all-zero "
+            "value, or a ref that predates the index, skips the check with a notice"
+        ),
+    )
+    classify_parser.add_argument(
+        "--title",
+        required=True,
+        help="the pull request title, which becomes the squash commit release-please reads",
+    )
+    classify_parser.set_defaults(handler=_classify)
 
     check_parser = commands.add_parser(
         "check",

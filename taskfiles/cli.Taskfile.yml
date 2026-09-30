@@ -54,3 +54,15 @@ tasks:
       BASELINE: '{{.BASELINE | default "HEAD"}}'
     cmds:
       - '{{.UV_RUN}} conventions invariants --baseline {{.BASELINE}}'
+
+  classify:
+    desc: Fail when TITLE's commit type is below the change class the index.json diff against BASELINE implies.
+    requires:
+      vars: [BASELINE, TITLE]
+    cmds:
+      # TITLE is passed through the environment, never interpolated into the
+      # command: a pull request title is untrusted input.
+      - '{{.UV_RUN}} conventions classify --baseline "$BASELINE" --title "$TITLE"'
+    env:
+      BASELINE: '{{.BASELINE}}'
+      TITLE: '{{.TITLE}}'

@@ -376,9 +376,14 @@ def baseline_index(product: Path, ref: str) -> dict[str, object] | None:
     if shown.returncode != 0:
         return None
     try:
-        return as_map(as_map(as_map(parse_yaml(shown.stdout, ref)).get("conventions")).get("index"))
+        return unwrap_index(parse_yaml(shown.stdout, ref))
     except ContentError:
         return None
+
+
+def unwrap_index(document: object) -> dict[str, object]:
+    """The index inside a parsed index.json, which nests it as data.conventions.index."""
+    return as_map(as_map(as_map(document).get("conventions")).get("index"))
 
 
 def append_only(content: Content, ref: str) -> list[str]:

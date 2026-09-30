@@ -1,0 +1,14 @@
+// runArgs that set a hostname and a label containing "name", but no --name.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "runArgs": ["--hostname", "platform-api", "--label=dev.musher.name=platform-api", "--cap-add=SYS_PTRACE"],
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

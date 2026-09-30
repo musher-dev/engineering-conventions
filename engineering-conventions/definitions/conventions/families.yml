@@ -60,3 +60,11 @@ families:
     title: OpenTofu
     topic: opentofu
     owner: "@justinmerrell"
+  - prefix: IFACE
+    title: Interfaces
+    topic: interfaces
+    owner: "@justinmerrell"
+  - prefix: DEPS
+    title: Dependencies
+    topic: dependencies
+    owner: "@justinmerrell"

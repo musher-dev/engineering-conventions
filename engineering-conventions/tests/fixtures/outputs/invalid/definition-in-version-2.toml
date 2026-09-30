@@ -1,0 +1,11 @@
+schema_version = 2
+
+[[outputs]]
+id = "api-contract"
+kind = "bundle"
+format = "openapi"
+definition = "api/openapi.yaml"
+source = "api/"
+publish_workflow = "release.yml"
+location = "https://github.com/example/repo/releases"
+docs = "api/README.md"

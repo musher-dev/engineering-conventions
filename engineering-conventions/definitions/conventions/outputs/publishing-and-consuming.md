@@ -178,7 +178,8 @@ Checked by: review · Severity: warning · Since: 0.3.0
 
 An exact version, or an image digest, makes a consumer's build reproducible and its upgrades visible as reviewed
 changes, which a dependency bot can raise. A range or a moving tag changes what a repository runs without a change in
-that repository.
+that repository. [DEPS-04](../dependencies/dependencies-declaration.md#deps-04) checks the pins it can read: the dependencies
+declaration and `@musher-dev/` packages.
 
 **Correct:**
 

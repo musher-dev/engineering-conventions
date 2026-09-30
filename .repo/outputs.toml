@@ -1,8 +1,8 @@
 # This repository's own outputs declaration (EC-0007): what the Release
 # workflow attaches to each draft GitHub Release before it publishes it
-# (decision 0017). `task conventions:self` holds it to OUT-01 to OUT-07 like
+# (decision 0017). `task conventions:self` holds it to EC-0007 and EC-0030 like
 # any other repository.
-schema_version = 1
+schema_version = 2
 
 [[outputs]]
 id = "engineering-conventions"

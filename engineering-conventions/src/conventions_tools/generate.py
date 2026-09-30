@@ -92,6 +92,10 @@ def build_index(content: Content) -> dict[str, object]:
         "declaration_schema": schemas.self_contained(content.product, schemas.DECLARATION),
         # OUT-02 validates the outputs declaration the same way.
         "outputs_schema": schemas.self_contained(content.product, schemas.OUTPUTS),
+        # DEPS-02 validates the dependencies declaration the same way, and
+        # DEPS-05 each vendored release record.
+        "dependencies_schema": schemas.self_contained(content.product, schemas.DEPENDENCIES),
+        "release_record_schema": schemas.self_contained(content.product, schemas.RELEASE_RECORD),
         # REPO-02 validates the identity declaration the same way.
         "repository_schema": schemas.self_contained(content.product, schemas.REPOSITORY),
         # ENVS-03 validates every env.schema.yaml the same way.

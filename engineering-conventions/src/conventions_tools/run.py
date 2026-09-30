@@ -6,6 +6,7 @@ reports files that cannot be parsed, and renders findings. `bin/conventions`
 is the consumer's equivalent, with no Python.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -121,6 +122,7 @@ class Selection:
     not_dockerfiles: re.Pattern[str]
     texts: re.Pattern[str]
     sizes: re.Pattern[str]
+    digests: re.Pattern[str]
     text_limit: int
 
 
@@ -145,6 +147,7 @@ def selection(product: Path | None = None) -> Selection:
         not_dockerfiles=compiled("NOT_DOCKERFILES"),
         texts=compiled("TEXTS"),
         sizes=compiled("SIZES"),
+        digests=compiled("DIGESTS"),
         text_limit=numbers["TEXT_LIMIT"],
     )
 
@@ -302,10 +305,21 @@ def inventory_document(
         for relative in files
         if chosen.sizes.search(relative)
     }
+    digests = {
+        relative: hashlib.sha256((repo / relative).read_bytes()).hexdigest()
+        for relative in files
+        if chosen.digests.search(relative)
+    }
     listing: dict[str, object] = {"files": files}
     if repository is not None:
         listing["repository"] = {"name": repository}
-    listing |= {"texts": texts, "sizes": sizes, "parsed": parsed, "unparsed": unparsed}
+    listing |= {
+        "texts": texts,
+        "sizes": sizes,
+        "digests": digests,
+        "parsed": parsed,
+        "unparsed": unparsed,
+    }
     return {"conventions_inventory": listing}
 
 

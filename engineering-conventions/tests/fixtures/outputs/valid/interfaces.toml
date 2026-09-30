@@ -1,0 +1,34 @@
+schema_version = 2
+
+[[outputs]]
+id = "image"
+kind = "image"
+source = "platform-api/"
+publish_workflow = "release.yml"
+location = "ghcr.io/example/platform-api"
+docs = "platform-api/README.md#run-the-image"
+
+[[outputs]]
+id = "contracts"
+kind = "bundle"
+source = "platform-api/contracts/"
+publish_workflow = "release.yml"
+location = "https://github.com/example/platform-api/releases"
+docs = "platform-api/contracts/README.md"
+
+[[interfaces]]
+id = "public-http"
+format = "openapi"
+description = "The public HTTP API."
+definitions = ["platform-api/contracts/openapi/public.json"]
+delivered_by = "contracts"
+compatibility = "gated"
+audience = "public"
+generated = true
+
+[[interfaces]]
+id = "events"
+format = "json-schema"
+definitions = ["platform-api/contracts/events/*.schema.json"]
+delivered_by = "contracts"
+compatibility = "versioned"

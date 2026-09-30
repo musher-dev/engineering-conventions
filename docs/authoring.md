@@ -16,8 +16,10 @@ applies them.
 | **topic** | The part of a repository a group of conventions governs, named for its file surface or tool, such as `github-actions`; a subdirectory of `definitions/conventions/` | `domain` (the platform's bounded contexts) |
 | **convention profile** | A named selection of requirements for a kind of repository | `baseline` |
 | **conventions declaration** | A consumer's `.repo/conventions.toml` | `manifest` |
-| **output** | Something a repository publishes for others to consume: an image, library, command-line tool, contract or bundle | `artifact` (GitHub Actions already means a workflow's upload) |
+| **output** | Something a repository publishes for others to consume: an image, library, command-line tool, bundle or site | `artifact` (GitHub Actions already means a workflow's upload) |
 | **outputs declaration** | A publishing repository's `.repo/outputs.toml` | |
+| **interface** | A surface another repository builds or runs against, declared in `[[interfaces]]` and addressed as `<repository>#<id>` | `contract` (the retired output kind), `API` (one format of many) |
+| **dependencies declaration** | A consuming repository's `.repo/dependencies.toml`: each vendored release and its pin | `lock file` |
 | **identity declaration** | Every repository's `.repo/repository.toml`: its name, system, component, kind, owner, lifecycle, audience and tier | `manifest`, `catalog-info` |
 | **system** | A registered grouping of repositories, the first token of each of their names, such as `platform` | `team`, `domain` |
 | **component** | What one repository holds within its system, the rest of its name, such as `api` in `platform-api` | |

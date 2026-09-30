@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEPS-08",
+    "path": "Taskfile.yml",
+    "severity": "warning"
+  }
+]

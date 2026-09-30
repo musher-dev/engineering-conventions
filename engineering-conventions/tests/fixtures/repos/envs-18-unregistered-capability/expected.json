@@ -1,0 +1,7 @@
+[
+  {
+    "id": "ENVS-18",
+    "path": "platform-api/env.schema.yaml",
+    "severity": "warning"
+  }
+]

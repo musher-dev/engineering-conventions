@@ -4,7 +4,7 @@ date: 2026-09-24
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
-amended_by: ["0018"]
+amended_by: ["0018", "0022"]
 ---
 
 # 0010 — Outputs declaration

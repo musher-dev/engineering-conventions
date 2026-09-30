@@ -7,7 +7,8 @@ summary: >-
   format with optional blocks for code generation, secret delivery and the
   deployment platform. Binding names follow one grammar over a vocabulary
   the schema declares, retired names stay retired, no secret value is
-  committed, and a variable shared between deployables agrees everywhere.
+  committed, a variable shared between deployables agrees everywhere, and a
+  binding that reaches another service or an outside capability names it.
 status: draft
 topic: environment
 applies_to:
@@ -152,6 +153,37 @@ requirements:
       engine: conftest
       package: conventions.checks.environment.env_grammar
     aliases: ["platform:G-06"]
+  - id: ENVS-16
+    title: A binding names at most one of target and capability, and a provider only with a capability
+    status: proposed
+    severity: warning
+    since: 0.7.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_schema
+  - id: ENVS-17
+    title: A binding's target is another repository's interface, written <repository>#<interface>
+    status: proposed
+    severity: warning
+    since: 0.7.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_schema
+  - id: ENVS-18
+    title: A binding's capability is a registered runtime capability
+    status: proposed
+    severity: warning
+    since: 0.7.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_schema
+  - id: ENVS-19
+    title: A binding that reaches another service or an outside capability names it
+    status: proposed
+    severity: warning
+    since: 0.7.0
+    validation:
+      engine: review
 ---
 
 # Environment schema
@@ -267,6 +299,62 @@ against it.
 | `nested` | no | Groups it into a nested settings model: `group`, `sub`, `field`, `model` (ENVS-13) |
 | `grammar_exempt`, `grammar_exempt_reason` | no | The grammar does not apply, and why |
 | `python_field_name` | no | The generated Python field name, when the natural one would collide |
+| `target` | no | The other Musher service the value reaches, as `<repository>#<interface>`, e.g. `platform-api#public-http` (ENVS-16, ENVS-17) |
+| `capability` | no | What the value reaches when it is not a Musher service: a registered runtime capability, e.g. `postgresql` (ENVS-16, ENVS-18) |
+| `provider` | no | The vendor whose API the code speaks for that capability, e.g. `stripe`; only with `capability` (ENVS-16) |
+
+### What a binding reaches
+
+A service's runtime dependencies are already in its schema: the variables that hold where to connect. Naming what
+each one reaches turns the schema into the service's runtime edges, which the dependency graph reads, and which a
+reviewer and a deploy check can use without guessing from names
+([decision 0022](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0022-interfaces-and-dependencies.md)).
+
+```yaml
+bindings:
+  PLATFORM_API_BASE_URL:
+    type: string
+    format: url
+    sensitivity: internal
+    target: platform-api#public-http
+    description: The public API the console calls to load a workspace.
+  DATABASE_URL:
+    type: string
+    format: url
+    sensitivity: secret
+    capability: postgresql
+    description: The PostgreSQL database that holds every account, workspace and job.
+  STRIPE_API_KEY:
+    type: string
+    sensitivity: secret
+    capability: payments
+    provider: stripe
+    description: The key the billing worker charges and refunds customers with.
+```
+
+A binding names **either** a `target`, another Musher service's interface, **or** a `capability`, something outside
+Musher that the code needs. It names what the code needs, never the cluster, bucket or account that provides it:
+that is a fact of each environment, held in its configuration. Several bindings may reach one thing (a database's
+URL and its admin URL), and each names it.
+
+The capabilities are terms tagged `runtime.capability` in `definitions/terminology/global.yml`, so a new one is a
+terminology change:
+
+| Capability | Is |
+| --- | --- |
+| `postgresql` | A PostgreSQL database, including a queue or notification channel kept in it |
+| `object-storage` | An object store, through an S3-compatible API or a provider's own |
+| `otlp` | An OpenTelemetry collector the process exports to |
+| `email-delivery` | A service the process sends email through |
+| `payments` | A payment provider |
+| `llm` | A hosted language model |
+| `oauth-identity` | An OAuth or OpenID Connect provider users sign in with |
+| `code-hosting` | A source code host the process calls as an application |
+| `dns` | A DNS provider whose records the process reads or changes |
+| `cdn` | A content delivery network or edge platform |
+| `vpn-mesh` | An overlay network the process joins or manages |
+| `block-storage` | A block storage system whose volumes the process provisions |
+| `cloud-compute` | A cloud provider whose machines the process creates or destroys |
 
 ### Sensitivity
 
@@ -623,6 +711,93 @@ API_BASE_URL: {consumer: client, sensitivity: public, ...}
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform G-06
+
+### ENVS-16
+
+**A binding names at most one of `target` and `capability`, and a `provider` only with a `capability`.**
+
+A value reaches one thing. A binding with both says two contradictory things about what it connects to, and a
+provider without a capability names a vendor without saying what the code uses it for.
+
+**Correct:**
+
+```yaml
+STRIPE_API_KEY: {type: string, sensitivity: secret, capability: payments, provider: stripe, description: "…"}
+```
+
+**Incorrect:**
+
+```yaml
+STRIPE_API_KEY: {type: string, sensitivity: secret, provider: stripe, description: "…"}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.0
+
+### ENVS-17
+
+**A binding's `target` is another repository's interface, written `<repository>#<interface>`.**
+
+The target is how a runtime edge is joined to the interface the other service declares
+([EC-0030](../interfaces/interfaces-declaration.md)): the repository's name, then the interface's ID. A free-form
+value (`api`, `the platform`) joins nothing, and a target in the repository itself is not an edge between services.
+
+**Correct:**
+
+```yaml
+PLATFORM_API_BASE_URL: {type: string, format: url, sensitivity: internal, target: "platform-api#public-http", description: "…"}
+```
+
+**Incorrect:**
+
+```yaml
+PLATFORM_API_BASE_URL: {type: string, format: url, sensitivity: internal, target: api, description: "…"}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.0
+
+### ENVS-18
+
+**A binding's `capability` is a registered runtime capability.**
+
+A capability is what an environment must provide before the service can run, and what the graph groups services by.
+A free-form value (`postgres`, `db`, `s3`) splits one capability into several, so a registered term is the only
+spelling.
+
+**Correct:**
+
+```yaml
+DATABASE_URL: {type: string, format: url, sensitivity: secret, capability: postgresql, description: "…"}
+```
+
+**Incorrect:**
+
+```yaml
+DATABASE_URL: {type: string, format: url, sensitivity: secret, capability: postgres, description: "…"}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.0
+
+### ENVS-19
+
+**A binding that reaches another service or an outside capability names it.**
+
+The runtime graph is only as complete as the bindings that name what they reach. A reviewer checks that each binding
+holding an address, a connection string or a credential for something outside the process names its `target` or
+`capability`. A value that addresses the service itself, such as its own public origin, names neither.
+
+**Correct:**
+
+```yaml
+DATABASE_URL: {type: string, format: url, sensitivity: secret, capability: postgresql, description: "…"}
+```
+
+**Incorrect:**
+
+```yaml
+DATABASE_URL: {type: string, format: url, sensitivity: secret, description: "…"}
+```
+
+Checked by: review · Severity: warning · Since: 0.7.0
 
 ## References
 

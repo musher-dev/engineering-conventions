@@ -52,8 +52,11 @@ findings contains lib.finding("REPO-17", product_dir, message) if {
 	product_dir in existing_directories
 	count(product_ecosystems) == 0
 	message := sprintf(
-		"%s/ holds no build manifest; move the product's manifest into it (one of %s)",
-		[product_dir, concat(", ", sort(manifests))],
+		concat(" ", [
+			"%s/ holds no build manifest; move the product's manifest into it (one of %s),",
+			"or keep an OpenTofu root's %s in it or in a directory below it",
+		]),
+		[product_dir, concat(", ", sort(manifests)), opentofu_lockfile],
 	)
 }
 
@@ -207,10 +210,22 @@ manifests contains manifest if {
 	some manifest in ecosystem.manifests
 }
 
+# An OpenTofu root has no manifest at the top of the product directory: its
+# dependency record is the lockfile `tofu init` writes, in the root's own
+# directory, which may sit anywhere below the product directory.
+opentofu_lockfile := ".terraform.lock.hcl"
+
 product_ecosystems contains name if {
 	some name, ecosystem in ecosystems
 	some manifest in ecosystem.manifests
 	concat("/", [product_dir, manifest]) in files.all_files
+}
+
+product_ecosystems contains "opentofu" if {
+	product_dir
+	some path in files.all_files
+	startswith(path, concat("", [product_dir, "/"]))
+	endswith(path, concat("", ["/", opentofu_lockfile]))
 }
 
 dependabot_ecosystems[updater] := ecosystem.manifests if {

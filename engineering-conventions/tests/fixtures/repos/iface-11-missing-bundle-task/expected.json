@@ -1,0 +1,12 @@
+[
+  {
+    "id": "IFACE-11",
+    "path": "Taskfile.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

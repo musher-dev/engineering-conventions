@@ -6,7 +6,8 @@
 #   runs as a user other than root (DEVC-05), runs lifecycle scripts that
 #   exist (DEVC-06), commits no secret (DEVC-07), names its volumes for the
 #   container (DEVC-08), and is kept current and built in CI (DEVC-09,
-#   DEVC-10).
+#   DEVC-10); it fixes no container name (DEVC-14), and mounts volumes
+#   under the remote user's home (DEVC-15).
 # scope: package
 # custom:
 #   convention: EC-0027
@@ -162,6 +163,36 @@ findings contains lib.finding("DEVC-08", path, message) if {
 	message := sprintf(
 		"the volume %s is not named musher-${devcontainerId}-<purpose>; rename it so it belongs to this container",
 		[source],
+	)
+}
+
+# DEVC-14. The name is the argument after --name, or follows --name=.
+findings contains lib.finding("DEVC-14", path, message) if {
+	some path, devcontainer in devcontainers
+	some name in container_names(object.get(devcontainer, "runArgs", []))
+	message := sprintf(
+		"runArgs names the container %q; remove --name, %s",
+		[name, "because a fixed name collides across rebuilds, worktrees and second clones of the repository"],
+	)
+}
+
+# DEVC-15. Silent when remoteUser is unset or root, which DEVC-05 reports;
+# root's home is not under /home.
+findings contains lib.finding("DEVC-15", path, message) if {
+	some path, devcontainer in devcontainers
+	user := devcontainer.remoteUser
+	is_string(user)
+	user != "root"
+	some mount in object.get(devcontainer, "mounts", [])
+	fields := mount_fields(mount)
+	fields.type == "volume"
+	target := mount_target(fields)
+	some match in regex.find_all_string_submatch_n(`^/home/([^/]+)(/|$)`, target, 1)
+	owner := match[1]
+	owner != user
+	message := sprintf(
+		"the volume %s is mounted under /home/%s, but remoteUser is %s; mount it under /home/%s, %s",
+		[volume_label(fields, target), owner, user, user, "where the remote user's tools look"],
 	)
 }
 
@@ -325,6 +356,37 @@ mount_fields(mount) := {key: value |
 mount_key("src") := "source"
 
 mount_key(key) := key if key != "src"
+
+# Where a mount lands: target, or its synonyms destination and dst.
+mount_target(fields) := [value |
+	some key in ["target", "destination", "dst"]
+	value := fields[key]
+	is_string(value)
+][0]
+
+# A named volume by its name, an anonymous one by where it lands.
+volume_label(fields, target) := fields.source if {
+	is_string(fields.source)
+	fields.source != ""
+} else := target
+
+# --- Container names ------------------------------------------------------
+
+# The fixed names runArgs gives the container.
+default container_names(_) := set()
+
+container_names(args) := {name |
+	some i, arg in args
+	arg == "--name"
+	name := args[i + 1]
+	is_string(name)
+} | {trim_prefix(arg, "--name=") |
+	some arg in args
+	is_string(arg)
+	startswith(arg, "--name=")
+} if {
+	is_array(args)
+}
 
 # --- Upkeep ---------------------------------------------------------------
 

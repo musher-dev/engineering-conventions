@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  generate:
+    desc: Write the generated interface definitions.
+    cmds:
+      - go run ./cmd/contracts
+
+  check:
+    desc: Fail when a committed interface definition is not current.
+    cmds:
+      - task: generate
+      - git diff --exit-code -- platform-api/contracts
+
+  breaking:
+    desc: Compare each interface with the last release.
+    cmds:
+      - oasdiff breaking --fail-on ERR base.json platform-api/contracts/openapi/public.json
+
+  bundle:
+    desc: Write the contracts bundle and its release record.
+    cmds:
+      - go run ./cmd/bundle

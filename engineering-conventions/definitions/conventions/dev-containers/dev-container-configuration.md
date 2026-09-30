@@ -5,7 +5,8 @@ summary: >-
   A dev container's configuration lives at .devcontainer/devcontainer.json,
   locks its Features, builds on an image that moves only with a commit, runs
   as a user other than root, runs lifecycle scripts the repository holds,
-  commits no secret, names its volumes for the container, and is kept
+  commits no secret, names its volumes for the container and mounts them in
+  the remote user's home, gives the container no fixed name, and is kept
   current by Dependabot or Renovate and built in CI.
 status: draft
 topic: dev-containers
@@ -112,6 +113,22 @@ requirements:
     status: proposed
     severity: warning
     since: 0.6.3
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.configuration
+  - id: DEVC-14
+    title: A dev container does not give its container a fixed name
+    status: proposed
+    severity: warning
+    since: 0.7.0
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.configuration
+  - id: DEVC-15
+    title: A volume mounted under /home belongs to remoteUser
+    status: proposed
+    severity: warning
+    since: 0.7.0
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
@@ -400,3 +417,53 @@ lockfile is stale, which is how DEVC-03 is enforced beyond the references this c
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.3
+
+### DEVC-14
+
+**A dev container does not give its container a fixed name.**
+
+Docker allows one container per name on a host. A `--name` in `runArgs` makes a rebuild fail while the old container
+still exists, and makes a second worktree or a second clone of the repository collide with the first. Without it,
+Docker gives each container a unique name, and the Dev Container CLI finds its container by the labels it sets for
+the workspace folder. The check reads
+`--name <value>` and `--name=<value>` in `runArgs`.
+
+**Correct:**
+
+```jsonc
+"runArgs": ["--cap-add=SYS_PTRACE"]
+```
+
+**Incorrect:**
+
+```jsonc
+"runArgs": ["--name", "platform-api-dev"]
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.0
+
+### DEVC-15
+
+**A volume mounted under /home belongs to remoteUser.**
+
+A volume that keeps a tool's state, such as the GitHub CLI's login or an agent's history, works only where the tool
+looks, and the tools a contributor runs look in the remote user's home. A volume mounted under another user's home,
+often left behind when the image's user changed, is written where nothing reads it: the container starts, and the
+state is silently lost on every rebuild. The check compares the user in each volume's `/home/<user>` target with
+`remoteUser`; when `remoteUser` is unset or root, DEVC-05 reports that instead. Bind mounts are not checked.
+
+**Correct:**
+
+```jsonc
+"remoteUser": "vscode",
+"mounts": ["source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume"]
+```
+
+**Incorrect:**
+
+```jsonc
+"remoteUser": "vscode",
+"mounts": ["source=musher-${devcontainerId}-gh-config,target=/home/node/.config/gh,type=volume"]
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.0

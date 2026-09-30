@@ -296,6 +296,14 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
     assert not chosen.texts.search("README.md")
     assert not chosen.texts.search("docs/trivyignore")
     assert chosen.sizes.search("docs/guide.md")
+    assert chosen.digests.search("web/contracts/vendor/platform-api/contracts/openapi/public.json")
+    assert chosen.digests.search("contracts/vendor/platform-api/contracts/release.json")
+    assert not chosen.digests.search("web/contracts/openapi/public.json")
+    assert chosen.inputs.search("web/contracts/vendor/platform-api/contracts/release.json")
+    assert chosen.inputs.search(".repo/dependencies.toml")
+    assert not chosen.inputs.search(
+        "web/contracts/vendor/platform-api/contracts/openapi/release.json"
+    )
     assert chosen.text_limit > 0
 
 
@@ -317,6 +325,9 @@ def test_inventory_document_embeds_text_sizes_and_parses(product: Path, tmp_path
     (tmp_path / "Dockerfile").write_text("ARG X=1\nFROM scratch\n")
     (tmp_path / "broken.Dockerfile").write_text("")
     (tmp_path / "CLAUDE.md").write_text("@README.md\n")
+    vendored = tmp_path / "contracts" / "vendor" / "platform-api" / "contracts"
+    vendored.mkdir(parents=True)
+    (vendored / "public.json").write_text("")
     (tmp_path / "big").mkdir()
     (tmp_path / "big" / "CLAUDE.md").write_text("x" * (run.selection(product).text_limit + 1))
     files = run.inventory(tmp_path)
@@ -326,6 +337,11 @@ def test_inventory_document_embeds_text_sizes_and_parses(product: Path, tmp_path
     assert listing["repository"] == {"name": "sdk-cli"}
     assert listing["texts"] == {"CLAUDE.md": "@README.md\n"}
     assert listing["sizes"] == {"CLAUDE.md": 11, "big/CLAUDE.md": 262145}
+    assert listing["digests"] == {
+        "contracts/vendor/platform-api/contracts/public.json": (
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        )
+    }
     parsed = {
         get_str(entry, "path"): entry.get("contents")
         for entry in map(as_map, as_list(listing["parsed"]))

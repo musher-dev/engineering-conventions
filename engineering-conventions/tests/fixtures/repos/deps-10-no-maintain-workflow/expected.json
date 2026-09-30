@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEPS-10",
+    "path": ".repo/dependencies.toml",
+    "severity": "warning"
+  }
+]

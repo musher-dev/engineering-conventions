@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Release record",
+  "description": "The release.json at the root of a bundle that delivers interfaces: which release it is, and each interface it delivers with the SHA-256 of each file (EC-0031). A consumer keeps it unchanged in its vendored copy (EC-0032), where DEPS-05 checks it against this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository",
+    "output",
+    "version",
+    "tag",
+    "commit",
+    "interfaces"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "repository": {
+      "description": "The producing repository's name on GitHub, without the organization.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "output": {
+      "description": "The id of the bundle output this record is the root of.",
+      "$ref": "common.schema.json#/definitions/slug"
+    },
+    "version": {
+      "description": "The release version, without a leading v.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$"
+    },
+    "tag": {
+      "description": "The release's tag, e.g. v0.36.1 or contracts/v0.36.1.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "commit": {
+      "description": "The full SHA of the commit the release was built from.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "released_with": {
+      "description": "Other outputs cut by the same release, with the digest that identifies each, such as the image the interfaces describe.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "output",
+          "location",
+          "digest"
+        ],
+        "properties": {
+          "output": {
+            "$ref": "common.schema.json#/definitions/slug"
+          },
+          "location": {
+            "$ref": "common.schema.json#/definitions/nonEmptyString"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "interfaces": {
+      "description": "Every interface the bundle delivers.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "format",
+          "compatibility",
+          "files"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/definitions/slug"
+          },
+          "format": {
+            "$ref": "common.schema.json#/definitions/slug"
+          },
+          "compatibility": {
+            "$ref": "common.schema.json#/definitions/slug"
+          },
+          "files": {
+            "description": "Each file of the interface, by its path from the bundle's root, with its SHA-256.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "properties": {
+                "path": {
+                  "$ref": "common.schema.json#/definitions/repoPath"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

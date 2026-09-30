@@ -200,10 +200,10 @@ checks the file against its schema as part of `conventions check`; no separate v
 ## Declare what you publish
 
 A repository with a `publish` workflow lists what it publishes in `.repo/outputs.toml`, one entry per container image,
-library, command-line tool, contract, bundle, site or machine image:
+library, command-line tool, bundle, site or machine image:
 
 ```toml
-schema_version = 1
+schema_version = 2
 
 [[outputs]]
 id = "api-image"
@@ -218,6 +218,57 @@ docs = "api/README.md#run-the-image"
 each path and workflow it names exists. The format is
 [EC-0007](../engineering-conventions/definitions/conventions/outputs/outputs-declaration.md); what a published output
 promises its consumers is [EC-0008](../engineering-conventions/definitions/conventions/outputs/publishing-and-consuming.md).
+
+## Declare the interfaces you offer
+
+When other repositories build or run against something yours defines, such as an OpenAPI document, event schemas or
+a protobuf package, declare each surface as its own interface in the same file, with the output that delivers it, and
+keep its files in `<product>/contracts/`:
+
+```toml
+[[outputs]]
+id = "contracts"
+kind = "bundle"
+source = "api/contracts/"
+publish_workflow = "release.yml"
+location = "https://github.com/your-org/your-repo/releases"
+docs = "api/contracts/README.md"
+
+[[interfaces]]
+id = "public-http"
+format = "openapi"
+definitions = ["api/contracts/openapi/public.json"]
+delivered_by = "contracts"
+compatibility = "gated"
+```
+
+Define `contracts:check`, `contracts:breaking` and `contracts:bundle` (and `contracts:generate` when code writes the
+definitions), run the first two in your validate workflow, and build the bundle with its `release.json` in the
+workflow that publishes it. The rules are the [interfaces](../engineering-conventions/definitions/conventions/interfaces/README.md)
+topic.
+
+## Declare the interfaces you vendor
+
+When your repository builds against another repository's interfaces, vendor the release into
+`<product>/contracts/vendor/<repository>/<output>/`, with its `release.json` unchanged, and pin it in
+`.repo/dependencies.toml`:
+
+```toml
+schema_version = 1
+
+[[dependencies]]
+repository = "platform-api"
+output = "contracts"
+interfaces = ["public-http"]
+version = "0.36.1"
+```
+
+That file is the only place the pin lives: no `config/<repository>.ref`, no hand-kept lock. Packages and tools keep
+their pins in their own manifests, at exact versions. Define `deps:check` and `deps:sync`, run `deps:check` in your
+validate workflow, and run `deps:sync` from a scheduled `maintain-dependencies.yml`. At runtime, name what each
+environment binding reaches: `target = "platform-api#public-http"` for another service, or a registered `capability`
+such as `postgresql`. The rules are the [dependencies](../engineering-conventions/definitions/conventions/dependencies/README.md)
+topic and [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md).
 
 ## Without mise
 

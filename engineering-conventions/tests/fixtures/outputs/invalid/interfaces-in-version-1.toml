@@ -1,0 +1,16 @@
+schema_version = 1
+
+[[outputs]]
+id = "contracts"
+kind = "bundle"
+source = "api/contracts/"
+publish_workflow = "release.yml"
+location = "https://github.com/example/repo/releases"
+docs = "api/contracts/README.md"
+
+[[interfaces]]
+id = "public-http"
+format = "openapi"
+definitions = ["api/contracts/openapi/public.json"]
+delivered_by = "contracts"
+compatibility = "gated"

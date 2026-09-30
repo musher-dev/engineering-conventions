@@ -54,9 +54,9 @@
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "token": {
-          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle or repository.audience.",
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle, repository.audience, interfaces.format, interfaces.compatibility or runtime.capability. A token joined to others with hyphens, in a filename or a repository name, is one word; the rest may be kebab-case, e.g. json-schema.",
           "type": "string",
-          "pattern": "^[a-z][a-z0-9]*$"
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
         },
         "definition": {
           "description": "What the term means here.",
@@ -108,28 +108,59 @@
         { "required": ["definition"] },
         { "required": ["authority"] }
       ],
-      "if": {
-        "required": ["tags"],
-        "properties": {
-          "tags": {
-            "contains": {
-              "enum": [
-                "gha.responsibility",
-                "gha.capability",
-                "gha.action",
-                "outputs.kind",
-                "repository.system",
-                "repository.kind",
-                "repository.lifecycle",
-                "repository.audience"
-              ]
+      "allOf": [
+        {
+          "if": {
+            "required": ["tags"],
+            "properties": {
+              "tags": {
+                "contains": {
+                  "enum": [
+                    "gha.responsibility",
+                    "gha.capability",
+                    "gha.action",
+                    "outputs.kind",
+                    "repository.system",
+                    "repository.kind",
+                    "repository.lifecycle",
+                    "repository.audience",
+                    "interfaces.format",
+                    "interfaces.compatibility",
+                    "runtime.capability"
+                  ]
+                }
+              }
             }
+          },
+          "then": {
+            "required": ["token"]
+          }
+        },
+        {
+          "if": {
+            "required": ["tags"],
+            "properties": {
+              "tags": {
+                "contains": {
+                  "enum": [
+                    "gha.responsibility",
+                    "gha.capability",
+                    "gha.action",
+                    "outputs.kind",
+                    "repository.system",
+                    "repository.kind",
+                    "repository.lifecycle",
+                    "repository.audience"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": { "token": { "pattern": "^[a-z][a-z0-9]*$" } }
           }
         }
-      },
-      "then": {
-        "required": ["token"]
-      }
+      ]
     },
     "alias": {
       "description": "A word to avoid in favour of the term. banned aliases fail; discouraged ones warn. scope says where: prose (checked by the MusherConventions Vale style), identifier (filenames, IDs and other names inside a repository, checked by the conventions that govern them), repository-name (a token of a repository's own name, checked by REPO-10) or action-token (the first token of a composite action's directory, where GHA-20 suggests the term's token instead; projected into vocabulary.action_synonyms and never into a banned-token list).",

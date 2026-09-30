@@ -297,13 +297,22 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: developme
 The product directory is the ecosystem's build root. Without a manifest there, the build still starts from somewhere
 else, and the directory is only a folder of sources. The recognised manifests are `Cargo.toml`, `package.json`,
 `pyproject.toml`, `go.mod`, `deno.json`, `deno.jsonc`, `pom.xml`, `build.gradle`, `build.gradle.kts`,
-`settings.gradle` and `settings.gradle.kts`, at the top of the product directory.
+`settings.gradle` and `settings.gradle.kts`, at the top of the product directory. An OpenTofu root's manifest is its
+`.terraform.lock.hcl`, the dependency record `tofu init` writes beside the root's configuration, so that lockfile
+counts in the product directory or in any directory below it.
 
 **Correct:**
 
 ```text
 platform-api/pyproject.toml
 platform-api/src/platform_api/__init__.py
+```
+
+**Correct:**
+
+```text
+infra-github/terraform/.terraform.lock.hcl   # an OpenTofu root below the product directory
+infra-github/terraform/main.tf
 ```
 
 **Incorrect:**

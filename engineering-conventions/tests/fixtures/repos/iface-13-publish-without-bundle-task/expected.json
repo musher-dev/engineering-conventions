@@ -1,0 +1,12 @@
+[
+  {
+    "id": "IFACE-13",
+    "path": ".github/workflows/publish-contracts.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  }
+]

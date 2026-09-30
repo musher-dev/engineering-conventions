@@ -3,9 +3,9 @@
 # description: >-
 #   A repository with a publish workflow declares its outputs in
 #   .repo/outputs.toml (OUT-01), and the declaration is valid, names known
-#   kinds, unique IDs, existing paths and real publish workflows, says what
-#   each contract is (OUT-02 to OUT-07), and serves each site from an HTTPS
-#   origin (OUT-12).
+#   kinds, unique IDs, existing paths and real publish workflows (OUT-02 to
+#   OUT-06), and serves each site from an HTTPS origin (OUT-12). OUT-07 is
+#   retired: interfaces are declared under [[interfaces]] (EC-0030).
 # scope: package
 # custom:
 #   convention: EC-0007
@@ -39,9 +39,22 @@ findings contains lib.finding("OUT-03", files.outputs_path, message) if {
 	some index, output in outputs
 	is_string(output.kind)
 	not output.kind in output_kinds
+	output.kind != "contract"
 	message := sprintf(
 		"%s has kind %q, which is not an output kind; use one of %s",
 		[label(output, index), output.kind, names.quoted_list(output_kinds)],
+	)
+}
+
+findings contains lib.finding("OUT-03", files.outputs_path, message) if {
+	some index, output in outputs
+	output.kind == "contract"
+	message := sprintf(
+		concat(" ", [
+			"%s has kind \"contract\", which is retired; declare the definition as an [[interfaces]] entry",
+			"(schema_version = 2) delivered by the bundle, site or library output that ships it",
+		]),
+		[label(output, index)],
 	)
 }
 
@@ -85,18 +98,6 @@ findings contains lib.finding("OUT-06", files.outputs_path, message) if {
 	message := sprintf(
 		"%s names %q, whose responsibility is %s; name the workflow that publishes it",
 		[label(output, index), output.publish_workflow, accepted_responsibilities(output)],
-	)
-}
-
-# OUT-07
-findings contains lib.finding("OUT-07", files.outputs_path, message) if {
-	some index, output in outputs
-	output.kind == "contract"
-	missing := [field | some field in ["format", "definition"]; not files.has_string(output, field)]
-	count(missing) > 0
-	message := sprintf(
-		"%s is a contract but does not name its %s; add the interface format and the definition file",
-		[label(output, index), concat(" or ", missing)],
 	)
 }
 

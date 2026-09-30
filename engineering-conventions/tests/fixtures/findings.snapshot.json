@@ -679,8 +679,9 @@
     [".repo/repository.toml", "REPO-16", "warning", "the product directory api/ is not named after the repository; rename it to platform-api/ and set [layout] product = \"platform-api\"", true]
   ],
   "repo-17-no-manifest": [
-    ["platform-api", "REPO-17", "warning", "platform-api/ holds no build manifest; move the product's manifest into it (one of Cargo.toml, build.gradle, build.gradle.kts, deno.json, deno.jsonc, go.mod, package.json, pom.xml, pyproject.toml, settings.gradle, settings.gradle.kts)", true]
+    ["platform-api", "REPO-17", "warning", "platform-api/ holds no build manifest; move the product's manifest into it (one of Cargo.toml, build.gradle, build.gradle.kts, deno.json, deno.jsonc, go.mod, package.json, pom.xml, pyproject.toml, settings.gradle, settings.gradle.kts), or keep an OpenTofu root's .terraform.lock.hcl in it or in a directory below it", true]
   ],
+  "repo-17-passes-opentofu-lockfile": [],
   "repo-18-root-content": [
     ["go.sum", "REPO-18", "warning", "go.sum is product content at the repository root; move it into platform-api/, or list it under [layout.root_exceptions] with the reason it stays", true]
   ],

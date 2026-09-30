@@ -60,6 +60,37 @@ test_repo_16_not_named_after_the_repository if {
 test_repo_17_no_manifest if {
 	found := layout.findings with input as repo(conforming, [".repo/repository.toml", "platform-api/main.go"], [])
 	td.pairs(found) == {["REPO-17", "platform-api"]}
+	messages(found, "REPO-17") == {concat("", [
+		"platform-api/ holds no build manifest; move the product's manifest into it (one of ",
+		"Cargo.toml, build.gradle, build.gradle.kts, deno.json, deno.jsonc, go.mod, package.json, ",
+		"pom.xml, pyproject.toml, settings.gradle, settings.gradle.kts), ",
+		"or keep an OpenTofu root's .terraform.lock.hcl in it or in a directory below it",
+	])}
+}
+
+test_repo_17_opentofu_root_below_the_product if {
+	paths := [".repo/repository.toml", "platform-api/terraform/.terraform.lock.hcl", "platform-api/terraform/main.tf"]
+	count(layout.findings) == 0 with input as repo(conforming, paths, [])
+}
+
+test_repo_17_opentofu_root_at_the_product if {
+	paths := [".repo/repository.toml", "platform-api/.terraform.lock.hcl", "platform-api/main.tf"]
+	count(layout.findings) == 0 with input as repo(conforming, paths, [])
+}
+
+test_repo_17_opentofu_lockfile_outside_the_product if {
+	paths := [
+		".repo/repository.toml", "platform-api/main.go",
+		"terraform/.terraform.lock.hcl", "platform-api-old/.terraform.lock.hcl",
+	]
+	found := layout.findings with input as repo(conforming, paths, [])
+	td.pairs(found) == {["REPO-17", "platform-api"]}
+}
+
+test_repo_17_opentofu_lockfile_name_must_match if {
+	paths := [".repo/repository.toml", "platform-api/terraform/terraform.lock.hcl"]
+	found := layout.findings with input as repo(conforming, paths, [])
+	td.pairs(found) == {["REPO-17", "platform-api"]}
 }
 
 test_repo_17_any_ecosystem if {

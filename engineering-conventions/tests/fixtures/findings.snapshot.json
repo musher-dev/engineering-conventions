@@ -590,8 +590,12 @@
   "task-08-dir-include-missing": [
     ["tools/taskfiles/lint.yml", "TASK-08", "warning", "variable LINT_CONFIG is \"lint.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
   ],
+  "task-08-map-include-missing": [
+    ["tools/taskfiles/lint.yml", "TASK-08", "warning", "variable LINT_CONFIG is \"lint.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
+  ],
   "task-08-passes-build-output": [],
   "task-08-passes-dir-include": [],
+  "task-08-passes-map-include": [],
   "task-08-path-variable": [
     ["tools/Taskfile.yml", "TASK-08", "warning", "variable LINT_CONFIG is \".golangci.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
   ],

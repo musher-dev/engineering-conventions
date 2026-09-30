@@ -120,6 +120,30 @@ test_a_nested_dir_resolves_from_its_own_includer if {
 	taskfiles.contexts["x/taskfiles/fragment.yml"] == {context} with input as nested
 }
 
+# Under dir: y, a bare string include runs where its includer's tasks run,
+# and a map include without dir: runs in its includer's own directory.
+test_a_map_include_runs_in_its_includers_directory if {
+	string_form := nested_include("y", "taskfiles/fragment.yml")
+	taskfiles.contexts["x/taskfiles/fragment.yml"] == {{"root": "", "work": "y"}} with input as string_form
+	map_form := nested_include("y", {"taskfile": "taskfiles/fragment.yml"})
+	taskfiles.contexts["x/taskfiles/fragment.yml"] == {{"root": "", "work": "x"}} with input as map_form
+}
+
+top_level_include(fragment) := [
+	td.inventory(["Taskfile.yml", "a/Taskfile.yml", "a/taskfiles/f.yml"]),
+	td.file("Taskfile.yml", {"version": "3", "includes": {"a": "a/Taskfile.yml"}}),
+	td.file("a/Taskfile.yml", {"version": "3", "includes": {"f": fragment}}),
+	td.file("a/taskfiles/f.yml", {"version": "3", "tasks": {}}),
+]
+
+test_a_map_include_without_dir_below_the_root if {
+	string_form := top_level_include("taskfiles/f.yml")
+	taskfiles.contexts["a/Taskfile.yml"] == {{"root": "", "work": ""}} with input as string_form
+	taskfiles.contexts["a/taskfiles/f.yml"] == {{"root": "", "work": ""}} with input as string_form
+	map_form := top_level_include({"taskfile": "taskfiles/f.yml"})
+	taskfiles.contexts["a/taskfiles/f.yml"] == {{"root": "", "work": "a"}} with input as map_form
+}
+
 test_a_templated_dir_is_not_resolved if {
 	templated := dir_include("{{.ROOT_DIR}}/x")
 	not taskfiles.contexts["x/Taskfile.yml"] with input as templated

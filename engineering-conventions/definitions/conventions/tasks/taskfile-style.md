@@ -400,10 +400,11 @@ file to its tools, and its literal value must name something the repository hold
 moves, nothing fails at once: a linter falls back to its defaults, or a command scans an empty directory and passes.
 A `_FILE` variable may name a file a task writes, such as an ignored local `.env`, so only its directory has to
 exist. The value is resolved after `{{.ROOT_DIR}}/` or `{{.TASKFILE_DIR}}/`; a value with any other template is not
-checked. A bare relative value resolves from the directory the tasks run in: under an include with `dir:`, that
-directory, for the included file and for every file it includes without a `dir:` of its own; a templated `dir:` is
-not checked. A directory that only a build creates, such as ignored build output, is named for what it holds instead
-(`DIST`, `SITE`, not `SITE_DIR`), and the finding says so.
+checked. A bare relative value resolves from the directory the tasks run in, as Task sets it: an include written as
+a map runs in its `dir:`, or without one in the including file's directory; an include written as a bare string runs
+where the including file's tasks run. A value under a templated `dir:` is not checked. A directory that only a build
+creates, such as ignored build output, is named for what it holds instead (`DIST`, `SITE`, not `SITE_DIR`), and the
+finding says so.
 
 **Correct:**
 

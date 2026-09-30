@@ -16,8 +16,9 @@ default_names := [
 	"Taskfile.dist.yml", "taskfile.dist.yml", "Taskfile.dist.yaml", "taskfile.dist.yaml",
 ]
 
-# The same files bin/conventions passes to conftest: a Taskfile up to two
-# directories deep, and the YAML files in a taskfiles/ directory.
+# The Taskfiles bin/conventions passes to conftest that this library reads:
+# one at the root or up to two directories deep, and the YAML files in a
+# taskfiles/ directory at those depths.
 path_pattern := `^([^/]+/){0,2}([Tt]askfile(\.dist)?\.ya?ml|taskfiles/[^/]+\.ya?ml)$`
 
 # Every Taskfile outside the fixtures. A YAML file under taskfiles/ counts
@@ -134,12 +135,15 @@ entry_points contains path if {
 	count(reverse_edges[path]) == 0
 }
 
+# An include written as a bare string, such as `lint: taskfiles/lint.yml`.
+string_form(include) if is_string(documents[include.from].includes[include.namespace])
+
 # The includes whose tasks keep running where the including file's tasks
-# run: those without a dir: of their own.
+# run: those written as a bare string. A map without a dir: sets one.
 plain_edges[path] := {target(include) |
 	some include in includes
 	include.from == path
-	not "dir" in object.keys(include.entry)
+	string_form(include)
 } if {
 	some path, _ in documents
 }
@@ -149,7 +153,7 @@ plain_edges[path] := {target(include) |
 # the directory its tasks run in. A file reached from several entry points,
 # or through several includes, has several.
 #
-# Without a dir:, an included file's tasks run where the including file's
+# An included file written as a bare string runs where the including file's
 # tasks run, which at the top is the entry Taskfile's directory.
 contexts[path] contains {"root": dir(root), "work": dir(root)} if {
 	some path, _ in documents
@@ -157,18 +161,28 @@ contexts[path] contains {"root": dir(root), "work": dir(root)} if {
 	path in graph.reachable(plain_edges, {root})
 }
 
-# An include with a literal dir: runs the file it loads, and every file that
-# file includes without a dir: of its own, in that directory, resolved from
-# the including file's directory. A templated dir: is not resolved, so the
-# files under it get no context from that include.
+# An include written as a map runs the file it loads, and every file that
+# file includes as a bare string, in its own directory: its dir: resolved
+# from the including file's directory, or without one the including file's
+# directory itself. A templated dir: is not resolved, so the files under it
+# get no context from that include.
 contexts[path] contains {"root": dir(root), "work": work} if {
 	some include in includes
-	local_path(include.entry.dir)
-	work := join(dir(include.from), include.entry.dir)
+	work := map_work(include)
 	some path in graph.reachable(plain_edges, {target(include)})
 	documents[path]
 	some root in entry_points
 	include.from in graph.reachable(edges, {root})
+}
+
+map_work(include) := join(dir(include.from), include.entry.dir) if {
+	not string_form(include)
+	local_path(include.entry.dir)
+}
+
+map_work(include) := dir(include.from) if {
+	not string_form(include)
+	not "dir" in object.keys(include.entry)
 }
 
 # The Taskfiles that include path, directly or not, and path itself.

@@ -2,7 +2,7 @@
 # title: Taskfiles
 # description: >-
 #   The repository's Taskfiles as Task reads them: each file's tasks, the
-#   includes that join the files into one graph, the directory each file's
+#   includes that join the files into one graph, the directories each file's
 #   relative paths resolve from, and the task names the root Taskfile
 #   exposes once its includes are merged (EC-0015, EC-0016).
 package conventions.lib.taskfiles
@@ -134,22 +134,41 @@ entry_points contains path if {
 	count(reverse_edges[path]) == 0
 }
 
-# An include with its own dir: moves the included tasks elsewhere; paths in
-# that file are not resolved.
-moved contains target(include) if {
+# The includes whose tasks keep running where the including file's tasks
+# run: those without a dir: of their own.
+plain_edges[path] := {target(include) |
 	some include in includes
-	"dir" in object.keys(include.entry)
-}
-
-# The directory a Taskfile's relative paths resolve from: the directory of
-# the Taskfile Task is run from, which is also its ROOT_DIR. A file reached
-# from several entry points has several.
-base_dirs[path] := {dir(root) |
-	some root in entry_points
-	path in graph.reachable(edges, {root})
+	include.from == path
+	not "dir" in object.keys(include.entry)
 } if {
 	some path, _ in documents
-	not path in moved
+}
+
+# The directories a Taskfile's paths resolve from, as {root, work}: root is
+# its ROOT_DIR, the directory of the Taskfile Task is run from, and work is
+# the directory its tasks run in. A file reached from several entry points,
+# or through several includes, has several.
+#
+# Without a dir:, an included file's tasks run where the including file's
+# tasks run, which at the top is the entry Taskfile's directory.
+contexts[path] contains {"root": dir(root), "work": dir(root)} if {
+	some path, _ in documents
+	some root in entry_points
+	path in graph.reachable(plain_edges, {root})
+}
+
+# An include with a literal dir: runs the file it loads, and every file that
+# file includes without a dir: of its own, in that directory, resolved from
+# the including file's directory. A templated dir: is not resolved, so the
+# files under it get no context from that include.
+contexts[path] contains {"root": dir(root), "work": work} if {
+	some include in includes
+	local_path(include.entry.dir)
+	work := join(dir(include.from), include.entry.dir)
+	some path in graph.reachable(plain_edges, {target(include)})
+	documents[path]
+	some root in entry_points
+	include.from in graph.reachable(edges, {root})
 }
 
 # The Taskfiles that include path, directly or not, and path itself.
@@ -158,15 +177,15 @@ ancestors(path) := graph.reachable(reverse_edges, {path})
 # Where a literal path in a Taskfile points, for each directory it may run
 # from. Empty for a value that is not a plain path.
 resolutions(path, value) := {resolved |
-	some base in object.get(base_dirs, path, set())
-	resolved := anchored(path, base, value)
+	some context in object.get(contexts, path, set())
+	resolved := anchored(path, context, value)
 }
 
-anchored(_, base, "{{.ROOT_DIR}}") := base
+anchored(_, context, "{{.ROOT_DIR}}") := context.root
 
 anchored(path, _, "{{.TASKFILE_DIR}}") := dir(path)
 
-anchored(_, base, value) := join(base, rest) if {
+anchored(_, context, value) := join(context.root, rest) if {
 	rest := trim_prefix(value, "{{.ROOT_DIR}}/")
 	rest != value
 	literal(rest)
@@ -178,7 +197,7 @@ anchored(path, _, value) := join(dir(path), rest) if {
 	literal(rest)
 }
 
-anchored(_, base, value) := join(base, value) if literal(value)
+anchored(_, context, value) := join(context.work, value) if literal(value)
 
 # A relative path with no template, glob, variable or space in it.
 literal(value) if {

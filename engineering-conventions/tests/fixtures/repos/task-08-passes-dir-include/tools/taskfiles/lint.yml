@@ -1,0 +1,10 @@
+version: '3'
+
+vars:
+  LINT_CONFIG: lint.yml
+
+tasks:
+  lint:
+    desc: Lint the tools with their own configuration.
+    cmds:
+      - lint --config {{.LINT_CONFIG}}

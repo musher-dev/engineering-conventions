@@ -249,7 +249,7 @@ against it.
 | `sensitivity` | yes | `public`, `internal`, `confidential` or `secret`; see below |
 | `description` | yes | What the variable is for, in at least 24 characters: what breaks when the value is wrong, not what the name says |
 | `values` | for `enum` | The allowed values; also allowed on a `list` |
-| `format` | no | `url`, `email`, `path` or `json` |
+| `format` | no | `url`, `email`, `path` or `json`. `url` marks an address the process connects to, not an identifier shaped like a URL (ENVS-12) |
 | `default` | no | The value used when the variable is unset. It ships to production |
 | `required` | no | The product refuses to start without a value |
 | `allow_empty` | no | An empty value is deliberate and valid; needs `default: ""` |
@@ -558,10 +558,16 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform 
 A binding with `format: url` is a URL, and a name that says so tells the reader to write a scheme and host, not a
 bare hostname. `_BASE_URL` ends in `_URL` too, for a URL others are appended to.
 
+`format: url` marks an address the process connects to. An identifier that is only shaped like a URL, such as an
+OIDC issuer, a JWT audience or a namespace URI, is compared as a string and never fetched, so its binding leaves
+`format` unset and may pin the shape with `constraints.pattern`, such as `^https://`. `grammar_exempt` is not the way
+out: it is for a name fixed outside the product, and it turns off every grammar requirement, not just this one.
+
 **Correct:**
 
 ```yaml
 API_BASE_URL: {type: string, format: url, ...}
+API_JWT_ISSUER: {type: string, constraints: {pattern: '^https://'}, ...}   # an identifier, not an address
 ```
 
 **Incorrect:**

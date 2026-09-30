@@ -74,22 +74,58 @@ test_includes_resolve_files_and_directories if {
 	}
 }
 
-test_entry_points_and_base_dirs if {
+test_entry_points_and_contexts if {
 	taskfiles.entry_points == {"Taskfile.yml"} with input as repository
-	taskfiles.base_dirs["api/Taskfile.yaml"] == {""} with input as repository
+	taskfiles.contexts["api/Taskfile.yaml"] == {{"root": "", "work": ""}} with input as repository
 	ancestors := {"api/Taskfile.yaml", "docs/Taskfile.yml", "Taskfile.yml"}
 	taskfiles.ancestors("api/Taskfile.yaml") == ancestors with input as repository
 }
 
-test_an_include_with_a_dir_has_no_base if {
-	moved := object.union(root, {"includes": {"lint": {"taskfile": "taskfiles/lint.Taskfile.yml", "dir": "x"}}})
-	docs_input := [
-		td.inventory(["Taskfile.yml", "taskfiles/lint.Taskfile.yml"]),
-		td.file("Taskfile.yml", moved),
-		td.file("taskfiles/lint.Taskfile.yml", lint),
-	]
-	not taskfiles.base_dirs["taskfiles/lint.Taskfile.yml"] with input as docs_input
-	taskfiles.resolutions("taskfiles/lint.Taskfile.yml", "README.md") == set() with input as docs_input
+# The root includes x/Taskfile.yml with dir: x, and it includes a fragment
+# without a dir: of its own, so both run in x/.
+dir_include(dir) := nested_include(dir, "taskfiles/fragment.yml")
+
+nested_include(dir, fragment) := [
+	td.inventory([
+		"Taskfile.yml", "x/Taskfile.yml", "x/taskfiles/fragment.yml",
+		"x/.config/foo.yml", ".config/bar.yml",
+	]),
+	td.file("Taskfile.yml", {"version": "3", "includes": {"x": {"taskfile": "./x", "dir": dir}}}),
+	td.file("x/Taskfile.yml", {"version": "3", "includes": {"fragment": fragment}}),
+	td.file("x/taskfiles/fragment.yml", {"version": "3", "vars": {"FOO_CONFIG": ".config/foo.yml"}}),
+]
+
+test_an_include_with_a_dir_moves_its_fragments if {
+	context := {"root": "", "work": "x"}
+	taskfiles.contexts["x/Taskfile.yml"] == {context} with input as dir_include("x")
+	taskfiles.contexts["x/taskfiles/fragment.yml"] == {context} with input as dir_include("x")
+	fragment := "x/taskfiles/fragment.yml"
+	taskfiles.resolutions(fragment, ".config/foo.yml") == {"x/.config/foo.yml"} with input as dir_include("x")
+	taskfiles.resolutions(fragment, "{{.ROOT_DIR}}/.config/bar.yml") == {".config/bar.yml"}
+		with input as dir_include("x")
+	taskfiles.resolutions(fragment, "{{.TASKFILE_DIR}}/a.yml") == {"x/taskfiles/a.yml"}
+		with input as dir_include("x")
+	not taskfiles.missing(fragment, ".config/foo.yml") with input as dir_include("x")
+	taskfiles.missing(fragment, ".config/bar.yml") with input as dir_include("x")
+}
+
+test_a_dir_resolves_from_the_including_file if {
+	taskfiles.contexts["x/taskfiles/fragment.yml"] == {{"root": "", "work": ""}} with input as dir_include(".")
+	taskfiles.contexts["x/taskfiles/fragment.yml"] == {{"root": "", "work": "x/sub"}} with input as dir_include("x/sub")
+}
+
+test_a_nested_dir_resolves_from_its_own_includer if {
+	nested := nested_include("x", {"taskfile": "taskfiles/fragment.yml", "dir": "taskfiles"})
+	context := {"root": "", "work": "x/taskfiles"}
+	taskfiles.contexts["x/taskfiles/fragment.yml"] == {context} with input as nested
+}
+
+test_a_templated_dir_is_not_resolved if {
+	templated := dir_include("{{.ROOT_DIR}}/x")
+	not taskfiles.contexts["x/Taskfile.yml"] with input as templated
+	not taskfiles.contexts["x/taskfiles/fragment.yml"] with input as templated
+	taskfiles.resolutions("x/taskfiles/fragment.yml", ".config/foo.yml") == set() with input as templated
+	not taskfiles.missing("x/taskfiles/fragment.yml", "nowhere.yml") with input as templated
 }
 
 test_root_names_merge_includes if {

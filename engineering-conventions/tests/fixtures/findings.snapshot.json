@@ -219,8 +219,9 @@
   "envs-11-stutter": [
     ["platform-api/env.schema.yaml", "ENVS-11", "warning", "binding API_API_PORT repeats API; say it once", true]
   ],
+  "envs-12-passes-url-identifier": [],
   "envs-12-url-suffix": [
-    ["platform-api/env.schema.yaml", "ENVS-12", "warning", "binding API_ENDPOINT holds a URL; end its name in _URL or _BASE_URL", true]
+    ["platform-api/env.schema.yaml", "ENVS-12", "warning", "binding API_ENDPOINT holds a URL; end its name in _URL or _BASE_URL, or leave format unset if it names an identifier rather than an address", true]
   ],
   "envs-13-nested-delimiter": [
     ["platform-api/env.schema.yaml", "ENVS-13", "warning", "binding API_EXPORT_BATCH_SIZE is nested, so its name separates group, sub-model and field with __, e.g. API__BATCH_SIZE", true]
@@ -586,7 +587,11 @@
   "task-07-prefix-output": [
     ["tools/Taskfile.yml", "TASK-07", "warning", "task \"deps\" sets prefix, but no Taskfile that loads it sets output: prefixed, the only mode that prints it; set output: prefixed, or remove the prefix", true]
   ],
+  "task-08-dir-include-missing": [
+    ["tools/taskfiles/lint.yml", "TASK-08", "warning", "variable LINT_CONFIG is \"lint.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
+  ],
   "task-08-passes-build-output": [],
+  "task-08-passes-dir-include": [],
   "task-08-path-variable": [
     ["tools/Taskfile.yml", "TASK-08", "warning", "variable LINT_CONFIG is \".golangci.yml\", which names no file or directory in the repository; correct the path, or delete the variable", true]
   ],

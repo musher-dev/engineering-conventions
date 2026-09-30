@@ -625,7 +625,7 @@
                 "type": "string"
               },
               "format": {
-                "description": "The shape of a string value.",
+                "description": "The shape of a string value. url marks an address the process connects to; an identifier shaped like a URL, such as an OIDC issuer or a JWT audience, leaves format unset and may use constraints.pattern (ENVS-12).",
                 "enum": [
                   "url",
                   "email",

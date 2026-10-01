@@ -24,30 +24,6 @@ owners:
 authority: self
 migration: authoritative
 implementations:
-  - repo: musher-dev/platform
-    check: TF-01
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-06
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-07
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-08
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-09
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-12
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-15
-    mode: blocking
-  - repo: musher-dev/platform
-    check: TF-21
-    mode: blocking
   - repo: musher-dev/development-container
     check: PATH-03
     mode: blocking
@@ -277,6 +253,8 @@ This convention is a **draft** owned by this repository (`authority: self`). Its
 `musher-dev/platform`'s Taskfile rules (TF-*) and `musher-dev/development-container`'s path rules (PATH-03), which
 retire their copies once they pin a release that carries them
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
+`musher-dev/platform` retired TF-01, TF-06 to TF-09, TF-12, TF-15 and TF-21 when it adopted 0.7.1
+([platform#3338](https://github.com/musher-dev/platform/pull/3338)).
 Every requirement is `proposed` at severity `warning`.
 
 ### What was adopted, and what was not

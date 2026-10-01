@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEVC-17",
+    "path": ".devcontainer/devcontainer.json",
+    "severity": "warning"
+  }
+]

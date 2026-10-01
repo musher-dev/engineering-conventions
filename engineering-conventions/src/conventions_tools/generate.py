@@ -125,6 +125,11 @@ def build_index(content: Content) -> dict[str, object]:
         "issue_forms_schema": schemas.vendored(content.product, schemas.ISSUE_FORMS),
         "issue_config_schema": schemas.vendored(content.product, schemas.ISSUE_CONFIG),
         "discussion_forms_schema": schemas.vendored(content.product, schemas.DISCUSSION_FORMS),
+        # DEVC-17 validates devcontainer.json against the Dev Container
+        # specification's schema, rewritten for OPA's draft-07 validator.
+        "devcontainer_schema": schemas.for_draft_07(
+            schemas.vendored(content.product, schemas.DEVCONTAINER)
+        ),
         # COPY-02..COPY-04 read what a consumer's Vale config must name.
         "copy": copy_index(content.copy_style),
     }

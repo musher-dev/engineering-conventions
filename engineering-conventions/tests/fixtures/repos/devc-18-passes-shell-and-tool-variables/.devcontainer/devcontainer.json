@@ -1,0 +1,25 @@
+// Specification variables where they resolve, a shell expansion in a command,
+// and VS Code's own variable in a setting.
+{
+  "name": "Platform API ${localWorkspaceFolderBasename}",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "containerEnv": {
+    "GIT_EDITOR": "${localEnv:GIT_EDITOR:vi}",
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/bin",
+  },
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh && echo \"ready in ${PWD:-.}\"",
+  "customizations": {
+    "vscode": {
+      "settings": { "terminal.integrated.cwd": "${workspaceFolder}/platform-api" },
+    },
+  },
+}

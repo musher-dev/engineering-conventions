@@ -42,6 +42,7 @@ def test_index_top_level_shape(content: Content) -> None:
         "decision_schema",
         "declaration_schema",
         "dependencies_schema",
+        "devcontainer_schema",
         "discussion_forms_schema",
         "env_schema",
         "issue_config_schema",

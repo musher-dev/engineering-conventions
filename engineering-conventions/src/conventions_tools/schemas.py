@@ -33,6 +33,7 @@ VENDOR = "vendor"
 ISSUE_FORMS = "schemastore/github-issue-forms.json"
 ISSUE_CONFIG = "schemastore/github-issue-config.json"
 DISCUSSION_FORMS = "schemastore/github-discussion.json"
+DEVCONTAINER = "devcontainers/devContainer.base.schema.json"
 COPY_STYLE = "copy-style.schema.json"
 
 
@@ -160,3 +161,73 @@ def self_contained(product: Path, name: str) -> dict[str, object]:
 def vendored(product: Path, name: str) -> dict[str, object]:
     """Vendored schema `name`, as published: each is already self-contained."""
     return as_map(read_json(schemas_dir(product) / VENDOR / name))
+
+
+_DRAFT_07 = "http://json-schema.org/draft-07/schema#"
+_COMBINATORS = ("allOf", "anyOf", "oneOf")
+
+
+def for_draft_07(schema: dict[str, object]) -> dict[str, object]:
+    """A draft 2019-09 `schema` rewritten so a draft-07 validator reads it the same way.
+
+    OPA's json.match_schema implements draft-07, which differs from 2019-09 in
+    the two ways the Dev Container schema relies on. A $ref with siblings
+    ignores them in draft-07, so it becomes an allOf of the $ref and the
+    siblings. Draft-07 has no unevaluatedProperties, so `false` becomes a
+    propertyNames list of every property the schema and its subschemas
+    declare: a property no branch declares is still rejected, and one that a
+    failing branch declares is let through, which is more lenient, never
+    stricter.
+    """
+    definitions = as_map(schema.get("definitions"))
+    rewritten = as_map(_draft_07_node(schema, definitions))
+    return {**rewritten, "$schema": _DRAFT_07}
+
+
+def _draft_07_node(node: object, definitions: dict[str, object]) -> object:
+    if isinstance(node, list):
+        return [_draft_07_node(item, definitions) for item in cast("list[object]", node)]
+    if not isinstance(node, dict):
+        return node
+    mapping = cast("dict[str, object]", node)
+    result: dict[str, object] = {
+        key: {name: _draft_07_node(value, definitions) for name, value in as_map(value).items()}
+        if key in ("properties", "patternProperties", "definitions")
+        else _draft_07_node(value, definitions)
+        for key, value in mapping.items()
+    }
+    if result.get("unevaluatedProperties") is False:
+        del result["unevaluatedProperties"]
+        names, patterns, closed = _declared(mapping, definitions, set())
+        if closed:
+            allowed: list[object] = [{"enum": sorted(names)}]
+            allowed += [{"pattern": pattern} for pattern in sorted(patterns)]
+            result["propertyNames"] = allowed[0] if len(allowed) == 1 else {"anyOf": allowed}
+    if "$ref" in result and len(result) > 1:
+        siblings = {key: value for key, value in result.items() if key != "$ref"}
+        return {"allOf": [{"$ref": result["$ref"]}, siblings]}
+    return result
+
+
+def _declared(
+    node: dict[str, object], definitions: dict[str, object], seen: set[str]
+) -> tuple[set[str], set[str], bool]:
+    """The property names and patterns `node` and its subschemas declare, and
+    whether that is all it allows: false when a subschema admits any other."""
+    names = set(as_map(node.get("properties")))
+    patterns = set(as_map(node.get("patternProperties")))
+    additional = node.get("additionalProperties")
+    closed = additional is None or additional is False
+    parts = [
+        as_map(part) for key in _COMBINATORS for part in cast("list[object]", node.get(key) or [])
+    ]
+    ref = node.get("$ref")
+    if isinstance(ref, str) and ref.startswith(_LOCAL_REF) and ref not in seen:
+        seen = seen | {ref}
+        parts.append(as_map(definitions.get(ref.removeprefix(_LOCAL_REF))))
+    for part in parts:
+        more_names, more_patterns, more_closed = _declared(part, definitions, seen)
+        names |= more_names
+        patterns |= more_patterns
+        closed = closed and more_closed
+    return names, patterns, closed

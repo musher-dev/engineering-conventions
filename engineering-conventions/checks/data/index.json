@@ -727,6 +727,850 @@
         "title": "Dependencies declaration",
         "type": "object"
       },
+      "devcontainer_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "allowComments": true,
+        "allowTrailingCommas": false,
+        "definitions": {
+          "Mount": {
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "description": "Mount source.",
+                "type": "string"
+              },
+              "target": {
+                "description": "Mount target.",
+                "type": "string"
+              },
+              "type": {
+                "description": "Mount type.",
+                "enum": [
+                  "bind",
+                  "volume"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "target"
+            ],
+            "type": "object"
+          },
+          "buildOptions": {
+            "properties": {
+              "args": {
+                "additionalProperties": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "description": "Build arguments.",
+                "type": "object"
+              },
+              "cacheFrom": {
+                "description": "The image to consider as a cache. Use an array to specify multiple images.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array"
+                ]
+              },
+              "options": {
+                "description": "Additional arguments passed to the build command.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "target": {
+                "description": "Target stage in a multi-stage build.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "composeContainer": {
+            "properties": {
+              "dockerComposeFile": {
+                "description": "The name of the docker-compose file(s) used to start the services.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array"
+                ]
+              },
+              "overrideCommand": {
+                "description": "Whether to overwrite the command specified in the image. The default is false.",
+                "type": "boolean"
+              },
+              "runServices": {
+                "description": "An array of services that should be started and stopped.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "service": {
+                "description": "The service you want to work on. This is considered the primary container for your dev environment which your editor will connect to.",
+                "type": "string"
+              },
+              "shutdownAction": {
+                "description": "Action to take when the user disconnects from the primary container in their editor. The default is to stop all of the compose containers.",
+                "enum": [
+                  "none",
+                  "stopCompose"
+                ],
+                "type": "string"
+              },
+              "workspaceFolder": {
+                "description": "The path of the workspace folder inside the container. This is typically the target path of a volume mount in the docker-compose.yml.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "dockerComposeFile",
+              "service",
+              "workspaceFolder"
+            ],
+            "type": "object"
+          },
+          "devContainerCommon": {
+            "properties": {
+              "$schema": {
+                "description": "The JSON schema of the `devcontainer.json` file.",
+                "format": "uri",
+                "type": "string"
+              },
+              "additionalProperties": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "capAdd": {
+                "description": "Passes docker capabilities to include when creating the dev container.",
+                "examples": [
+                  "SYS_PTRACE"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "containerEnv": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Container environment variables.",
+                "type": "object"
+              },
+              "containerUser": {
+                "description": "The user the container will be started with. The default is the user on the Docker image.",
+                "type": "string"
+              },
+              "customizations": {
+                "description": "Tool-specific configuration. Each tool should use a JSON object subproperty with a unique name to group its customizations.",
+                "type": "object"
+              },
+              "features": {
+                "additionalProperties": true,
+                "description": "Features to add to the dev container.",
+                "properties": {
+                  "fish": {
+                    "deprecated": true,
+                    "deprecationMessage": "Legacy feature not supported. Please check https://containers.dev/features for replacements."
+                  },
+                  "gradle": {
+                    "deprecated": true,
+                    "deprecationMessage": "Legacy feature will be removed in the future. Please check https://containers.dev/features for replacements. E.g., `ghcr.io/devcontainers/features/java` has an option to install Gradle."
+                  },
+                  "homebrew": {
+                    "deprecated": true,
+                    "deprecationMessage": "Legacy feature not supported. Please check https://containers.dev/features for replacements."
+                  },
+                  "jupyterlab": {
+                    "deprecated": true,
+                    "deprecationMessage": "Legacy feature will be removed in the future. Please check https://containers.dev/features for replacements. E.g., `ghcr.io/devcontainers/features/python` has an option to install JupyterLab."
+                  },
+                  "maven": {
+                    "deprecated": true,
+                    "deprecationMessage": "Legacy feature will be removed in the future. Please check https://containers.dev/features for replacements. E.g., `ghcr.io/devcontainers/features/java` has an option to install Maven."
+                  }
+                },
+                "type": "object"
+              },
+              "forwardPorts": {
+                "description": "Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\".",
+                "items": {
+                  "oneOf": [
+                    {
+                      "maximum": 65535,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    {
+                      "pattern": "^([a-z0-9-]+):(\\d{1,5})$",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "hostRequirements": {
+                "description": "Host hardware requirements.",
+                "properties": {
+                  "cpus": {
+                    "description": "Number of required CPUs.",
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "gpu": {
+                    "oneOf": [
+                      {
+                        "description": "Indicates whether a GPU is required. The string \"optional\" indicates that a GPU is optional. An object value can be used to configure more detailed requirements.",
+                        "enum": [
+                          true,
+                          false,
+                          "optional"
+                        ],
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      {
+                        "additionalProperties": false,
+                        "description": "Indicates whether a GPU is required. The string \"optional\" indicates that a GPU is optional. An object value can be used to configure more detailed requirements.",
+                        "properties": {
+                          "cores": {
+                            "description": "Number of required cores.",
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "memory": {
+                            "description": "Amount of required RAM in bytes. Supports units tb, gb, mb and kb.",
+                            "pattern": "^\\d+([tgmk]b)?$",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "memory": {
+                    "description": "Amount of required RAM in bytes. Supports units tb, gb, mb and kb.",
+                    "pattern": "^\\d+([tgmk]b)?$",
+                    "type": "string"
+                  },
+                  "storage": {
+                    "description": "Amount of required disk space in bytes. Supports units tb, gb, mb and kb.",
+                    "pattern": "^\\d+([tgmk]b)?$",
+                    "type": "string"
+                  }
+                },
+                "propertyNames": {
+                  "enum": [
+                    "cpus",
+                    "gpu",
+                    "memory",
+                    "storage"
+                  ]
+                },
+                "type": "object"
+              },
+              "init": {
+                "description": "Passes the --init flag when creating the dev container.",
+                "type": "boolean"
+              },
+              "initializeCommand": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                "description": "A command to run locally (i.e Your host machine, cloud VM) before anything else. This command is run before \"onCreateCommand\". If this is a single string, it will be run in a shell. If this is an array of strings, it will be run as a single command without shell. If this is an object, each provided command will be run in parallel.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ]
+              },
+              "mounts": {
+                "description": "Mount points to set up when creating the container. See Docker's documentation for the --mount option for the supported syntax.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/definitions/Mount"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "name": {
+                "description": "A name for the dev container which can be displayed to the user.",
+                "type": "string"
+              },
+              "onCreateCommand": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                "description": "A command to run when creating the container. This command is run after \"initializeCommand\" and before \"updateContentCommand\". If this is a single string, it will be run in a shell. If this is an array of strings, it will be run as a single command without shell. If this is an object, each provided command will be run in parallel.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ]
+              },
+              "otherPortsAttributes": {
+                "additionalProperties": false,
+                "defaultSnippets": [
+                  {
+                    "body": {
+                      "onAutoForward": "ignore"
+                    }
+                  }
+                ],
+                "markdownDescription": "Set default properties that are applied to all ports that don't get properties from the setting `remote.portsAttributes`. For example:\n\n```\n{\n  \"onAutoForward\": \"ignore\"\n}\n```",
+                "properties": {
+                  "elevateIfNeeded": {
+                    "default": false,
+                    "description": "Automatically prompt for elevation (if needed) when this port is forwarded. Elevate is required if the local port is a privileged port.",
+                    "type": "boolean"
+                  },
+                  "label": {
+                    "default": "Application",
+                    "description": "Label that will be shown in the UI for this port.",
+                    "type": "string"
+                  },
+                  "onAutoForward": {
+                    "default": "notify",
+                    "description": "Defines the action that occurs when the port is discovered for automatic forwarding",
+                    "enum": [
+                      "notify",
+                      "openBrowser",
+                      "openPreview",
+                      "silent",
+                      "ignore"
+                    ],
+                    "enumDescriptions": [
+                      "Shows a notification when a port is automatically forwarded.",
+                      "Opens the browser when the port is automatically forwarded. Depending on your settings, this could open an embedded browser.",
+                      "Opens a preview in the same window when the port is automatically forwarded.",
+                      "Shows no notification and takes no action when this port is automatically forwarded.",
+                      "This port will not be automatically forwarded."
+                    ],
+                    "type": "string"
+                  },
+                  "protocol": {
+                    "description": "The protocol to use when forwarding this port.",
+                    "enum": [
+                      "http",
+                      "https"
+                    ],
+                    "type": "string"
+                  },
+                  "requireLocalPort": {
+                    "default": false,
+                    "markdownDescription": "When true, a modal dialog will show if the chosen local port isn't used for forwarding.",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "overrideFeatureInstallOrder": {
+                "description": "Array consisting of the Feature id (without the semantic version) of Features in the order the user wants them to be installed.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "portsAttributes": {
+                "additionalProperties": false,
+                "defaultSnippets": [
+                  {
+                    "body": {
+                      "${1:3000}": {
+                        "label": "${2:Application}",
+                        "onAutoForward": "notify"
+                      }
+                    }
+                  }
+                ],
+                "markdownDescription": "Set default properties that are applied when a specific port number is forwarded. For example:\n\n```\n\"3000\": {\n  \"label\": \"Application\"\n},\n\"40000-55000\": {\n  \"onAutoForward\": \"ignore\"\n},\n\".+\\\\/server.js\": {\n \"onAutoForward\": \"openPreview\"\n}\n```",
+                "patternProperties": {
+                  "(^\\d+(-\\d+)?$)|(.+)": {
+                    "default": {
+                      "label": "Application",
+                      "onAutoForward": "notify"
+                    },
+                    "description": "A port, range of ports (ex. \"40000-55000\"), or regular expression (ex. \".+\\\\/server.js\").  For a port number or range, the attributes will apply to that port number or range of port numbers. Attributes which use a regular expression will apply to ports whose associated process command line matches the expression.",
+                    "properties": {
+                      "elevateIfNeeded": {
+                        "default": false,
+                        "description": "Automatically prompt for elevation (if needed) when this port is forwarded. Elevate is required if the local port is a privileged port.",
+                        "type": "boolean"
+                      },
+                      "label": {
+                        "default": "Application",
+                        "description": "Label that will be shown in the UI for this port.",
+                        "type": "string"
+                      },
+                      "onAutoForward": {
+                        "default": "notify",
+                        "description": "Defines the action that occurs when the port is discovered for automatic forwarding",
+                        "enum": [
+                          "notify",
+                          "openBrowser",
+                          "openBrowserOnce",
+                          "openPreview",
+                          "silent",
+                          "ignore"
+                        ],
+                        "enumDescriptions": [
+                          "Shows a notification when a port is automatically forwarded.",
+                          "Opens the browser when the port is automatically forwarded. Depending on your settings, this could open an embedded browser.",
+                          "Opens the browser when the port is automatically forwarded, but only the first time the port is forward during a session. Depending on your settings, this could open an embedded browser.",
+                          "Opens a preview in the same window when the port is automatically forwarded.",
+                          "Shows no notification and takes no action when this port is automatically forwarded.",
+                          "This port will not be automatically forwarded."
+                        ],
+                        "type": "string"
+                      },
+                      "protocol": {
+                        "description": "The protocol to use when forwarding this port.",
+                        "enum": [
+                          "http",
+                          "https"
+                        ],
+                        "type": "string"
+                      },
+                      "requireLocalPort": {
+                        "default": false,
+                        "markdownDescription": "When true, a modal dialog will show if the chosen local port isn't used for forwarding.",
+                        "type": "boolean"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "postAttachCommand": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                "description": "A command to run when attaching to the container. This command is run after \"postStartCommand\". If this is a single string, it will be run in a shell. If this is an array of strings, it will be run as a single command without shell. If this is an object, each provided command will be run in parallel.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ]
+              },
+              "postCreateCommand": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                "description": "A command to run after creating the container. This command is run after \"updateContentCommand\" and before \"postStartCommand\". If this is a single string, it will be run in a shell. If this is an array of strings, it will be run as a single command without shell. If this is an object, each provided command will be run in parallel.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ]
+              },
+              "postStartCommand": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                "description": "A command to run after starting the container. This command is run after \"postCreateCommand\" and before \"postAttachCommand\". If this is a single string, it will be run in a shell. If this is an array of strings, it will be run as a single command without shell. If this is an object, each provided command will be run in parallel.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ]
+              },
+              "privileged": {
+                "description": "Passes the --privileged flag when creating the dev container.",
+                "type": "boolean"
+              },
+              "remoteEnv": {
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "description": "Remote environment variables to set for processes spawned in the container including lifecycle scripts and any remote editor/IDE server process.",
+                "type": "object"
+              },
+              "remoteUser": {
+                "description": "The username to use for spawning processes in the container including lifecycle scripts and any remote editor/IDE server process. The default is the same user as the container.",
+                "type": "string"
+              },
+              "secrets": {
+                "additionalProperties": false,
+                "description": "Recommended secrets for this dev container. Recommendations are provided as environment variable keys with optional metadata.",
+                "patternProperties": {
+                  "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                    "additionalProperties": false,
+                    "description": "Environment variable keys following unix-style naming conventions. eg: ^[a-zA-Z_][a-zA-Z0-9_]*$",
+                    "properties": {
+                      "description": {
+                        "description": "A description of the secret.",
+                        "type": "string"
+                      },
+                      "documentationUrl": {
+                        "description": "A URL to documentation about the secret.",
+                        "format": "uri",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "additionalProperties": false
+                },
+                "type": "object"
+              },
+              "securityOpt": {
+                "description": "Passes docker security options to include when creating the dev container.",
+                "examples": [
+                  "seccomp=unconfined"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "updateContentCommand": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                "description": "A command to run when creating the container and rerun when the workspace content was updated while creating the container. This command is run after \"onCreateCommand\" and before \"postCreateCommand\". If this is a single string, it will be run in a shell. If this is an array of strings, it will be run as a single command without shell. If this is an object, each provided command will be run in parallel.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ]
+              },
+              "updateRemoteUserUID": {
+                "description": "Controls whether on Linux the container's user should be updated with the local user's UID and GID. On by default when opening from a local folder.",
+                "type": "boolean"
+              },
+              "userEnvProbe": {
+                "description": "User environment probe to run. The default is \"loginInteractiveShell\".",
+                "enum": [
+                  "none",
+                  "loginShell",
+                  "loginInteractiveShell",
+                  "interactiveShell"
+                ],
+                "type": "string"
+              },
+              "waitFor": {
+                "description": "The user command to wait for before continuing execution in the background while the UI is starting up. The default is \"updateContentCommand\".",
+                "enum": [
+                  "initializeCommand",
+                  "onCreateCommand",
+                  "updateContentCommand",
+                  "postCreateCommand",
+                  "postStartCommand"
+                ],
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "dockerfileContainer": {
+            "oneOf": [
+              {
+                "properties": {
+                  "build": {
+                    "allOf": [
+                      {
+                        "properties": {
+                          "context": {
+                            "description": "The location of the context folder for building the Docker image. The path is relative to the folder containing the `devcontainer.json` file.",
+                            "type": "string"
+                          },
+                          "dockerfile": {
+                            "description": "The location of the Dockerfile that defines the contents of the container. The path is relative to the folder containing the `devcontainer.json` file.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "dockerfile"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "$ref": "#/definitions/buildOptions"
+                      }
+                    ],
+                    "description": "Docker build-related options.",
+                    "propertyNames": {
+                      "enum": [
+                        "args",
+                        "cacheFrom",
+                        "context",
+                        "dockerfile",
+                        "options",
+                        "target"
+                      ]
+                    },
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "build"
+                ],
+                "type": "object"
+              },
+              {
+                "allOf": [
+                  {
+                    "properties": {
+                      "context": {
+                        "description": "The location of the context folder for building the Docker image. The path is relative to the folder containing the `devcontainer.json` file.",
+                        "type": "string"
+                      },
+                      "dockerFile": {
+                        "description": "The location of the Dockerfile that defines the contents of the container. The path is relative to the folder containing the `devcontainer.json` file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "dockerFile"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "build": {
+                        "allOf": [
+                          {
+                            "$ref": "#/definitions/buildOptions"
+                          },
+                          {
+                            "description": "Docker build-related options."
+                          }
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            ]
+          },
+          "imageContainer": {
+            "properties": {
+              "image": {
+                "description": "The docker image that will be used to create the container.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "image"
+            ],
+            "type": "object"
+          },
+          "nonComposeBase": {
+            "properties": {
+              "appPort": {
+                "description": "Application ports that are exposed by the container. This can be a single port or an array of ports. Each port can be a number or a string. A number is mapped to the same port on the host. A string is passed to Docker unchanged and can be used to map ports differently, e.g. \"8000:8010\".",
+                "items": {
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "type": [
+                  "integer",
+                  "string",
+                  "array"
+                ]
+              },
+              "overrideCommand": {
+                "description": "Whether to overwrite the command specified in the image. The default is true.",
+                "type": "boolean"
+              },
+              "runArgs": {
+                "description": "The arguments required when starting in the container.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "shutdownAction": {
+                "description": "Action to take when the user disconnects from the container in their editor. The default is to stop the container.",
+                "enum": [
+                  "none",
+                  "stopContainer"
+                ],
+                "type": "string"
+              },
+              "workspaceFolder": {
+                "description": "The path of the workspace folder inside the container.",
+                "type": "string"
+              },
+              "workspaceMount": {
+                "description": "The --mount parameter for docker run. The default is to mount the project folder at /workspaces/$project.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "description": "Defines a dev container",
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "allOf": [
+                      {
+                        "oneOf": [
+                          {
+                            "$ref": "#/definitions/dockerfileContainer"
+                          },
+                          {
+                            "$ref": "#/definitions/imageContainer"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "#/definitions/nonComposeBase"
+                      }
+                    ]
+                  },
+                  {
+                    "$ref": "#/definitions/composeContainer"
+                  }
+                ]
+              },
+              {
+                "$ref": "#/definitions/devContainerCommon"
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/definitions/devContainerCommon"
+              },
+              {
+                "additionalProperties": false,
+                "type": "object"
+              }
+            ]
+          }
+        ],
+        "propertyNames": {
+          "enum": [
+            "$schema",
+            "additionalProperties",
+            "appPort",
+            "build",
+            "capAdd",
+            "containerEnv",
+            "containerUser",
+            "context",
+            "customizations",
+            "dockerComposeFile",
+            "dockerFile",
+            "features",
+            "forwardPorts",
+            "hostRequirements",
+            "image",
+            "init",
+            "initializeCommand",
+            "mounts",
+            "name",
+            "onCreateCommand",
+            "otherPortsAttributes",
+            "overrideCommand",
+            "overrideFeatureInstallOrder",
+            "portsAttributes",
+            "postAttachCommand",
+            "postCreateCommand",
+            "postStartCommand",
+            "privileged",
+            "remoteEnv",
+            "remoteUser",
+            "runArgs",
+            "runServices",
+            "secrets",
+            "securityOpt",
+            "service",
+            "shutdownAction",
+            "updateContentCommand",
+            "updateRemoteUserUID",
+            "userEnvProbe",
+            "waitFor",
+            "workspaceFolder",
+            "workspaceMount"
+          ]
+        }
+      },
       "discussion_forms_schema": {
         "$comment": "https://docs.github.com/en/discussions/managing-discussions-for-your-community/syntax-for-discussion-category-forms",
         "$id": "https://json.schemastore.org/github-discussion.json",
@@ -4099,6 +4943,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -4376,6 +5222,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -4656,6 +5504,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -4933,6 +5783,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -5213,6 +6065,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -5490,6 +6344,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -5770,6 +6626,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -6048,6 +6906,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -6329,6 +7189,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -6608,6 +7470,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -6890,6 +7754,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-01",
             "ENVS-02",
             "ENVS-03",
@@ -7171,6 +8037,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-01": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
@@ -7455,6 +8323,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -7732,6 +8602,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -8012,6 +8884,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -8289,6 +9163,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -8569,6 +9445,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -8848,6 +9726,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -9130,6 +10010,8 @@
             "DEVC-14",
             "DEVC-15",
             "DEVC-16",
+            "DEVC-17",
+            "DEVC-18",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -9409,6 +10291,8 @@
             "DEVC-14": "warning",
             "DEVC-15": "warning",
             "DEVC-16": "warning",
+            "DEVC-17": "warning",
+            "DEVC-18": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -11017,6 +11901,32 @@
           "since": "0.7.1",
           "status": "proposed",
           "title": "A dev container stack that labels the capability it provides runs a version every environment schema accepts",
+          "waivable": true
+        },
+        "DEVC-17": {
+          "aliases": [],
+          "anchor": "devc-17",
+          "convention": "EC-0027",
+          "engine": "conftest",
+          "package": "conventions.checks.dev_containers.specification",
+          "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
+          "severity": "warning",
+          "since": "0.7.1",
+          "status": "proposed",
+          "title": "devcontainer.json is valid against the Dev Container specification's schema",
+          "waivable": true
+        },
+        "DEVC-18": {
+          "aliases": [],
+          "anchor": "devc-18",
+          "convention": "EC-0027",
+          "engine": "conftest",
+          "package": "conventions.checks.dev_containers.specification",
+          "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
+          "severity": "warning",
+          "since": "0.7.1",
+          "status": "proposed",
+          "title": "Every variable in devcontainer.json is one the specification defines, used where it resolves",
           "waivable": true
         },
         "ENVS-01": {

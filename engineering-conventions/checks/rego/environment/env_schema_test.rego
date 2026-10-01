@@ -288,3 +288,84 @@ test_envs_18_unregistered_capability if {
 		`"object-storage", "payments", "postgresql", or propose a new one`,
 	])}
 }
+
+requiring(requires, bindings) := array.concat(
+	[td.repository(object.union(td.identity, {"name": "platform-web"}))],
+	[td.file(path, schema({"requires": requires, "bindings": bindings}))],
+)
+
+primary_db := {"primary-db": {"capability": "postgresql", "version": ">=18", "description": "Every account."}}
+
+test_bindings_that_reach_a_declared_instance if {
+	given := requiring(primary_db, {
+		"DATABASE_URL": binding({"format": "url", "requires": "primary-db"}),
+		"DATABASE_ADMIN_URL": binding({"format": "url", "requires": "primary-db"}),
+	})
+	found := env_schema.findings with input as given
+		with data.conventions.index as index
+	count(found) == 0
+}
+
+test_envs_16_requires_and_more if {
+	given := requiring(primary_db, {"DATABASE_URL": binding({"requires": "primary-db", "provider": "aws"})})
+	found := env_schema.findings with input as given
+		with data.conventions.index as index
+	messages(found, "ENVS-16") == {concat(" ", [
+		`binding DATABASE_URL names both requires and provider; the instance "primary-db" already says what`,
+		"it reaches, so drop provider",
+	])}
+}
+
+test_envs_22_inline_capability if {
+	found := env_schema.findings with input as reach_input(reaching)
+		with data.conventions.index as index
+	messages(found, "ENVS-22") == {
+		concat(" ", [
+			`binding DATABASE_URL names capability "postgresql" inline; declare the instance under requires,`,
+			"with the versions the code works with, and write requires: <instance> on the binding",
+		]),
+		concat(" ", [
+			`binding API_STRIPE_KEY names capability "payments" inline; declare the instance under requires,`,
+			"with the versions the code works with, and write requires: <instance> on the binding",
+		]),
+	}
+}
+
+test_envs_23_undeclared_instance if {
+	given := requiring(primary_db, {
+		"DATABASE_URL": binding({"requires": "primary-db"}),
+		"API_CACHE_URL": binding({"requires": "cache"}),
+	})
+	found := env_schema.findings with input as given
+		with data.conventions.index as index
+	messages(found, "ENVS-23") == {concat(" ", [
+		`binding API_CACHE_URL requires "cache", which is not declared under requires; declare it,`,
+		"or name a declared instance",
+	])}
+}
+
+test_envs_23_unreached_instance if {
+	found := env_schema.findings with input as requiring(primary_db, {})
+		with data.conventions.index as index
+	messages(found, "ENVS-23") == {concat(" ", [
+		"requires declares primary-db, which no binding reaches; name it with requires: primary-db",
+		"on the binding that does, or remove it",
+	])}
+}
+
+test_envs_23_unregistered_capability if {
+	requires := {"cache": {"capability": "redis", "version": ">=7", "description": "Counters."}}
+	found := env_schema.findings with input as requiring(requires, {"API_CACHE_URL": binding({"requires": "cache"})})
+		with data.conventions.index as index
+	messages(found, "ENVS-23") == {concat(" ", [
+		`requires.cache has capability "redis", which is not a registered capability; use one of`,
+		`"object-storage", "payments", "postgresql", or propose a new one`,
+	])}
+}
+
+test_instances_ignore_what_is_not_a_mapping if {
+	docs := [td.file(path, schema({"requires": {"a": "x"}}))]
+	env_schema.instances(path) == {} with input as docs
+	docs2 := [td.file(path, schema({"requires": ["a"]}))]
+	env_schema.instances(path) == {} with input as docs2
+}

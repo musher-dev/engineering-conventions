@@ -78,3 +78,63 @@ test_numbers_in if {
 	stacks.numbers_in("15432-15434") == {15432, 15433, 15434}
 	stacks.numbers_in("") == set()
 }
+
+schema_path := "platform-api/env.schema.yaml"
+
+requiring(capability, range) := td.file(schema_path, {
+	"service": "platform-api",
+	"bindings": {},
+	"requires": {"cache": {"capability": capability, "version": range, "description": "Counters."}},
+})
+
+stack(labels) := [
+	requiring("valkey", ">=9, <10"),
+	td.file(path, {"services": {"valkey": {"image": "valkey/valkey:9.0.1", "labels": labels}}}),
+	td.inventory([path, schema_path]),
+]
+
+test_devc_16_a_version_in_range if {
+	labels := {"dev.musher.capability": "valkey", "dev.musher.capability-version": "9.0.1"}
+	count(stacks.findings) == 0 with input as stack(labels)
+	listed := ["dev.musher.capability=valkey", "dev.musher.capability-version=9", "other"]
+	count(stacks.findings) == 0 with input as stack(listed)
+}
+
+test_devc_16_unlabelled_and_unrequired_stacks_are_silent if {
+	count(stacks.findings) == 0 with input as stack({"maintainer": "x"})
+	labels := {"dev.musher.capability": "postgresql", "dev.musher.capability-version": "17"}
+	count(stacks.findings) == 0 with input as stack(labels)
+}
+
+test_devc_16_a_version_outside_the_range if {
+	found := stacks.findings with input as stack(["dev.musher.capability=valkey", "dev.musher.capability-version=8.1.3"])
+	messages(found, "DEVC-16") == {concat(" ", [
+		"the service valkey runs valkey 8.1.3, but platform-api/env.schema.yaml requires >=9, <10 for cache;",
+		"run a version in the range, and set dev.musher.capability-version to match",
+	])}
+	td.pairs(found) == {["DEVC-16", path]}
+	above := {"dev.musher.capability": "valkey", "dev.musher.capability-version": "10.0"}
+	count(stacks.findings) == 1 with input as stack(above)
+}
+
+test_devc_16_a_number_label if {
+	labels := {"dev.musher.capability": "valkey", "dev.musher.capability-version": 9}
+	count(stacks.findings) == 0 with input as stack(labels)
+}
+
+test_devc_16_no_version if {
+	found := stacks.findings with input as stack({"dev.musher.capability": "valkey"})
+	messages(found, "DEVC-16") == {concat(" ", [
+		"the service valkey labels dev.musher.capability valkey but no dev.musher.capability-version;",
+		"label the version of the engine it runs",
+	])}
+}
+
+test_devc_16_not_a_version if {
+	labels := {"dev.musher.capability": "valkey", "dev.musher.capability-version": "9-alpine"}
+	found := stacks.findings with input as stack(labels)
+	messages(found, "DEVC-16") == {concat(" ", [
+		`the service valkey labels dev.musher.capability-version "9-alpine", which is not a version;`,
+		"write the engine's version as integers separated by dots",
+	])}
+}

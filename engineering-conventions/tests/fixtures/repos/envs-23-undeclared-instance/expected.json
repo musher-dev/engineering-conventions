@@ -1,6 +1,6 @@
 [
   {
-    "id": "ENVS-22",
+    "id": "ENVS-23",
     "path": "platform-api/env.schema.yaml",
     "severity": "warning"
   }

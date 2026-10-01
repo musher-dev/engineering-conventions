@@ -208,6 +208,20 @@ compatibility = "gated"
 A consumer validates an environment against the contract with any JSON Schema validator that coerces strings, such
 as Ajv with `coerceTypes`. A generated settings module stays your own tooling.
 
+A runtime the code needs at a version, such as a database or a cache, is declared once under `requires`, with the
+range of versions the code works with, and each binding that reaches it names it:
+
+```yaml
+requires:
+  cache: {capability: valkey, version: ">=9, <10", description: Rate-limit counters and short-lived sessions.}
+bindings:
+  CACHE_URL: {type: string, format: url, sensitivity: secret, requires: cache, description: "…"}
+```
+
+The range is not a pin: whoever provisions the runtime picks the exact version inside it, and
+`.repo/dependencies.toml` keeps exact pins for vendored releases only. A dev container stack opts in to being
+compared with the range by labelling its service `dev.musher.capability` and `dev.musher.capability-version` (DEVC-16).
+
 ## Declare only what differs
 
 A repository that holds no waivers, and whose kind selects the profile it needs, needs no other file. Add

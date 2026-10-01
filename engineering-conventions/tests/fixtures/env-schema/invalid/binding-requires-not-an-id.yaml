@@ -1,0 +1,8 @@
+service: api
+runtime: go
+bindings:
+  API_CACHE_URL:
+    type: string
+    sensitivity: secret
+    requires: Cache Server
+    description: Address of the cache that holds counters.

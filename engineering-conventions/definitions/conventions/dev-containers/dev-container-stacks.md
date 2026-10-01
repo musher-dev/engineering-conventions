@@ -4,8 +4,9 @@ title: Dev container stacks
 summary: >-
   The compose stacks a dev container starts beside it, in compose files under
   .devcontainer/, run images that move only with a commit, publish their
-  ports on the loopback address only, and publish them from the reserved
-  range 15432-15460.
+  ports on the loopback address only, publish them from the reserved
+  range 15432-15460, and, when they label the capability they provide,
+  run a version the product's environment schema accepts.
 status: draft
 topic: dev-containers
 applies_to:
@@ -26,6 +27,8 @@ implementations:
 references:
   - title: "Compose file reference: ports"
     url: https://docs.docker.com/reference/compose-file/services/#ports
+  - title: "Compose file reference: labels"
+    url: https://docs.docker.com/reference/compose-file/services/#labels
   - title: "Compose file reference: image"
     url: https://docs.docker.com/reference/compose-file/services/#image
 requirements:
@@ -54,6 +57,14 @@ requirements:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
     aliases: ["development-container:PORT-05a"]
+  - id: DEVC-16
+    title: A dev container stack that labels the capability it provides runs a version every environment schema accepts
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.stacks
 ---
 
 # Dev container stacks
@@ -66,7 +77,8 @@ anyone rebuilds the container. These requirements keep them reproducible and kee
 
 A compose file under `.devcontainer/`, at any depth, named `compose.yaml`, `docker-compose.yaml`, or either with a
 suffix such as `compose.override.yaml`. Compose files elsewhere describe the product, not the dev environment, and are
-not checked here. A value written with a variable is left alone.
+not checked here. A value written with a variable is left alone. DEVC-16 also reads the `requires` of every
+environment schema the repository holds ([EC-0020](../environment/env-schema.md#runtime-requirements)).
 
 ## Status and authority
 
@@ -154,3 +166,42 @@ ports:
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.3 · Formerly: development-container PORT-05 (in part)
+
+### DEVC-16
+
+**A dev container stack that labels the capability it provides runs a version every environment schema accepts.**
+
+A product's environment schema declares the range of versions its code works with for each runtime it needs
+([EC-0020](../environment/env-schema.md#runtime-requirements)). A stack that runs an older engine than that range
+lets code pass locally that fails in every environment, or fails locally for a reason nobody can see. A compose
+service says what it provides with two labels: `dev.musher.capability`, a registered runtime capability, and
+`dev.musher.capability-version`, the version of the engine its image runs. The check compares that version with the
+range of every `requires` entry with the same capability, in every environment schema the repository holds, and
+reports a version outside a range, or one that is not dot-separated integers. Labels may be written as a map or a
+list. A service without the labels is not compared: adding them is how a stack opts in. The version label repeats
+the image's tag, so the two move in the same commit.
+
+**Correct:**
+
+```yaml
+# .devcontainer/stacks/cache/compose.yaml; platform-api/env.schema.yaml requires valkey ">=9, <10"
+services:
+  valkey:
+    image: valkey/valkey:9.0.1
+    labels:
+      dev.musher.capability: valkey
+      dev.musher.capability-version: "9.0.1"
+```
+
+**Incorrect:**
+
+```yaml
+services:
+  valkey:
+    image: valkey/valkey:8.1.3
+    labels:
+      - dev.musher.capability=valkey
+      - dev.musher.capability-version=8.1.3   # outside >=9, <10
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1

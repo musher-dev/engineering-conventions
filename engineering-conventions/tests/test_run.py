@@ -392,6 +392,20 @@ def test_inventory_document_derives_from_each_environment_schema(
     assert "# API_PORT=8080\n" in get_str(as_map(derived["api/env.schema.yaml"]), "example")
 
 
+def test_the_contract_carries_runtime_requirements(product: Path) -> None:
+    # A deploy preflight compares x-musher-requires with what infrastructure
+    # reports (decision 0026).
+    schema = product / "tests" / "fixtures" / "env-schema" / "valid" / "runtime-requirements.yaml"
+    derived = as_map(run.derive(schema.parent, schema.name, run.selection(product).derivation))
+    contract = as_map(derived["contract"])
+    assert as_map(contract["x-musher-requires"])["cache"] == {
+        "capability": "valkey",
+        "description": "Rate-limit counters and short-lived sessions.",
+        "version": ">=9, <10",
+    }
+    assert as_map(as_map(contract["properties"])["CACHE_URL"])["x-musher-requires"] == "cache"
+
+
 def test_derive_needs_jq(product: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     (tmp_path / "env.schema.yaml").write_text("service: api\nruntime: go\nbindings: {}\n")
     which = shutil.which

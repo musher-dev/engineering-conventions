@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "id": "ENVS-22",
+    "path": "platform-api/env.schema.yaml",
+    "severity": "warning"
+  }
+]

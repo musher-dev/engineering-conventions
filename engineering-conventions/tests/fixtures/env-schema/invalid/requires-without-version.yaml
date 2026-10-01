@@ -1,0 +1,5 @@
+service: api
+runtime: go
+requires:
+  cache: {capability: valkey, description: Counters.}
+bindings: {}

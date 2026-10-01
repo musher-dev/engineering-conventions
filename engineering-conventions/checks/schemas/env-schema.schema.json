@@ -24,6 +24,12 @@
       "$ref": "common.schema.json#/definitions/nonEmptyString"
     },
     "naming": { "$ref": "#/definitions/naming" },
+    "requires": {
+      "description": "Every runtime instance the service needs, keyed by an instance ID: what it is, the versions the code works with, and why. A binding names the instance it reaches with requires (ENVS-22, ENVS-23).",
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/instanceId" },
+      "additionalProperties": { "$ref": "#/definitions/runtimeRequirement" }
+    },
     "bindings": {
       "description": "Every variable the product reads, keyed by its name. ENVS-04 checks the names.",
       "type": "object",
@@ -54,6 +60,39 @@
       "description": "An environment variable name.",
       "type": "string",
       "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "instanceId": {
+      "description": "A runtime instance's ID, in lowercase kebab-case, e.g. primary-db.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "versionRange": {
+      "description": "The versions the code works with: comparators separated by commas, all of which must hold. An operator is >=, >, <=, < or ==, and a version is dot-separated integers, a missing component counting as 0, e.g. \">=9, <10\".",
+      "type": "string",
+      "pattern": "^ *(>=|<=|==|>|<) *[0-9]+(\\.[0-9]+)*( *, *(>=|<=|==|>|<) *[0-9]+(\\.[0-9]+)*)* *$"
+    },
+    "runtimeRequirement": {
+      "description": "One runtime instance the service needs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability", "version", "description"],
+      "properties": {
+        "capability": {
+          "description": "What the instance is: a runtime-capability token from the terminology, e.g. postgresql (ENVS-23).",
+          "type": "string",
+          "minLength": 1
+        },
+        "version": { "$ref": "#/definitions/versionRange" },
+        "provider": {
+          "description": "The vendor whose API the code speaks for the capability, as a lower-case slug, e.g. digitalocean.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "description": {
+          "description": "What the service keeps in the instance, or does with it.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        }
+      }
     },
     "prefix": {
       "description": "An upper-case name prefix, ending in an underscore, e.g. VITE_.",
@@ -122,6 +161,10 @@
           "description": "The vendor whose API the code speaks for the capability, as a lower-case slug, e.g. stripe. Only with capability (ENVS-16).",
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "requires": {
+          "description": "The runtime instance the value reaches, as an ID declared under the top-level requires. Never with target, capability or provider (ENVS-16, ENVS-23).",
+          "$ref": "#/definitions/instanceId"
         },
         "default": {
           "description": "The value the product uses when the variable is unset. It ships to production."

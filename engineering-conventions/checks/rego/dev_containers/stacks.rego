@@ -2,16 +2,19 @@
 # title: Dev container stacks
 # description: >-
 #   The compose stacks under .devcontainer/ run fixed images (DEVC-11), publish
-#   their ports on the loopback address only (DEVC-12), and publish them from
-#   the reserved range (DEVC-13).
+#   their ports on the loopback address only (DEVC-12), publish them from
+#   the reserved range (DEVC-13), and run a version of the capability they
+#   label that every environment schema's range accepts (DEVC-16).
 # scope: package
 # custom:
 #   convention: EC-0028
 package conventions.checks.dev_containers.stacks
 
+import data.conventions.lib.env
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.mise
+import data.conventions.lib.versions
 
 compose_pattern := `^\.devcontainer/(.+/)?(docker-)?compose(\.[^/]+)?\.ya?ml$`
 
@@ -57,6 +60,82 @@ findings contains lib.finding("DEVC-13", port.path, message) if {
 		"the service %s publishes host port %d, outside the reserved range %d-%d; move it into the range",
 		[port.service, host_port, port_range.low, port_range.high],
 	)
+}
+
+# DEVC-16. A version outside a range a schema requires.
+findings contains lib.finding("DEVC-16", entry.path, message) if {
+	some entry in labelled
+	versions.parse(entry.version)
+	some required in requirements
+	required.capability == entry.capability
+	not versions.satisfies(entry.version, required.version)
+	message := sprintf(
+		concat(" ", [
+			"the service %s runs %s %s, but %s requires %s for %s; run a version in the range,",
+			"and set %s to match",
+		]),
+		[entry.name, entry.capability, entry.version, required.path, required.version, required.id, version_label],
+	)
+}
+
+# DEVC-16. A capability without its version.
+findings contains lib.finding("DEVC-16", entry.path, message) if {
+	some entry in labelled
+	entry.version == ""
+	some required in requirements
+	required.capability == entry.capability
+	message := sprintf(
+		"the service %s labels %s %s but no %s; label the version of the engine it runs",
+		[entry.name, capability_label, entry.capability, version_label],
+	)
+}
+
+# DEVC-16. A version that cannot be compared.
+findings contains lib.finding("DEVC-16", entry.path, message) if {
+	some entry in labelled
+	entry.version != ""
+	not versions.parse(entry.version)
+	some required in requirements
+	required.capability == entry.capability
+	message := sprintf(
+		"the service %s labels %s %q, which is not a version; write the engine's version as integers separated by dots",
+		[entry.name, version_label, entry.version],
+	)
+}
+
+capability_label := "dev.musher.capability"
+
+version_label := "dev.musher.capability-version"
+
+# A service's labels as a map, from either form compose accepts: a mapping,
+# or a list of KEY=VALUE strings.
+labels(service) := {key: sprintf("%v", [value]) | some key, value in service.labels} if is_object(service.labels)
+
+labels(service) := {parts[0]: concat("=", array.slice(parts, 1, count(parts))) |
+	some item in service.labels
+	is_string(item)
+	parts := split(item, "=")
+	count(parts) > 1
+} if {
+	is_array(service.labels)
+}
+
+# Every service that labels the capability it provides, with the version it
+# labels, or "" when it labels none.
+labelled contains {"path": entry.path, "name": entry.name, "capability": capability, "version": version} if {
+	some entry in services
+	service_labels := labels(entry.service)
+	capability := service_labels[capability_label]
+	version := object.get(service_labels, version_label, "")
+}
+
+# Every runtime instance an environment schema requires, with its range.
+requirements contains {"path": path, "id": id, "capability": instance.capability, "version": instance.version} if {
+	some path, contents in env.documents
+	is_object(contents.requires)
+	some id, instance in contents.requires
+	is_string(instance.capability)
+	versions.valid_range(instance.version)
 }
 
 in_range(number) if {

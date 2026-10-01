@@ -26,7 +26,7 @@ container has anything to find: each requirement reads a `devcontainer.json` or 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
 | [EC-0027 Dev container configuration](dev-container-configuration.md) | DEVC-01 – DEVC-10, DEVC-14, DEVC-15 | Where the configuration lives, the lockfile, the base image, the user, lifecycle scripts, secrets, named volumes and where they mount, the container name, updates and the CI build |
-| [EC-0028 Dev container stacks](dev-container-stacks.md) | DEVC-11 – DEVC-13 | The images and published ports of the compose stacks under `.devcontainer/` |
+| [EC-0028 Dev container stacks](dev-container-stacks.md) | DEVC-11 – DEVC-13, DEVC-16 | The images and published ports of the compose stacks under `.devcontainer/`, and the version of a capability a stack labels |
 
 Related requirements in other families:
 
@@ -51,3 +51,4 @@ Related requirements in other families:
 | CI | A build, with `--frozen-lockfile` | DEVC-10 |
 | A stack service's `image` | A fixed tag or a digest | DEVC-11 |
 | A stack's published port | `127.0.0.1`, from 15432–15460 | DEVC-12, DEVC-13 |
+| A stack service labelled `dev.musher.capability` | Its `dev.musher.capability-version` in every environment schema's range | DEVC-16 |

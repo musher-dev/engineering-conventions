@@ -148,6 +148,7 @@ ID is permanent: it is never renumbered or reused.
 | [DEVC-13](dev-containers/dev-container-stacks.md#devc-13) | A dev container stack publishes its host ports from the reserved range 15432-15460 | EC-0028 | proposed | warning | conftest |
 | [DEVC-14](dev-containers/dev-container-configuration.md#devc-14) | A dev container does not give its container a fixed name | EC-0027 | proposed | warning | conftest |
 | [DEVC-15](dev-containers/dev-container-configuration.md#devc-15) | A volume mounted under /home belongs to remoteUser | EC-0027 | proposed | warning | conftest |
+| [DEVC-16](dev-containers/dev-container-stacks.md#devc-16) | A dev container stack that labels the capability it provides runs a version every environment schema accepts | EC-0028 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
@@ -169,6 +170,8 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-19](environment/env-schema.md#envs-19) | A binding that reaches another service or an outside capability names it | EC-0020 | proposed | warning | review |
 | [ENVS-20](environment/env-contract.md#envs-20) | A service that offers its environment as an interface commits the contract derived from its schema | EC-0019 | proposed | warning | conftest |
 | [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | proposed | warning | conftest |
+| [ENVS-22](environment/env-schema.md#envs-22) | A binding that reaches a runtime capability names it through requires | EC-0020 | proposed | warning | conftest |
+| [ENVS-23](environment/env-schema.md#envs-23) | Every runtime instance is declared, reached by a binding, and a registered capability | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |

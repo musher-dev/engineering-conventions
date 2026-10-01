@@ -964,6 +964,10 @@
                 "description": "The product refuses to start without a value.",
                 "type": "boolean"
               },
+              "requires": {
+                "$ref": "#/definitions/instanceId",
+                "description": "The runtime instance the value reaches, as an ID declared under the top-level requires. Never with target, capability or provider (ENVS-16, ENVS-23)."
+              },
               "roles": {
                 "description": "The host roles whose rendered environment file carries it.",
                 "items": {
@@ -1132,6 +1136,11 @@
             ],
             "type": "object"
           },
+          "instanceId": {
+            "description": "A runtime instance's ID, in lowercase kebab-case, e.g. primary-db.",
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+            "type": "string"
+          },
           "naming": {
             "additionalProperties": false,
             "description": "The repository's own vocabulary for the naming grammar (ENVS-04, ENVS-09, ENVS-14).",
@@ -1191,6 +1200,35 @@
             ],
             "type": "object"
           },
+          "runtimeRequirement": {
+            "additionalProperties": false,
+            "description": "One runtime instance the service needs.",
+            "properties": {
+              "capability": {
+                "description": "What the instance is: a runtime-capability token from the terminology, e.g. postgresql (ENVS-23).",
+                "minLength": 1,
+                "type": "string"
+              },
+              "description": {
+                "$ref": "#/definitions/common_nonEmptyString",
+                "description": "What the service keeps in the instance, or does with it."
+              },
+              "provider": {
+                "description": "The vendor whose API the code speaks for the capability, as a lower-case slug, e.g. digitalocean.",
+                "pattern": "^[a-z0-9][a-z0-9-]*$",
+                "type": "string"
+              },
+              "version": {
+                "$ref": "#/definitions/versionRange"
+              }
+            },
+            "required": [
+              "capability",
+              "version",
+              "description"
+            ],
+            "type": "object"
+          },
           "sharedKey": {
             "additionalProperties": false,
             "properties": {
@@ -1230,6 +1268,11 @@
             "description": "An environment variable name.",
             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
             "type": "string"
+          },
+          "versionRange": {
+            "description": "The versions the code works with: comparators separated by commas, all of which must hold. An operator is >=, >, <=, < or ==, and a version is dot-separated integers, a missing component counting as 0, e.g. \">=9, <10\".",
+            "pattern": "^ *(>=|<=|==|>|<) *[0-9]+(\\.[0-9]+)*( *, *(>=|<=|==|>|<) *[0-9]+(\\.[0-9]+)*)* *$",
+            "type": "string"
           }
         },
         "description": "An env.schema.yaml: the environment a product reads at runtime (<product>/env.schema.yaml), or the one its dev environment reads (.devcontainer/env.schema.yaml). EC-0020 describes every field; ENVS-03 checks a schema against this file, and ENVS-04 to ENVS-14 check what a JSON Schema cannot express. Draft-07 only: the checks validate with OPA, which ignores newer keywords.",
@@ -1256,6 +1299,16 @@
           },
           "naming": {
             "$ref": "#/definitions/naming"
+          },
+          "requires": {
+            "additionalProperties": {
+              "$ref": "#/definitions/runtimeRequirement"
+            },
+            "description": "Every runtime instance the service needs, keyed by an instance ID: what it is, the versions the code works with, and why. A binding names the instance it reaches with requires (ENVS-22, ENVS-23).",
+            "propertyNames": {
+              "$ref": "#/definitions/instanceId"
+            },
+            "type": "object"
           },
           "retired": {
             "description": "Names the product deliberately stopped reading, with why; ENVS-05 refuses them again.",
@@ -4154,6 +4207,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -4174,6 +4228,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -4430,6 +4486,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -4450,6 +4507,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -4709,6 +4768,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -4729,6 +4789,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -4985,6 +5047,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -5005,6 +5068,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -5264,6 +5329,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -5284,6 +5350,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -5540,6 +5608,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -5560,6 +5629,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -5819,6 +5890,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -5839,6 +5911,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -6096,6 +6170,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -6116,6 +6191,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -6376,6 +6453,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -6396,6 +6474,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -6654,6 +6734,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -6674,6 +6755,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -6935,6 +7018,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-01",
             "ENVS-02",
             "ENVS-03",
@@ -6956,6 +7040,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -7215,6 +7301,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-01": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
@@ -7236,6 +7323,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -7498,6 +7587,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -7518,6 +7608,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -7774,6 +7866,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -7794,6 +7887,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -8053,6 +8148,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -8073,6 +8169,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -8329,6 +8427,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -8349,6 +8448,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -8608,6 +8709,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -8628,6 +8730,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -8886,6 +8990,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -8906,6 +9011,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -9167,6 +9274,7 @@
             "DEVC-13",
             "DEVC-14",
             "DEVC-15",
+            "DEVC-16",
             "ENVS-02",
             "ENVS-03",
             "ENVS-04",
@@ -9187,6 +9295,8 @@
             "ENVS-19",
             "ENVS-20",
             "ENVS-21",
+            "ENVS-22",
+            "ENVS-23",
             "GHA-01",
             "GHA-02",
             "GHA-03",
@@ -9445,6 +9555,7 @@
             "DEVC-13": "warning",
             "DEVC-14": "warning",
             "DEVC-15": "warning",
+            "DEVC-16": "warning",
             "ENVS-02": "warning",
             "ENVS-03": "warning",
             "ENVS-04": "warning",
@@ -9465,6 +9576,8 @@
             "ENVS-19": "warning",
             "ENVS-20": "warning",
             "ENVS-21": "warning",
+            "ENVS-22": "warning",
+            "ENVS-23": "warning",
             "GHA-01": "warning",
             "GHA-02": "warning",
             "GHA-03": "warning",
@@ -11150,6 +11263,19 @@
           "title": "A volume mounted under /home belongs to remoteUser",
           "waivable": true
         },
+        "DEVC-16": {
+          "aliases": [],
+          "anchor": "devc-16",
+          "convention": "EC-0028",
+          "engine": "conftest",
+          "package": "conventions.checks.dev_containers.stacks",
+          "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
+          "severity": "warning",
+          "since": "0.7.1",
+          "status": "proposed",
+          "title": "A dev container stack that labels the capability it provides runs a version every environment schema accepts",
+          "waivable": true
+        },
         "ENVS-01": {
           "aliases": [
             "development-container:LAYOUT-10"
@@ -11445,6 +11571,32 @@
           "since": "0.7.1",
           "status": "proposed",
           "title": "A product's .env.example is the one derived from its environment schema",
+          "waivable": true
+        },
+        "ENVS-22": {
+          "aliases": [],
+          "anchor": "envs-22",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.7.1",
+          "status": "proposed",
+          "title": "A binding that reaches a runtime capability names it through requires",
+          "waivable": true
+        },
+        "ENVS-23": {
+          "aliases": [],
+          "anchor": "envs-23",
+          "convention": "EC-0020",
+          "engine": "conftest",
+          "package": "conventions.checks.environment.env_schema",
+          "path": "definitions/conventions/environment/env-schema.md",
+          "severity": "warning",
+          "since": "0.7.1",
+          "status": "proposed",
+          "title": "Every runtime instance is declared, reached by a binding, and a registered capability",
           "waivable": true
         },
         "GHA-01": {

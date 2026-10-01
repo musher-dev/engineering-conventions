@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.7.1](https://github.com/musher-dev/engineering-conventions/compare/v0.7.0...v0.7.1) (2026-10-01)
+
+
+### Features
+
+* **conventions:** add conventions for agent skills, commits and copy ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** add interface formats and fetched dependencies ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** check devcontainer.json schema and variables ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** check Taskfile fragments, silent and prefixed tasks ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** check that copy, OpenAPI and community tooling is wired ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** declare runtime requirements with version ranges ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** derive the env contract and .env.example from the schema ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** name bindings after the program that reads them ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** require a GHCR image to name its source repository ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+* **conventions:** skip vendored env schemas and register five runtime capabilities ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+
+
+### Bug Fixes
+
+* **conventions:** name the breaking mark as the signal for a gated break ([387ce19](https://github.com/musher-dev/engineering-conventions/commit/387ce194b54f01fca32259934354ede15ff6d7e8))
+
 ## [0.7.0](https://github.com/musher-dev/engineering-conventions/compare/v0.6.4...v0.7.0) (2026-09-30)
 
 

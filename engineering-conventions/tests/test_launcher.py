@@ -41,6 +41,11 @@ CASES = [
     # The launcher hashes vendored copies itself (DEPS-06, decision 0022).
     "deps-06-edited-file",
     "deps-06-passes-every-interface-when-none-named",
+    # The launcher derives the contract and .env.example with
+    # bin/env-contract.jq, as the runner does (decision 0026).
+    "envs-20-stale-contract",
+    "envs-20-passes-derived-contract",
+    "envs-21-stale-example",
 ]
 
 
@@ -439,6 +444,39 @@ def test_sha256_falls_back_to_whichever_tool_exists(tool: str, tmp_path: Path) -
         completed.stdout.strip()
         == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     )
+
+
+def test_env_contract_prints_what_the_check_compares(tmp_path: Path) -> None:
+    # The committed contract and .env.example of the passing cases are what
+    # the command prints today, so a change to the mapping shows up here.
+    schema = fixture_repos_dir(PRODUCT) / "clean" / "platform-api" / "env.schema.yaml"
+    contract = _launch("env-contract", str(schema), cwd=tmp_path)
+    assert contract.returncode == 0, contract.stderr
+    committed = (
+        fixture_repos_dir(PRODUCT)
+        / "envs-20-passes-derived-contract"
+        / "platform-api"
+        / "contracts"
+        / "env"
+        / "platform-api.env.schema.json"
+    )
+    assert contract.stdout == committed.read_text(encoding="utf-8")
+    example = _launch("env-contract", "--example", str(schema), cwd=tmp_path)
+    assert example.returncode == 0, example.stderr
+    case = fixture_repos_dir(PRODUCT) / "envs-21-passes-derived-example"
+    committed = case / "platform-api" / ".env.example"
+    assert example.stdout == committed.read_text(encoding="utf-8")
+
+
+def test_env_contract_needs_a_schema_that_parses(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text("- a list\n")
+    completed = _launch("env-contract", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert completed.returncode == 2
+    assert "cannot derive the environment contract from env.schema.yaml" in completed.stderr
+    missing = _launch("env-contract", "absent.yaml", cwd=tmp_path)
+    assert missing.returncode == 2
+    assert "absent.yaml does not exist" in missing.stderr
+    assert _launch("env-contract", cwd=tmp_path).returncode == 2
 
 
 OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"

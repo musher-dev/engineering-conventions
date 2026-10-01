@@ -38,6 +38,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0023](0023-openapi-documents-delegate-to-spectral.md) | OpenAPI documents are checked by Spectral, with a ruleset the conventions ship and each repository extends | accepted |
 | [0024](0024-copy-rules-adopt-vale-packages.md) | Copy rules adopt published Vale packages, author only what they lack, and ship as a Vale config package | accepted |
 | [0025](0025-commit-messages-delegate-to-committed.md) | Commit messages are checked by committed, against one configuration in .config/commits/ | accepted |
+| [0026](0026-the-environment-contract-is-derived.md) | The environment contract is derived from env.schema.yaml, declares runtime ranges, and names bindings after their reader | accepted |
 | [0027](0027-data-units-and-fetched-dependencies.md) | Data documents and systemd units are interface formats, a dependency may be fetched, and a gated break is marked, not numbered | accepted |
 
 ## Writing a decision

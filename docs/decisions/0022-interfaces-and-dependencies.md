@@ -5,7 +5,7 @@ status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
 amends: ["0010", "0015"]
-amended_by: ["0027"]
+amended_by: ["0026", "0027"]
 ---
 
 # 0022 — A repository declares the interfaces it offers and the dependencies it vendors, and a binding names what it reaches

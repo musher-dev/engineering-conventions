@@ -148,8 +148,10 @@ tasks:
           || fail "engineering-conventions/bin/conventions is missing or not executable"
 
         # `conventions openapi` links consumers' rulesets to this file and
-        # finds their documents with openapi.jq (decision 0023).
-        for shipped in checks/openapi/musher.spectral.yaml bin/openapi.jq; do
+        # finds their documents with openapi.jq (decision 0023); `conventions
+        # check` and `conventions env-contract` derive with env-contract.jq
+        # (decision 0026).
+        for shipped in checks/openapi/musher.spectral.yaml bin/openapi.jq bin/env-contract.jq; do
           tar -tzf "{{.TARBALL}}" "engineering-conventions/${shipped}" > /dev/null 2>&1 \
             || fail "engineering-conventions/${shipped} is missing"
         done

@@ -26,6 +26,7 @@
 #   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [--repository NAME] [-C DIR]
 #   conventions prose [-C DIR] [PATH...]
 #   conventions openapi [-C DIR] [--ruleset FILE] [FILE...]
+#   conventions env-contract [-C DIR] [--example] SCHEMA
 #   conventions version
 set -eu
 
@@ -125,8 +126,9 @@ repository_name() {
 # mise configuration ADOPT-09 looks for a pin in (lib/files.rego), a dev
 # container's lockfile and the compose stacks beside it (DEVC), and a
 # Taskfile at any depth under an OpenTofu directory, where a root keeps the
-# Taskfile that names its state key (TOFU-01), and the issue forms, template
-# chooser, discussion forms and FUNDING.yml GitHub reads (COMM).
+# Taskfile that names its state key (TOFU-01), the issue forms, template
+# chooser, discussion forms and FUNDING.yml GitHub reads (COMM), and the
+# environment contract a service commits under contracts/env/ (ENVS-20).
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
@@ -142,6 +144,7 @@ INPUTS="${INPUTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/)?(terraform|tofu|opentofu)/(.+/)?[Tt]askfile(\.dist)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^(\.config/)?\.?lefthook(-local)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}env\.schema\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/)?contracts/env/[^/]+\.env\.schema\.json$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}package\.json$'
 INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.devcontainer(/[^/]+)?/devcontainer-lock\.json$|^\.devcontainer-lock\.json$'
@@ -183,6 +186,8 @@ TEXTS="${TEXTS}|"'^(\.github/|docs/)?[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]\.([Mm][Dd]
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'
+# The local environment file a product derives from its schema (ENVS-21).
+TEXTS="${TEXTS}|"'^([^/]+/)?\.env\.example$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.
@@ -191,6 +196,11 @@ SIZES='\.md$'
 # Files whose SHA-256 the checks read: every file of a vendored copy, which
 # its release record lists by digest (DEPS-06, decision 0022).
 DIGESTS='^([^/]+/)?contracts/vendor/[^/]+/[^/]+/.+'
+
+# Environment schemas whose derived documents the checks compare with the
+# committed ones: bin/env-contract.jq derives the contract and .env.example
+# from each, so the checks only compare (ENVS-20, ENVS-21, decision 0026).
+ENV_SCHEMAS='^([^/]+/)?env\.schema\.ya?ml$'
 
 # sha256 FILE: the file's SHA-256 in lower-case hex, with whichever tool the
 # system has: coreutils, perl's shasum (macOS) or OpenSSL.
@@ -231,6 +241,28 @@ $(matching "$2" "${3:-}")
 EOF
 }
 
+# derive SCHEMA: write what bin/env-contract.jq derives from SCHEMA, as
+# {contract, example}, to stdout. Fails when the schema does not parse.
+derive() {
+  tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse "$1" > "${scratch}/schema.json" 2> /dev/null &&
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -S --arg part both -f "${bundle}/bin/env-contract.jq" \
+      "${scratch}/schema.json" 2> /dev/null
+}
+
+# derive_all: add what each environment schema derives to the jq arguments
+# being built. A schema that does not parse derives nothing; ENVS-03 and the
+# parse report say why.
+derive_all() {
+  derived=0
+  matching "${ENV_SCHEMAS}" | while IFS= read -r file; do
+    [ -n "${file}" ] || continue
+    derived=$((derived + 1))
+    if derive "${file}" > "${scratch}/derived.${derived}.json"; then
+      printf '%s\n%s\n%s\n' --slurpfile "derived:${file}" "${scratch}/derived.${derived}.json"
+    fi
+  done
+}
+
 # The inventory lets the checks see files whose contents are not passed: every
 # path, the text, size and digest of the files above, the files parsed before the
 # check, and the repository's actual name when it is known. jq writes it, so
@@ -255,6 +287,7 @@ write_inventory() {
         printf '%s\n%s\n%s\n' --arg "digest:${file}" "$(sha256 "${file}")"
       fi
     done
+    derive_all
   } > "${scratch}/arguments"
   set --
   while IFS= read -r argument; do set -- "$@" "${argument}"; done < "${scratch}/arguments"
@@ -490,6 +523,34 @@ EOF
   tool spectral aqua:stoplightio/spectral "${SPECTRAL_VERSION}" lint --ruleset "${ruleset}" --fail-severity warn "$@"
 }
 
+# Print what a repository commits beside its environment schema, derived
+# from it by bin/env-contract.jq (EC-0019, decision 0026): the environment
+# contract, a JSON Schema 2020-12 document (ENVS-20), or with --example the
+# .env.example (ENVS-21). Redirect it into the file the check names.
+env_contract() {
+  part=contract
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -C) cd -- "${2:?-C needs a directory}"; shift 2 ;;
+      --example) part=example; shift ;;
+      --) shift; break ;;
+      -*) usage ;;
+      *) break ;;
+    esac
+  done
+  [ $# -eq 1 ] || usage
+  [ -f "$1" ] || die "$1 does not exist"
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+  tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse "$1" > "${scratch}/schema.json" ||
+    die "cannot read $1"
+  if [ "${part}" = example ]; then
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -j --arg part example -f "${bundle}/bin/env-contract.jq" "${scratch}/schema.json"
+  else
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -S --arg part contract -f "${bundle}/bin/env-contract.jq" "${scratch}/schema.json"
+  fi || die "cannot derive the environment contract from $1"
+}
+
 version() {
   release="${bundle}/checks/data/release.json"
   if [ -f "${release}" ]; then
@@ -505,6 +566,7 @@ case ${command} in
   check) check "$@" ;;
   prose) prose "$@" ;;
   openapi) openapi "$@" ;;
+  env-contract) env_contract "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

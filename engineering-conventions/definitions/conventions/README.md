@@ -167,6 +167,8 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-17](environment/env-schema.md#envs-17) | A binding's target is another repository's interface, written \<repository\>#\<interface\> | EC-0020 | proposed | warning | conftest |
 | [ENVS-18](environment/env-schema.md#envs-18) | A binding's capability is a registered runtime capability | EC-0020 | proposed | warning | conftest |
 | [ENVS-19](environment/env-schema.md#envs-19) | A binding that reaches another service or an outside capability names it | EC-0020 | proposed | warning | review |
+| [ENVS-20](environment/env-contract.md#envs-20) | A service that offers its environment as an interface commits the contract derived from its schema | EC-0019 | proposed | warning | conftest |
+| [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |

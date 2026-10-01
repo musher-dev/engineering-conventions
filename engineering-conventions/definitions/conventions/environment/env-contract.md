@@ -6,7 +6,9 @@ summary: >-
   it is declared beside the product's build manifest, at
   <product>/env.schema.yaml. The only other environment schema a
   repository holds is its dev environment's, at
-  .devcontainer/env.schema.yaml.
+  .devcontainer/env.schema.yaml. What is derived from the schema, the JSON
+  Schema contract an env-schema interface delivers and the .env.example a
+  developer copies, is generated, committed and kept equal to it.
 status: draft
 topic: environment
 applies_to:
@@ -15,6 +17,8 @@ applies_to:
     - "**/env.schema.yaml"
     - "**/env.schema.yml"
     - .devcontainer/**/devcontainer.json
+    - "*/contracts/env/*.env.schema.json"
+    - "*/.env.example"
 created: 2026-09-28
 owners:
   - "@justinmerrell"
@@ -33,6 +37,8 @@ implementations:
 references:
   - title: "The Twelve-Factor App: Config"
     url: https://12factor.net/config
+  - title: "JSON Schema 2020-12"
+    url: https://json-schema.org/draft/2020-12
 requirements:
   - id: ENVS-01
     title: A service declares its runtime environment at <product>/env.schema.yaml
@@ -61,6 +67,22 @@ requirements:
       engine: conftest
       package: conventions.checks.environment.env_contract
     aliases: ["development-container:ENV-06"]
+  - id: ENVS-20
+    title: A service that offers its environment as an interface commits the contract derived from its schema
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_derived
+  - id: ENVS-21
+    title: A product's .env.example is the one derived from its environment schema
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_derived
 ---
 
 # Environment contract
@@ -84,9 +106,92 @@ Both use the same format, so one check reads both.
 
 ## Scope
 
-This convention covers where environment schemas live, and that a service has one. What a schema says is
+This convention covers where environment schemas live, that a service has one, and the two documents derived from
+it that a repository commits: the environment contract and `.env.example`. What a schema says is
 [EC-0020](env-schema.md). How a product generates its settings module from the schema, or checks that its code reads
 only declared variables, belongs to that product's own tooling: those checks need the code, not the schema.
+
+## What is derived from the schema
+
+`env.schema.yaml` is the only copy anyone writes. It holds facts no standard format has a keyword for
+(`local_default`, `local_generate`, `consumer`, `nested`, `retired`), so it stays the source, and every other
+document is generated from it by one published mapping, `bin/env-contract.jq`, which the release ships
+([decision 0026](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0026-the-environment-contract-is-derived.md)):
+
+```sh
+conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json
+conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example
+```
+
+| Document | Where | Checked by |
+| --- | --- | --- |
+| The environment contract, JSON Schema 2020-12 | `<product>/contracts/env/<service>.env.schema.json`, when the service offers an `env-schema` interface | ENVS-20 |
+| The local environment file a developer copies to `.env` | `<product>/.env.example`, when the product keeps one | ENVS-21 |
+| A settings module, a deploy preflight, a reference page | Wherever the product's tooling writes them | That tooling |
+
+`conventions check` derives both documents from the schema itself and compares them with the committed files, so a
+repository needs no extra task for the check. A repository regenerates them with the commands above in the task
+that writes its generated files.
+
+### The contract
+
+The contract is what a consumer validates an environment against with standard tools: Ajv, fastify's `env-schema`,
+or any JSON Schema 2020-12 validator. Each binding is a property, and:
+
+| `env.schema.yaml` | Contract |
+| --- | --- |
+| `service` | `title` |
+| `type: string`, `integer`, `number`, `boolean` | `type` of the same name |
+| `type: enum`, `values` | `type: string`, `enum` |
+| `type: list`, `values` | `type: array`, `items: {type: string, enum}`, `x-musher-separator: ","` |
+| `required: true` | The name in the top-level `required` |
+| `default` | `default`; a list's default as an array |
+| `format: url`, `email` | `format: uri`, `email` |
+| `format: json` | `contentMediaType: application/json` |
+| `format: path` | `x-musher-format: path` |
+| `constraints` | `minLength`, `maxLength`, `minimum`, `maximum`, `pattern` |
+| `sensitivity` | `x-musher-sensitivity`; `secret` also sets `writeOnly: true` |
+| `capability`, `provider`, `target`, `requires` | `x-musher-capability`, `x-musher-provider`, `x-musher-target`, `x-musher-requires` |
+| `description` | `description`, on one line |
+| Top-level `requires` | Top-level `x-musher-requires` |
+| `retired` | Top-level `x-musher-retired`, each `name`, `retired_on`, `reason` and `replacement` |
+
+A property's `type` is the type of the value **after the process parses it**. An environment holds only strings, so
+a validator that checks a raw environment coerces first, as Ajv's `coerceTypes` and fastify's `env-schema` do, and
+splits a list on its separator. The top level allows other properties, because an environment always holds variables
+the service does not read. Facts that only a developer's machine needs (`local_default`, `local_generate`) and those
+that only the product's own tooling reads (`consumer`, `nested`, `generated`, `infisical`) are left out. The document
+is printed with its keys sorted and two-space indentation; the check compares it as JSON, so only its content
+matters.
+
+### `.env.example`
+
+```sh
+# The environment platform-api reads, generated from its env.schema.yaml by
+# conventions env-contract --example. Do not edit: change env.schema.yaml and
+# generate this file again. Copy it to .env and fill in the empty values.
+
+# TCP port the HTTP server listens on inside the container.
+# integer, internal
+# API_PORT=8080
+
+# Connection string of the primary Postgres database, credentials included.
+# string, url, required, secret
+DATABASE_URL=postgres://postgres@localhost:5432/app
+```
+
+After the three header lines, each binding, sorted by name, is a blank line, its description on one line, a line of
+facts, and its assignment:
+
+- The facts are its type (`enum: a|b` or `list: a|b` with values), its `format`, `required`, its sensitivity, and
+  `generate locally: <kind>` for a `local_generate` binding, joined by a comma and a space.
+- A binding with a `local_default` is assigned it. A required binding, or one whose secret each developer mints with
+  `local_generate`, is assigned nothing, to be filled in. Any other binding is commented out with its `default`, so the
+  code's default applies until someone uncomments it.
+- A value is written bare when it holds only letters, digits and `_@%+=:,./-`; otherwise in single quotes, or, when it
+  holds a single quote, in double quotes with `\` and `"` escaped.
+
+The file ends with a newline, and the check compares it byte for byte.
 
 ## Status and authority
 
@@ -187,8 +292,74 @@ bindings:
 
 Checked by: conftest · Severity: warning · Since: 0.6.3 · Formerly: development-container ENV-06
 
+### ENVS-20
+
+**A service that offers its environment as an interface commits the contract derived from its schema.**
+
+An `env-schema` interface ([EC-0030](../interfaces/interfaces-declaration.md)) tells another repository it may build
+or run against the service's environment: a deploy that sets it, a preflight that checks it. That consumer needs a
+document a standard validator reads, in the contracts directory where every other interface is defined. So a service
+whose `.repo/outputs.toml` offers an `env-schema` interface commits the contract derived from
+`<product>/env.schema.yaml` at `<product>/contracts/env/<service>.env.schema.json`, names that file in the
+interface's `definitions`, and keeps it equal to what the schema derives. The schema itself stays where
+[ENVS-01](#envs-01) puts it, the only copy anyone edits. The check reports a missing contract at the schema, an
+interface that does not name it at `.repo/outputs.toml`, and a contract that differs from the derived one at the
+contract. A contract the repository commits without the interface is held to the schema too.
+
+**Correct:**
+
+```toml
+# .repo/outputs.toml
+[[interfaces]]
+id = "runtime-config"
+format = "env-schema"
+definitions = ["platform-api/contracts/env/platform-api.env.schema.json"]
+delivered_by = "contracts"
+compatibility = "gated"
+```
+
+**Incorrect:**
+
+```toml
+[[interfaces]]
+id = "runtime-config"
+format = "env-schema"
+definitions = ["platform-api/env.schema.yaml"]   # the source, not the contract; IFACE-08 reports it too
+delivered_by = "contracts"
+compatibility = "gated"
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### ENVS-21
+
+**A product's `.env.example` is the one derived from its environment schema.**
+
+A hand-written `.env.example` is the first file to fall behind the schema: a variable is added to the code and the
+schema, and the next developer's local environment starts without it. Generated, it lists every binding with its
+description and its local value, and nobody has to remember it. A product that keeps a `.env.example` keeps it beside
+its schema, at `<product>/.env.example`, exactly as `conventions env-contract --example` prints it. A product without
+one is not reported.
+
+**Correct:**
+
+```sh
+conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example
+```
+
+**Incorrect:**
+
+```sh
+# platform-api/.env.example, edited by hand
+DATABASE_URL=postgres://localhost/app
+API_PORT=8080
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
 ## References
 
 - [EC-0020 Environment schema](env-schema.md)
 - [EC-0018 Repository layout](../repository/layout.md)
+- [EC-0030 Interfaces declaration](../interfaces/interfaces-declaration.md)
 - [The Twelve-Factor App: Config](https://12factor.net/config)

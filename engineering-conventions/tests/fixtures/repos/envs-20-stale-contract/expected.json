@@ -1,0 +1,12 @@
+[
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "ENVS-20",
+    "path": "platform-api/contracts/env/platform-api.env.schema.json",
+    "severity": "warning"
+  }
+]

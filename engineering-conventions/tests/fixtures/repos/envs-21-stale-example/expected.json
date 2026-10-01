@@ -1,0 +1,7 @@
+[
+  {
+    "id": "ENVS-21",
+    "path": "platform-api/.env.example",
+    "severity": "warning"
+  }
+]

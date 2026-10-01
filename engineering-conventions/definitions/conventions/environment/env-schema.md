@@ -189,9 +189,11 @@ requirements:
 # Environment schema
 
 An `env.schema.yaml` declares every variable a product, or a dev environment, reads from its environment. It is
-written by hand and is the source everything else is derived from: a generated settings module, a local environment
-file, a deploy preflight, a reference page. None of those is checked here; what is checked is that the source is
-well-formed, named consistently and safe to commit.
+written by hand and is the source everything else is derived from: the environment contract an `env-schema` interface
+delivers, a local environment file, a generated settings module, a deploy preflight, a reference page. What is checked
+here is that the source is well-formed, named consistently and safe to commit. The contract and `.env.example` are
+derived by a mapping the release ships, and [EC-0019](env-contract.md#what-is-derived-from-the-schema) checks them
+(ENVS-20, ENVS-21).
 
 ## Scope
 
@@ -202,7 +204,7 @@ either repository defines is part of it, and a schema from either validates unch
 A vendored copy under `contracts/vendor/` is another repository's schema; ENVS-03 to ENVS-19 do not read it.
 
 Checks that need the code are out of scope: that the code reads only declared variables, that every binding has a
-reader, and that generated files are current. They stay with each product's own tooling.
+reader, and that a generated settings module is current. They stay with each product's own tooling.
 
 ## Status and authority
 

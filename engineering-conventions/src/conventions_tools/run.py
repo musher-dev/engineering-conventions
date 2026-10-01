@@ -123,13 +123,18 @@ class Selection:
     texts: re.Pattern[str]
     sizes: re.Pattern[str]
     digests: re.Pattern[str]
+    env_schemas: re.Pattern[str]
     text_limit: int
+    # bin/env-contract.jq, the one implementation of what an environment
+    # schema derives (decision 0026); both runners run it with jq.
+    derivation: Path
 
 
 def selection(product: Path | None = None) -> Selection:
     patterns: dict[str, list[str]] = {}
     numbers: dict[str, int] = {}
-    for line in launcher_file(product or product_dir()).read_text(encoding="utf-8").splitlines():
+    launcher = launcher_file(product or product_dir())
+    for line in launcher.read_text(encoding="utf-8").splitlines():
         if matched := LAUNCHER_PATTERN.match(line):
             patterns.setdefault(matched["name"], []).append(matched["regex"])
         elif matched := LAUNCHER_NUMBER.match(line):
@@ -148,7 +153,9 @@ def selection(product: Path | None = None) -> Selection:
         texts=compiled("TEXTS"),
         sizes=compiled("SIZES"),
         digests=compiled("DIGESTS"),
+        env_schemas=compiled("ENV_SCHEMAS"),
         text_limit=numbers["TEXT_LIMIT"],
+        derivation=launcher.parent / "env-contract.jq",
     )
 
 
@@ -278,6 +285,40 @@ def _preparse(repo: Path, parser: str, relative: str) -> tuple[object, str | Non
     return as_map(as_list(json.loads(completed.stdout))[0]).get("contents"), None
 
 
+def _jq() -> str:
+    found = shutil.which("jq")
+    if found is None:
+        raise RunnerError(
+            "jq is not on PATH. Install the version pinned in .config/mise/config.toml "
+            "(`task tools:install`), or put a jq binary on PATH."
+        )
+    return found
+
+
+def derive(repo: Path, relative: str, program: Path) -> object | None:
+    """What bin/env-contract.jq derives from an environment schema, or None.
+
+    The schema is read by conftest, as bin/conventions reads it, so both
+    runners give the checks the same document. A schema that does not parse
+    derives nothing; ENVS-03 and the parse report say why.
+    """
+    parsed = subprocess.run(
+        [_conftest(), "parse", relative], cwd=repo, capture_output=True, text=True, check=False
+    )
+    if parsed.returncode != 0:
+        return None
+    derived = subprocess.run(
+        [_jq(), "-S", "--arg", "part", "both", "-f", str(program)],
+        input=parsed.stdout,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if derived.returncode != 0 or not derived.stdout.strip():
+        return None
+    return cast("object", json.loads(derived.stdout))
+
+
 def inventory_document(
     repo: Path, files: list[str], repository: str | None, chosen: Selection
 ) -> dict[str, object]:
@@ -310,6 +351,12 @@ def inventory_document(
         for relative in files
         if chosen.digests.search(relative)
     }
+    derived = {
+        relative: document
+        for relative in files
+        if chosen.env_schemas.search(relative)
+        and (document := derive(repo, relative, chosen.derivation)) is not None
+    }
     listing: dict[str, object] = {"files": files}
     if repository is not None:
         listing["repository"] = {"name": repository}
@@ -317,6 +364,7 @@ def inventory_document(
         "texts": texts,
         "sizes": sizes,
         "digests": digests,
+        "derived": derived,
         "parsed": parsed,
         "unparsed": unparsed,
     }

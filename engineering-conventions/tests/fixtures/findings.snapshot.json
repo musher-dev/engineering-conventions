@@ -413,6 +413,22 @@
   "envs-18-unregistered-capability": [
     ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"access-proxy\", \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"container-registry\", \"dns\", \"edge-compute\", \"email-delivery\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"valkey\", \"vpn-mesh\", \"web-search\", or propose a new one", true]
   ],
+  "envs-20-missing-contract": [
+    [".repo/outputs.toml", "IFACE-04", "warning", "interface \"runtime-config\" names definitions \"platform-api/contracts/env/platform-api.env.schema.json\", which matches no file the repository holds; point it at the files that define the interface", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["platform-api/env.schema.yaml", "ENVS-20", "warning", "interface runtime-config offers this environment as env-schema, so commit the contract derived from it: conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json", true]
+  ],
+  "envs-20-passes-derived-contract": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "envs-20-stale-contract": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
+    ["platform-api/contracts/env/platform-api.env.schema.json", "ENVS-20", "warning", "this is not the contract platform-api/env.schema.yaml derives; generate it again with conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json", true]
+  ],
+  "envs-21-passes-derived-example": [],
+  "envs-21-stale-example": [
+    ["platform-api/.env.example", "ENVS-21", "warning", "this is not the .env.example platform-api/env.schema.yaml derives; generate it again with conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example", true]
+  ],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],

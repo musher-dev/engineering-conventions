@@ -39,6 +39,7 @@ conventions check                      # report findings; fail only on errors
 conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
 conventions prose                      # lint Markdown with MusherConventions, and copy with MusherCopy
 conventions openapi                    # lint OpenAPI interfaces with the conventions' Spectral ruleset
+conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -182,6 +183,30 @@ bindings:
 names, committed secrets and shared variables. The format is
 [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md); the location is
 [EC-0019](../engineering-conventions/definitions/conventions/environment/env-contract.md).
+
+The schema is the only copy anyone writes. What other repositories and developers read is generated from it by the
+release, and `conventions check` compares the committed copies with what the schema derives:
+
+```sh
+# The environment contract, JSON Schema 2020-12, when the service offers an env-schema interface (ENVS-20)
+conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json
+# The file a developer copies to .env, when the product keeps one (ENVS-21)
+conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example
+```
+
+Run both in the task that writes your generated files. The interface names the contract, not the schema:
+
+```toml
+[[interfaces]]
+id = "runtime-config"
+format = "env-schema"
+definitions = ["platform-api/contracts/env/platform-api.env.schema.json"]
+delivered_by = "contracts"
+compatibility = "gated"
+```
+
+A consumer validates an environment against the contract with any JSON Schema validator that coerces strings, such
+as Ajv with `coerceTypes`. A generated settings module stays your own tooling.
 
 ## Declare only what differs
 

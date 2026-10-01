@@ -1,0 +1,24 @@
+# Every binding named after the program that reads it, with the names
+# frozen before the schema adopted the prefix, and a retired one renamed.
+service: platform-api
+runtime: go
+naming:
+  consumer_prefix: MUSHER_API
+  components: [CACHE, HTTP]
+  legacy: [DATABASE_URL]
+bindings:
+  MUSHER_API_CACHE_URL:
+    type: string
+    format: url
+    sensitivity: secret
+    description: Address of the Valkey server that holds rate-limit counters.
+  DATABASE_URL:
+    type: string
+    format: url
+    sensitivity: secret
+    description: Connection string of the primary Postgres database.
+retired:
+  - name: CACHE_URL
+    retired_on: "2026-10-01"
+    reason: Renamed after the program that reads it.
+    replacement: MUSHER_API_CACHE_URL

@@ -643,6 +643,27 @@ terms:
     tags: [runtime.capability]
     stability: provisional
 
+  # Organization-wide variables: environment variable names every Musher
+  # program may read, reserved so that MUSHER_<WORD> stays unambiguous
+  # beside the consumer prefixes MUSHER_<COMPONENT> (ENVS-25). The token is
+  # the name in lower kebab-case.
+  - id: env.org-scoped.musher-environment
+    display_name: MUSHER_ENVIRONMENT
+    token: musher-environment
+    definition: >-
+      The name of the environment a process runs in, such as production or one developer's own, set by whatever
+      deploys or starts the process.
+    tags: [env.org-scoped]
+    stability: provisional
+  - id: env.org-scoped.musher-developer-slug
+    display_name: MUSHER_DEVELOPER_SLUG
+    token: musher-developer-slug
+    definition: >-
+      A short, stable name for the developer whose environment a process runs in, used to name the resources that
+      belong to that environment alone.
+    tags: [env.org-scoped]
+    stability: provisional
+
   # Systems: the first token of a repository's name (REPO-09) and the system
   # field of .repo/repository.toml (REPO-03). A system groups repositories by
   # what they provide together; it is never a team.

@@ -222,6 +222,13 @@ The range is not a pin: whoever provisions the runtime picks the exact version i
 `.repo/dependencies.toml` keeps exact pins for vendored releases only. A dev container stack opts in to being
 compared with the range by labelling its service `dev.musher.capability` and `dev.musher.capability-version` (DEVC-16).
 
+To name every variable after the program that reads it, set `naming.consumer_prefix` to `MUSHER_` and your
+repository's component (`MUSHER_API` for `platform-api`, ENVS-24); every binding then starts with it (ENVS-25), and
+the rest of the grammar applies after it. List the names that were unprefixed when you adopted it in `naming.legacy`,
+and shrink the list as you rename them: a renamed binding's old name moves to `retired` with its `replacement`.
+Reserved organization-wide names such as `MUSHER_ENVIRONMENT`, and names a library you do not own reads, need no
+prefix. Map a supplier's variable to yours where the value is injected, with a secret-store reference, never in code.
+
 ## Declare only what differs
 
 A repository that holds no waivers, and whose kind selects the profile it needs, needs no other file. Add

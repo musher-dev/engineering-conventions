@@ -172,6 +172,8 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | proposed | warning | conftest |
 | [ENVS-22](environment/env-schema.md#envs-22) | A binding that reaches a runtime capability names it through requires | EC-0020 | proposed | warning | conftest |
 | [ENVS-23](environment/env-schema.md#envs-23) | Every runtime instance is declared, reached by a binding, and a registered capability | EC-0020 | proposed | warning | conftest |
+| [ENVS-24](environment/env-schema.md#envs-24) | A consumer prefix is MUSHER_ and the repository's component | EC-0020 | proposed | warning | conftest |
+| [ENVS-25](environment/env-schema.md#envs-25) | Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |

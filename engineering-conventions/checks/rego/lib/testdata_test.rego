@@ -89,6 +89,7 @@ index := {
 		],
 		"interface_compatibilities": ["gated", "lockstep", "versioned"],
 		"runtime_capabilities": ["object-storage", "payments", "postgresql"],
+		"org_scoped_variables": ["MUSHER_DEVELOPER_SLUG", "MUSHER_ENVIRONMENT"],
 		"repository_systems": ["engineering", "platform", "sdk"],
 		"repository_kinds": ["library", "service", "specification"],
 		"repository_lifecycles": ["deprecated", "experimental", "production"],

@@ -447,6 +447,14 @@
     ["platform-api/env.schema.yaml", "ENVS-23", "warning", "binding CACHE_URL requires \"kv\", which is not declared under requires; declare it, or name a declared instance", true],
     ["platform-api/env.schema.yaml", "ENVS-23", "warning", "requires declares cache, which no binding reaches; name it with requires: cache on the binding that does, or remove it", true]
   ],
+  "envs-24-passes-component-prefix": [],
+  "envs-24-wrong-consumer-prefix": [
+    ["platform-api/env.schema.yaml", "ENVS-24", "warning", "naming.consumer_prefix is MUSHER_PLATFORM_API, but the repository's component is api; set it to MUSHER_API", true]
+  ],
+  "envs-25-passes-legacy-reserved-and-vendor": [],
+  "envs-25-unprefixed-binding": [
+    ["platform-api/env.schema.yaml", "ENVS-25", "warning", "binding CACHE_URL does not start with the consumer prefix MUSHER_API; rename it MUSHER_API_CACHE_URL and retire the old name with it as the replacement, or list it in naming.legacy if it was unprefixed when the schema adopted the prefix", true]
+  ],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],

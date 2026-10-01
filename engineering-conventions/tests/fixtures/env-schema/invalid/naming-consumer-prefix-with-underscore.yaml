@@ -1,0 +1,6 @@
+# The prefix is written without its trailing underscore.
+service: platform-api
+runtime: go
+naming:
+  consumer_prefix: MUSHER_API_
+bindings: {}

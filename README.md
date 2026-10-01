@@ -106,7 +106,7 @@ Start from the part of your repository you are working on:
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
 | [Dependencies](engineering-conventions/definitions/conventions/dependencies/README.md) | `.repo/dependencies.toml`, vendored copies under `<product>/contracts/vendor/` | EC-0032, EC-0033 | DEPS-01 – DEPS-10 |
 | [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-16 |
-| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract and `.env.example` derived from them | EC-0019, EC-0020 | ENVS-01 – ENVS-23 |
+| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract and `.env.example` derived from them | EC-0019, EC-0020 | ENVS-01 – ENVS-25 |
 | [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-11 |
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-49 |
 | [Interfaces](engineering-conventions/definitions/conventions/interfaces/README.md) | `[[interfaces]]` in `.repo/outputs.toml`, `<product>/contracts/` | EC-0030, EC-0031 | IFACE-01 – IFACE-14 |

@@ -175,6 +175,8 @@ def test_vocabulary_projection(content: Content) -> None:
     ]
     assert projected["interface_compatibilities"] == ["gated", "lockstep", "versioned"]
     assert "postgresql" in as_list(projected["runtime_capabilities"])
+    assert "valkey" in as_list(projected["runtime_capabilities"])
+    assert projected["org_scoped_variables"] == ["MUSHER_DEVELOPER_SLUG", "MUSHER_ENVIRONMENT"]
 
 
 def test_repository_vocabulary_projection(content: Content) -> None:

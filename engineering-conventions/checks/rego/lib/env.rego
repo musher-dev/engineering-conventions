@@ -1,9 +1,9 @@
 # METADATA
 # title: Environment schemas
 # description: >-
-#   Every env.schema.yaml the repository holds, its bindings, and the
-#   prefixes its naming vocabulary declares (EC-0020), for the schema and
-#   grammar checks.
+#   Every env.schema.yaml the repository holds, its bindings, the
+#   prefixes its naming vocabulary declares, and the part of each name the
+#   grammar applies to (EC-0020), for the schema and grammar checks.
 package conventions.lib.env
 
 import data.conventions.lib.contracts
@@ -36,12 +36,61 @@ bindings contains {"path": path, "name": name, "binding": binding} if {
 	is_object(binding)
 }
 
-# The bindings the naming grammar applies to: not exempt, and not under a
-# vendor prefix the schema declares.
-grammar_bindings contains entry if {
+# The bindings the naming grammar applies to: not exempt, not under a
+# vendor prefix the schema declares, and not a reserved organization-wide
+# name. Each carries the part of its name the grammar applies to: the name
+# without the schema's consumer prefix, keeping any client prefix before it.
+grammar_bindings contains object.union(entry, {"rest": rest(entry.path, entry.name)}) if {
 	some entry in bindings
 	not entry.binding.grammar_exempt == true
 	not starts_with_any(entry.name, vendor_prefixes(entry.path))
+	not entry.name in org_scoped
+}
+
+# The variable names reserved for every Musher program (env.org-scoped).
+org_scoped := {name | some name in object.get(data.conventions.index.vocabulary, "org_scoped_variables", [])}
+
+# The schema's consumer prefix, with the underscore that follows it.
+consumer_prefix(path) := concat("", [prefix, "_"]) if {
+	prefix := documents[path].naming.consumer_prefix
+	is_string(prefix)
+}
+
+default legacy(_) := set()
+
+legacy(path) := {name | some name in documents[path].naming.legacy; is_string(name)} if {
+	is_array(documents[path].naming.legacy)
+}
+
+# The name with its consumer prefix taken out: directly after the start, or
+# after a client prefix.
+rest(path, name) := trim_prefix(name, consumer_prefix(path)) if {
+	startswith(name, consumer_prefix(path))
+} else := concat("", [client, trim_prefix(trim_prefix(name, client), consumer_prefix(path))]) if {
+	some client in client_prefixes(path)
+	startswith(trim_prefix(name, client), consumer_prefix(path))
+} else := name
+
+# Whether a name carries the schema's consumer prefix.
+prefixed(path, name) if rest(path, name) != name
+
+# A name a library the repository does not own reads: under a vendor
+# prefix, a vendor_passthrough entry, or exempt from the grammar.
+vendor_name(path, name) if starts_with_any(name, vendor_prefixes(path))
+
+vendor_name(path, name) if {
+	some entry in object.get(documents[path], "vendor_passthrough", [])
+	is_string(entry)
+	passes(entry, name)
+}
+
+vendor_name(path, name) if bindings_of(path)[name].grammar_exempt == true
+
+passes(entry, name) if entry == name
+
+passes(entry, name) if {
+	endswith(entry, "*")
+	startswith(name, trim_suffix(entry, "*"))
 }
 
 default_client_prefixes := ["VITE_", "PUBLIC_"]

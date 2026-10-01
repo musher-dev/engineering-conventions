@@ -9,8 +9,9 @@ summary: >-
   the schema declares, retired names stay retired, no secret value is
   committed, a variable shared between deployables agrees everywhere, a
   binding that reaches another service or an outside capability names it,
-  and the runtime instances a service needs are declared once, with the
-  range of versions its code works with.
+  the runtime instances a service needs are declared once, with the
+  range of versions its code works with, and a schema can name every
+  binding after the program that reads it.
 status: draft
 topic: environment
 applies_to:
@@ -202,6 +203,22 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.environment.env_schema
+  - id: ENVS-24
+    title: A consumer prefix is MUSHER_ and the repository's component
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_grammar
+  - id: ENVS-25
+    title: Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_grammar
 ---
 
 # Environment schema
@@ -285,10 +302,10 @@ against it.
 | `service` | yes | The deployable the schema describes, e.g. `platform-api`; `devcontainer` for the dev environment's |
 | `runtime` | yes | What reads the environment, as a lowercase token: `python`, `sveltekit`, `node`, `go`, `rust`, `docker-compose` |
 | `bindings` | yes | Every variable, keyed by name. `{}` when there are none |
-| `naming` | no | The schema's vocabulary for the naming grammar: `components`, `client_prefixes`, `vendor_prefixes` |
+| `naming` | no | The schema's vocabulary for the naming grammar: `components`, `client_prefixes`, `vendor_prefixes`, and `consumer_prefix` and `legacy` (ENVS-24, ENVS-25) |
 | `requires` | no | Every runtime instance the service needs, keyed by an instance ID: `capability`, `version` (a range), optionally `provider`, and `description` (ENVS-22, ENVS-23) |
 | `vendor_passthrough` | no | Variables a vendor library reads by its own name, passed through rather than bound; the grammar does not apply. A trailing `*` passes a prefix |
-| `retired` | no | Names the product stopped reading on purpose: `name`, `retired_on` (a quoted date), `reason` (ENVS-05) |
+| `retired` | no | Names the product stopped reading on purpose: `name`, `retired_on` (a quoted date), `reason`, and `replacement` when it was renamed (ENVS-05) |
 | `shared_with` | no | Variables that hold the same value in several deployables: `name`, and `apps` of `service` and `path` (ENVS-08) |
 | `settings_file` | no | Where a generated settings module is written, or `null` |
 | `env_file` | no | The one file the process reads its environment from, when it reads a file |
@@ -448,7 +465,55 @@ The components are the schema's own: `naming.components` lists them, generalizin
 ENVS-04 checks the first word against them only when the list is declared. `naming.client_prefixes` defaults to
 `VITE_` and `PUBLIC_`, plus `generated.ts.client_prefix`. A name that something outside the repository fixes, such as
 `OTEL_EXPORTER_OTLP_ENDPOINT`, is either a `vendor_passthrough` entry, a binding under a `naming.vendor_prefixes`
-prefix, or a binding with `grammar_exempt: true` and its reason. ENVS-04 and ENVS-09 to ENVS-14 skip all three.
+prefix, or a binding with `grammar_exempt: true` and its reason. ENVS-04 and ENVS-09 to ENVS-14 skip all three, and
+the reserved organization-wide names below.
+
+The test for a vendor's name is narrow: **a name is a vendor's only if a library the repository does not own reads
+it**, by that name, without the repository's code in between. `OTEL_SERVICE_NAME`, read by the OpenTelemetry SDK, is
+one. `STRIPE_API_KEY`, read by the repository's own code and handed to the Stripe client, is not: the repository chose
+the name, so the grammar applies to it.
+
+### Naming a binding after its reader
+
+A name with no reader in it collides. A shared secret store that injects `CACHE_URL` into every service cannot point
+two services at two caches, and `DATABASE_URL` means something different in every repository that reads it. The names
+that age well are named after the program that reads them, as `SPRING_*`, `OTEL_*` and `POSTGRES_*` are. So a schema
+may declare a consumer prefix, and every binding is then named after the service that reads it:
+
+```text
+[<client prefix>]<consumer prefix>_<COMPONENT>_<WHAT>[_<UNIT>]      MUSHER_API_CACHE_URL, VITE_MUSHER_WEB_API_BASE_URL
+```
+
+```yaml
+service: platform-api
+naming:
+  consumer_prefix: MUSHER_API         # MUSHER_ and component = "api" from .repo/repository.toml (ENVS-24)
+  components: [CACHE, DATABASE, HTTP]
+  legacy: [DATABASE_URL]              # unprefixed when the schema adopted the prefix; only shrinks
+bindings:
+  MUSHER_API_CACHE_URL: {...}
+  MUSHER_API_HTTP_PORT: {...}
+  DATABASE_URL: {...}
+  MUSHER_ENVIRONMENT: {...}           # reserved, organization-wide
+```
+
+The prefix is `MUSHER_` and the repository's component in upper snake case. With one declared, the grammar (ENVS-04
+and ENVS-09 to ENVS-14) applies to the part after it, and ENVS-25 asks every binding to carry it, except:
+
+- a **reserved organization-wide name**, a term tagged `env.org-scoped` in the terminology, such as
+  `MUSHER_ENVIRONMENT`, which every Musher program may read. Reserving them keeps `MUSHER_<WORD>` unambiguous;
+- a **vendor's name**, under the test above: a `naming.vendor_prefixes` prefix, a `vendor_passthrough` entry, or a
+  binding with `grammar_exempt: true`;
+- a **legacy name** in `naming.legacy`: a binding that was unprefixed when the schema adopted the prefix.
+
+Infrastructure maps a supplier's name to the consumer's at the seam: a secret-store reference, a platform's variable
+reference or a Kubernetes `valueFrom` sets `MUSHER_API_CACHE_URL` from the cache's own output. The code never reads the
+supplier's name, and never maps one name to another.
+
+Moving to the prefix is a rename, and a rename is recorded. A binding that gains the prefix leaves `naming.legacy`,
+and its old name moves to `retired` with the new name as its `replacement`, so ENVS-05 refuses the old name from then
+on. A product that must accept both for a release reads both in its settings module, not in the schema.
+`naming.legacy` only shrinks; a reviewer rejects a name added to it.
 
 ## Requirements
 
@@ -920,6 +985,66 @@ requires:
   search: {capability: web-search, version: ">=1", description: "…"} # no binding reaches it
 bindings:
   CACHE_URL: {type: string, format: url, sensitivity: secret, requires: kv, description: "…"}   # kv is undeclared
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### ENVS-24
+
+**A consumer prefix is `MUSHER_` and the repository's component.**
+
+The prefix names the program that reads the variables, so it has one spelling everywhere that program is deployed:
+`MUSHER_`, then the `component` of `.repo/repository.toml` in upper snake case, its hyphens as underscores. Any other
+prefix names a reader nobody can find, or another repository's. The check needs the identity declaration's
+`component`, and reports nothing without one.
+
+**Correct:**
+
+```yaml
+# .repo/repository.toml: name = "platform-api", component = "api"
+naming:
+  consumer_prefix: MUSHER_API
+```
+
+**Incorrect:**
+
+```yaml
+naming:
+  consumer_prefix: MUSHER_PLATFORM_API     # the component is api
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### ENVS-25
+
+**Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy.**
+
+A prefix that only some names carry says nothing about the rest. Once a schema declares `naming.consumer_prefix`, each
+binding is `<consumer prefix>_…`, after its client prefix if it has one, unless it is a reserved organization-wide
+name, a vendor's name, or listed in `naming.legacy` ([Naming a binding after its reader](#naming-a-binding-after-its-reader)).
+A `naming.legacy` entry that is no longer a binding is reported too: the name has moved to `retired`, so it leaves the
+list.
+
+**Correct:**
+
+```yaml
+naming:
+  consumer_prefix: MUSHER_API
+  vendor_prefixes: [OTEL_]
+  legacy: [DATABASE_URL]
+bindings:
+  MUSHER_API_CACHE_URL: {...}
+  OTEL_SERVICE_NAME: {...}
+  DATABASE_URL: {...}
+```
+
+**Incorrect:**
+
+```yaml
+naming:
+  consumer_prefix: MUSHER_API
+bindings:
+  CACHE_URL: {...}              # no prefix, and not legacy
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.1

@@ -121,6 +121,17 @@
           "type": "array",
           "uniqueItems": true,
           "items": { "$ref": "#/definitions/prefix" }
+        },
+        "consumer_prefix": {
+          "description": "The program that reads the variables, which every binding name then starts with: MUSHER_ and the repository's component in upper snake case, e.g. MUSHER_API (ENVS-24, ENVS-25).",
+          "type": "string",
+          "pattern": "^MUSHER_[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"
+        },
+        "legacy": {
+          "description": "Binding names frozen without the consumer prefix when the schema adopted it. The list only shrinks: a renamed binding moves to retired with its replacement (ENVS-25).",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/variableName" }
         }
       }
     },
@@ -288,6 +299,10 @@
         "reason": {
           "description": "Why it is gone and what answers the question now. ENVS-05 prints it.",
           "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "replacement": {
+          "description": "The binding that took its place, when it was renamed rather than dropped.",
+          "$ref": "#/definitions/variableName"
         }
       }
     },

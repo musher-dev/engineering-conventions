@@ -144,7 +144,6 @@ class CopyRule:
     extends: str
     level: str
     message: str
-    locked: bool
     note: str | None
     settings: tuple[tuple[str, object], ...]
 
@@ -322,7 +321,7 @@ def _toggles(data: dict[str, object], key: str) -> tuple[Toggle, ...]:
 
 
 # The keys every rule has; the rest are the Vale settings its `extends` takes.
-_RULE_KEYS = frozenset({"name", "extends", "level", "message", "locked", "note"})
+_RULE_KEYS = frozenset({"name", "extends", "level", "message", "note"})
 
 
 def _copy_rule(data: dict[str, object]) -> CopyRule:
@@ -331,7 +330,6 @@ def _copy_rule(data: dict[str, object]) -> CopyRule:
         extends=get_str(data, "extends"),
         level=get_str(data, "level"),
         message=get_str(data, "message"),
-        locked=data.get("locked") is True,
         note=get_opt_str(data, "note"),
         settings=tuple((key, value) for key, value in data.items() if key not in _RULE_KEYS),
     )

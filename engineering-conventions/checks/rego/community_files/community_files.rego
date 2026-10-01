@@ -2,10 +2,10 @@
 # title: Community files
 # description: >-
 #   The files GitHub reads to route people to a repository: its issue forms
-#   (COMM-01) and template chooser (COMM-02), FUNDING.yml (COMM-03), its one
-#   CODEOWNERS (COMM-04) written in syntax GitHub honours (COMM-05), a
-#   security policy that says how to report a vulnerability (COMM-06), and
-#   its discussion category forms (COMM-08). The forms are validated against
+#   (COMM-01) and template chooser (COMM-02), its one CODEOWNERS where it has
+#   one (COMM-03) written in syntax GitHub honours (COMM-04), its own security
+#   policy, which says how to report a vulnerability (COMM-05), and its
+#   discussion category forms (COMM-07). The forms are validated against
 #   SchemaStore's schemas, vendored under checks/schemas/vendor/.
 # scope: package
 # custom:
@@ -44,8 +44,6 @@ issue_forms contains path if {
 	endswith(path, ".yml")
 	path != config_path
 }
-
-funding_path := ".github/FUNDING.yml"
 
 discussion_dir := ".github/DISCUSSION_TEMPLATE"
 
@@ -142,36 +140,10 @@ any_policy_reports if {
 
 findings contains lib.finding("COMM-01", path, message) if {
 	some path in issue_files
-	regex.match(`(?i)\.(md|markdown)$`, path)
-	message := sprintf(
-		concat(" ", [
-			"%s is a Markdown issue template, which GitHub opens as free text with nothing required;",
-			"convert it to an issue form, %s, with name, description and body",
-		]),
-		[path, suggest_yml(path)],
-	)
-}
-
-findings contains lib.finding("COMM-01", path, message) if {
-	some path in issue_files
 	regex.match(`(?i)\.yaml$`, path)
 	message := sprintf(
 		"%s should be %s: GitHub reads the template chooser only as config.yml, so the directory uses .yml throughout",
 		[path, suggest_yml(path)],
-	)
-}
-
-# The single legacy template GitHub still reads at the root, in .github/ or
-# in docs/.
-findings contains lib.finding("COMM-01", path, message) if {
-	some path in files.repository_files
-	regex.match(`^(\.github/|docs/)?(?i:issue_template)\.(?i:md|markdown)$`, path)
-	message := sprintf(
-		concat(" ", [
-			"%s is a single Markdown issue template, which GitHub opens as free text with nothing required;",
-			"replace it with issue forms in %s/, such as %s/bug-report.yml",
-		]),
-		[path, issue_dir, issue_dir],
 	)
 }
 
@@ -213,23 +185,7 @@ findings contains lib.finding("COMM-02", config_path, message) if {
 	])
 }
 
-findings contains lib.finding("COMM-03", path, message) if {
-	some path in files.repository_files
-	regex.match(`^(\.github/|docs/)?(?i:funding)\.(?i:ya?ml)$`, path)
-	path != funding_path
-	message := sprintf("GitHub reads funding links only from %s; move %s there", [funding_path, path])
-}
-
-findings contains lib.finding("COMM-03", funding_path, message) if {
-	problems := schema.specific_problems_of([parsed[funding_path]], index.funding_schema, "the file")
-	count(problems) > 0
-	message := sprintf(
-		"GitHub's funding schema rejects this file, so the Sponsor button misses it: %s",
-		[schema.summary_of(problems, "the file")],
-	)
-}
-
-findings contains lib.finding("COMM-08", path, message) if {
+findings contains lib.finding("COMM-07", path, message) if {
 	some path in discussion_files
 	not endswith(path, ".yml")
 	message := sprintf(
@@ -238,7 +194,7 @@ findings contains lib.finding("COMM-08", path, message) if {
 	)
 }
 
-findings contains lib.finding("COMM-08", path, message) if {
+findings contains lib.finding("COMM-07", path, message) if {
 	some path in discussion_files
 	endswith(path, ".yml")
 	problems := schema.specific_problems_of([parsed[path]], index.discussion_forms_schema, "the form")
@@ -249,15 +205,7 @@ findings contains lib.finding("COMM-08", path, message) if {
 	)
 }
 
-findings contains lib.finding("COMM-04", codeowners_path, message) if {
-	count(codeowners_files) == 0
-	message := concat(" ", [
-		"the repository has no CODEOWNERS; add .github/CODEOWNERS saying who reviews which paths",
-		"(a path listed with no owner is explicitly unowned)",
-	])
-}
-
-findings contains lib.finding("COMM-04", path, message) if {
+findings contains lib.finding("COMM-03", path, message) if {
 	first := codeowners_files[0]
 	message := sprintf(
 		"GitHub reads only the first CODEOWNERS it finds, %s, and ignores this one; merge its rules there and delete it",
@@ -268,13 +216,13 @@ findings contains lib.finding("COMM-04", path, message) if {
 	path != first
 }
 
-findings contains lib.finding("COMM-04", path, message) if {
+findings contains lib.finding("COMM-03", path, message) if {
 	path := codeowners_files[0]
 	path != codeowners_path
 	message := sprintf("keep the repository's one CODEOWNERS at %s; move %s there", [codeowners_path, path])
 }
 
-findings contains lib.finding("COMM-05", path, message) if {
+findings contains lib.finding("COMM-04", path, message) if {
 	some path, path_rules in rules
 	some rule in path_rules
 	reason := unsupported(rule.pattern)
@@ -284,7 +232,7 @@ findings contains lib.finding("COMM-05", path, message) if {
 	)
 }
 
-findings contains lib.finding("COMM-05", path, message) if {
+findings contains lib.finding("COMM-04", path, message) if {
 	some path, path_rules in rules
 	some rule in path_rules
 	some owner in rule.owners
@@ -298,7 +246,7 @@ findings contains lib.finding("COMM-05", path, message) if {
 	)
 }
 
-findings contains lib.finding("COMM-05", path, message) if {
+findings contains lib.finding("COMM-04", path, message) if {
 	some path, path_rules in rules
 	some later in path_rules
 	earlier_lines := [rule.line | some rule in path_rules; rule.pattern == later.pattern; rule.line < later.line]
@@ -312,16 +260,8 @@ findings contains lib.finding("COMM-05", path, message) if {
 	)
 }
 
-findings contains lib.finding("COMM-06", "SECURITY.md", message) if {
-	count(security_files) == 0
-	message := concat(" ", [
-		"the repository has no security policy; add SECURITY.md, at the root or in .github/ or docs/,",
-		"with a `## Reporting a vulnerability` section that says how to report one privately",
-	])
-}
-
 # A policy too large to embed has no text here, and is not judged.
-findings contains lib.finding("COMM-06", path, message) if {
+findings contains lib.finding("COMM-05", path, message) if {
 	not any_policy_reports
 	message := concat(" ", [
 		"the security policy has no heading on reporting a vulnerability; add one, such as",

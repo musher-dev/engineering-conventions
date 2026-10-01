@@ -168,7 +168,7 @@ requirements:
       engine: conftest
       package: conventions.checks.git_hooks.lefthook
   - id: HOOKS-14
-    title: A job runs no package runner directly
+    title: A job runs no one-shot package runner directly
     status: proposed
     severity: warning
     since: 0.7.1
@@ -607,14 +607,15 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ### HOOKS-14
 
-**A job runs no package runner directly.**
+**A job runs no one-shot package runner directly.**
 
-A package runner resolves the tool it runs when it runs, and often downloads it: `npx`, `bunx`, `bun x`, `pnpx`,
-`pnpm dlx`, `pnpm exec`, `yarn dlx`, `npm exec`, `uvx`, `uv run`, `uv tool run`, `pipx run` and `go run`. Written
-into a hook, the version and the flags live in that one line, and CI, which calls a task, runs whatever the task
-says, so the two drift apart without anyone deciding they should. A job that needs such a tool runs the task that
-wraps it, the same task CI runs. A tool installed by the repository's pinned toolchain, such as one from mise, is
-called directly: its version is pinned once and the hook and CI already run the same binary.
+A one-shot package runner fetches the tool it runs when it runs, at whatever version it resolves then: `npx`, `bunx`
+(or `bun x`), `pnpx`, `pnpm dlx`, `yarn dlx`, `uvx` (or `uv tool run`) and `pipx run`. Written into a hook, the
+version and the flags live in that one line, and CI, which calls a task, runs whatever the task says, so the two
+drift apart without anyone deciding they should. A job that needs such a tool runs the task that wraps it, the same
+task CI runs. A runner of a tool the repository's lockfile already pins, such as `uv run`, `pnpm exec`, `npm exec` or
+`go run`, runs the same version in the hook and in CI, and so does a tool from the repository's pinned toolchain, such
+as one from mise: both may be called directly.
 
 **Correct:**
 

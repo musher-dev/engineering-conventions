@@ -1,5 +1,5 @@
-# Conforms to every rule of checks/openapi/musher.spectral.yaml and of
-# spectral:oas recommended: `task checks:openapi` expects no finding.
+# Passes every rule of spectral:oas recommended and of the OWASP API security
+# ruleset: `task checks:openapi` expects no finding with spectral.yaml.
 openapi: 3.1.0
 info:
   title: Orders
@@ -10,6 +10,9 @@ info:
     url: https://example.com/orders
 servers:
   - url: https://api.example.com
+    x-internal: false
+security:
+  - bearer: []
 tags:
   - name: orders
     description: Orders placed by a customer.
@@ -23,38 +26,82 @@ paths:
       responses:
         "200":
           description: The orders.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: "#/components/headers/Access-Control-Allow-Origin"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Order"
-        "404":
-          description: No such customer.
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-  /v1/orders:batchCreate:
-    post:
-      operationId: batch_create_orders
-      summary: Create several orders
-      description: Create several orders, each succeeding or failing on its own.
-      tags: [orders]
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BatchCreateOrdersRequest"
-      responses:
-        "207":
-          description: One result per order.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BatchCreateOrdersResponse"
+                $ref: "#/components/schemas/OrderList"
+        "400":
+          $ref: "#/components/responses/Problem"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/Problem"
 components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  headers:
+    Access-Control-Allow-Origin:
+      description: The origins that may read the response.
+      schema:
+        type: string
+        maxLength: 256
+        format: uri
+    RateLimit:
+      description: The caller's remaining quota.
+      schema:
+        type: string
+        maxLength: 256
+        pattern: "^[ -~]*$"
+  responses:
+    Problem:
+      description: The request failed.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+        RateLimit:
+          $ref: "#/components/headers/RateLimit"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    TooManyRequests:
+      description: The caller has used its quota.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+        RateLimit:
+          $ref: "#/components/headers/RateLimit"
+        Retry-After:
+          description: Seconds until the quota resets.
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 86400
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
   schemas:
+    OrderList:
+      type: object
+      description: A page of orders.
+      properties:
+        orders:
+          type: array
+          description: The orders.
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/Order"
     Order:
       type: object
       description: An order.
@@ -62,63 +109,12 @@ components:
         orderId:
           type: string
           description: The order's ID.
+          format: uuid
+          maxLength: 36
         state:
-          $ref: "#/components/schemas/OrderState"
-        isPaid:
-          type: boolean
-          description: Whether the order is paid.
-        receiptURL:
-          description: Where the receipt is, once there is one.
-          anyOf:
-            - type: string
-            - type: "null"
-        payment:
-          $ref: "#/components/schemas/Payment"
-    OrderState:
-      type: string
-      description: Where the order is in its lifecycle.
-      enum: [PENDING, SHIPPED, DELIVERED]
-    Payment:
-      description: How the order is paid.
-      oneOf:
-        - $ref: "#/components/schemas/CardPayment"
-        - $ref: "#/components/schemas/InvoicePayment"
-      discriminator:
-        propertyName: kind
-    CardPayment:
-      type: object
-      description: A card payment.
-      properties:
-        kind:
           type: string
-          description: Always CARD.
-          enum: [CARD]
-    InvoicePayment:
-      type: object
-      description: An invoice payment.
-      properties:
-        kind:
-          type: string
-          description: Always INVOICE.
-          enum: [INVOICE]
-    BatchCreateOrdersRequest:
-      type: object
-      description: The orders to create.
-      properties:
-        orders:
-          type: array
-          description: The orders.
-          items:
-            $ref: "#/components/schemas/Order"
-    BatchCreateOrdersResponse:
-      type: object
-      description: One result per order.
-      properties:
-        orders:
-          type: array
-          description: The created orders.
-          items:
-            $ref: "#/components/schemas/Order"
+          description: Where the order is in its lifecycle.
+          enum: [PENDING, SHIPPED, DELIVERED]
     Problem:
       type: object
       description: An RFC 9457 problem.
@@ -126,3 +122,5 @@ components:
         title:
           type: string
           description: A short summary of the problem.
+          maxLength: 200
+          pattern: "^[^\\n]*$"

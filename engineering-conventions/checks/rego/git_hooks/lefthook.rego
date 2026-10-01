@@ -349,9 +349,11 @@ normalised(text) := trim_space(regex.replace(
 	" ",
 ))
 
-# A package runner: a command that resolves, and may download, the tool it
-# runs at the moment it runs (HOOKS-14).
+# A one-shot package runner: a command that fetches the tool it runs at the
+# moment it runs, at whatever version it resolves then (HOOKS-14). `bun x`
+# and `uv tool run` are bunx's and uvx's long forms. Runners of lockfile-pinned
+# tools (uv run, pnpm exec, npm exec, go run) are not among them.
 package_runner_pattern := concat("", [
-	`(^|[\s;&|(])(npx|bunx|pnpx|uvx|bun\s+x|pnpm\s+(dlx|exec)|yarn\s+dlx|npm\s+exec|`,
-	`uv\s+(run|tool\s+run)|pipx\s+run|go\s+run)(\s|$)`,
+	`(^|[\s;&|(])(npx|bunx|pnpx|uvx|bun\s+x|pnpm\s+dlx|yarn\s+dlx|`,
+	`uv\s+tool\s+run|pipx\s+run)(\s|$)`,
 ])

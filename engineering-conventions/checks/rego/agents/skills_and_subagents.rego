@@ -2,7 +2,8 @@
 # title: Skills and subagents
 # description: >-
 #   The skills and subagents a repository gives Claude Code: frontmatter that
-#   parses (AGENT-09), skill frontmatter valid against the skill schema
+#   parses (AGENT-09; a Markdown file under .claude/agents/ without any is
+#   documentation, not a subagent), skill frontmatter valid against the skill schema
 #   (AGENT-10) with a name equal to its directory (AGENT-11), subagent
 #   frontmatter valid against the subagent schema (AGENT-12), and preloaded
 #   skills that exist (AGENT-13) and that the model may invoke (AGENT-14).
@@ -16,7 +17,8 @@ import data.conventions.lib.findings as lib
 import data.conventions.lib.schema
 import data.conventions.lib.text
 
-# AGENT-09: no frontmatter at all.
+# AGENT-09: a skill with no frontmatter at all. A subagent file without any
+# is not a subagent, and is not in agent_files.
 findings contains lib.finding("AGENT-09", path, no_frontmatter) if {
 	some path, content in agent_files
 	not text.has_frontmatter(content)
@@ -97,8 +99,8 @@ findings contains lib.finding("AGENT-14", path, message) if {
 }
 
 no_frontmatter := concat(" ", [
-	"the file has no YAML frontmatter, so nothing tells Claude Code when to use it;",
-	"start it with a --- block that sets name: and description:",
+	"the skill has no YAML frontmatter, so Claude Code takes its first line as the description it chooses",
+	"the skill by; start it with a --- block that sets description:",
 ])
 
 unparsed_frontmatter := concat(" ", [
@@ -108,8 +110,7 @@ unparsed_frontmatter := concat(" ", [
 ])
 
 skill_fields := concat(" ", [
-	"Give the field the shape checks/schemas/skill-frontmatter.schema.json lists for it, or remove it;",
-	"a field of the repository's own, such as version, goes under metadata as a string",
+	"Give the field the shape checks/schemas/skill-frontmatter.schema.json lists for it, or remove it",
 ])
 
 subagent_fields := concat(" ", [
@@ -121,7 +122,8 @@ subagent_fields := concat(" ", [
 # directory of a monorepo, which Claude Code loads when it works there.
 skill_pattern := `(^|/)\.claude/skills/([^/]+)/SKILL\.md$`
 
-# Claude Code reads every Markdown file below .claude/agents/ as a subagent.
+# Claude Code reads a Markdown file below .claude/agents/ as a subagent when
+# it has frontmatter; one without, such as a README, is documentation.
 subagent_pattern := `(^|/)\.claude/agents/.+\.md$`
 
 # Each skill's path, mapped to its directory's name.
@@ -133,6 +135,7 @@ skill_files[path] := match[2] if {
 subagent_files contains path if {
 	some path in files.repository_files
 	regex.match(subagent_pattern, path)
+	text.has_frontmatter(files.texts[path])
 }
 
 # The text of every skill and subagent the runner embedded; a file over its

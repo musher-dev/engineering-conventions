@@ -1,9 +1,10 @@
 version: '3'
 
 # The Rego rules: format, lint, type-check and unit-test
-# engineering-conventions/checks/rego, and the shipped OpenAPI ruleset. The fixture-repo pass (every requirement
-# proved against a miniature repository) runs under `cli:test`, because the
-# CLI is what feeds a repository to conftest.
+# engineering-conventions/checks/rego, and the OpenAPI ruleset shape OAS-02
+# asks for. The fixture-repo pass (every requirement proved against a
+# miniature repository) runs under `cli:test`, because the CLI is what feeds
+# a repository to conftest.
 
 set: [errexit, nounset, pipefail]
 
@@ -12,7 +13,6 @@ vars:
   INDEX: '{{.PRODUCT_DIR}}/checks/data/index.json'
   REGAL_CONFIG: .config/rego/regal.yaml
   COVERAGE_THRESHOLD: 80
-  OPENAPI_RULESET: '{{.PRODUCT_DIR}}/checks/openapi/musher.spectral.yaml'
   OPENAPI_FIXTURES: '{{.PRODUCT_DIR}}/tests/fixtures/openapi'
 
 tasks:
@@ -59,25 +59,31 @@ tasks:
         echo "Rego coverage: ${coverage}% (threshold {{.COVERAGE_THRESHOLD}}%)"
 
   checks:openapi:
-    desc: Test the shipped Spectral ruleset; each musher-* rule fires once on trips.yaml, and nothing on clean.yaml.
+    desc: Test that a ruleset meeting OAS-02 loads both upstream rulesets, passes clean.yaml and reports insecure.yaml.
+    vars:
+      RULESET: '{{.OPENAPI_FIXTURES}}/spectral.yaml'
     cmds:
-      # The rules are warnings, so spectral exits 0 on both documents; a
-      # non-zero exit is a broken ruleset or document, and fails the task.
+      # The ruleset extends the OWASP ruleset by URL, so this needs the
+      # network. A ruleset Spectral cannot load exits 2 and fails the task.
       - |
-        clean="$(spectral lint --quiet --format json --ruleset {{.OPENAPI_RULESET}} {{.OPENAPI_FIXTURES}}/clean.yaml)"
+        clean="$(spectral lint --quiet --format json --ruleset {{.RULESET}} {{.OPENAPI_FIXTURES}}/clean.yaml)"
         if [[ "$(jq length <<< "${clean}")" != 0 ]]; then
           jq -r '.[] | "clean.yaml: \(.code) at \(.path | join("."))"' <<< "${clean}" >&2
           echo "checks:openapi: clean.yaml must pass every rule" >&2
           exit 1
         fi
       - |
-        rules="$(yq -o json '.rules | keys' {{.OPENAPI_RULESET}} | jq -c 'map(select(startswith("musher-"))) | sort')"
-        fired="$(spectral lint --quiet --format json --ruleset {{.OPENAPI_RULESET}} {{.OPENAPI_FIXTURES}}/trips.yaml \
-          | jq -c 'map(.code) | sort')"
-        if [[ "${rules}" != "${fired}" ]]; then
-          echo "checks:openapi: trips.yaml must fire each musher-* rule exactly once and nothing else" >&2
-          echo "  rules: ${rules}" >&2
-          echo "  fired: ${fired}" >&2
+        status=0
+        found="$(spectral lint --quiet --format json --ruleset {{.RULESET}} {{.OPENAPI_FIXTURES}}/insecure.yaml)" \
+          || status=$?
+        if [[ "${status}" != 1 ]]; then
+          echo "checks:openapi: spectral exited ${status} on insecure.yaml, not 1 for its errors" >&2
           exit 1
         fi
-        echo "checks:openapi: $(jq length <<< "${rules}") rules each fire once on trips.yaml; clean.yaml passes"
+        jq -e 'any(.[]; .code == "operation-description") and any(.[]; .code == "owasp:api2:2023-write-restricted")' \
+          <<< "${found}" > /dev/null || {
+          echo "checks:openapi: insecure.yaml must be reported by both spectral:oas and the OWASP ruleset" >&2
+          jq -c 'map(.code) | unique' <<< "${found}" >&2
+          exit 1
+        }
+        echo "checks:openapi: clean.yaml passes; spectral:oas and OWASP both report insecure.yaml"

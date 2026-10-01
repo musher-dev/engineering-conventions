@@ -58,7 +58,7 @@ tasks:
       - go run ./cmd/bundle
 
   openapi:
-    desc: Lint the OpenAPI interfaces with the conventions' Spectral ruleset.
+    desc: Lint the OpenAPI interfaces with the repository's Spectral ruleset.
     cmds:
       - conventions openapi --ruleset .config/openapi/spectral.yml
 

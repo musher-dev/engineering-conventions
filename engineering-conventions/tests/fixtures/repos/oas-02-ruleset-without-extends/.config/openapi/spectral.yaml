@@ -1,2 +1,0 @@
-# Spectral's own rules only: the conventions' rules never run.
-extends: [[spectral:oas, recommended]]

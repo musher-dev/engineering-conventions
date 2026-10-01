@@ -5,8 +5,8 @@ them.
 
 The governing rule, in one sentence:
 
-> **Lint a site's copy with the MusherProse Vale package at the release the repository pins, and show the behavior or
-> the number instead of claiming a quality.**
+> **Lint a site's copy with the MusherProse Vale package at the release the repository pins, and leave its voice to
+> the site's owner.**
 
 A repository with no site meets every requirement; they apply once it publishes one.
 
@@ -17,22 +17,23 @@ The convention is a **draft**, owned by this repository, and every requirement i
 ## Who is checked
 
 `base-repo` selects the family, so every profile does. COPY-01 to COPY-03 apply to a repository that declares a
-`site` output in `.repo/outputs.toml` or whose kind is `website` or `documentation`. COPY-04 applies to any Vale config.
-COPY-05 to COPY-12 are the `MusherCopy` Vale style: they run where the repository runs Vale with the package.
+`site` output in `.repo/outputs.toml` or whose kind is `website` or `documentation`. COPY-04 is the `MusherCopy` Vale
+style: it runs where the repository runs Vale with the package.
+
+Banned words, claims, tone and sentence length are not checked here. They are the site owner's to decide, in a Vale
+style of its own applied beside MusherProse.
 
 ## Reading order
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0038 Public copy](public-copy.md) | COPY-01 – COPY-12 | The Vale config a site needs, the adopted packages, and the MusherCopy style |
+| [EC-0038 Public copy](public-copy.md) | COPY-01 – COPY-04 | The Vale config a site needs, the adopted packages, and the placeholder rule |
 
 ## Quick reference
 
 | Write | Not |
 | --- | --- |
-| Restarts a crashed agent within ten seconds | A robust, seamless runtime |
-| Runs 200 agents on one host | Scalable and enterprise-grade |
-| 99.95% uptime over twelve months, on the status page | Never goes down |
-| The section is absent until it is written | Coming soon |
 | `Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v<release>/MusherProse.zip` | `Packages = MusherProse` |
-| `BasedOnStyles = MusherCopy, proselint, write-good` | `MusherCopy.Banned = NO` |
+| `BasedOnStyles = MusherCopy, proselint, write-good` | `BasedOnStyles = MusherCopy` |
+| `[formats]` with `svelte = html` beside a section matching `*.svelte` | A section matching `*.svelte` and no format |
+| The section is absent until it is written | Coming soon |

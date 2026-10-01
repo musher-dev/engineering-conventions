@@ -23,7 +23,7 @@ engineering-conventions/               repository level: acts on the product
     │   ├── conventions/               EC-NNNN documents by topic, families.yml
     │   ├── terminology/               global.yml
     │   ├── profiles/                  convention profiles
-    │   └── copy/                      style.yml: the MusherCopy rules and the adopted Vale packages
+    │   └── copy/                      style.yml: the MusherCopy style and the adopted Vale packages
     ├── checks/                        CHECKED: rego/, schemas/, data/ (generated), vale/ (generated)
     ├── examples/                      SHOWN: a worked, conforming consumer
     ├── bin/conventions                TOOLING: the launcher a consumer runs (mise puts bin/ on PATH)

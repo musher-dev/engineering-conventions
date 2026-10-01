@@ -18,7 +18,7 @@ description: >-
   of its decision records if it keeps any, the format of any
   environment schema it holds and the documents derived from it, the
   dev container of any repository that has one, the community files
-  GitHub reads: issue and discussion forms, FUNDING.yml, one CODEOWNERS and a security policy,
+  GitHub reads: issue and discussion forms, CODEOWNERS where it has one, and a security policy,
   the OpenAPI documents of any OpenAPI interface it offers, the
   commit messages and pull request titles of every repository, checked
   by committed, and the Vale config that lints the copy of any site it

@@ -31,9 +31,6 @@ extend-exclude = [
   # The terminology lists banned and discouraged spellings on purpose: an
   # alias is recorded precisely because people write it.
   "engineering-conventions/definitions/terminology/**",
-  # The copy rules are regular expressions over word stems (empower(?:ment)?,
-  # supercharg(?:e|ing)), which are not words a spellchecker can read.
-  "engineering-conventions/definitions/copy/style.yml",
   # Fixture repos and invalid-input fixtures carry deliberate mistakes that
   # the checks under test must catch.
   "engineering-conventions/tests/fixtures/**",

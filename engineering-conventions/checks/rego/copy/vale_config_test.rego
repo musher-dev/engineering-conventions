@@ -4,7 +4,7 @@ import data.conventions.checks.copy.vale_config
 import data.conventions.lib.testdata_test as td
 
 # The tests read the copy block of the generated index, so they hold the
-# check to the package name, style and locked rules a release ships.
+# check to the package name and styles a release ships.
 url := "https://github.com/musher-dev/engineering-conventions/releases/download/v0.2.0/MusherProse.zip"
 
 copy_section := "[apps/site/src/**/*.{md,svelte}]"
@@ -179,28 +179,7 @@ test_an_unrelated_config_is_not_judged_without_a_site if {
 	count(vale_config.findings) == 0 with input as [td.pin, texts({".config/prose/vale.ini": other})]
 }
 
-test_turning_off_a_locked_rule_is_reported if {
-	text := concat("\n", [conforming, "[apps/site/src/legal/*.md]", "MusherCopy.Banned = no"])
-	found := vale_config.findings with input as repo({".vale.ini": text})
-	td.pairs(found) == {["COPY-04", ".vale.ini"]}
-	messages(found, "COPY-04") == {concat(" ", [
-		"line 10 turns off MusherCopy.Banned for [apps/site/src/legal/*.md]; remove it, and waive COPY-04",
-		"with a reason and an expiry if a page must keep the word",
-	])}
-}
-
-test_turning_off_an_unlocked_rule_passes if {
-	text := concat("\n", [conforming, "[docs/reference/**/*.md]", "MusherCopy.SentenceAverage = NO"])
-	count(vale_config.findings) == 0 with input as repo({".vale.ini": text})
-}
-
-test_turning_off_a_locked_rule_is_reported_without_a_site if {
-	text := concat("\n", ["[*.md]", "MusherCopy.Placeholders = NO"])
-	found := vale_config.findings with input as [td.pin, texts({".vale.ini": text})]
-	td.ids(found) == {"COPY-04"}
-}
-
-test_a_locked_rule_turned_on_passes if {
-	text := concat("\n", [conforming, "[*.md]", "MusherCopy.Banned = YES"])
+test_turning_off_a_rule_for_some_pages_passes if {
+	text := concat("\n", [conforming, "[docs/reference/**/*.md]", "MusherCopy.Placeholders = NO"])
 	count(vale_config.findings) == 0 with input as repo({".vale.ini": text})
 }

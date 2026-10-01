@@ -45,7 +45,7 @@
       "items": { "$ref": "#/definitions/adopted" }
     },
     "rules": {
-      "description": "The style's own rules: only what no adopted package covers.",
+      "description": "The style's own rules: only what no adopted package covers, and only what holds for any site's copy.",
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/definitions/rule" }
@@ -125,80 +125,35 @@
     },
     "rule": {
       "type": "object",
-      "required": ["name", "extends", "level", "message", "locked"],
+      "additionalProperties": false,
+      "required": ["name", "extends", "level", "message", "tokens"],
       "properties": {
         "name": {
           "description": "The rule's file name without .yml, and its name in alerts: <style>.<name>. A requirement whose validation.style names it links its alerts.",
           "$ref": "#/definitions/ruleName"
         },
         "extends": {
-          "type": "string",
-          "enum": ["existence", "metric", "occurrence"]
+          "description": "The Vale rule type. Only existence rules are authored here.",
+          "const": "existence"
         },
         "level": {
+          "description": "The level Vale reports at, matching the severity of the requirement that names the rule.",
           "type": "string",
           "enum": ["suggestion", "warning", "error"]
         },
         "message": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
-        "locked": {
-          "description": "true when a consumer may not turn the rule off in its Vale config; a deviation is a waiver instead (COPY-04).",
-          "type": "boolean"
-        },
         "note": {
           "description": "Why the rule is shaped as it is, written as a comment in the generated file.",
           "$ref": "common.schema.json#/definitions/nonEmptyString"
-        }
-      },
-      "oneOf": [
-        {
-          "additionalProperties": false,
-          "required": ["tokens"],
-          "properties": {
-            "name": true,
-            "extends": { "const": "existence" },
-            "level": true,
-            "message": true,
-            "locked": true,
-            "note": true,
-            "tokens": {
-              "description": "Regular expressions (Vale's regexp2 syntax), matched case-insensitively on word boundaries.",
-              "type": "array",
-              "minItems": 1,
-              "uniqueItems": true,
-              "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
-            }
-          }
         },
-        {
-          "additionalProperties": false,
-          "required": ["formula", "condition"],
-          "properties": {
-            "name": true,
-            "extends": { "const": "metric" },
-            "level": true,
-            "message": true,
-            "locked": true,
-            "note": true,
-            "formula": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
-            "condition": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": ["scope", "max", "token"],
-          "properties": {
-            "name": true,
-            "extends": { "const": "occurrence" },
-            "level": true,
-            "message": true,
-            "locked": true,
-            "note": true,
-            "scope": { "type": "string", "enum": ["sentence", "paragraph", "heading", "text"] },
-            "max": { "type": "integer", "minimum": 1 },
-            "token": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
-          }
+        "tokens": {
+          "description": "Regular expressions (Vale's regexp2 syntax), matched case-insensitively on word boundaries.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
         }
-      ]
+      }
     }
   }
 }

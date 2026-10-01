@@ -320,11 +320,12 @@ def test_a_copy_rule_without_a_requirement_is_reported(content: Content) -> None
 
 def test_a_requirement_naming_a_missing_copy_rule_is_reported(content: Content) -> None:
     style = content.copy_style
-    banned = next(rule for rule in style.rules if rule.name == "Banned")
+    placeholders = next(rule for rule in style.rules if rule.name == "Placeholders")
     edited = replace(
         content,
-        copy_style=replace(style, rules=tuple(r for r in style.rules if r is not banned)),
+        copy_style=replace(style, rules=tuple(r for r in style.rules if r is not placeholders)),
     )
     assert invariants.copy_rules_have_requirements(edited) == [
-        "COPY-05: validation.style MusherCopy.Banned is not a rule in definitions/copy/style.yml"
+        "COPY-04: validation.style MusherCopy.Placeholders is not a rule in "
+        "definitions/copy/style.yml"
     ]

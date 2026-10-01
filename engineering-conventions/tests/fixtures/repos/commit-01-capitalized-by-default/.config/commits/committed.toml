@@ -1,0 +1,4 @@
+# subject_capitalized is left at committed's default, true.
+style = "conventional"
+allowed_types = ["feat", "fix", "chore"]
+allowed_scopes = ["api", "release"]

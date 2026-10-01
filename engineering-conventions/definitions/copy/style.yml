@@ -5,9 +5,11 @@
 #   checks/data/index.json              the copy block the COPY checks read
 # Validated against checks/schemas/copy-style.schema.json.
 #
-# The rules below are only what no adopted package covers. Before adding one,
-# check proselint, write-good and the Microsoft and Google styles: a rule one of
-# them ships is adopted, not rewritten.
+# The rules below are only what no adopted package covers, and only what holds
+# for any site: voice and vocabulary (banned words, claims, tone, sentence
+# length) belong to the site's owner, in a style of its own layered on top.
+# Before adding one, check proselint, write-good and the Microsoft and Google
+# styles: a rule one of them ships is adopted, not rewritten.
 schema_version: 1
 package: MusherProse
 style: MusherCopy
@@ -71,35 +73,9 @@ adopted:
         reason: Claims nobody can verify, such as "guarantee" and "simplest".
 
 rules:
-  - name: Banned
-    extends: existence
-    level: error
-    locked: true
-    message: "'%s' is banned in public copy. Name the behavior or the number instead."
-    tokens:
-      - seamless(?:ly|ness)?
-      - robust(?:ly|ness)?
-      - leverag(?:e|es|ed|ing)
-      - empower(?:s|ed|ing|ment)?
-      - supercharg(?:e|es|ed|ing)
-      - unleash(?:es|ed|ing)?
-      - revolutioni[sz](?:e|es|ed|ing)
-      - revolutionary
-      - AI[- ]powered
-      - intelligent
-      - effortless(?:ly)?
-      - frictionless
-      - holistic
-      - game[- ]chang(?:er|ers|ing)
-      - disruptive
-      - synergi[sz](?:e|es|ed|ing)
-      - turnkey
-      - magical(?:ly)?
-      - lightning[- ]fast
   - name: Placeholders
     extends: existence
-    level: error
-    locked: true
+    level: warning
     note: TODO, FIXME and XXX are proselint.Annotations.
     message: "'%s' is a placeholder. Ship the content, or remove the section and track it in an issue."
     tokens:
@@ -107,88 +83,3 @@ rules:
       - TBC
       - coming soon
       - lorem ipsum
-  - name: Generic
-    extends: existence
-    level: warning
-    locked: false
-    message: "'%s' describes nothing specific. Name the capability, the scale or the benchmark."
-    tokens:
-      - powerful
-      - innovative
-      - comprehensive
-      - intuitive(?:ly)?
-      - cutting[- ]edge
-      - next[- ]gen(?:eration)?
-      - enterprise[- ]grade
-      - best[- ]in[- ]class
-      - state[- ]of[- ]the[- ]art
-      - world[- ]class
-      - scalable
-      - streamlin(?:e|es|ed|ing)
-      - end[- ]to[- ]end
-      - unprecedented
-  - name: GenericContext
-    extends: existence
-    level: suggestion
-    locked: false
-    note: >-
-      Generic in marketing copy but ordinary in technical text ("advanced
-      configuration", "a modern browser", "unlock the state file"), so only a
-      suggestion.
-    message: "'%s' is relative to nothing. Say what it is more than, or what it does."
-    tokens:
-      - advanced
-      - modern
-      - smart
-      - flexible
-      - unlock(?:s|ed|ing)?
-  - name: Hyperbole
-    extends: existence
-    level: warning
-    locked: false
-    message: "'%s' is a claim without proof. Replace it with a number, a name or a link."
-    tokens:
-      - the (?:leading|premier|ultimate|definitive)
-      - (?:never|always) (?:fails?|breaks?|goes down)
-      - \d{3,}% (?:faster|better|more|cheaper)
-      - (?:transforms?|revolutioni[sz]es?|disrupts?) your
-      - "everything you(?:'ll)? (?:ever )?need"
-      - (?:unlimited|infinite|endless|limitless) \w+
-  - name: Filler
-    extends: existence
-    level: warning
-    locked: false
-    note: >-
-      "the fact that" after of, to, in, on or despite is Microsoft.Wordiness's,
-      so it is not reported twice.
-    message: "'%s' adds length, not meaning. Cut it, or use the verb directly."
-    tokens:
-      - 'helps? you(?: to)?'
-      - (?:is|are) able to
-      - that being said
-      - 'it is (?:important|worth) (?:to note|noting)(?: that)?'
-      - "in today's (?:world|landscape)"
-      - when it comes to
-      - at its core
-      - really
-      - truly
-      - rather(?! than)
-      - somewhat
-      - basically
-      - essentially
-      - (?<!(?:of|to|in|on|despite) )the fact that
-  - name: SentenceAverage
-    extends: metric
-    level: suggestion
-    locked: false
-    message: "Sentences here average %s words. Keep the average under 15."
-    formula: words / sentences
-    condition: "> 15"
-  - name: ParagraphSentences
-    extends: occurrence
-    level: suggestion
-    locked: false
-    message: "More than three sentences in one paragraph. Split it into a statement and its proof."
-    scope: paragraph
-    max: 3
-    token: '[^.!?]+[.!?]+(?:\s|$)'

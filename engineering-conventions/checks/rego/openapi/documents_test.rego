@@ -19,8 +19,9 @@ events := object.union(public, {"id": "events", "format": "json-schema"})
 
 outputs(interfaces) := td.file(".repo/outputs.toml", {"schema_version": 2, "interfaces": interfaces})
 
-extends_link := "extends:\n  - ../../.conventions/openapi.spectral.yaml\n"
+owasp := "https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs"
 
+extends_link := concat("", ["extends:\n  - spectral:oas\n  - ", owasp, "\n"])
 run(command) := {"jobs": {"main": {"steps": [{"run": command}]}}}
 
 task_runs := {"version": "3", "tasks": {
@@ -67,22 +68,64 @@ test_oas_02_no_ruleset if {
 		with data.conventions.index as td.index
 	messages(found, "OAS-02") == {concat(" ", [
 		"the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add",
-		".config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its",
-		"documents are linted with the conventions' rules",
+		".config/openapi/spectral.yaml with `extends: [spectral:oas,",
+		"https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are",
+		"linted with Spectral's OpenAPI and OWASP rules",
 	])}
 	{f.path | some f in found} == {".config/openapi/spectral.yaml"}
 }
 
-test_oas_02_ruleset_without_the_conventions if {
+test_oas_02_ruleset_without_owasp if {
 	rulesets := {".config/openapi/spectral.yaml": "extends: [[spectral:oas, recommended]]\n"}
 	given := repo([public], rulesets, task_runs, run("task check"))
 	found := documents.findings with input as given
 		with data.conventions.index as td.index
 	messages(found, "OAS-02") == {concat(" ", [
-		".config/openapi/spectral.yaml does not extend the conventions' OpenAPI ruleset; add",
-		"../../.conventions/openapi.spectral.yaml to its extends, and turn off a rule there, with its",
-		"reason, rather than leaving the ruleset out",
+		".config/openapi/spectral.yaml does not extend the OWASP API security ruleset; extend",
+		"https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which names one exact",
+		"release",
 	])}
+}
+
+test_oas_02_ruleset_without_spectral_oas if {
+	rulesets := {".config/openapi/spectral.yaml": concat("", ["extends: [", owasp, "]\n"])}
+	given := repo([public], rulesets, task_runs, run("task check"))
+	found := documents.findings with input as given
+		with data.conventions.index as td.index
+	messages(found, "OAS-02") == {concat(" ", [
+		".config/openapi/spectral.yaml does not extend spectral:oas; add it to extends, and turn off a rule",
+		"there, with its reason, rather than leaving the ruleset out",
+	])}
+}
+
+test_oas_02_spectral_oas_turned_off if {
+	rulesets := {".config/openapi/spectral.yaml": concat("", ["extends: [[spectral:oas, \"off\"], ", owasp, "]\n"])}
+	given := repo([public], rulesets, task_runs, run("task check"))
+	found := documents.findings with input as given
+		with data.conventions.index as td.index
+	count(messages(found, "OAS-02")) == 1
+}
+
+test_oas_02_floating_owasp_versions if {
+	every ref in [
+		"https://unpkg.com/@stoplight/spectral-owasp-ruleset/dist/ruleset.mjs",
+		"https://unpkg.com/@stoplight/spectral-owasp-ruleset@latest/dist/ruleset.mjs",
+		"https://unpkg.com/@stoplight/spectral-owasp-ruleset@2/dist/ruleset.mjs",
+		"https://unpkg.com/@stoplight/spectral-owasp-ruleset@^2.0.1/dist/ruleset.mjs",
+		"@stoplight/spectral-owasp-ruleset",
+	] {
+		rulesets := {".config/openapi/spectral.yaml": concat("", ["extends: [spectral:oas, \"", ref, "\"]\n"])}
+		found := documents.findings with input as repo([public], rulesets, task_runs, run("task check"))
+			with data.conventions.index as td.index
+		messages(found, "OAS-02") == {sprintf(
+			concat(" ", [
+				".config/openapi/spectral.yaml extends the OWASP API security ruleset as %s, which names no exact",
+				"release; extend https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which",
+				"names one exact release",
+			]),
+			[ref],
+		)}
+	}
 }
 
 test_oas_02_a_ruleset_that_does_not_parse if {
@@ -90,7 +133,15 @@ test_oas_02_a_ruleset_that_does_not_parse if {
 	given := repo([public], rulesets, task_runs, run("task check"))
 	found := documents.findings with input as given
 		with data.conventions.index as td.index
-	ids(found) == {"OAS-02"}
+	count(messages(found, "OAS-02")) == 2
+}
+
+test_oas_02_a_ruleset_that_is_not_a_mapping if {
+	rulesets := {".config/openapi/spectral.yaml": "- spectral:oas\n"}
+	given := repo([public], rulesets, task_runs, run("task check"))
+	found := documents.findings with input as given
+		with data.conventions.index as td.index
+	count(messages(found, "OAS-02")) == 2
 }
 
 test_oas_02_a_ruleset_too_large_to_embed_is_not_judged if {
@@ -105,28 +156,22 @@ test_oas_02_a_ruleset_too_large_to_embed_is_not_judged if {
 	count(found) == 0
 }
 
-test_oas_02_accepts_a_pair_in_a_yml_ruleset if {
-	rulesets := {".config/openapi/spectral.yml": "extends:\n  - [../../.conventions/openapi.spectral.yaml, all]\n"}
+test_oas_02_accepts_pairs_in_a_yml_ruleset if {
+	rulesets := {".config/openapi/spectral.yml": concat("", [
+		"extends:\n  - [spectral:oas, all]\n  - [", owasp, ", recommended]\n",
+	])}
 	given := repo([public], rulesets, task_runs, run("task check"))
 	found := documents.findings with input as given
 		with data.conventions.index as td.index
 	count(found) == 0
 }
 
-test_oas_02_accepts_a_single_string if {
-	rulesets := {".config/openapi/spectral.yaml": "extends: ../../.conventions/openapi.spectral.yaml\n"}
+test_oas_02_a_single_string_misses_the_other if {
+	rulesets := {".config/openapi/spectral.yaml": "extends: spectral:oas\n"}
 	given := repo([public], rulesets, task_runs, run("task check"))
 	found := documents.findings with input as given
 		with data.conventions.index as td.index
-	count(found) == 0
-}
-
-test_oas_02_a_path_from_elsewhere_does_not_count if {
-	rulesets := {".config/openapi/spectral.yaml": "extends: [.conventions/openapi.spectral.yaml]\n"}
-	given := repo([public], rulesets, task_runs, run("task check"))
-	found := documents.findings with input as given
-		with data.conventions.index as td.index
-	ids(found) == {"OAS-02"}
+	count(messages(found, "OAS-02")) == 1
 }
 
 test_oas_03_validate_does_not_run_it if {
@@ -134,10 +179,36 @@ test_oas_03_validate_does_not_run_it if {
 	found := documents.findings with input as given
 		with data.conventions.index as td.index
 	messages(found, "OAS-03") == {concat(" ", [
-		"the repository declares an openapi interface but no validate workflow runs `conventions openapi`;",
-		"run it in a validate workflow, directly or through a task, so a document that breaks the ruleset",
-		"cannot merge",
+		"the repository declares an openapi interface but no validate workflow lints it; run",
+		"`conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate",
+		"workflow, directly or through a task, so a document that breaks the ruleset cannot merge",
 	])}
+}
+
+test_oas_03_a_spectral_step_with_the_ruleset if {
+	every command in [
+		"spectral lint --ruleset .config/openapi/spectral.yaml api/public.json",
+		"mise exec -- spectral lint api/public.json -r ./.config/openapi/spectral.yml",
+		"npx spectral lint --ruleset=.config/openapi/spectral.yaml api/public.json",
+	] {
+		given := repo([public], {".config/openapi/spectral.yaml": extends_link}, {"version": "3"}, run(command))
+		found := documents.findings with input as given
+			with data.conventions.index as td.index
+		count(found) == 0
+	}
+}
+
+test_oas_03_a_spectral_step_without_the_ruleset if {
+	every command in [
+		"spectral lint api/public.json",
+		"spectral lint --ruleset other.yaml api/public.json",
+		"spectral lint api/public.json; echo --ruleset .config/openapi/spectral.yaml",
+	] {
+		given := repo([public], {".config/openapi/spectral.yaml": extends_link}, {"version": "3"}, run(command))
+		found := documents.findings with input as given
+			with data.conventions.index as td.index
+		ids(found) == {"OAS-03"}
+	}
 }
 
 test_oas_03_a_step_runs_it_directly if {
@@ -201,22 +272,4 @@ test_oas_03_only_a_validate_workflow_counts if {
 	found := documents.findings with input as given
 		with data.conventions.index as td.index
 	ids(found) == {"OAS-03"}
-}
-
-test_oas_04_a_link_in_the_repository if {
-	given := [td.inventory([".conventions/openapi.spectral.yaml", "README.md"])]
-	found := documents.findings with input as given
-		with data.conventions.index as td.index
-	messages(found, "OAS-04") == {concat(" ", [
-		".conventions/openapi.spectral.yaml is part of the repository; add .conventions/ to .gitignore and",
-		"remove it from the index, because `conventions openapi` writes it on every run to point at the",
-		"release it runs",
-	])}
-}
-
-test_oas_04_a_nested_directory_of_that_name_is_not_the_link if {
-	given := [td.inventory(["api/.conventions/notes.md", ".conventions.md"])]
-	found := documents.findings with input as given
-		with data.conventions.index as td.index
-	count(found) == 0
 }

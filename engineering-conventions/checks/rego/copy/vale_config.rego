@@ -4,10 +4,9 @@
 #   A repository that publishes a site has a Vale config (COPY-01) that
 #   installs the MusherProse package from the release the repository pins and
 #   no package by a bare name (COPY-02), applies MusherCopy, proselint and
-#   write-good with a format for each template extension (COPY-03), and no
-#   Vale config turns off a locked MusherCopy rule (COPY-04). The configs are
-#   read from their raw text, because conftest's ini parser drops the global
-#   keys Packages lives in.
+#   write-good with a format for each template extension (COPY-03). The
+#   configs are read from their raw text, because conftest's ini parser drops
+#   the global keys Packages lives in.
 # scope: package
 # custom:
 #   convention: EC-0038
@@ -94,18 +93,6 @@ findings contains lib.finding("COPY-03", path, message) if {
 	message := sprintf(
 		"[%s] matches .%s files, which Vale skips without a format; add %s = %s under [formats]",
 		[section, extension, extension, template_formats[lower(extension)]],
-	)
-}
-
-# COPY-04
-findings contains lib.finding("COPY-04", path, message) if {
-	some path, text in configs
-	some entry in ini.entries(text)
-	entry.key in copy.locked_rules
-	upper(entry.value) == "NO"
-	message := sprintf(
-		"line %d turns off %s for [%s]; remove it, and waive COPY-04 with a reason and an expiry %s",
-		[entry.line, entry.key, entry.section, "if a page must keep the word"],
 	)
 }
 

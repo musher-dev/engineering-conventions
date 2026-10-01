@@ -1,7 +1,7 @@
 # Community files
 
 These conventions govern the files GitHub reads to route people to a repository: the issue and discussion forms, the
-template chooser, `FUNDING.yml`, `CODEOWNERS` and the security policy.
+template chooser, `CODEOWNERS` and the security policy.
 
 The governing rule, in one sentence:
 
@@ -19,14 +19,15 @@ It delegates to industry definitions where they exist: SchemaStore's schemas for
 
 ## Who is checked
 
-The `base-repo` profile selects the family, so every repository is checked. Every repository is asked for a
-`CODEOWNERS` and a security policy; the forms and `FUNDING.yml` are checked only where they exist.
+The `base-repo` profile selects the family, so every repository is checked. Each file is checked only where the
+repository has one; a repository without its own security policy relies on its organization's, which Scorecard judges
+(COMM-06).
 
 ## Reading order
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0036 Community files](community-files.md) | COMM-01 – COMM-08 | Issue forms and the template chooser, FUNDING.yml, CODEOWNERS, the security policy, discussion forms |
+| [EC-0036 Community files](community-files.md) | COMM-01 – COMM-07 | Issue forms and the template chooser, CODEOWNERS, the security policy, discussion forms |
 
 ## Quick reference
 
@@ -34,7 +35,6 @@ The `base-repo` profile selects the family, so every repository is checked. Ever
 | --- | --- | --- |
 | Issue forms | `.github/ISSUE_TEMPLATE/*.yml` | SchemaStore `github-issue-forms.json` (COMM-01) |
 | Template chooser | `.github/ISSUE_TEMPLATE/config.yml`, setting `blank_issues_enabled` | SchemaStore `github-issue-config.json` (COMM-02) |
-| Sponsor button | `.github/FUNDING.yml` | SchemaStore `github-funding.json` (COMM-03) |
-| Code owners | `.github/CODEOWNERS`, the only copy | GitHub's documented syntax (COMM-04, COMM-05) |
-| Security policy | `SECURITY.md` at the root, in `.github/` or in `docs/` | A reporting heading (COMM-06); Scorecard Security-Policy at 10 (COMM-07) |
-| Discussion forms | `.github/DISCUSSION_TEMPLATE/<category-slug>.yml` | SchemaStore `github-discussion.json` (COMM-08) |
+| Code owners | `.github/CODEOWNERS`, the only copy, where there is one | GitHub's documented syntax (COMM-03, COMM-04) |
+| Security policy | `SECURITY.md` at the root, in `.github/` or in `docs/`, else the organization's | A reporting heading (COMM-05); Scorecard Security-Policy at 10 (COMM-06) |
+| Discussion forms | `.github/DISCUSSION_TEMPLATE/<category-slug>.yml` | SchemaStore `github-discussion.json` (COMM-07) |

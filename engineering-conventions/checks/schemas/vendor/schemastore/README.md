@@ -1,6 +1,6 @@
 # Vendored SchemaStore schemas
 
-Unmodified copies of four JSON Schemas from [SchemaStore](https://github.com/SchemaStore/schemastore), which publishes
+Unmodified copies of three JSON Schemas from [SchemaStore](https://github.com/SchemaStore/schemastore), which publishes
 them under the Apache License 2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)). The community files checks (EC-0036) validate
 a repository's GitHub forms against them rather than restating GitHub's form syntax in Rego.
 
@@ -8,8 +8,7 @@ a repository's GitHub forms against them rather than restating GitHub's form syn
 | --- | --- | --- |
 | `github-issue-forms.json` | `.github/ISSUE_TEMPLATE/*.yml`, except `config.yml` | COMM-01 |
 | `github-issue-config.json` | `.github/ISSUE_TEMPLATE/config.yml` | COMM-02 |
-| `github-funding.json` | `.github/FUNDING.yml` | COMM-03 |
-| `github-discussion.json` | `.github/DISCUSSION_TEMPLATE/*.yml` | COMM-08 |
+| `github-discussion.json` | `.github/DISCUSSION_TEMPLATE/*.yml` | COMM-07 |
 
 Each is byte-identical to `src/schemas/json/<file>` at SchemaStore commit
 [`9fb5bdbcdd9f0288b236230155c61e2e88345963`](https://github.com/SchemaStore/schemastore/tree/9fb5bdbcdd9f0288b236230155c61e2e88345963/src/schemas/json),

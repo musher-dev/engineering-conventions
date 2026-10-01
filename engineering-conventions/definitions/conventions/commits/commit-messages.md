@@ -128,10 +128,10 @@ file that is missing, or that does not set:
 | `style` | `"conventional"` | The type and scope are what release-please reads |
 | `allowed_types` | a list, not empty | committed's default list leaves out `ci` and `build`, and accepts types the repository may not release on |
 | `allowed_scopes` | a list, not empty | Without one, any scope passes, and a typo becomes a changelog entry |
-| `subject_length` | 1 to 72 (default 50) | The header fits a terminal and GitHub's commit list; `0` turns the limit off |
-| `subject_not_punctuated` | `true` (default) | The subject is a title, not a sentence |
-| `imperative_subject` | `true` (default) | A subject completes "this commit will …" |
-| `no_wip` | `true` (default) | A work-in-progress commit never reaches the default branch |
+| `subject_capitalized` | `false` (default `true`) | A Conventional Commit description starts in lower case, as COMMIT-04's title pattern asks, and committed's default rejects it |
+
+Everything else, such as the header's length, an imperative subject or work-in-progress commits, is the repository's
+choice; committed's defaults are a reasonable start.
 
 **Correct:**
 
@@ -158,7 +158,8 @@ allowed_scopes = [
 ```toml
 # committed.toml at the root: found by committed's own search, not passed by path
 style = "conventional"
-subject_length = 0            # no limit on the header
+allowed_types = ["feat", "fix"]
+# no allowed_scopes, and subject_capitalized left at true, which rejects "feat: add x"
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
@@ -284,15 +285,13 @@ something downstream reads the message:
 | The header is `type(scope): subject`, with `!` before the colon for a breaking change | `style = "conventional"` | release-please reads the type and the `!` to choose the version |
 | The type is one the repository lists | `allowed_types` | A type outside the list lands in no changelog section |
 | The scope is one the repository lists | `allowed_scopes`; required on a title by `requireScope` | The scope says which part of the repository changed |
-| The header fits in 72 columns; committed lets its last word run over | `subject_length = 72` | It fits `git log --oneline` and GitHub's commit list |
-| The subject is in the imperative mood | `imperative_subject = true` | It reads as "this commit will add …", like git's own messages |
-| The subject does not end in punctuation | `subject_not_punctuated = true` | It is a title |
-| The subject starts in lowercase | `subjectPattern` on the title | One style in every changelog |
+| The subject starts in lowercase | `subject_capitalized = false`, and `subjectPattern` on the title | One style in every changelog |
 | A blank line separates the header from a body | `style = "conventional"` | Tools split the header from the body at the first blank line |
-| No work-in-progress commits | `no_wip = true` | A `WIP` commit is not a change anyone can release |
 
-`fixup!` commits are allowed (`no_fixup = false`): they are squashed by `git rebase --autosquash` before a merge. A
-`git revert` writes `Revert "…"`, which is not a Conventional Commit; reword it as `revert: …` with a type the
+The rest of the configuration is the repository's: the header's length, an imperative subject, trailing punctuation,
+`WIP` and `fixup!` commits. Whatever it sets, every message passes it.
+
+A `git revert` writes `Revert "…"`, which is not a Conventional Commit; reword it as `revert: …` with a type the
 repository lists. The conventions runner does not run committed itself; a finding appears in the commit-msg hook and
 in the pull request workflow, not in `conventions check` output.
 

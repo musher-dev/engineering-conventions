@@ -8,7 +8,6 @@ import data.conventions.lib.testdata_test as td
 index := object.union(td.index, {
 	"issue_forms_schema": data.conventions.index.issue_forms_schema,
 	"issue_config_schema": data.conventions.index.issue_config_schema,
-	"funding_schema": data.conventions.index.funding_schema,
 	"discussion_forms_schema": data.conventions.index.discussion_forms_schema,
 })
 
@@ -74,35 +73,21 @@ test_a_conforming_repository if {
 		with data.conventions.index as index
 }
 
-test_comm_01_markdown_and_yaml_templates if {
+test_comm_01_yaml_templates if {
 	documents := object.union(forms, {".github/ISSUE_TEMPLATE/feature.yaml": form})
-	result := community.findings with input as changed(documents, {}, [
-		".github/ISSUE_TEMPLATE/question.md",
-		"docs/issue_template.md",
-		".github/ISSUE_TEMPLATE/drafts/old.md",
-	])
+	result := community.findings with input as changed(documents, {}, [])
 		with data.conventions.index as index
-	td.pairs(result) == {
-		["COMM-01", ".github/ISSUE_TEMPLATE/feature.yaml"],
-		["COMM-01", ".github/ISSUE_TEMPLATE/question.md"],
-		["COMM-01", "docs/issue_template.md"],
-	}
-	messages(result, "COMM-01") == {
-		concat(" ", [
-			".github/ISSUE_TEMPLATE/question.md is a Markdown issue template, which GitHub opens as free text",
-			"with nothing required; convert it to an issue form, .github/ISSUE_TEMPLATE/question.yml, with name,",
-			"description and body",
-		]),
-		concat(" ", [
-			".github/ISSUE_TEMPLATE/feature.yaml should be .github/ISSUE_TEMPLATE/feature.yml: GitHub reads the",
-			"template chooser only as config.yml, so the directory uses .yml throughout",
-		]),
-		concat(" ", [
-			"docs/issue_template.md is a single Markdown issue template, which GitHub opens as free text with",
-			"nothing required; replace it with issue forms in .github/ISSUE_TEMPLATE/, such as",
-			".github/ISSUE_TEMPLATE/bug-report.yml",
-		]),
-	}
+	td.pairs(result) == {["COMM-01", ".github/ISSUE_TEMPLATE/feature.yaml"]}
+	messages(result, "COMM-01") == {concat(" ", [
+		".github/ISSUE_TEMPLATE/feature.yaml should be .github/ISSUE_TEMPLATE/feature.yml: GitHub reads the",
+		"template chooser only as config.yml, so the directory uses .yml throughout",
+	])}
+}
+
+test_comm_01_markdown_templates_are_not_judged if {
+	markdown := [".github/ISSUE_TEMPLATE/question.md", "docs/issue_template.md", ".github/ISSUE_TEMPLATE/drafts/old.md"]
+	count(community.findings) == 0 with input as changed(forms, {}, markdown)
+		with data.conventions.index as index
 }
 
 test_comm_01_an_invalid_form if {
@@ -152,32 +137,17 @@ test_comm_02_blank_issues_left_to_the_default if {
 	])}
 }
 
-test_comm_03_funding if {
-	count(community.findings) == 0 with input as changed({".github/FUNDING.yml": {"github": ["your-org"]}}, {}, [])
+test_comm_03_no_codeowners_is_not_required if {
+	count(community.findings) == 0 with input as changed({}, {".github/CODEOWNERS": null}, [])
 		with data.conventions.index as index
-	misplaced := ["FUNDING.yml", ".github/FUNDING.yaml"]
-	result := community.findings with input as changed({".github/FUNDING.yml": {"paypal": "your-org"}}, {}, misplaced)
-		with data.conventions.index as index
-	td.pairs(result) == {
-		["COMM-03", ".github/FUNDING.yml"],
-		["COMM-03", "FUNDING.yml"],
-		["COMM-03", ".github/FUNDING.yaml"],
-	}
-	"GitHub reads funding links only from .github/FUNDING.yml; move FUNDING.yml there" in messages(result, "COMM-03")
 }
 
-test_comm_04_no_codeowners if {
-	result := community.findings with input as changed({}, {".github/CODEOWNERS": null}, [])
-		with data.conventions.index as index
-	td.pairs(result) == {["COMM-04", ".github/CODEOWNERS"]}
-}
-
-test_comm_04_misplaced_and_ignored if {
+test_comm_03_misplaced_and_ignored if {
 	texts := {".github/CODEOWNERS": null, "CODEOWNERS": codeowners, "docs/CODEOWNERS": codeowners}
 	result := community.findings with input as changed({}, texts, [])
 		with data.conventions.index as index
-	td.pairs(result) == {["COMM-04", "CODEOWNERS"], ["COMM-04", "docs/CODEOWNERS"]}
-	messages(result, "COMM-04") == {
+	td.pairs(result) == {["COMM-03", "CODEOWNERS"], ["COMM-03", "docs/CODEOWNERS"]}
+	messages(result, "COMM-03") == {
 		"keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there",
 		concat(" ", [
 			"GitHub reads only the first CODEOWNERS it finds, CODEOWNERS, and ignores this one;",
@@ -186,13 +156,13 @@ test_comm_04_misplaced_and_ignored if {
 	}
 }
 
-test_comm_04_a_second_copy_beside_github if {
+test_comm_03_a_second_copy_beside_github if {
 	result := community.findings with input as changed({}, {"docs/CODEOWNERS": codeowners}, [])
 		with data.conventions.index as index
-	td.pairs(result) == {["COMM-04", "docs/CODEOWNERS"]}
+	td.pairs(result) == {["COMM-03", "docs/CODEOWNERS"]}
 }
 
-test_comm_05_unsupported_syntax if {
+test_comm_04_unsupported_syntax if {
 	text := concat("\n", [
 		"!/docs/ @alice",
 		"/src/[ab]/ @alice",
@@ -202,7 +172,7 @@ test_comm_05_unsupported_syntax if {
 	])
 	result := community.findings with input as changed({}, {".github/CODEOWNERS": text}, [])
 		with data.conventions.index as index
-	messages(result, "COMM-05") == {
+	messages(result, "COMM-04") == {
 		concat(" ", [
 			"line 1: the pattern `!/docs/` starts with !, a negation CODEOWNERS does not support, so GitHub",
 			"skips the whole line; list the paths it should match instead",
@@ -218,11 +188,11 @@ test_comm_05_unsupported_syntax if {
 	}
 }
 
-test_comm_05_owners if {
+test_comm_04_owners if {
 	text := "/docs/ alice @bob, @org/ @org/team-a @b_c dev@example.com # and @not-an-owner\n"
 	result := community.findings with input as changed({}, {".github/CODEOWNERS": text}, [])
 		with data.conventions.index as index
-	{m | some m in messages(result, "COMM-05"); contains(m, "is not an owner")} == {
+	{m | some m in messages(result, "COMM-04"); contains(m, "is not an owner")} == {
 		concat(" ", [
 			"line 1: `alice` is not an owner GitHub recognises; write @user, @org/team or an email address,",
 			"or leave the pattern with no owner to make it explicitly unowned",
@@ -238,11 +208,11 @@ test_comm_05_owners if {
 	}
 }
 
-test_comm_05_repeated_patterns if {
+test_comm_04_repeated_patterns if {
 	text := "/src/ @alice\r\n/docs/ @bob\r\n/src/ @carol\r\nsrc/ @dave\r\n/src/ @erin\r\n"
 	result := community.findings with input as changed({}, {".github/CODEOWNERS": text}, [])
 		with data.conventions.index as index
-	messages(result, "COMM-05") == {
+	messages(result, "COMM-04") == {
 		concat(" ", [
 			"line 3 repeats the pattern `/src/` from line 1, and the later line silently replaces the earlier",
 			"one's owners; put every owner for a pattern on one line",
@@ -254,20 +224,19 @@ test_comm_05_repeated_patterns if {
 	}
 }
 
-test_comm_06_no_policy if {
-	result := community.findings with input as changed({}, {"SECURITY.md": null}, [])
+test_comm_05_no_policy_relies_on_the_organization_default if {
+	count(community.findings) == 0 with input as changed({}, {"SECURITY.md": null}, [])
 		with data.conventions.index as index
-	td.pairs(result) == {["COMM-06", "SECURITY.md"]}
 }
 
-test_comm_06_no_reporting_heading if {
+test_comm_05_no_reporting_heading if {
 	text := "# Security\n\n```markdown\n## Reporting a vulnerability\n```\n\nBe careful.\n"
 	result := community.findings with input as changed({}, {"SECURITY.md": text}, [])
 		with data.conventions.index as index
-	td.pairs(result) == {["COMM-06", "SECURITY.md"]}
+	td.pairs(result) == {["COMM-05", "SECURITY.md"]}
 }
 
-test_comm_06_accepted_locations_and_formats if {
+test_comm_05_accepted_locations_and_formats if {
 	markdown := "# Policy\n\n### How to report vulnerabilities\n"
 	count(community.findings) == 0 with input as changed({}, {"SECURITY.md": null, ".github/security.md": markdown}, [])
 		with data.conventions.index as index
@@ -282,18 +251,18 @@ test_comm_06_accepted_locations_and_formats if {
 		with data.conventions.index as index
 }
 
-test_comm_06_a_policy_too_large_to_embed_is_not_judged if {
+test_comm_05_a_policy_too_large_to_embed_is_not_judged if {
 	count(community.findings) == 0 with input as changed({}, {"SECURITY.md": null}, ["SECURITY.md"])
 		with data.conventions.index as index
 }
 
-test_comm_06_a_policy_elsewhere_does_not_count if {
-	result := community.findings with input as changed({}, {"SECURITY.md": null, "docs/security/SECURITY.md": policy}, [])
+test_comm_05_a_policy_elsewhere_is_not_judged if {
+	text := "# Security\n\nBe careful.\n"
+	count(community.findings) == 0 with input as changed({}, {"SECURITY.md": null, "docs/security/SECURITY.md": text}, [])
 		with data.conventions.index as index
-	td.pairs(result) == {["COMM-06", "SECURITY.md"]}
 }
 
-test_comm_08_discussion_forms if {
+test_comm_07_discussion_forms if {
 	ideas := {"body": [{"type": "textarea", "id": "idea", "attributes": {"label": "What?"}}]}
 	count(community.findings) == 0 with input as changed({".github/DISCUSSION_TEMPLATE/ideas.yml": ideas}, {}, [])
 		with data.conventions.index as index
@@ -301,10 +270,10 @@ test_comm_08_discussion_forms if {
 	result := community.findings with input as changed(untitled, {}, [".github/DISCUSSION_TEMPLATE/q.yaml"])
 		with data.conventions.index as index
 	td.pairs(result) == {
-		["COMM-08", ".github/DISCUSSION_TEMPLATE/ideas.yml"],
-		["COMM-08", ".github/DISCUSSION_TEMPLATE/q.yaml"],
+		["COMM-07", ".github/DISCUSSION_TEMPLATE/ideas.yml"],
+		["COMM-07", ".github/DISCUSSION_TEMPLATE/q.yaml"],
 	}
-	messages(result, "COMM-08") == {
+	messages(result, "COMM-07") == {
 		concat(" ", [
 			"GitHub's discussion-forms schema rejects this file, so GitHub will not offer the form:",
 			"the form: body is required.",

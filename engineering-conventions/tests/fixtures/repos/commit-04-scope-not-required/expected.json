@@ -1,0 +1,7 @@
+[
+  {
+    "id": "COMMIT-04",
+    "path": ".github/workflows/validate-pull-request.yml",
+    "severity": "warning"
+  }
+]

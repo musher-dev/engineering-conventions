@@ -5,16 +5,15 @@ summary: >-
   The files GitHub reads to route people to a repository are where GitHub
   reads them and in the form it honours: issue and discussion forms valid
   against GitHub's form schemas, a template chooser that decides blank
-  issues, FUNDING.yml in .github/, one CODEOWNERS at .github/CODEOWNERS in
-  syntax GitHub does not skip, and a security policy that says how to report
-  a vulnerability and passes OpenSSF Scorecard's Security-Policy check.
+  issues, at most one CODEOWNERS, at .github/CODEOWNERS, in syntax GitHub
+  does not skip, and a security policy that says how to report a
+  vulnerability and passes OpenSSF Scorecard's Security-Policy check.
 status: draft
 topic: community-files
 applies_to:
   paths:
     - .github/ISSUE_TEMPLATE/*
     - .github/DISCUSSION_TEMPLATE/*
-    - .github/FUNDING.yml
     - .github/CODEOWNERS
     - CODEOWNERS
     - docs/CODEOWNERS
@@ -31,8 +30,6 @@ references:
     url: https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms
   - title: "GitHub Docs: Configuring the template chooser"
     url: https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
-  - title: "GitHub Docs: Displaying a sponsor button in your repository"
-    url: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
   - title: "GitHub Docs: Creating discussion category forms"
     url: https://docs.github.com/en/discussions/managing-discussions-for-your-community/creating-discussion-category-forms
   - title: "GitHub Docs: About code owners"
@@ -45,7 +42,7 @@ references:
     url: https://github.com/SchemaStore/schemastore
 requirements:
   - id: COMM-01
-    title: An issue template is a .yml issue form valid against GitHub's issue-forms schema
+    title: An issue form is a .yml file valid against GitHub's issue-forms schema
     status: proposed
     severity: warning
     since: 0.7.1
@@ -61,7 +58,7 @@ requirements:
       engine: conftest
       package: conventions.checks.community_files.community_files
   - id: COMM-03
-    title: FUNDING.yml is in .github/ and valid against GitHub's funding schema
+    title: A repository with a CODEOWNERS has exactly one, at .github/CODEOWNERS
     status: proposed
     severity: warning
     since: 0.7.1
@@ -69,14 +66,6 @@ requirements:
       engine: conftest
       package: conventions.checks.community_files.community_files
   - id: COMM-04
-    title: A repository has one CODEOWNERS, at .github/CODEOWNERS
-    status: proposed
-    severity: warning
-    since: 0.7.1
-    validation:
-      engine: conftest
-      package: conventions.checks.community_files.community_files
-  - id: COMM-05
     title: CODEOWNERS uses only syntax GitHub honours, names well-formed owners and repeats no pattern
     status: proposed
     severity: warning
@@ -84,15 +73,15 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.community_files.community_files
-  - id: COMM-06
-    title: A security policy GitHub recognises has a heading on reporting a vulnerability
+  - id: COMM-05
+    title: A repository's own security policy has a heading on reporting a vulnerability
     status: proposed
     severity: warning
     since: 0.7.1
     validation:
       engine: conftest
       package: conventions.checks.community_files.community_files
-  - id: COMM-07
+  - id: COMM-06
     title: The security policy scores 10 on OpenSSF Scorecard's Security-Policy check
     status: proposed
     severity: warning
@@ -101,7 +90,7 @@ requirements:
       engine: delegated
       tool: scorecard
       check: "scorecard --local . --checks Security-Policy --format json"
-  - id: COMM-08
+  - id: COMM-07
     title: A discussion category form is a .yml file valid against GitHub's discussion-forms schema
     status: proposed
     severity: warning
@@ -113,8 +102,8 @@ requirements:
 
 # Community files
 
-GitHub reads a handful of files to route people who arrive at a repository: the forms a reporter fills in, the
-Sponsor button, who is asked to review a change, and where to report a vulnerability. Every one of them fails quietly.
+GitHub reads a handful of files to route people who arrive at a repository: the forms a reporter fills in, who is
+asked to review a change, and where to report a vulnerability. Every one of them fails quietly.
 A form that does not match GitHub's syntax is left out of the chooser, a CODEOWNERS line GitHub cannot parse is
 skipped, and a security policy in the wrong place is never shown. Nothing in the repository's own build notices. This
 convention puts each file where GitHub reads it, in the form GitHub honours, and checks it the way GitHub would.
@@ -125,47 +114,44 @@ This convention covers, in any repository checked against a release of `musher-d
 
 - the issue forms and the template chooser in `.github/ISSUE_TEMPLATE/`, and the legacy single issue template;
 - the discussion category forms in `.github/DISCUSSION_TEMPLATE/`;
-- `FUNDING.yml`;
 - `CODEOWNERS`, wherever GitHub looks for it: `.github/`, the root or `docs/`;
 - the security policy, `SECURITY.md` (or `.markdown`, `.adoc`, `.rst`) at the root, in `.github/` or in `docs/`.
 
 What the files say is the repository's business: which forms it offers, who owns which paths, how it handles a
-report. A form, a funding file or a discussion form is checked only where the repository has one. Every repository is
-asked for a CODEOWNERS and a security policy.
+report. Each file is checked only where the repository has one. A repository without its own security policy relies
+on the one its organization publishes, which GitHub shows in its place, and Scorecard judges that one (COMM-06).
 
 The pull request template, the README, CONTRIBUTING and the changelog are not covered. GitHub gives them no syntax to
 get wrong, and what makes them good is a review matter.
 
 ## Status and authority
 
-This convention is a **draft** owned by this repository (`authority: self`). It turns the checkable parts of
-`musher-dev/platform`'s guidance on GitHub configuration and security policies into requirements, so that guidance can
-be retired. Its requirements are `proposed` at severity `warning`, like every requirement in the 0.x series.
+This convention is a **draft** owned by this repository (`authority: self`). It checks what GitHub's documentation,
+SchemaStore and OpenSSF Scorecard already define for these files, and adds no content of its own. Its requirements are
+`proposed` at severity `warning`, like every requirement in the 0.x series.
 
 Where an industry schema or tool already defines the rule, this convention delegates to it rather than restating it:
 
 | What | Defined by | Used here |
 | --- | --- | --- |
-| Issue forms, the template chooser, FUNDING.yml, discussion forms | [SchemaStore](https://github.com/SchemaStore/schemastore)'s schemas (Apache-2.0) | Vendored unmodified under `checks/schemas/vendor/schemastore/`, and validated in Rego |
-| What makes a security policy useful | [OpenSSF Scorecard](https://github.com/ossf/scorecard)'s Security-Policy check | Delegated: the repository runs it (COMM-07) |
-| CODEOWNERS syntax | GitHub's documentation | Checked in Rego (COMM-04, COMM-05): no maintained offline validator exists |
+| Issue forms, the template chooser, discussion forms | [SchemaStore](https://github.com/SchemaStore/schemastore)'s schemas (Apache-2.0) | Vendored unmodified under `checks/schemas/vendor/schemastore/`, and validated in Rego |
+| What makes a security policy useful | [OpenSSF Scorecard](https://github.com/ossf/scorecard)'s Security-Policy check | Delegated: the repository runs it (COMM-06) |
+| CODEOWNERS syntax | GitHub's documentation | Checked in Rego (COMM-03, COMM-04): no maintained offline validator exists |
 
 ## Requirements
 
 ### COMM-01
 
-**An issue template is a .yml issue form valid against GitHub's issue-forms schema.**
+**An issue form is a .yml file valid against GitHub's issue-forms schema.**
 
-A Markdown issue template opens as a pre-filled text box: the reporter can delete every heading and submit, and nothing
-is required. An issue form has typed fields that GitHub can make required, so a bug report arrives with the version
-and the steps. GitHub leaves a form that does not match its syntax out of the chooser, and shows the error only on the
-file's own page, so the form is validated against SchemaStore's issue-forms schema, the one editors already use. The
+An issue form has typed fields that GitHub can make required, so a bug report arrives with the version and the steps.
+GitHub leaves a form that does not match its syntax out of the chooser, and shows the error only on the file's own
+page, so the form is validated against SchemaStore's issue-forms schema, the one editors already use. Whether a
+repository offers forms, Markdown templates or neither is its own choice; a Markdown template is not checked. The
 check reports:
 
-- a `.md` file in `.github/ISSUE_TEMPLATE/`, or the single legacy template `ISSUE_TEMPLATE.md` at the root, in
-  `.github/` or in `docs/`;
-- a `.yaml` file there: GitHub reads the template chooser only as `config.yml`, so the directory uses `.yml`
-  throughout;
+- a `.yaml` file in `.github/ISSUE_TEMPLATE/`: GitHub reads the template chooser only as `config.yml`, so the
+  directory uses `.yml` throughout;
 - a `.yml` form, other than `config.yml`, that does not match the schema.
 
 **Correct:**
@@ -185,11 +171,6 @@ body:
 ```
 
 **Incorrect:**
-
-```markdown
-<!-- .github/ISSUE_TEMPLATE/bug-report.md: nothing here is required -->
-## What happened?
-```
 
 ```yaml
 # .github/ISSUE_TEMPLATE/bug-report.yml: no description, and a textarea with no label
@@ -235,41 +216,13 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ### COMM-03
 
-**`FUNDING.yml` is in `.github/` and valid against GitHub's funding schema.**
-
-GitHub shows the Sponsor button only from `.github/FUNDING.yml` on the default branch; a `FUNDING.yml` at the root or
-in `docs/`, or a `.github/FUNDING.yaml`, is never read. A file GitHub cannot read (an unknown platform, a list where a
-single account is expected) shows no button and no error. The file is optional; where it exists, it is checked against
-SchemaStore's funding schema.
-
-**Correct:**
-
-```yaml
-# .github/FUNDING.yml
-github: [your-org]
-custom: ["https://example.com/sponsor"]
-```
-
-**Incorrect:**
-
-```yaml
-# FUNDING.yml at the root: GitHub never reads it
-github: your-org
-paypal: your-org   # not a platform GitHub supports
-```
-
-Checked by: conftest · Severity: warning · Since: 0.7.1
-
-### COMM-04
-
-**A repository has one CODEOWNERS, at `.github/CODEOWNERS`.**
+**A repository with a CODEOWNERS has exactly one, at `.github/CODEOWNERS`.**
 
 CODEOWNERS decides who is asked to review a change, and with a ruleset that requires code-owner review, who can
 approve it. GitHub looks for it in `.github/`, then the root, then `docs/`, and reads only the first it finds, so a
 second CODEOWNERS is silently ignored and its rules apply nowhere. One file in one place, beside the rest of GitHub's
-configuration, is the one a reviewer edits. Every repository has one, even if it owns nothing yet: a path listed with
-no owner is the documented way to leave it explicitly unowned. A catch-all `*` rule is not required; a repository that
-wants review only on some paths lists only those.
+configuration, is the one a reviewer edits. Whether a repository has a CODEOWNERS at all is its own choice, and a
+catch-all `*` rule is not required; a repository that wants review only on some paths lists only those.
 
 **Correct:**
 
@@ -287,7 +240,7 @@ docs/CODEOWNERS          # ignored: GitHub reads .github/CODEOWNERS first
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
 
-### COMM-05
+### COMM-04
 
 **CODEOWNERS uses only syntax GitHub honours, names well-formed owners and repeats no pattern.**
 
@@ -324,17 +277,17 @@ Whether an owner exists and has write access needs GitHub's API, and stays a rev
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
 
-### COMM-06
+### COMM-05
 
-**A security policy GitHub recognises has a heading on reporting a vulnerability.**
+**A repository's own security policy has a heading on reporting a vulnerability.**
 
-Someone who finds a vulnerability looks for the security policy before opening an issue. Without one, the only visible
-channel is a public issue, which discloses the vulnerability to everyone before it is fixed. GitHub links the policy
-from the Security tab and the issue chooser only when it is `SECURITY.md` (or `.markdown`, `.adoc`, `.rst`) at the root,
-in `.github/` or in `docs/`. The policy needs a heading on reporting a vulnerability, such as `Reporting a
-vulnerability`, so the reader finds the channel in one look. A policy inherited from the organization's `.github`
-repository does not count: a clone, a fork and the checks never see it. A supported-versions table is not required:
-many repositories release only from `main`.
+Someone who finds a vulnerability looks for the security policy before opening an issue, and without one the only
+visible channel is a public issue. GitHub links the policy from the Security tab and the issue chooser when it is
+`SECURITY.md` (or `.markdown`, `.adoc`, `.rst`) at the root, in `.github/` or in `docs/`, and otherwise shows the
+policy of the organization's `.github` repository. A repository that keeps its own policy in one of those places
+needs a heading on reporting a vulnerability, such as `Reporting a vulnerability`, so the reader finds the channel in
+one look. A repository without its own relies on the organization's, and COMM-06 judges whichever applies. A
+supported-versions table is not required: many repositories release only from `main`.
 
 **Correct:**
 
@@ -357,7 +310,7 @@ Please be careful with secrets.
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
 
-### COMM-07
+### COMM-06
 
 **The security policy scores 10 on OpenSSF Scorecard's Security-Policy check.**
 
@@ -371,13 +324,16 @@ this check. Pin `aqua:ossf/scorecard` in `.config/mise/config.toml` and run it i
 scorecard --local . --checks Security-Policy --format json
 ```
 
-The policy passes when the check's `score` is 10. The conventions runner does not run Scorecard itself, so a finding
-appears in the repository's own validation, not in `conventions check` output. COMM-06 checks what can be checked
-without it: that the policy exists where GitHub reads it and has a reporting heading.
+The policy passes when the check's `score` is 10. `--local` reads only the checkout, so a repository that relies on
+its organization's policy runs the check against itself on GitHub instead, `scorecard --repo github.com/<owner>/<repo>
+--checks Security-Policy`, which also looks in the organization's `.github` repository and needs a token. The
+conventions runner does not run Scorecard itself, so a finding
+appears in the repository's own validation, not in `conventions check` output. COMM-05 checks what can be checked
+without it: that a policy the repository keeps itself has a reporting heading.
 
 Checked by: scorecard (delegated) · Severity: warning · Since: 0.7.1
 
-### COMM-08
+### COMM-07
 
 **A discussion category form is a .yml file valid against GitHub's discussion-forms schema.**
 
@@ -414,7 +370,6 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 - [GitHub Docs: Syntax for issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms)
 - [GitHub Docs: Configuring the template chooser](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository#configuring-the-template-chooser)
-- [GitHub Docs: Displaying a sponsor button in your repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository)
 - [GitHub Docs: Creating discussion category forms](https://docs.github.com/en/discussions/managing-discussions-for-your-community/creating-discussion-category-forms)
 - [GitHub Docs: About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
 - [GitHub Docs: Adding a security policy to your repository](https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository)

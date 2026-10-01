@@ -38,7 +38,7 @@ mise install --locked
 conventions check                      # report findings; fail only on errors
 conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
 conventions prose                      # lint Markdown with MusherConventions, and copy with MusherCopy
-conventions openapi                    # lint OpenAPI interfaces with the conventions' Spectral ruleset
+conventions openapi                    # lint OpenAPI interfaces with the repository's Spectral ruleset
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 ```
 
@@ -354,8 +354,12 @@ lint:copy:
     - vale --config .config/markdown/vale.ini apps/site/src
 ```
 
-`conventions check` reports COPY-01 to COPY-04 on the config, and `conventions prose` runs `MusherCopy` from the
+`conventions check` reports COPY-01 to COPY-03 on the config, and `conventions prose` runs `MusherCopy` from the
 bundle, offline, over the sections that apply it.
+
+The package checks general writing problems and placeholders, not a voice. Banned words, claims, tone and sentence
+length are the site owner's to decide: write them as a Vale style in the site's repository, and add it to the same
+`BasedOnStyles`.
 
 ## Without mise
 
@@ -382,36 +386,33 @@ for a repository that runs Vale itself, and the copy rules' Vale config package,
 
 ## Delegated checks
 
-GHA-33 is delegated to actionlint and zizmor, and COMM-07 to OpenSSF Scorecard, which `conventions check` does not
+GHA-33 is delegated to actionlint and zizmor, and COMM-06 to OpenSSF Scorecard, which `conventions check` does not
 run. Pin them in `.config/mise/config.toml` beside the conventions and run them in the repository's own validation:
 
 ```sh
 actionlint
 zizmor --min-severity medium --persona regular .github/
-scorecard --local . --checks Security-Policy --format json   # COMM-07 passes at a score of 10
+scorecard --local . --checks Security-Policy --format json   # COMM-06 passes at a score of 10
 ```
 
-OAS-01 is delegated to Spectral, with a ruleset the release ships. A repository that declares an `openapi`
-interface keeps its own ruleset in `.config/openapi/spectral.yaml`, extending the shipped one, ignores the link the
-command writes, and runs the command in validation (OAS-02 to OAS-04):
+OAS-01 is delegated to Spectral. A repository that declares an `openapi` interface keeps its own ruleset in
+`.config/openapi/spectral.yaml`, extending Spectral's `spectral:oas` and the OWASP API security ruleset at an exact
+release, and lints its documents with it in validation (OAS-02, OAS-03):
 
 ```yaml
 # .config/openapi/spectral.yaml
 extends:
-  - ../../.conventions/openapi.spectral.yaml
-```
-
-```text
-# .gitignore
-.conventions/
+  - spectral:oas
+  - https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs
 ```
 
 ```sh
 conventions openapi --ruleset .config/openapi/spectral.yaml
 ```
 
-With no files named, it lints every document the `openapi` interfaces in `.repo/outputs.toml` cover. Turn a rule off
-in the repository's ruleset, or for one place in its `overrides`, with the reason beside it
+With no files named, it lints every document the `openapi` interfaces in `.repo/outputs.toml` cover; running
+`spectral lint --ruleset .config/openapi/spectral.yaml` directly is as good. Add the repository's own API-design rules
+to the same ruleset, and turn a rule off there, or for one place in its `overrides`, with the reason beside it
 ([EC-0037](../engineering-conventions/definitions/conventions/openapi/openapi-documents.md)).
 
 ## Reading the report

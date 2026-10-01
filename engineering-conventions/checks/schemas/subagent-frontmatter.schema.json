@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Subagent frontmatter",
-  "description": "The YAML frontmatter of a Claude Code subagent, a Markdown file under .claude/agents/ (EC-0034). It accepts the fields Claude Code reads and nothing else. AGENT-12 checks a subagent's frontmatter against this schema.",
+  "description": "The YAML frontmatter of a Claude Code subagent, a Markdown file with frontmatter under .claude/agents/ (EC-0034). It checks the shape of each field Claude Code reads, and accepts fields it does not know, as Claude Code does. AGENT-12 checks a subagent's frontmatter against this schema.",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": ["name", "description"],
   "properties": {
     "name": {

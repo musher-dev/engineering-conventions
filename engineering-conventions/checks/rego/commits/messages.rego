@@ -27,10 +27,7 @@ configs[doc.path] := doc.contents if {
 # (https://github.com/crate-ci/committed/blob/main/docs/reference.md).
 defaults := {
 	"style": "none",
-	"subject_length": 50,
-	"subject_not_punctuated": true,
-	"imperative_subject": true,
-	"no_wip": true,
+	"subject_capitalized": true,
 }
 
 setting(config, key) := object.get(config, key, defaults[key])
@@ -42,12 +39,6 @@ names(value) if {
 		is_string(name)
 		trim_space(name) != ""
 	}
-}
-
-header_limit(value) if {
-	is_number(value)
-	value >= 1
-	value <= 72
 }
 
 # A shell command that runs committed, rather than naming it in a path or a
@@ -172,20 +163,18 @@ findings contains lib.finding("COMMIT-01", path, message) if {
 	)
 }
 
+# committed asks for a capital by default, which a lower-case Conventional
+# Commit description such as "feat: add x" fails.
 findings contains lib.finding("COMMIT-01", path, message) if {
 	some path, config in configs
-	not header_limit(setting(config, "subject_length"))
+	setting(config, "subject_capitalized") != false
 	message := sprintf(
-		"subject_length is %v; set it between 1 and 72 so the header fits a terminal and the commit list",
-		[setting(config, "subject_length")],
+		concat(" ", [
+			"subject_capitalized is %v, so committed rejects a lower-case description such as \"feat: add x\";",
+			"set subject_capitalized = false",
+		]),
+		[setting(config, "subject_capitalized")],
 	)
-}
-
-findings contains lib.finding("COMMIT-01", path, message) if {
-	some path, config in configs
-	some key in ["subject_not_punctuated", "imperative_subject", "no_wip"]
-	setting(config, key) != true
-	message := sprintf("%s is %v; set %s = true", [key, setting(config, key), key])
 }
 
 # COMMIT-02

@@ -3,10 +3,10 @@ id: EC-0034
 title: Skills and subagents
 summary: >-
   The skills and subagents a repository gives Claude Code: frontmatter that
-  parses as YAML, skill frontmatter valid against the Agent Skills fields and
-  Claude Code's, a skill named for its directory, subagent frontmatter valid
-  against Claude Code's fields, and preloaded skills that exist and that the
-  model may invoke.
+  parses as YAML, known skill fields in the shapes the Agent Skills
+  specification and Claude Code define, a skill named for its directory,
+  known subagent fields in Claude Code's shapes, and preloaded skills that
+  exist and that the model may invoke.
 status: draft
 topic: agents
 applies_to:
@@ -78,21 +78,23 @@ requirements:
 
 # Skills and subagents
 
-A skill is a directory under `.claude/skills/` whose `SKILL.md` tells an agent what the skill does and when to use
-it. A subagent is a Markdown file under `.claude/agents/` that Claude Code can delegate a task to, and it can preload
-skills into its context. Both are read from YAML frontmatter, and both fail quietly: a field Claude Code does not
-understand is ignored, and a skill a subagent names but cannot find is skipped with a line in the debug log. Nothing
-in a session shows that the instruction was lost.
+A skill is a directory under `.claude/skills/` whose `SKILL.md` tells an agent what the skill does and when to use it. A
+subagent is a Markdown file with frontmatter under `.claude/agents/` that Claude Code can delegate a task to, and it can
+preload skills into its context. Both are read from YAML frontmatter, and both fail quietly: a field in the wrong shape
+is ignored, and a skill a subagent names but cannot find is skipped with a line in the debug log. Nothing in a session
+shows that the instruction was lost.
 
-This convention makes those failures visible. The frontmatter parses, holds only fields its readers define, and the
-names in it resolve.
+This convention makes those failures visible. The frontmatter parses, the fields its readers define have the shapes
+they read, and the names in it resolve.
 
 ## Scope
 
-This convention covers `.claude/skills/<name>/SKILL.md` and every Markdown file below `.claude/agents/`, at the root
-or in a nested directory of a monorepo. A skill's other files (`references/`, scripts) are not read. What a skill or
-subagent instructs is the repository's own business. Claude Code's commands (`.claude/commands/`) and plugins are
-outside it. A file larger than 256 KiB is not read (decision 0015), so the checks say nothing about it.
+This convention covers `.claude/skills/<name>/SKILL.md` and every Markdown file with frontmatter below
+`.claude/agents/`, at the root or in a nested directory of a monorepo. A Markdown file there without frontmatter, such
+as a README, is documentation to Claude Code, not a subagent, and is not checked. A skill's other files (`references/`,
+scripts) are not read. What a skill or subagent instructs is the repository's own business. Claude Code's commands
+(`.claude/commands/`) and plugins are outside it. A file larger than 256 KiB is not read (decision 0015), so the checks
+say nothing about it.
 
 ## Status and authority
 
@@ -109,9 +111,9 @@ schemas name each field and where it comes from, and cite rather than restate wh
 | `checks/schemas/skill-frontmatter.schema.json` | The Agent Skills fields (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`) and the fields Claude Code adds to them |
 | `checks/schemas/subagent-frontmatter.schema.json` | The fields Claude Code reads from a subagent |
 
-Each schema refuses a field it does not list. A field of the repository's own, such as a version or an owner, goes
-under a skill's `metadata`, a map from string to string. A field a newer Claude Code release adds is added to the
-schema in a release of these conventions.
+Each schema checks the shape of the fields it lists and accepts any other, as Claude Code does, so a field a newer
+Claude Code release adds, or one of the repository's own, is never a finding. Which fields are required follows Claude
+Code: a skill needs none, and a subagent needs `name` and `description`.
 
 ## Requirements
 
@@ -122,8 +124,9 @@ schema in a release of these conventions.
 Every other requirement here reads the parsed frontmatter, and so do the tools that index skills. In YAML an
 unquoted value cannot hold a colon followed by a space, so an unquoted description such as
 `Use when committing. Triggered by: commit, PR title` is not a string but an error, and a strict parser reads nothing
-from the file. A file with no frontmatter gives Claude Code no description to choose it by, and a subagent without
-one is skipped. Quote a value that holds a colon and a space, or write it as a folded block.
+from the file. A skill with no frontmatter leaves Claude Code to take its first line as the description it chooses the
+skill by. A Markdown file under `.claude/agents/` with no frontmatter is not a subagent, so it is not reported. Quote a
+value that holds a colon and a space, or write it as a folded block.
 
 **Correct:**
 
@@ -152,9 +155,9 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 An agent decides whether to load a skill from its name and description alone, so they carry limits: a name of
 lower-case letters, digits and single hyphens, at most 64 characters, and a description of at most 1024 characters.
-A field the schema does not list is read by nothing: a top-level `version:` looks like metadata but no tool reads it
-there. Move it under `metadata`, quoted, or remove it. One finding reports the first problem and how many more there
-are.
+The other fields Claude Code reads take fixed shapes: `shell` is `bash` or `powershell`, `effort` one of five levels,
+`metadata` a map from string to string. A value in another shape is ignored, and the skill runs without the setting.
+A field the schema does not list is accepted. One finding reports the first problem and how many more there are.
 
 **Correct:**
 
@@ -162,6 +165,7 @@ are.
 ---
 name: writing-commits
 description: Draft Conventional Commit messages. Use when writing a commit.
+shell: bash
 metadata:
   version: "1.2.0"
 ---
@@ -173,7 +177,7 @@ metadata:
 ---
 name: Writing_Commits                       # upper case and an underscore
 description: Draft Conventional Commit messages. Use when writing a commit.
-version: 1.2.0                              # not a skill field; goes under metadata
+shell: zsh                                  # bash or powershell
 ---
 ```
 
@@ -183,9 +187,10 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 **A skill's `name`, when set, is its directory's name.**
 
-The Agent Skills specification requires the two to match, and every other reader of a skill finds it by its
-directory. Claude Code answers to both, so a skill named apart from its directory has two names, and a subagent or a
-person who uses the wrong one finds nothing. Leave `name` out, or set it to the directory's name.
+The Agent Skills specification requires the two to match, and this requirement follows it deliberately, though Claude
+Code itself does not: every other reader of a skill finds it by its directory. Claude Code answers to both, so a skill
+named apart from its directory has two names, and a subagent or a person who uses the wrong one finds nothing. Leave
+`name` out, or set it to the directory's name.
 
 **Correct:**
 
@@ -207,9 +212,8 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 A subagent needs a `name` and a `description`, and Claude Code skips a file whose name starts with a hyphen or holds
 a colon. The other fields take fixed shapes: `skills` is a list or a comma-separated string, `maxTurns` a positive
-integer, `color` one of eight colours. A misspelled field, such as `allowed-tools` copied from a skill instead of
-`tools`, is ignored, and the subagent runs with every tool. One finding reports the first problem and how many more
-there are.
+integer, `color` one of eight colours. A value in another shape is ignored, and the subagent runs without the setting.
+A field the schema does not list is accepted. One finding reports the first problem and how many more there are.
 
 **Correct:**
 
@@ -229,7 +233,7 @@ skills:
 ---
 name: code-reviewer
 description: Reviews a diff for correctness. Use after a change is made.
-allowed-tools: Read, Grep, Glob             # a skill's field; a subagent's is tools
+tools: Read, Grep, Glob
 color: magenta                              # not one of the eight colours
 ---
 ```

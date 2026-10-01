@@ -32,7 +32,6 @@ SUBAGENT = "subagent-frontmatter.schema.json"
 VENDOR = "vendor"
 ISSUE_FORMS = "schemastore/github-issue-forms.json"
 ISSUE_CONFIG = "schemastore/github-issue-config.json"
-FUNDING = "schemastore/github-funding.json"
 DISCUSSION_FORMS = "schemastore/github-discussion.json"
 COPY_STYLE = "copy-style.schema.json"
 

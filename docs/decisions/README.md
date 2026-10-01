@@ -35,8 +35,8 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0020](0020-dev-container-files-get-their-own-family.md) | Dev container files get their own family, and the scaffold is consumed by pinning an image | accepted |
 | [0021](0021-notify-and-sync-join-the-token-sets.md) | A notification workflow is notify, a syncing action is sync, and action synonyms are terminology | accepted |
 | [0022](0022-interfaces-and-dependencies.md) | A repository declares the interfaces it offers and the dependencies it vendors, and a binding names what it reaches | accepted |
-| [0023](0023-openapi-documents-delegate-to-spectral.md) | OpenAPI documents are checked by Spectral, with a ruleset the conventions ship and each repository extends | accepted |
-| [0024](0024-copy-rules-adopt-vale-packages.md) | Copy rules adopt published Vale packages, author only what they lack, and ship as a Vale config package | accepted |
+| [0023](0023-openapi-documents-delegate-to-spectral.md) | OpenAPI documents are linted by Spectral's own OpenAPI and OWASP rulesets, from each repository's ruleset | accepted |
+| [0024](0024-copy-rules-adopt-vale-packages.md) | Copy rules adopt published Vale packages, leave voice to the site's owner, and ship as a Vale config package | accepted |
 | [0025](0025-commit-messages-delegate-to-committed.md) | Commit messages are checked by committed, against one configuration in .config/commits/ | accepted |
 | [0026](0026-the-environment-contract-is-derived.md) | The environment contract is derived from env.schema.yaml, declares runtime ranges, and names bindings after their reader | accepted |
 | [0027](0027-data-units-and-fetched-dependencies.md) | Data documents and systemd units are interface formats, a dependency may be fetched, and a gated break is marked, not numbered | accepted |

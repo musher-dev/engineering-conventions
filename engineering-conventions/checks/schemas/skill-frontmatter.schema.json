@@ -1,10 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Skill frontmatter",
-  "description": "The YAML frontmatter of a skill, .claude/skills/<name>/SKILL.md (EC-0034). It accepts the fields of the Agent Skills specification and the fields Claude Code adds, and nothing else: anything of the repository's own, such as a version, goes under metadata. AGENT-10 checks a skill's frontmatter against this schema.",
+  "description": "The YAML frontmatter of a skill, .claude/skills/<name>/SKILL.md (EC-0034). It checks the shape of each field the Agent Skills specification and Claude Code define, and accepts fields it does not know, as Claude Code does, so a field a newer release adds is never a finding. Every field is optional, as in Claude Code. AGENT-10 checks a skill's frontmatter against this schema.",
   "type": "object",
-  "additionalProperties": false,
-  "required": ["description"],
+  "additionalProperties": true,
   "properties": {
     "name": {
       "description": "The skill's name: lower-case letters, digits and single hyphens, at most 64 characters, equal to its directory's name (AGENT-11). Agent Skills specification.",
@@ -14,7 +13,7 @@
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "description": {
-      "description": "What the skill does and when to use it, at most 1024 characters. An agent reads it to decide whether to load the skill. Agent Skills specification.",
+      "description": "What the skill does and when to use it, at most 1024 characters. An agent reads it to decide whether to load the skill. Recommended; Claude Code falls back to the first line of the body. Agent Skills specification.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1024
@@ -96,7 +95,7 @@
       "$ref": "#/definitions/words"
     },
     "shell": {
-      "description": "The shell the skill's commands run in. Claude Code.",
+      "description": "The shell for the skill's inline commands: bash (the default) or powershell. Claude Code.",
       "type": "string",
       "enum": ["bash", "powershell"]
     }

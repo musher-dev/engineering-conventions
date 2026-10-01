@@ -37,8 +37,9 @@ and publish that as the commit conventions: topic `commits`, family `COMMIT`, co
 [EC-0035](../../engineering-conventions/definitions/conventions/commits/commit-messages.md).
 
 - **One file holds the rules.** `.config/commits/committed.toml` sets `style = "conventional"`, the repository's
-  `allowed_types` and `allowed_scopes`, a header of at most 72 columns, an imperative subject without trailing
-  punctuation, and no `WIP` commits (COMMIT-01). It is the one list of types and scopes: the hook, the title check and
+  `allowed_types` and `allowed_scopes`, and `subject_capitalized = false`, so committed agrees with the lowercase
+  title pattern (COMMIT-01). The header's length, the imperative mood, punctuation and `WIP` commits are the
+  repository's choice. It is the one list of types and scopes: the hook, the title check and
   REL-06 read it, and `.github/conventional-commits.yaml` is removed (COMMIT-06). It sits in a concern directory under
   `.config/`, like every tool's configuration ([EC-0011](../../engineering-conventions/definitions/conventions/configuration/tool-configuration.md),
   CONF-07), and every caller passes it with `--config`.

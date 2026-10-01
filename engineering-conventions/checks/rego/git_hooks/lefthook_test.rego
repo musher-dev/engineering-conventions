@@ -295,9 +295,9 @@ test_hooks_14_package_runners if {
 		"different one; put the command in a task and run that task here and in CI",
 	])}
 	runs := [
-		"npx prettier --write .", "uvx ruff check", "uv run ruff check", "uv  tool run ruff",
-		"pnpm dlx eslint", "pnpm exec eslint", "yarn dlx eslint", "bun x eslint",
-		"pipx run black .", "go run ./cmd/lint", "npm exec -- eslint", "lint && pnpx eslint",
+		"npx prettier --write .", "uvx ruff check", "uv  tool run ruff",
+		"pnpm dlx eslint", "yarn dlx eslint", "bun x eslint",
+		"pipx run black .", "lint && pnpx eslint",
 	]
 	every run in runs {
 		"HOOKS-14" in td.ids(lefthook.findings) with input as pre_commit({"run": run})
@@ -311,8 +311,12 @@ test_hooks_14_quiet_on_pinned_tools_and_tasks if {
 		"gitleaks git --pre-commit --staged",
 		"bash .github/scripts/lint-commit-msg.sh {1}",
 		"node scripts/check.mjs",
-		"cat docs/uv run.md",
+		"cat docs/uv tool run.md",
 		"go vet ./...",
+		"uv run ruff check",
+		"pnpm exec eslint",
+		"npm exec -- eslint",
+		"go run ./cmd/lint",
 	]
 	every run in runs {
 		not "HOOKS-14" in td.ids(lefthook.findings) with input as pre_commit({"run": run})

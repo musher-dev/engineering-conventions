@@ -1,6 +1,7 @@
-# The conventions' rules, extended as a [ruleset, mode] pair.
+# Both rulesets, as [ruleset, mode] pairs.
 extends:
-  - [../../.conventions/openapi.spectral.yaml, all]
+  - [spectral:oas, all]
+  - [https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, recommended]
 rules:
-  # Our operationIds carry the surface first.
-  musher-operation-id-snake-case: "off"
+  # The gateway in front of the API adds Retry-After to every 429.
+  owasp:api4:2023-rate-limit-retry-after: "off"

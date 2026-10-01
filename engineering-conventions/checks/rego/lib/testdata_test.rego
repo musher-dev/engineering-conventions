@@ -157,17 +157,18 @@ decision_schema := {
 	},
 }
 
-# A cut-down skill schema with the shapes AGENT-10's messages depend on: an
-# unknown key such as version, and a description over 1024 characters.
+# A cut-down skill schema with the shapes AGENT-10's messages depend on: a
+# shell outside its enum, and a description over 1024 characters. Like the
+# real one, it accepts fields it does not list.
 skill_frontmatter_schema := {
 	"type": "object",
-	"additionalProperties": false,
-	"required": ["description"],
+	"additionalProperties": true,
 	"properties": {
 		"name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
 		"description": {"type": "string", "minLength": 1, "maxLength": 1024},
 		"metadata": {"type": "object", "additionalProperties": {"type": "string"}},
 		"disable-model-invocation": {"type": "boolean"},
+		"shell": {"type": "string", "enum": ["bash", "powershell"]},
 	},
 }
 
@@ -175,7 +176,7 @@ skill_frontmatter_schema := {
 # missing description.
 subagent_frontmatter_schema := {
 	"type": "object",
-	"additionalProperties": false,
+	"additionalProperties": true,
 	"required": ["name", "description"],
 	"properties": {
 		"name": {"type": "string", "pattern": "^[^:-][^:]*$"},

@@ -46,9 +46,18 @@ test_no_skills_or_subagents if {
 }
 
 test_agent_09_no_frontmatter if {
-	result := checks.findings with input as repo(with_files({".claude/agents/notes.md": "# Notes\n"}))
+	result := checks.findings with input as repo(with_skill("# Writing commits\n\nDraft commit messages.\n"))
 		with data.conventions.index as td.index
-	td.pairs(result) == {["AGENT-09", ".claude/agents/notes.md"]}
+	td.pairs(result) == {["AGENT-09", skill_path]}
+	{f.message | some f in result} == {concat(" ", [
+		"the skill has no YAML frontmatter, so Claude Code takes its first line as the description it chooses",
+		"the skill by; start it with a --- block that sets description:",
+	])}
+}
+
+test_agent_09_a_document_among_subagents_is_not_one if {
+	count(checks.findings) == 0 with input as repo(with_files({".claude/agents/README.md": "# Our subagents\n"}))
+		with data.conventions.index as td.index
 }
 
 test_agent_09_unquoted_colon if {
@@ -83,25 +92,24 @@ test_agent_09_skips_files_too_large_to_embed if {
 		with data.conventions.index as td.index
 }
 
-test_agent_10_top_level_version if {
-	versioned := "---\nname: writing-commits\ndescription: Draft commit messages.\nversion: 1.0.0\n---\n"
-	result := checks.findings with input as repo(with_skill(versioned))
+test_agent_10_unknown_shell if {
+	shelled := "---\nname: writing-commits\ndescription: Draft commit messages.\nshell: zsh\n---\n"
+	result := checks.findings with input as repo(with_skill(shelled))
 		with data.conventions.index as td.index
 	td.pairs(result) == {["AGENT-10", skill_path]}
 	some f in result
-	startswith(f.message, "the frontmatter: Additional property version is not allowed. Give the field")
+	endswith(f.message, "Give the field the shape checks/schemas/skill-frontmatter.schema.json lists for it, or remove it")
 }
 
-test_agent_10_version_under_metadata_passes if {
-	versioned := concat("\n", [
-		"---",
-		"name: writing-commits",
-		"description: Draft commit messages.",
-		"metadata:",
-		"  version: \"1.0.0\"",
-		"---",
-	])
+test_agent_10_unknown_fields_and_no_description_pass if {
+	versioned := "---\nname: writing-commits\nversion: 1.0.0\nowner: \"@docs\"\n---\n"
 	count(checks.findings) == 0 with input as repo(with_skill(versioned))
+		with data.conventions.index as td.index
+}
+
+test_agent_12_unknown_fields_pass if {
+	extra := "---\nname: reviewer\ndescription: Reviews code.\nversion: 2\n---\n"
+	count(checks.findings) == 0 with input as repo(with_agent(extra))
 		with data.conventions.index as td.index
 }
 

@@ -1,0 +1,4 @@
+[
+  {"id": "COMM-03", "path": "CODEOWNERS", "severity": "warning"},
+  {"id": "COMM-03", "path": "docs/CODEOWNERS", "severity": "warning"}
+]

@@ -13,9 +13,9 @@ vale := concat("\n", [
 	"[*.{md,svelte}]",
 	"; another comment",
 	"BasedOnStyles = MusherCopy, proselint",
-	"MusherCopy.Banned = NO",
+	"MusherCopy.Placeholders = NO",
 	"[*.{md,svelte}]",
-	"MusherCopy.Banned = YES",
+	"MusherCopy.Placeholders = YES",
 ])
 
 test_global_keys_are_read if {
@@ -33,7 +33,7 @@ test_keys_belong_to_the_section_above_them if {
 }
 
 test_the_last_value_wins if {
-	ini.value(vale, "*.{md,svelte}", "MusherCopy.Banned") == "YES"
+	ini.value(vale, "*.{md,svelte}", "MusherCopy.Placeholders") == "YES"
 }
 
 test_comments_are_not_entries if {

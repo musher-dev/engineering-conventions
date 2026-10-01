@@ -12,11 +12,6 @@ pre-commit:
       fail_text: "go vet failed. Run 'task lint'."
 commit-msg:
   jobs:
-    - name: conventional-commit
-      run: bash .github/scripts/lint-commit-msg.sh {1}
-      fail_text: "The commit message is not a Conventional Commit."
-commit-msg:
-  jobs:
     - name: committed
       run: committed --config .config/commits/committed.toml --commit-file {1}
       fail_text: "The message must pass .config/commits/committed.toml."

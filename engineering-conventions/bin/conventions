@@ -127,8 +127,8 @@ repository_name() {
 # container's lockfile and the compose stacks beside it (DEVC), and a
 # Taskfile at any depth under an OpenTofu directory, where a root keeps the
 # Taskfile that names its state key (TOFU-01), the issue forms, template
-# chooser, discussion forms and FUNDING.yml GitHub reads (COMM), and the
-# environment contract a service commits under contracts/env/ (ENVS-20).
+# chooser and discussion forms GitHub reads (COMM), and the environment
+# contract a service commits under contracts/env/ (ENVS-20).
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
@@ -150,7 +150,6 @@ INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.devcontainer(/[^/]+)?/devcontainer-lock\.json$|^\.devcontainer-lock\.json$'
 INPUTS="${INPUTS}|"'^\.devcontainer/(.+/)?(docker-)?compose(\.[^/]+)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/(ISSUE|DISCUSSION)_TEMPLATE/[^/]+\.yml$'
-INPUTS="${INPUTS}|"'^\.github/FUNDING\.yml$'
 
 # Files conftest cannot choose a parser for by name, parsed before the check
 # with the parser named and added to the inventory (decision 0015):
@@ -481,11 +480,10 @@ EOF
 }
 
 # Lint OpenAPI documents with Spectral and the repository's own ruleset,
-# which extends the one this release ships (EC-0037, decision 0023). The
-# ruleset reaches the shipped file through .conventions/openapi.spectral.yaml,
-# a link refreshed on every run so it always names this release; the
-# repository ignores .conventions/ (OAS-04). With no FILE, it lints every
-# document an `openapi` interface in .repo/outputs.toml covers.
+# which extends spectral:oas and the OWASP API security ruleset (EC-0037,
+# decision 0023). With no FILE, it lints every document an `openapi`
+# interface in .repo/outputs.toml covers. Spectral's exit status is the
+# result: a finding at error severity fails the run.
 openapi() {
   given='' ruleset=.config/openapi/spectral.yaml
   while [ $# -gt 0 ]; do
@@ -517,10 +515,8 @@ EOF
     return 0
   fi
   [ -f "${ruleset}" ] ||
-    die "${ruleset} does not exist: add a Spectral ruleset that extends ../../.conventions/openapi.spectral.yaml (OAS-02)"
-  mkdir -p .conventions
-  ln -sfn "${bundle}/checks/openapi/musher.spectral.yaml" .conventions/openapi.spectral.yaml
-  tool spectral aqua:stoplightio/spectral "${SPECTRAL_VERSION}" lint --ruleset "${ruleset}" --fail-severity warn "$@"
+    die "${ruleset} does not exist: add a Spectral ruleset that extends spectral:oas and the OWASP API security ruleset (OAS-02)"
+  tool spectral aqua:stoplightio/spectral "${SPECTRAL_VERSION}" lint --ruleset "${ruleset}" "$@"
 }
 
 # Print what a repository commits beside its environment schema, derived

@@ -78,14 +78,13 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-12](agents/skills-and-subagents.md#agent-12) | A subagent's frontmatter is valid against the subagent schema | EC-0034 | proposed | warning | conftest |
 | [AGENT-13](agents/skills-and-subagents.md#agent-13) | Every skill a subagent preloads is a skill in the repository | EC-0034 | proposed | warning | conftest |
 | [AGENT-14](agents/skills-and-subagents.md#agent-14) | A subagent does not preload a skill that disables model invocation | EC-0034 | proposed | warning | conftest |
-| [COMM-01](community-files/community-files.md#comm-01) | An issue template is a .yml issue form valid against GitHub's issue-forms schema | EC-0036 | proposed | warning | conftest |
+| [COMM-01](community-files/community-files.md#comm-01) | An issue form is a .yml file valid against GitHub's issue-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMM-02](community-files/community-files.md#comm-02) | Issue forms come with a template chooser that is valid and sets blank_issues_enabled | EC-0036 | proposed | warning | conftest |
-| [COMM-03](community-files/community-files.md#comm-03) | FUNDING.yml is in .github/ and valid against GitHub's funding schema | EC-0036 | proposed | warning | conftest |
-| [COMM-04](community-files/community-files.md#comm-04) | A repository has one CODEOWNERS, at .github/CODEOWNERS | EC-0036 | proposed | warning | conftest |
-| [COMM-05](community-files/community-files.md#comm-05) | CODEOWNERS uses only syntax GitHub honours, names well-formed owners and repeats no pattern | EC-0036 | proposed | warning | conftest |
-| [COMM-06](community-files/community-files.md#comm-06) | A security policy GitHub recognises has a heading on reporting a vulnerability | EC-0036 | proposed | warning | conftest |
-| [COMM-07](community-files/community-files.md#comm-07) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
-| [COMM-08](community-files/community-files.md#comm-08) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
+| [COMM-03](community-files/community-files.md#comm-03) | A repository with a CODEOWNERS has exactly one, at .github/CODEOWNERS | EC-0036 | proposed | warning | conftest |
+| [COMM-04](community-files/community-files.md#comm-04) | CODEOWNERS uses only syntax GitHub honours, names well-formed owners and repeats no pattern | EC-0036 | proposed | warning | conftest |
+| [COMM-05](community-files/community-files.md#comm-05) | A repository's own security policy has a heading on reporting a vulnerability | EC-0036 | proposed | warning | conftest |
+| [COMM-06](community-files/community-files.md#comm-06) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
+| [COMM-07](community-files/community-files.md#comm-07) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMMIT-01](commits/commit-messages.md#commit-01) | .config/commits/committed.toml states the repository's commit rules | EC-0035 | proposed | warning | conftest |
 | [COMMIT-02](commits/commit-messages.md#commit-02) | committed is pinned in mise | EC-0035 | proposed | warning | conftest |
 | [COMMIT-03](commits/commit-messages.md#commit-03) | Lefthook's commit-msg hook runs committed on the message being written | EC-0035 | proposed | warning | conftest |
@@ -106,16 +105,8 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
 | [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
 | [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
-| [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy, proselint and write-good, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |
-| [COPY-04](copy/public-copy.md#copy-04) | No Vale config turns off MusherCopy.Banned or MusherCopy.Placeholders | EC-0038 | proposed | warning | conftest |
-| [COPY-05](copy/public-copy.md#copy-05) | Public copy uses none of the banned marketing words | EC-0038 | proposed | warning | vale |
-| [COPY-06](copy/public-copy.md#copy-06) | Public copy holds no placeholder | EC-0038 | proposed | warning | vale |
-| [COPY-07](copy/public-copy.md#copy-07) | Public copy names the capability instead of a generic adjective | EC-0038 | proposed | warning | vale |
-| [COPY-08](copy/public-copy.md#copy-08) | Public copy says what a relative adjective is relative to | EC-0038 | proposed | warning | vale |
-| [COPY-09](copy/public-copy.md#copy-09) | Public copy makes no claim it does not prove | EC-0038 | proposed | warning | vale |
-| [COPY-10](copy/public-copy.md#copy-10) | Public copy carries no filler phrase | EC-0038 | proposed | warning | vale |
-| [COPY-11](copy/public-copy.md#copy-11) | Public copy's sentences average fewer than 16 words | EC-0038 | proposed | warning | vale |
-| [COPY-12](copy/public-copy.md#copy-12) | A paragraph of public copy holds at most three sentences | EC-0038 | proposed | warning | vale |
+| [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |
+| [COPY-04](copy/public-copy.md#copy-04) | Public copy holds no placeholder | EC-0038 | proposed | warning | vale |
 | [DEC-01](decisions/decision-records.md#dec-01) | A decision record is named NNNN-kebab-slug in the repository's decisions directory | EC-0021 | proposed | warning | conftest |
 | [DEC-02](decisions/decision-records.md#dec-02) | A decision record's frontmatter is valid against the decision schema | EC-0021 | proposed | warning | conftest |
 | [DEC-03](decisions/decision-records.md#dec-03) | Decision numbers are unique and contiguous from 0000 or 0001 | EC-0021 | proposed | warning | conftest |
@@ -236,7 +227,7 @@ ID is permanent: it is never renumbered or reused.
 | [HOOKS-11](git-hooks/lefthook.md#hooks-11) | Every job glob matches a file in the repository | EC-0014 | proposed | warning | conftest |
 | [HOOKS-12](git-hooks/lefthook.md#hooks-12) | A pre-commit job that fixes files sets stage_fixed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-13](git-hooks/lefthook.md#hooks-13) | No job runs the same command in pre-commit and pre-push | EC-0014 | proposed | warning | conftest |
-| [HOOKS-14](git-hooks/lefthook.md#hooks-14) | A job runs no package runner directly | EC-0014 | proposed | warning | conftest |
+| [HOOKS-14](git-hooks/lefthook.md#hooks-14) | A job runs no one-shot package runner directly | EC-0014 | proposed | warning | conftest |
 | [IFACE-01](interfaces/interfaces-declaration.md#iface-01) | Every file in the contracts directory belongs to a declared interface | EC-0030 | proposed | warning | conftest |
 | [IFACE-02](interfaces/interfaces-declaration.md#iface-02) | An interface's format, compatibility and audience are registered values | EC-0030 | proposed | warning | conftest |
 | [IFACE-03](interfaces/interfaces-declaration.md#iface-03) | Interface IDs are unique within a repository | EC-0030 | proposed | warning | conftest |
@@ -251,10 +242,9 @@ ID is permanent: it is never renumbered or reused.
 | [IFACE-12](interfaces/publishing-interfaces.md#iface-12) | A validate workflow runs contracts:check and contracts:breaking | EC-0031 | proposed | warning | conftest |
 | [IFACE-13](interfaces/publishing-interfaces.md#iface-13) | The workflow that publishes a bundle of interfaces runs contracts:bundle | EC-0031 | proposed | warning | conftest |
 | [IFACE-14](interfaces/publishing-interfaces.md#iface-14) | A bundle of interfaces carries a release record of every file it delivers | EC-0031 | proposed | warning | review |
-| [OAS-01](openapi/openapi-documents.md#oas-01) | Every OpenAPI interface document passes the conventions' Spectral ruleset | EC-0037 | proposed | warning | delegated |
-| [OAS-02](openapi/openapi-documents.md#oas-02) | A repository that declares an OpenAPI interface keeps a Spectral ruleset that extends the conventions' ruleset | EC-0037 | proposed | warning | conftest |
-| [OAS-03](openapi/openapi-documents.md#oas-03) | A validate workflow runs conventions openapi | EC-0037 | proposed | warning | conftest |
-| [OAS-04](openapi/openapi-documents.md#oas-04) | The link to the conventions' ruleset is not part of the repository | EC-0037 | proposed | warning | conftest |
+| [OAS-01](openapi/openapi-documents.md#oas-01) | Every OpenAPI interface document passes the repository's Spectral ruleset | EC-0037 | proposed | warning | delegated |
+| [OAS-02](openapi/openapi-documents.md#oas-02) | The Spectral ruleset extends spectral:oas and the OWASP API security ruleset at an exact release | EC-0037 | proposed | warning | conftest |
+| [OAS-03](openapi/openapi-documents.md#oas-03) | A validate workflow lints the OpenAPI interfaces with the repository's ruleset | EC-0037 | proposed | warning | conftest |
 | [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |

@@ -83,10 +83,7 @@ fallback := " is not a list of names, so committed falls back to its default; li
 test_commit_01_wrong_settings if {
 	wrong := {
 		"style": "none",
-		"subject_length": 0,
-		"imperative_subject": false,
-		"no_wip": false,
-		"subject_not_punctuated": "yes",
+		"subject_capitalized": true,
 		"allowed_types": [],
 		"allowed_scopes": ["api", 3],
 	}
@@ -95,23 +92,29 @@ test_commit_01_wrong_settings if {
 		`style is "none", so committed does not read the type and scope; set style = "conventional"`,
 		concat("", ["allowed_types", fallback]),
 		concat("", ["allowed_scopes", fallback]),
-		"subject_length is 0; set it between 1 and 72 so the header fits a terminal and the commit list",
-		"imperative_subject is false; set imperative_subject = true",
-		"no_wip is false; set no_wip = true",
-		"subject_not_punctuated is yes; set subject_not_punctuated = true",
+		concat(" ", [
+			`subject_capitalized is true, so committed rejects a lower-case description such as "feat: add x";`,
+			"set subject_capitalized = false",
+		]),
 	}
 }
 
-test_commit_01_defaults_satisfy_the_rules if {
+test_commit_01_capitalized_defaults_to_true if {
 	minimal := {"style": "conventional", "allowed_types": ["feat"], "allowed_scopes": ["api"]}
-	count(messages_for(messages.findings, "COMMIT-01")) == 0 with input as docs({"committed": minimal})
+	count(messages_for(messages.findings, "COMMIT-01")) == 1 with input as docs({"committed": minimal})
 }
 
-test_commit_01_subject_length_boundary if {
-	at_limit := object.union(committed, {"subject_length": 72})
-	count(messages_for(messages.findings, "COMMIT-01")) == 0 with input as docs({"committed": at_limit})
-	over := object.union(committed, {"subject_length": 73})
-	count(messages_for(messages.findings, "COMMIT-01")) == 1 with input as docs({"committed": over})
+test_commit_01_the_rest_is_the_repository_choice if {
+	minimal := {
+		"style": "conventional",
+		"subject_capitalized": false,
+		"subject_length": 100,
+		"imperative_subject": false,
+		"no_wip": false,
+		"allowed_types": ["feat"],
+		"allowed_scopes": ["api"],
+	}
+	count(messages_for(messages.findings, "COMMIT-01")) == 0 with input as docs({"committed": minimal})
 }
 
 test_commit_01_missing_lists if {

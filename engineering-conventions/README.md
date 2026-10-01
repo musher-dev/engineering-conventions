@@ -13,7 +13,7 @@ It has three layers. `definitions/` is the source of truth; `checks/` validates 
 | Defined | `definitions/conventions/README.md` | An index of every convention and requirement ID, retired ones included | yes |
 | Defined | `definitions/terminology/` | `global.yml`: terms, display forms and aliases | |
 | Defined | `definitions/profiles/` | Convention profiles, such as `base-repo` | |
-| Defined | `definitions/copy/` | `style.yml`: the MusherCopy rules and the Vale packages the copy rules adopt | |
+| Defined | `definitions/copy/` | `style.yml`: the MusherCopy style and the Vale packages the copy rules adopt | |
 | Checked | `checks/rego/` | The Conftest checks and the `main` router that applies profiles, severities and waivers | |
 | Checked | `checks/schemas/` | JSON Schemas for the declarations, frontmatter, terminology and profiles | |
 | Checked | `checks/data/index.json` | Requirements, profiles and vocabulary, read by the Rego checks | yes |

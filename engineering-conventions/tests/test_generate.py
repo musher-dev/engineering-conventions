@@ -44,7 +44,6 @@ def test_index_top_level_shape(content: Content) -> None:
         "dependencies_schema",
         "discussion_forms_schema",
         "env_schema",
-        "funding_schema",
         "issue_config_schema",
         "issue_forms_schema",
         "outputs_schema",
@@ -450,7 +449,6 @@ def test_generate_check_reports_drift(
 def test_index_copy_block(content: Content) -> None:
     assert _index(content)["copy"] == {
         "based_on": ["MusherCopy", "proselint", "write-good"],
-        "locked_rules": ["MusherCopy.Banned", "MusherCopy.Placeholders"],
         "package": "MusherProse",
         "release_url": "https://github.com/musher-dev/engineering-conventions/releases/download",
         "style": "MusherCopy",
@@ -461,22 +459,21 @@ def test_index_copy_block(content: Content) -> None:
 
 def test_a_vale_requirement_records_its_style(content: Content) -> None:
     requirements = as_map(_index(content)["requirements"])
-    assert as_map(requirements["COPY-05"])["style"] == "MusherCopy.Banned"
+    assert as_map(requirements["COPY-04"])["style"] == "MusherCopy.Placeholders"
     assert "style" not in as_map(requirements["GHA-07"])
 
 
 def test_each_copy_rule_links_to_its_requirement(content: Content) -> None:
     outputs = {output.path.name: output.text for output in generate.build_outputs(content)}
     assert (
-        outputs["Banned.yml"].count(
+        outputs["Placeholders.yml"].count(
             '"https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/'
-            'definitions/conventions/copy/public-copy.md#copy-05"'
+            'definitions/conventions/copy/public-copy.md#copy-04"'
         )
         == 1
     )
-    assert "level: error" in outputs["Banned.yml"]
-    assert "ignorecase: true" in outputs["Banned.yml"]
-    assert "ignorecase" not in outputs["SentenceAverage.yml"]
+    assert "level: warning" in outputs["Placeholders.yml"]
+    assert "ignorecase: true" in outputs["Placeholders.yml"]
 
 
 def test_adopted_packages_are_pinned_to_their_version(content: Content) -> None:
@@ -544,9 +541,4 @@ def test_vale_accepts_the_copy_style(product: Path, tmp_path: Path) -> None:
     )
     alerts = as_list(as_map(json.loads(completed.stdout)).get("sample.md"))
     found = sorted({(str(as_map(a).get("Check")), str(as_map(a).get("Match"))) for a in alerts})
-    assert found == [
-        ("MusherCopy.Banned", "seamless"),
-        ("MusherCopy.Filler", "really"),
-        ("MusherCopy.Generic", "powerful"),
-        ("MusherCopy.Placeholders", "coming soon"),
-    ]
+    assert found == [("MusherCopy.Placeholders", "coming soon")]

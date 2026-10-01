@@ -1,3 +1,4 @@
-# The conventions' OpenAPI rules, and this repository's exemptions.
+# Spectral's OpenAPI rules and the OWASP API security ruleset, at an exact release.
 extends:
-  - ../../.conventions/openapi.spectral.yaml
+  - spectral:oas
+  - https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs

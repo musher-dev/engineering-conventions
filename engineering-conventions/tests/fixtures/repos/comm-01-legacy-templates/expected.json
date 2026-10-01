@@ -1,6 +1,0 @@
-[
-  {"id": "COMM-01", "path": ".github/ISSUE_TEMPLATE/broken.yml", "severity": "warning"},
-  {"id": "COMM-01", "path": ".github/ISSUE_TEMPLATE/feature.yaml", "severity": "warning"},
-  {"id": "COMM-01", "path": ".github/ISSUE_TEMPLATE/question.md", "severity": "warning"},
-  {"id": "COMM-01", "path": "docs/ISSUE_TEMPLATE.md", "severity": "warning"}
-]

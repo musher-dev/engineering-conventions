@@ -120,11 +120,10 @@ def build_index(content: Content) -> dict[str, object]:
         # the same way.
         "skill_frontmatter_schema": schemas.self_contained(content.product, schemas.SKILL),
         "subagent_frontmatter_schema": schemas.self_contained(content.product, schemas.SUBAGENT),
-        # COMM-01, COMM-02, COMM-03 and COMM-08 validate GitHub's community
+        # COMM-01, COMM-02 and COMM-07 validate GitHub's community
         # files against the vendored SchemaStore schemas.
         "issue_forms_schema": schemas.vendored(content.product, schemas.ISSUE_FORMS),
         "issue_config_schema": schemas.vendored(content.product, schemas.ISSUE_CONFIG),
-        "funding_schema": schemas.vendored(content.product, schemas.FUNDING),
         "discussion_forms_schema": schemas.vendored(content.product, schemas.DISCUSSION_FORMS),
         # COPY-02..COPY-04 read what a consumer's Vale config must name.
         "copy": copy_index(content.copy_style),
@@ -177,7 +176,6 @@ def copy_index(style: CopyStyle) -> dict[str, object]:
         "release_url": RELEASE_DOWNLOAD_URL,
         "style": style.style,
         "based_on": [style.style, *(item.style for item in style.adopted if item.use == "whole")],
-        "locked_rules": [f"{style.style}.{rule.name}" for rule in style.rules if rule.locked],
         "template_formats": dict(style.template_formats),
     }
 

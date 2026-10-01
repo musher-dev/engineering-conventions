@@ -64,22 +64,26 @@
   "agent-07-personal-settings": [
     [".claude/settings.local.json", "AGENT-07", "warning", "settings.local.json is one person's local agent configuration; remove it from git and add it to .gitignore", true]
   ],
+  "agent-09-no-frontmatter": [
+    [".claude/skills/writing-commits/SKILL.md", "AGENT-09", "warning", "the skill has no YAML frontmatter, so Claude Code takes its first line as the description it chooses the skill by; start it with a --- block that sets description:", true]
+  ],
+  "agent-09-passes-agents-readme": [],
   "agent-09-passes-quoted-description": [],
   "agent-09-unquoted-description": [
     [".claude/skills/writing-commits/SKILL.md", "AGENT-09", "warning", "the frontmatter is not valid YAML, so a strict parser cannot read it and nothing in it can be checked; quote any value that contains \": \", such as description: \"Use when ... Triggered by: ...\", or write it as a folded block (description: >-)", true]
   ],
-  "agent-10-passes-version-in-metadata": [],
-  "agent-10-top-level-version": [
-    [".claude/skills/writing-commits/SKILL.md", "AGENT-10", "warning", "the frontmatter: Additional property version is not allowed. Give the field the shape checks/schemas/skill-frontmatter.schema.json lists for it, or remove it; a field of the repository's own, such as version, goes under metadata as a string", true]
+  "agent-10-passes-unknown-fields": [],
+  "agent-10-unknown-shell": [
+    [".claude/skills/writing-commits/SKILL.md", "AGENT-10", "warning", "`shell`: shell must be one of the following: \"bash\", \"powershell\". Give the field the shape checks/schemas/skill-frontmatter.schema.json lists for it, or remove it", true]
   ],
   "agent-11-name-not-directory": [
     [".claude/skills/writing-commits/SKILL.md", "AGENT-11", "warning", "the skill's name is \"commits\" but its directory is writing-commits; set name: writing-commits, or rename the directory to commits", true]
   ],
   "agent-11-passes-nested-skill": [],
-  "agent-12-passes-nested-subagent": [],
-  "agent-12-skill-field-on-subagent": [
-    [".claude/agents/reviewer.md", "AGENT-12", "warning", "the frontmatter: Additional property allowed-tools is not allowed. Give the field the shape checks/schemas/subagent-frontmatter.schema.json lists for it, or remove it", true]
+  "agent-12-invalid-color": [
+    [".claude/agents/reviewer.md", "AGENT-12", "warning", "`color`: color must be one of the following: \"red\", \"blue\", \"green\", \"yellow\", \"purple\", \"orange\", \"pink\", \"cyan\". Give the field the shape checks/schemas/subagent-frontmatter.schema.json lists for it, or remove it", true]
   ],
+  "agent-12-passes-nested-subagent": [],
   "agent-13-dangling-preload": [
     [".claude/agents/reviewer.md", "AGENT-13", "warning", "skills: lists writing-commits, but no .claude/skills/writing-commits/SKILL.md exists and no skill is named writing-commits, so Claude Code skips it without a warning; correct the name or remove the entry", true]
   ],
@@ -89,11 +93,9 @@
     [".claude/agents/reviewer.md", "AGENT-14", "warning", "skills: lists deploy, but .claude/skills/deploy/SKILL.md sets disable-model-invocation: true, so Claude Code cannot preload it; remove the entry, or let the model invoke the skill", true]
   ],
   "clean": [],
-  "comm-01-legacy-templates": [
+  "comm-01-invalid-and-yaml-forms": [
     [".github/ISSUE_TEMPLATE/broken.yml", "COMM-01", "warning", "GitHub's issue-forms schema rejects this file, so GitHub will not offer the form: the form: description is required. (1 more problem in the form)", true],
-    [".github/ISSUE_TEMPLATE/feature.yaml", "COMM-01", "warning", ".github/ISSUE_TEMPLATE/feature.yaml should be .github/ISSUE_TEMPLATE/feature.yml: GitHub reads the template chooser only as config.yml, so the directory uses .yml throughout", true],
-    [".github/ISSUE_TEMPLATE/question.md", "COMM-01", "warning", ".github/ISSUE_TEMPLATE/question.md is a Markdown issue template, which GitHub opens as free text with nothing required; convert it to an issue form, .github/ISSUE_TEMPLATE/question.yml, with name, description and body", true],
-    ["docs/ISSUE_TEMPLATE.md", "COMM-01", "warning", "docs/ISSUE_TEMPLATE.md is a single Markdown issue template, which GitHub opens as free text with nothing required; replace it with issue forms in .github/ISSUE_TEMPLATE/, such as .github/ISSUE_TEMPLATE/bug-report.yml", true]
+    [".github/ISSUE_TEMPLATE/feature.yaml", "COMM-01", "warning", ".github/ISSUE_TEMPLATE/feature.yaml should be .github/ISSUE_TEMPLATE/feature.yml: GitHub reads the template chooser only as config.yml, so the directory uses .yml throughout", true]
   ],
   "comm-01-passes-every-field-type": [],
   "comm-02-invalid-config": [
@@ -104,46 +106,37 @@
     [".github/ISSUE_TEMPLATE/config.yml", "COMM-02", "warning", "the issue forms have no template chooser; add .github/ISSUE_TEMPLATE/config.yml that sets blank_issues_enabled, so whether a blank issue can bypass the forms is decided, not defaulted", true]
   ],
   "comm-02-passes-blank-issues-enabled": [],
-  "comm-03-misplaced-funding": [
-    [".github/FUNDING.yml", "COMM-03", "warning", "GitHub's funding schema rejects this file, so the Sponsor button misses it: the file: Additional property paypal is not allowed.", true],
-    ["FUNDING.yml", "COMM-03", "warning", "GitHub reads funding links only from .github/FUNDING.yml; move FUNDING.yml there", true]
+  "comm-03-misplaced-codeowners": [
+    ["CODEOWNERS", "COMM-03", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true],
+    ["docs/CODEOWNERS", "COMM-03", "warning", "GitHub reads only the first CODEOWNERS it finds, CODEOWNERS, and ignores this one; merge its rules there and delete it", true]
   ],
-  "comm-03-passes-every-platform-shape": [],
-  "comm-04-misplaced-codeowners": [
-    ["CODEOWNERS", "COMM-04", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true],
-    ["docs/CODEOWNERS", "COMM-04", "warning", "GitHub reads only the first CODEOWNERS it finds, CODEOWNERS, and ignores this one; merge its rules there and delete it", true]
+  "comm-03-passes-no-codeowners": [],
+  "comm-03-passes-unowned-paths": [],
+  "comm-04-passes-escapes-and-comments": [],
+  "comm-04-skipped-lines": [
+    [".github/CODEOWNERS", "COMM-04", "warning", "line 2: the pattern `!/platform-api/generated/` starts with !, a negation CODEOWNERS does not support, so GitHub skips the whole line; list the paths it should match instead", true],
+    [".github/CODEOWNERS", "COMM-04", "warning", "line 3: the pattern `/platform-api/[ab]*/` uses a [ ] character range, which CODEOWNERS does not support, so GitHub skips the whole line; list the paths it should match instead", true],
+    [".github/CODEOWNERS", "COMM-04", "warning", "line 4: `docs-team` is not an owner GitHub recognises; write @user, @org/team or an email address, or leave the pattern with no owner to make it explicitly unowned", true],
+    [".github/CODEOWNERS", "COMM-04", "warning", "line 5 repeats the pattern `/platform-api/` from line 1, and the later line silently replaces the earlier one's owners; put every owner for a pattern on one line", true]
   ],
-  "comm-04-passes-unowned-paths": [],
-  "comm-05-passes-escapes-and-comments": [],
-  "comm-05-skipped-lines": [
-    [".github/CODEOWNERS", "COMM-05", "warning", "line 2: the pattern `!/platform-api/generated/` starts with !, a negation CODEOWNERS does not support, so GitHub skips the whole line; list the paths it should match instead", true],
-    [".github/CODEOWNERS", "COMM-05", "warning", "line 3: the pattern `/platform-api/[ab]*/` uses a [ ] character range, which CODEOWNERS does not support, so GitHub skips the whole line; list the paths it should match instead", true],
-    [".github/CODEOWNERS", "COMM-05", "warning", "line 4: `docs-team` is not an owner GitHub recognises; write @user, @org/team or an email address, or leave the pattern with no owner to make it explicitly unowned", true],
-    [".github/CODEOWNERS", "COMM-05", "warning", "line 5 repeats the pattern `/platform-api/` from line 1, and the later line silently replaces the earlier one's owners; put every owner for a pattern on one line", true]
+  "comm-05-no-reporting-heading": [
+    ["SECURITY.md", "COMM-05", "warning", "the security policy has no heading on reporting a vulnerability; add one, such as `## Reporting a vulnerability`, that says where to report privately and what happens next", true]
   ],
-  "comm-06-missing-policy": [
-    ["SECURITY.md", "COMM-06", "warning", "the repository has no security policy; add SECURITY.md, at the root or in .github/ or docs/, with a `## Reporting a vulnerability` section that says how to report one privately", true]
+  "comm-05-passes-no-policy": [],
+  "comm-05-passes-policy-in-github-directory": [],
+  "comm-07-invalid-discussion-forms": [
+    [".github/DISCUSSION_TEMPLATE/ideas.yml", "COMM-07", "warning", "GitHub's discussion-forms schema rejects this file, so GitHub will not offer the form: the form: body is required.", true],
+    [".github/DISCUSSION_TEMPLATE/q-a.md", "COMM-07", "warning", "GitHub reads a discussion category form only as <category-slug>.yml; rename .github/DISCUSSION_TEMPLATE/q-a.md to .github/DISCUSSION_TEMPLATE/q-a.yml", true]
   ],
-  "comm-06-no-reporting-heading": [
-    ["SECURITY.md", "COMM-06", "warning", "the security policy has no heading on reporting a vulnerability; add one, such as `## Reporting a vulnerability`, that says where to report privately and what happens next", true]
+  "comm-07-passes-discussion-form": [],
+  "commit-01-capitalized-by-default": [
+    [".config/commits/committed.toml", "COMMIT-01", "warning", "subject_capitalized is true, so committed rejects a lower-case description such as \"feat: add x\"; set subject_capitalized = false", true]
   ],
-  "comm-06-passes-policy-in-github-directory": [],
-  "comm-08-invalid-discussion-forms": [
-    [".github/DISCUSSION_TEMPLATE/ideas.yml", "COMM-08", "warning", "GitHub's discussion-forms schema rejects this file, so GitHub will not offer the form: the form: body is required.", true],
-    [".github/DISCUSSION_TEMPLATE/q-a.md", "COMM-08", "warning", "GitHub reads a discussion category form only as <category-slug>.yml; rename .github/DISCUSSION_TEMPLATE/q-a.md to .github/DISCUSSION_TEMPLATE/q-a.yml", true]
-  ],
-  "comm-08-passes-discussion-form": [],
   "commit-01-missing-configuration": [
     [".config/commits/committed.toml", "COMMIT-01", "warning", "there is no .config/commits/committed.toml, so nothing states which commit types and scopes this repository accepts; add it with style = \"conventional\", allowed_types and allowed_scopes", true],
     [".github/workflows/validate-pull-request.yml", "CONF-09", "warning", "names .config/commits/committed.toml, which does not exist; correct the path or remove the reference", true]
   ],
-  "commit-01-passes-defaults": [],
-  "commit-01-weakened-settings": [
-    [".config/commits/committed.toml", "COMMIT-01", "warning", "allowed_scopes is not a list of names, so committed falls back to its default; list every one this repository accepts", true],
-    [".config/commits/committed.toml", "COMMIT-01", "warning", "imperative_subject is false; set imperative_subject = true", true],
-    [".config/commits/committed.toml", "COMMIT-01", "warning", "no_wip is false; set no_wip = true", true],
-    [".config/commits/committed.toml", "COMMIT-01", "warning", "subject_length is 100; set it between 1 and 72 so the header fits a terminal and the commit list", true]
-  ],
+  "commit-01-passes-own-header-rules": [],
   "commit-02-passes-aqua-backend": [],
   "commit-02-unpinned": [
     [".config/mise/config.toml", "COMMIT-02", "warning", "the mise configuration does not pin committed, so the hook and the pull request check can run different versions; add \"github:crate-ci/committed\" = \"<version>\" under [tools]", true]
@@ -153,6 +146,9 @@
   ],
   "commit-03-passes-grouped-job": [],
   "commit-04-passes-title-in-validate": [],
+  "commit-04-scope-not-required": [
+    [".github/workflows/validate-pull-request.yml", "COMMIT-04", "warning", "no pull request workflow requires a scope on the title, which committed cannot; add amannn/action-semantic-pull-request with requireScope: true", true]
+  ],
   "commit-04-title-unchecked": [
     [".config/commits/committed.toml", "CONF-04", "warning", "nothing names .config/commits/committed.toml; pass it by path from a Taskfile, the lefthook configuration, a workflow, an action or devcontainer.json, or delete it", true],
     [".github/workflows/validate-pull-request.yml", "COMMIT-04", "warning", "no pull request workflow requires a scope on the title, which committed cannot; add amannn/action-semantic-pull-request with requireScope: true", true],
@@ -211,10 +207,6 @@
   "copy-03-unmapped-svelte": [
     [".config/markdown/vale.ini", "COPY-03", "warning", "[site/src/**/*.{md,svelte}] matches .svelte files, which Vale skips without a format; add svelte = html under [formats]", true]
   ],
-  "copy-04-banned-turned-off": [
-    [".config/markdown/vale.ini", "COPY-04", "warning", "line 12 turns off MusherCopy.Banned for [site/src/legal/*.md]; remove it, and waive COPY-04 with a reason and an expiry if a page must keep the word", true]
-  ],
-  "copy-04-passes-unlocked-rule-off": [],
   "dec-01-directory-form": [
     ["docs/adrs/0002-loose.md", "DEC-01", "warning", "docs/adrs/0002-loose.md is a file in docs/adrs, whose records are directories; move it to docs/adrs/NNNN-slug/+page.md, or out of the decisions directory", true]
   ],
@@ -642,15 +634,16 @@
   "hooks-14-package-runner": [
     [".config/lefthook.yml", "HOOKS-14", "warning", "pre-commit job \"yaml\" runs \"npx\" directly, so the tool's version is chosen in the hook and CI can run a different one; put the command in a task and run that task here and in CI", true]
   ],
+  "hooks-14-passes-lockfile-runners": [],
   "hooks-14-passes-pinned-tools": [],
   "iface-01-passes-documents-and-dotfiles": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-01-undeclared-file": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/state-machines/order.mmd", "IFACE-01", "warning", "platform-api/contracts/state-machines/order.mmd is in platform-api/contracts/, which holds only what other repositories build against, but no interface in .repo/outputs.toml covers it; add it to an interface's definitions, or move it out of platform-api/contracts/", true]
   ],
@@ -658,8 +651,8 @@
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-02-passes-lockstep-internal": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-02-passes-systemd-unit": [
@@ -670,128 +663,128 @@
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-03-duplicate-id": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "IFACE-03", "warning", "interface ID \"public-http\" is used more than once; give each interface its own ID, which consumers address as <repository>#<id>", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-03-passes-output-and-interface-share-an-id": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-04-definition-matches-nothing": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "IFACE-04", "warning", "interface \"events\" names definitions \"platform-api/contracts/event/*.schema.json\", which matches no file the repository holds; point it at the files that define the interface", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/events/order.created.v1.schema.json", "IFACE-01", "warning", "platform-api/contracts/events/order.created.v1.schema.json is in platform-api/contracts/, which holds only what other repositories build against, but no interface in .repo/outputs.toml covers it; add it to an interface's definitions, or move it out of platform-api/contracts/", true]
   ],
   "iface-04-passes-directory-without-slash": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-05-file-in-two-interfaces": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/events/order.created.v1.schema.json", "IFACE-05", "warning", "platform-api/contracts/events/order.created.v1.schema.json belongs to interfaces \"events\", \"public-http\"; narrow their definitions so each file belongs to one interface", true]
   ],
   "iface-05-passes-disjoint-globs": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-06-delivered-by-unknown-output": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "IFACE-06", "warning", "interface \"public-http\" is delivered by \"api-bundle\", which is not an output in .repo/outputs.toml; name the bundle, site or library output that delivers it", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-06-passes-library-output": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (client, contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-07-passes-several-majors": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-07-unversioned-file": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/events/order.paid.schema.json", "IFACE-07", "warning", "platform-api/contracts/events/order.paid.schema.json belongs to versioned interface \"events\" but its name carries no .vN.; name it for its major version, such as order.paid.v1.schema.json", true]
   ],
   "iface-08-definitions-outside-contracts": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "IFACE-08", "warning", "interface \"grpc\" names definitions \"platform-api/proto/\" outside platform-api/contracts/; keep every interface the repository offers there, so its consumers and checks find it in one place", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-08-passes-proto-in-contracts": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-11-missing-bundle-task": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["Taskfile.yml", "IFACE-11", "warning", "the repository declares interfaces in .repo/outputs.toml but its root Taskfile does not define \"contracts:bundle\"; add them, so every producer regenerates, checks, compares and bundles its interfaces the same way", true]
   ],
   "iface-11-passes-included-tasks": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-12-passes-separate-steps": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-12-validate-skips-breaking": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "IFACE-12", "warning", "the repository declares interfaces but no validate workflow runs `task contracts:breaking`; run it in a validate workflow, so a change that drifts from or breaks an interface cannot merge", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-13-passes-task-flags": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-13-publish-without-bundle-task": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".github/workflows/publish-contracts.yml", "IFACE-13", "warning", "publish-contracts.yml publishes bundle \"contracts\", which delivers interfaces, but does not run `task contracts:bundle`; build the bundle and its release.json with that task in the workflow that publishes it", true],
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "mise-pin-without-declaration": [],
+  "oas-02-floating-owasp-version": [
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", ".config/openapi/spectral.yaml extends the OWASP API security ruleset as https://unpkg.com/@stoplight/spectral-owasp-ruleset/dist/ruleset.mjs, which names no exact release; extend https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which names one exact release", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
   "oas-02-missing-ruleset": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "oas-02-passes-yml-ruleset-with-mode": [
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
-  "oas-02-ruleset-without-extends": [
-    [".config/openapi/spectral.yaml", "OAS-02", "warning", ".config/openapi/spectral.yaml does not extend the conventions' OpenAPI ruleset; add ../../.conventions/openapi.spectral.yaml to its extends, and turn off a rule there, with its reason, rather than leaving the ruleset out", true],
+  "oas-02-ruleset-without-owasp": [
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", ".config/openapi/spectral.yaml does not extend the OWASP API security ruleset; extend https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which names one exact release", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "oas-03-passes-through-check-task": [
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "oas-03-validate-without-openapi": [
-    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
-  "oas-04-committed-link": [
-    [".conventions/openapi.spectral.yaml", "OAS-04", "warning", ".conventions/openapi.spectral.yaml is part of the repository; add .conventions/ to .gitignore and remove it from the index, because `conventions openapi` writes it on every run to point at the release it runs", true]
-  ],
-  "oas-04-passes-nested-directory": [],
   "out-01-undeclared-outputs": [
     [".github/workflows/publish.yml", "OUT-01", "warning", "publish.yml publishes an output, but the repository has no .repo/outputs.toml; declare each output it publishes there", true]
   ],

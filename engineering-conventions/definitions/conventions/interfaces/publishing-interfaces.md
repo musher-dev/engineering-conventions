@@ -105,6 +105,10 @@ severity `warning`
 | `contracts:breaking` | any interface | Compares each interface with the one the last release delivered, by its compatibility: fails a `gated` break unless a commit since the last release is marked breaking, and fails any change to a published `versioned` file. Skips `lockstep`. |
 | `contracts:bundle` | an interface is delivered by a `bundle` | Writes the bundle and its `release.json` for the version being released. |
 
+A `gated` data interface has no format tool to compare it with. Its `contracts:breaking` compares the members a
+consumer relies on, named by the producer (the keys of a registry, the members of a vocabulary), and treats a released
+member that is gone, or a value that changed, as a break.
+
 ## The release record
 
 A bundle that delivers interfaces carries `release.json` at its root, valid against

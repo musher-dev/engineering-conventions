@@ -107,21 +107,28 @@ consumer depends on the interfaces it uses, not on the bundle.
 ## Scope
 
 This convention covers `[[interfaces]]` in `.repo/outputs.toml` and the contracts directory. The formats themselves
-(OpenAPI, AsyncAPI, JSON Schema, protobuf, OpenTelemetry Weaver) are defined by their own specifications, and this
-convention only names them. What a publishing repository must run to keep its interfaces current and compatible is
-[EC-0031](publishing-interfaces.md); how another repository takes an interface is
-[EC-0032](../dependencies/dependencies-declaration.md).
+(OpenAPI, AsyncAPI, JSON Schema, protobuf, OpenTelemetry Weaver, systemd units) are defined by their own
+specifications, and this convention only names them; a data document's shape is its producer's. What a publishing
+repository must run to keep its interfaces current and compatible is [EC-0031](publishing-interfaces.md); how another
+repository takes an interface is [EC-0032](../dependencies/dependencies-declaration.md).
 
 **What is an interface.** A surface is an interface when another repository builds or runs against it. A server with
 one document per audience (public, agent, control plane, webhooks) has one interface per document, because each has
 its own consumers and its own promise. A file only the producer reads, such as an internal state diagram or a list
 its tests use, is not an interface and does not go in the contracts directory.
 
+A surface another repository deploys rather than builds against is an interface too. Systemd units that a
+host-configuration repository installs on its hosts are declared as a `systemd-unit` interface, offered from the
+contracts directory like any other, and vendored by the consumer unchanged
+([EC-0032](../dependencies/dependencies-declaration.md#the-vendored-copy)).
+
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`), and its requirements are `proposed` at
 severity `warning`
-([decision 0022](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0022-interfaces-and-dependencies.md)).
+([decision 0022](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0022-interfaces-and-dependencies.md)),
+with the `data` and `systemd-unit` formats added by
+[decision 0027](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0027-data-units-and-fetched-dependencies.md).
 It replaces the `contract` output kind and OUT-07 ([EC-0007](../outputs/outputs-declaration.md)). IFACE-08 applies to
 repositories whose kind is `service`, `website`, `library` or `tool`: a `specification` repository's product is its
 interfaces, laid out as its own published paths require.
@@ -203,6 +210,8 @@ terminology change.
 | `protobuf` | Protocol Buffers messages and gRPC services, in `.proto` files |
 | `env-schema` | An `env.schema.yaml` ([EC-0020](../environment/env-schema.md)), when another repository deploys or configures the product |
 | `weaver` | An OpenTelemetry Weaver registry: the telemetry signals a producer emits |
+| `data` | One or more JSON or YAML documents that are the published fact themselves: a registry, a vocabulary, a rate card |
+| `systemd-unit` | systemd unit files (service, timer, socket and the other unit types) that another repository installs on the hosts it configures |
 
 ### Compatibility
 

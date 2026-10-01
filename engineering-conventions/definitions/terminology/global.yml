@@ -456,6 +456,25 @@ terms:
       (https://github.com/open-telemetry/weaver).
     tags: [interfaces.format]
     stability: provisional
+  - id: interfaces.format.data
+    display_name: data document
+    token: data
+    definition: >-
+      One or more JSON or YAML documents that are themselves the published
+      fact, such as a registry, a vocabulary or a rate card, rather than a
+      schema describing other documents. When a data document has a schema,
+      the schema is a json-schema interface of its own or ships beside it.
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.systemd-unit
+    display_name: systemd unit
+    token: systemd-unit
+    definition: >-
+      systemd unit files (service, timer, socket and the other unit types)
+      that another repository installs on the hosts it configures
+      (https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html).
+    tags: [interfaces.format]
+    stability: provisional
 
   # Interface compatibility: what a producer promises about a change to an
   # interface, the compatibility field of an [[interfaces]] entry.

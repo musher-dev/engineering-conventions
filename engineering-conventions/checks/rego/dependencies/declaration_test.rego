@@ -182,6 +182,35 @@ test_deps_06_every_interface_when_none_named if {
 	td.pairs(found) == {["DEPS-06", concat("/", [copy, "openapi/agent.json"])]}
 }
 
+test_fetched_dependency_needs_no_copy if {
+	fetched := object.union(dependency, {"fetched": true})
+	found := declaration.findings with input as [identity, inventory([], {}), declared([fetched])]
+		with data.conventions.index as td.index
+	count(found) == 0
+}
+
+test_fetched_false_is_vendored if {
+	vendored := object.union(dependency, {"fetched": false})
+	found := declaration.findings with input as [identity, inventory([], {}), declared([vendored])]
+		with data.conventions.index as td.index
+	td.pairs(found) == {["DEPS-05", ".repo/dependencies.toml"]}
+}
+
+test_deps_01_fetched_with_a_copy if {
+	given := repo([object.union(dependency, {"fetched": true})], object.union(record, {"version": "0.35.0"}), {
+		concat("/", [copy, "release.json"]): sha("f"),
+		concat("/", [copy, "openapi/public.json"]): sha("c"),
+	})
+	found := declaration.findings with input as given
+		with data.conventions.index as td.index
+	td.pairs(found) == {["DEPS-01", copy]}
+	messages(found, "DEPS-01") == {concat(" ", [
+		`web/contracts/vendor/platform-api/contracts/ is a vendored copy of platform-api's "contracts", but`,
+		".repo/dependencies.toml declares it fetched, so no check proves the copy; remove the copy, or drop",
+		"`fetched` so the release record proves it",
+	])}
+}
+
 test_deps_07_pin_files if {
 	given := [td.inventory(["config/platform-api.ref", "api/config/specifications.lock.json", "docs/x.ref"])]
 	found := declaration.findings with input as given

@@ -239,6 +239,9 @@
   "dec-07-unlinked-record": [
     ["docs/decisions/README.md", "DEC-07", "warning", "the index does not link decision record 0001-use-one-queue; add a link to it", true]
   ],
+  "deps-01-fetched-with-copy": [
+    ["platform-api/contracts/vendor/specifications/schemas", "DEPS-01", "warning", "platform-api/contracts/vendor/specifications/schemas/ is a vendored copy of specifications's \"schemas\", but .repo/dependencies.toml declares it fetched, so no check proves the copy; remove the copy, or drop `fetched` so the release record proves it", true]
+  ],
   "deps-01-passes-two-declared-outputs": [],
   "deps-01-undeclared-copy": [
     ["platform-api/contracts/vendor/catalog/corpus", "DEPS-01", "warning", "platform-api/contracts/vendor/catalog/corpus/ is a vendored copy of catalog's \"corpus\", but .repo/dependencies.toml declares no such dependency; declare it with the release it is, or remove the copy", true]
@@ -256,6 +259,7 @@
     ["platform-api/package.json", "DEPS-04", "warning", "platform-api/package.json pins @musher-dev/ui to \"^1.0.2\" in dependencies; pin the exact version it released, so the repository builds against one release until it chooses another", true]
   ],
   "deps-04-passes-exact-and-workspace-packages": [],
+  "deps-05-passes-fetched": [],
   "deps-05-passes-prerelease-version": [],
   "deps-05-record-of-another-release": [
     ["platform-api/contracts/vendor/specifications/schemas/release.json", "DEPS-05", "warning", "the release record says version \"1.5.0\", but .repo/dependencies.toml declares \"1.6.0\"; vendor the declared release with `task deps:sync`, or declare the one that is vendored", true]
@@ -264,6 +268,7 @@
     ["platform-api/contracts/vendor/specifications/schemas/component/component.v1.schema.json", "DEPS-06", "warning", "platform-api/contracts/vendor/specifications/schemas/component/component.v1.schema.json is not the file specifications's \"schemas\" 1.6.0 released: its sha256 is 25ea4931e3fe684f2f9269c5e3f7b561a2353e837dcf356d02aa0e3a5d15b72b, not 0ac9dac9527eaa3f2c1a5bf6999c900e74328f1b94495297909d0f97adeb97f0; a vendored copy is never edited, so vendor the release again with `task deps:sync`", true]
   ],
   "deps-06-passes-every-interface-when-none-named": [],
+  "deps-06-passes-vendored-units": [],
   "deps-07-passes-ref-outside-config": [],
   "deps-07-ref-pin": [
     ["platform-api/config/catalog.ref", "DEPS-07", "warning", "platform-api/config/catalog.ref keeps a pin in a file of its own; declare the release in .repo/dependencies.toml and vendor it with `task deps:sync`, so every pin has one place and one form", true]
@@ -606,13 +611,19 @@
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/state-machines/order.mmd", "IFACE-01", "warning", "platform-api/contracts/state-machines/order.mmd is in platform-api/contracts/, which holds only what other repositories build against, but no interface in .repo/outputs.toml covers it; add it to an interface's definitions, or move it out of platform-api/contracts/", true]
   ],
+  "iface-02-passes-data-format": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
   "iface-02-passes-lockstep-internal": [
     [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [../../.conventions/openapi.spectral.yaml]`, so its documents are linted with the conventions' rules", true],
     [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow runs `conventions openapi`; run it in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
+  "iface-02-passes-systemd-unit": [
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
   "iface-02-unregistered-format": [
-    [".repo/outputs.toml", "IFACE-02", "warning", "interface \"public-http\" has format \"swagger\", which is not registered; use one of \"asyncapi\", \"env-schema\", \"json-schema\", \"openapi\", \"protobuf\", \"weaver\"", true],
+    [".repo/outputs.toml", "IFACE-02", "warning", "interface \"public-http\" has format \"swagger\", which is not registered; use one of \"asyncapi\", \"data\", \"env-schema\", \"json-schema\", \"openapi\", \"protobuf\", \"systemd-unit\", \"weaver\"", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
   "iface-03-duplicate-id": [

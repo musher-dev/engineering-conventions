@@ -673,6 +673,10 @@
                 "$ref": "#/definitions/common_nonEmptyString",
                 "description": "One line on what this repository uses it for."
               },
+              "fetched": {
+                "description": "True when the repository fetches the release's assets at test or build time and verifies them against the release's SHA256SUMS, instead of vendoring them. A fetched dependency has no vendored copy, so DEPS-05 and DEPS-06 skip it.",
+                "type": "boolean"
+              },
               "interfaces": {
                 "description": "The ids of the producer's interfaces this repository vendors; all of the output's interfaces when omitted.",
                 "items": {
@@ -705,10 +709,10 @@
             "type": "object"
           }
         },
-        "description": "A repository's .repo/dependencies.toml: each release of another Musher repository whose interfaces it vendors, with the exact version it pins (EC-0032). Dependencies through a package or tool manager are read from that manager's manifest and are not listed. DEPS-02 checks a declaration against this schema.",
+        "description": "A repository's .repo/dependencies.toml: each release of another Musher repository whose interfaces it vendors, or whose assets it fetches at test or build time, with the exact version it pins (EC-0032). Dependencies through a package or tool manager are read from that manager's manifest and are not listed. DEPS-02 checks a declaration against this schema.",
         "properties": {
           "dependencies": {
-            "description": "The vendored dependencies, at least one.",
+            "description": "The vendored and fetched dependencies, at least one.",
             "items": {
               "$ref": "#/definitions/dependency"
             },
@@ -14011,10 +14015,12 @@
         ],
         "interface_formats": [
           "asyncapi",
+          "data",
           "env-schema",
           "json-schema",
           "openapi",
           "protobuf",
+          "systemd-unit",
           "weaver"
         ],
         "output_kinds": [

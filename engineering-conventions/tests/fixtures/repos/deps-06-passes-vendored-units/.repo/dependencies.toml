@@ -1,0 +1,8 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "fleet-agent"
+output = "units"
+interfaces = ["units"]
+version = "0.4.2"
+description = "The hosts run the agent with the systemd units it releases, deployed from this copy."

@@ -165,10 +165,12 @@ def test_vocabulary_projection(content: Content) -> None:
     assert projected["schedule_tokens"] == ["cron", "daily", "nightly", "scheduled", "weekly"]
     assert projected["interface_formats"] == [
         "asyncapi",
+        "data",
         "env-schema",
         "json-schema",
         "openapi",
         "protobuf",
+        "systemd-unit",
         "weaver",
     ]
     assert projected["interface_compatibilities"] == ["gated", "lockstep", "versioned"]

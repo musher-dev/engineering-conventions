@@ -1,0 +1,28 @@
+schema_version = 2
+
+[[outputs]]
+id = "contracts"
+kind = "bundle"
+description = "Each release's interfaces, with their release record."
+source = "platform-api/contracts/"
+publish_workflow = "publish-contracts.yml"
+location = "https://github.com/example/platform-api/releases"
+docs = "platform-api/contracts/README.md"
+
+[[interfaces]]
+id = "units"
+format = "systemd-unit"
+description = "The systemd units that run the agent, installed by the repository that configures the hosts."
+definitions = ["platform-api/contracts/units/"]
+delivered_by = "contracts"
+compatibility = "gated"
+audience = "internal"
+
+[[interfaces]]
+id = "events"
+format = "json-schema"
+definitions = ["platform-api/contracts/events/*.schema.json"]
+delivered_by = "contracts"
+compatibility = "versioned"
+audience = "internal"
+generated = true

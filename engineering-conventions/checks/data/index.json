@@ -14075,11 +14075,14 @@
           "verify"
         ],
         "runtime_capabilities": [
+          "access-proxy",
           "block-storage",
           "cdn",
           "cloud-compute",
           "code-hosting",
+          "container-registry",
           "dns",
+          "edge-compute",
           "email-delivery",
           "llm",
           "oauth-identity",
@@ -14087,7 +14090,9 @@
           "otlp",
           "payments",
           "postgresql",
-          "vpn-mesh"
+          "valkey",
+          "vpn-mesh",
+          "web-search"
         ],
         "schedule_tokens": [
           "cron",

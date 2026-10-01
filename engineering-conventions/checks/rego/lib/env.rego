@@ -6,14 +6,21 @@
 #   grammar checks.
 package conventions.lib.env
 
+import data.conventions.lib.contracts
 import data.conventions.lib.files
 
 schema_path_pattern := `^([^/]+/)*env\.schema\.ya?ml$`
 
+# A vendored copy under the contracts directory is another repository's
+# schema, kept unchanged (EC-0032): no ENVS check reads it.
 schema_documents contains doc if {
 	some doc in files.own_documents
 	regex.match(schema_path_pattern, doc.path)
+	not vendored(doc.path)
 }
+
+# Undefined, so false, until the layout says where the contracts directory is.
+vendored(path) if startswith(path, contracts.vendor_prefix)
 
 documents[doc.path] := doc.contents if {
 	some doc in schema_documents

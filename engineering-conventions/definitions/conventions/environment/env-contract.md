@@ -133,8 +133,10 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: developme
 
 Two locations, one per level, are all a reader or a tool should need to look in. A third copy (in a `config/`
 folder, or a second product-level file) looks authoritative while feeding nothing, and the two drift. The check
-reports any `env.schema.yaml` or `env.schema.yml` elsewhere, and names where it belongs. It needs the product
-directory from `[layout]`, and reports nothing until the repository declares it.
+reports any `env.schema.yaml` or `env.schema.yml` elsewhere, and names where it belongs, except in a vendored copy
+under the contracts directory's `vendor/` ([EC-0032](../dependencies/dependencies-declaration.md)): that file is
+another repository's interface, kept unchanged, and the DEPS requirements check it. It needs the product directory
+from `[layout]`, and reports nothing until the repository declares it.
 
 **Correct:**
 

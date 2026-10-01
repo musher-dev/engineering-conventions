@@ -1,0 +1,8 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "host-agent"
+output = "contracts"
+interfaces = ["runtime-config"]
+version = "0.4.0"
+description = "The API provisions hosts with the environment the agent reads."

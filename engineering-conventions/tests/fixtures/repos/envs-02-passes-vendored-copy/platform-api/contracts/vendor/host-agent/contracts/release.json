@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "repository": "host-agent",
+  "output": "contracts",
+  "version": "0.4.0",
+  "tag": "v0.4.0",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "interfaces": [
+    {
+      "id": "runtime-config",
+      "format": "env-schema",
+      "compatibility": "gated",
+      "files": [
+        {
+          "path": "env.schema.yaml",
+          "sha256": "1a7d9e0c336a051cdf042295ee3deefedacd1a255e567ef697ba1656cefbc730"
+        }
+      ]
+    }
+  ]
+}

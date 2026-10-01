@@ -199,6 +199,8 @@ This convention covers the content of every environment schema; where one lives 
 format is the one `musher-dev/platform` and `musher-dev/development-container` already use, unified: every field
 either repository defines is part of it, and a schema from either validates unchanged.
 
+A vendored copy under `contracts/vendor/` is another repository's schema; ENVS-03 to ENVS-19 do not read it.
+
 Checks that need the code are out of scope: that the code reads only declared variables, that every binding has a
 reader, and that generated files are current. They stay with each product's own tooling.
 
@@ -338,7 +340,9 @@ that is a fact of each environment, held in its configuration. Several bindings 
 URL and its admin URL), and each names it.
 
 The capabilities are terms tagged `runtime.capability` in `definitions/terminology/global.yml`, so a new one is a
-terminology change:
+terminology change. A capability that names an engine, such as `postgresql` or `valkey`, means that engine: its
+protocol and semantics are what the code depends on, and a compatible server from another project is a different
+engine. `cdn` covers content delivery only; an edge platform's key-value store or functions are `edge-compute`.
 
 | Capability | Is |
 | --- | --- |
@@ -351,10 +355,15 @@ terminology change:
 | `oauth-identity` | An OAuth or OpenID Connect provider users sign in with |
 | `code-hosting` | A source code host the process calls as an application |
 | `dns` | A DNS provider whose records the process reads or changes |
-| `cdn` | A content delivery network or edge platform |
+| `cdn` | A content delivery network whose caching and delivery the process configures or purges |
 | `vpn-mesh` | An overlay network the process joins or manages |
 | `block-storage` | A block storage system whose volumes the process provisions |
 | `cloud-compute` | A cloud provider whose machines the process creates or destroys |
+| `web-search` | A search engine API the process queries |
+| `container-registry` | A container image registry the process, or the machines it manages, pull from or push to |
+| `edge-compute` | An edge platform's key-value store or functions the process writes to or deploys |
+| `access-proxy` | An identity-aware proxy in front of services the process calls, presenting a service credential |
+| `valkey` | A Valkey key-value server the process reads from and writes to over its Redis-compatible protocol: a cache, counters, short-lived state |
 
 ### Sensitivity
 

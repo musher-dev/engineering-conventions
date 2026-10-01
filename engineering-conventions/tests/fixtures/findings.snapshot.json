@@ -358,6 +358,7 @@
   "envs-02-misplaced-schema": [
     ["platform-api/config/env.schema.yaml", "ENVS-02", "warning", "an environment schema lives at platform-api/env.schema.yaml or .devcontainer/env.schema.yaml, nowhere else; move this one to platform-api/env.schema.yaml", true]
   ],
+  "envs-02-passes-vendored-copy": [],
   "envs-03-invalid-schema": [
     ["platform-api/env.schema.yaml", "ENVS-03", "warning", "`bindings.API_PORT.type`: bindings.API_PORT.type must be one of the following: \"string\", \"integer\", \"number\", \"boolean\", \"enum\", \"list\".", true]
   ],
@@ -410,7 +411,7 @@
   "envs-17-passes-other-repository-target": [],
   "envs-18-passes-registered-capability": [],
   "envs-18-unregistered-capability": [
-    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"dns\", \"email-delivery\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"vpn-mesh\", or propose a new one", true]
+    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"access-proxy\", \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"container-registry\", \"dns\", \"edge-compute\", \"email-delivery\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"valkey\", \"vpn-mesh\", \"web-search\", or propose a new one", true]
   ],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]

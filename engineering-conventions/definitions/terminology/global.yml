@@ -579,7 +579,8 @@ terms:
     display_name: CDN
     token: cdn
     definition: >-
-      A content delivery network or edge platform the process configures or purges.
+      A content delivery network whose caching and delivery the process configures or purges. It does not cover an
+      edge platform's storage or compute, which is edge-compute.
     tags: [runtime.capability]
     stability: provisional
   - id: runtime.capability.vpn-mesh
@@ -601,6 +602,44 @@ terms:
     token: cloud-compute
     definition: >-
       A cloud provider whose machines the process creates or destroys.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.web-search
+    display_name: web search
+    token: web-search
+    definition: >-
+      A search engine API the process queries.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.container-registry
+    display_name: container registry
+    token: container-registry
+    definition: >-
+      A container image registry the process, or the machines it manages, pull images from or push images to.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.edge-compute
+    display_name: edge compute
+    token: edge-compute
+    definition: >-
+      An edge platform's key-value store or functions the process writes to or deploys.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.access-proxy
+    display_name: access proxy
+    token: access-proxy
+    definition: >-
+      An identity-aware proxy in front of services the process calls, to which the process presents a service
+      credential.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.valkey
+    display_name: Valkey
+    token: valkey
+    definition: >-
+      A Valkey key-value server the process reads from and writes to over its Redis-compatible protocol: a cache,
+      counters or short-lived state. It names the engine, as postgresql does, because the engine's protocol and
+      semantics are what the code depends on. A Redis server is a different engine, not this one.
     tags: [runtime.capability]
     stability: provisional
 

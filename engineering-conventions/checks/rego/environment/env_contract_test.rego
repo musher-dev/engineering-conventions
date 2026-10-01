@@ -94,3 +94,17 @@ test_envs_15_needs_the_dev_schema if {
 	docs := [dev_container({"MODEL_API_KEY": {}}), td.file(".devcontainer.json", {"secrets": {"A": {}}})]
 	count(env_contract.findings) == 0 with input as docs
 }
+
+test_envs_02_skips_a_vendored_copy if {
+	paths := [
+		".repo/repository.toml", "platform-api/env.schema.yaml",
+		"platform-api/contracts/vendor/host-agent/contracts/env.schema.yaml",
+	]
+	count(env_contract.findings) == 0 with input as repo("platform-api", paths)
+}
+
+test_envs_02_vendor_is_only_under_contracts if {
+	paths := [".repo/repository.toml", "platform-api/env.schema.yaml", "platform-api/vendor/host-agent/env.schema.yaml"]
+	found := env_contract.findings with input as repo("platform-api", paths)
+	td.pairs(found) == {["ENVS-02", "platform-api/vendor/host-agent/env.schema.yaml"]}
+}

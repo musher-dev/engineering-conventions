@@ -3,8 +3,8 @@
 # description: >-
 #   A service declares its runtime environment at <product>/env.schema.yaml
 #   (ENVS-01), and environment schemas live only there and in
-#   .devcontainer/ (ENVS-02). A dev container asks for every variable its
-#   schema takes from the host (ENVS-15).
+#   .devcontainer/, apart from vendored copies (ENVS-02). A dev container
+#   asks for every variable its schema takes from the host (ENVS-15).
 # scope: package
 # custom:
 #   convention: EC-0019
@@ -34,6 +34,7 @@ findings contains lib.finding("ENVS-02", path, message) if {
 	some path in files.repository_files
 	regex.match(`^env\.schema\.ya?ml$`, files.basename(path))
 	not path in allowed
+	not env.vendored(path)
 	message := sprintf(
 		"an environment schema lives at %s or %s, nowhere else; move this one to %s",
 		[home, dev_schema, destination(path)],

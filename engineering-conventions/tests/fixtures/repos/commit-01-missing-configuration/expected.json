@@ -1,0 +1,12 @@
+[
+  {
+    "id": "COMMIT-01",
+    "path": ".config/commits/committed.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "CONF-09",
+    "path": ".github/workflows/validate-pull-request.yml",
+    "severity": "warning"
+  }
+]

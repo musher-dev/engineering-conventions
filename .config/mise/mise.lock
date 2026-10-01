@@ -517,6 +517,46 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 url_api = "https://api.github.com/repos/rhysd/actionlint/releases/assets/384924919"
 provenance = "github-attestations"
 
+[[tools."aqua:stoplightio/spectral"]]
+version = "6.16.3"
+backend = "aqua:stoplightio/spectral"
+specifiers = ["6.16.3"]
+
+[tools."aqua:stoplightio/spectral"."platforms.linux-arm64"]
+checksum = "sha256:fdaf5f04d74dbc293a7c4895b1430a40ffeb3ee6f84d0998d33dd4bee1aa5954"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-linux-arm64"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893817"
+
+[tools."aqua:stoplightio/spectral"."platforms.linux-arm64-musl"]
+checksum = "sha256:fdaf5f04d74dbc293a7c4895b1430a40ffeb3ee6f84d0998d33dd4bee1aa5954"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-linux-arm64"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893817"
+
+[tools."aqua:stoplightio/spectral"."platforms.linux-x64"]
+checksum = "sha256:b90ac8da7b804d04052b9db8d4ea5028d29fba9bc69b02dc85d46e5fcc476452"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-linux-x64"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893863"
+
+[tools."aqua:stoplightio/spectral"."platforms.linux-x64-musl"]
+checksum = "sha256:b90ac8da7b804d04052b9db8d4ea5028d29fba9bc69b02dc85d46e5fcc476452"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-linux-x64"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893863"
+
+[tools."aqua:stoplightio/spectral"."platforms.macos-arm64"]
+checksum = "sha256:d01857a60831def88c310078708c7a990c17f2ad3e2a09b4e84c57e1c02e8f06"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-macos-arm64"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893816"
+
+[tools."aqua:stoplightio/spectral"."platforms.macos-x64"]
+checksum = "sha256:929c855efd66eee1bbb25132be24bb94d65ae9a79523c94e457b3b4c130cbe7f"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-macos-x64"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893873"
+
+[tools."aqua:stoplightio/spectral"."platforms.windows-x64"]
+checksum = "sha256:c5601b0f2601f3df4606351c76d821ec9f5af13c3b8640722b902ee9137db4d2"
+url = "https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral.exe"
+url_api = "https://api.github.com/repos/stoplightio/spectral/releases/assets/499893819"
+
 [[tools."aqua:tamasfe/taplo"]]
 version = "0.10.0"
 backend = "aqua:tamasfe/taplo"
@@ -630,6 +670,46 @@ checksum = "sha256:b183b1e996eddfab9659f1e9b46e059f1ef1cf984a1f14e5da09f7876a4b3
 url = "https://github.com/zizmorcore/zizmor/releases/download/v1.30.1/zizmor-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/zizmorcore/zizmor/releases/assets/552067645"
 provenance = "github-attestations"
+
+[[tools."github:crate-ci/committed"]]
+version = "1.1.11"
+backend = "github:crate-ci/committed"
+specifiers = ["1.1.11"]
+
+[tools."github:crate-ci/committed"."platforms.linux-arm64"]
+checksum = "sha256:96d6334ab2dccc0e90b67ebdcaa2af856f29eadef48161926e21a0e35f1ae80d"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/361545435"
+
+[tools."github:crate-ci/committed"."platforms.linux-arm64-musl"]
+checksum = "sha256:96d6334ab2dccc0e90b67ebdcaa2af856f29eadef48161926e21a0e35f1ae80d"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/361545435"
+
+[tools."github:crate-ci/committed"."platforms.linux-x64"]
+checksum = "sha256:1e5c20049eeaa4633e6798283913f92dc90a97f2b5c6dfc28e8c4b7e77a67157"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/361544963"
+
+[tools."github:crate-ci/committed"."platforms.linux-x64-musl"]
+checksum = "sha256:1e5c20049eeaa4633e6798283913f92dc90a97f2b5c6dfc28e8c4b7e77a67157"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/361544963"
+
+[tools."github:crate-ci/committed"."platforms.macos-arm64"]
+checksum = "sha256:98eae08e1b0715ef6446c4bd08352f21f3a3ce21535a35687a1e132bcb4fcac1"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/362199688"
+
+[tools."github:crate-ci/committed"."platforms.macos-x64"]
+checksum = "sha256:b1718d951c8a90539ffb7a81145fdadf81c6c9a1f17560be433a74c5b3f7bfca"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/361544941"
+
+[tools."github:crate-ci/committed"."platforms.windows-x64"]
+checksum = "sha256:af4f5a65320471751ed1dfbb5502f15f4857cea797b077c6049acb2b995d293b"
+url = "https://github.com/crate-ci/committed/releases/download/v1.1.11/committed-v1.1.11-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/crate-ci/committed/releases/assets/361545840"
 
 [[tools.node]]
 version = "24.21.0"

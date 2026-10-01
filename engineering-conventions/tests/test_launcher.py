@@ -11,7 +11,9 @@ from pathlib import Path
 
 import pytest
 
+from conventions_tools import generate
 from conventions_tools.cli import main
+from conventions_tools.content import Content
 from conventions_tools.fixtures import expected_findings, materialize
 from conventions_tools.loading import as_list, as_map, get_str
 from conventions_tools.paths import HOME_ENV, fixture_repos_dir, product_dir
@@ -136,6 +138,7 @@ def test_tool_versions_move_with_the_repository_pins() -> None:
         ("CONFTEST_VERSION", "aqua:open-policy-agent/conftest"),
         ("VALE_VERSION", "aqua:vale-cli/vale"),
         ("JQ_VERSION", "aqua:jqlang/jq"),
+        ("SPECTRAL_VERSION", "aqua:stoplightio/spectral"),
     ):
         declared = re.search(rf"^{variable}=(\S+)$", text, re.MULTILINE)
         assert declared, f"{variable} is not set in bin/conventions"
@@ -148,9 +151,19 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     completed = _launch("check", "--output", "json", "-C", str(case), cwd=PRODUCT)
     assert completed.returncode == 0, completed.stderr
     found = {finding_id for _, finding_id, _, _ in _found(completed.stdout)}
-    # The case holds no .repo/ declarations and no Taskfile, so they are
-    # reported missing: this repository's own were not read.
-    assert found == {"GHA-07", "ADOPT-09", "REPO-01", "TASK-10"}
+    # The case holds no .repo/ declarations, Taskfile, CODEOWNERS, security
+    # policy or commit rules, so they are reported missing: this repository's
+    # own were not read.
+    assert found == {
+        "GHA-07",
+        "ADOPT-09",
+        "REPO-01",
+        "TASK-10",
+        "COMM-04",
+        "COMM-06",
+        "COMMIT-01",
+        "COMMIT-04",
+    }
 
 
 def test_launcher_is_committed_executable() -> None:
@@ -426,3 +439,105 @@ def test_sha256_falls_back_to_whichever_tool_exists(tool: str, tmp_path: Path) -
         completed.stdout.strip()
         == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     )
+
+
+OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"
+
+
+def _openapi_repo(tmp_path: Path) -> Path:
+    # A repository that declares one openapi interface, as a YAML document,
+    # with a ruleset that extends the shipped one.
+    repo = materialize(
+        fixture_repos_dir(PRODUCT) / "oas-03-passes-through-check-task", tmp_path / "repo"
+    )
+    outputs = repo / ".repo" / "outputs.toml"
+    outputs.write_text(outputs.read_text(encoding="utf-8").replace("public.json", "public.yaml"))
+    documents = repo / "platform-api" / "contracts" / "openapi"
+    (documents / "public.json").unlink()
+    shutil.copy(OPENAPI_FIXTURES / "clean.yaml", documents / "public.yaml")
+    return repo
+
+
+def test_openapi_lints_the_declared_documents(tmp_path: Path) -> None:
+    if shutil.which("spectral") is None:
+        pytest.skip("spectral is not installed")
+    repo = _openapi_repo(tmp_path)
+    completed = _launch("openapi", "--ruleset", ".config/openapi/spectral.yaml", cwd=repo)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    link = repo / ".conventions" / "openapi.spectral.yaml"
+    assert link.resolve() == (PRODUCT / "checks" / "openapi" / "musher.spectral.yaml").resolve()
+
+
+def test_openapi_fails_on_a_warning_in_a_named_file(tmp_path: Path) -> None:
+    if shutil.which("spectral") is None:
+        pytest.skip("spectral is not installed")
+    repo = _openapi_repo(tmp_path)
+    shutil.copy(OPENAPI_FIXTURES / "trips.yaml", repo / "trips.yaml")
+    completed = _launch("openapi", "-C", str(repo), "trips.yaml", cwd=tmp_path)
+    assert completed.returncode == 1, completed.stdout + completed.stderr
+    assert "musher-batch-207" in completed.stdout
+
+
+def test_openapi_without_a_ruleset_cannot_run(tmp_path: Path) -> None:
+    repo = _openapi_repo(tmp_path)
+    shutil.rmtree(repo / ".config" / "openapi")
+    completed = _launch("openapi", cwd=repo)
+    assert completed.returncode == 2
+    assert "(OAS-02)" in completed.stderr
+
+
+def test_openapi_with_no_interface_has_nothing_to_check(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    completed = _launch("openapi", cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert "no OpenAPI documents to check" in completed.stderr
+    assert not (repo / ".conventions").exists()
+
+
+def test_an_ignored_link_is_not_reported(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "oas-04-committed-link", tmp_path / "repo")
+    git = shutil.which("git")
+    assert git
+    subprocess.run([git, "init", "-q", str(repo)], check=True)
+    reported = _launch("check", "--output", "json", cwd=repo)
+    assert "OAS-04" in {finding_id for _, finding_id, _, _ in _found(reported.stdout)}, (
+        reported.stderr
+    )
+    (repo / ".gitignore").write_text(".conventions/\n")
+    ignored = _launch("check", "--output", "json", cwd=repo)
+    assert ignored.returncode == 0, ignored.stderr
+    assert "OAS-04" not in {finding_id for _, finding_id, _, _ in _found(ignored.stdout)}
+
+
+def test_prose_runs_the_copy_style_where_the_vale_config_applies_it(tmp_path: Path) -> None:
+    config = tmp_path / ".config" / "markdown" / "vale.ini"
+    config.parent.mkdir(parents=True)
+    config.write_text(
+        "StylesPath = styles\n"
+        "Packages = https://github.com/musher-dev/engineering-conventions/releases/download/"
+        "v0.7.1/MusherProse.zip\n"
+        "[formats]\nsvelte = html\n"
+        "[site/**/*.{md,svelte}]\nBasedOnStyles = MusherCopy, proselint, write-good\n"
+        "[site/reference/*.md]\nMusherCopy.Banned = NO\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "site" / "reference").mkdir(parents=True)
+    (tmp_path / "site" / "index.svelte").write_text("<p>A seamless runtime.</p>\n")
+    (tmp_path / "site" / "reference" / "terms.md").write_text("# Terms\n\nA seamless runtime.\n")
+    (tmp_path / "README.md").write_text("# Readme\n\nA seamless runtime.\n")
+    completed = _launch("prose", "-C", str(tmp_path), cwd=tmp_path)
+    assert completed.returncode == 1, completed.stderr
+    # The copy style runs where the config applies it, honours the config's
+    # [formats] and its toggles, and nowhere else.
+    assert re.findall(r"^ (\S+)$", re.sub(r"\x1b\[[0-9;]*m", "", completed.stdout), re.M) == [
+        "site/index.svelte"
+    ]
+    assert "MusherCopy.Banned" in completed.stdout
+
+
+def test_prose_hands_vale_every_copy_extension(content: Content) -> None:
+    text = LAUNCHER.read_text(encoding="utf-8")
+    found = re.search(r"^COPY_FILES='\\\.\(([a-z0-9|?]+)\)\$'$", text, re.M)
+    assert found, "bin/conventions defines COPY_FILES as '\\.(ext|ext)$'"
+    listed = set(found.group(1).replace("html?", "html|htm").split("|"))
+    assert listed == set(generate.copy_extensions(content.copy_style))

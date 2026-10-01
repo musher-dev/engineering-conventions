@@ -4,8 +4,10 @@ title: Taskfile style
 summary: >-
   Every Taskfile declares schema version '3', names its variables in
   UPPER_SNAKE and its tasks in kebab-case, writes templates without inner
-  spaces, describes every public task and calls every internal one, and
-  names only includes, paths and sources that exist.
+  spaces, describes every public task and calls every internal one,
+  names only includes, paths and sources that exist, keeps its default
+  task to listing, nests names at most three namespaces deep, names no
+  machine-specific path, and prompts before destroying data.
 status: draft
 topic: tasks
 applies_to:
@@ -143,6 +145,38 @@ requirements:
       engine: conftest
       package: conventions.checks.tasks.taskfile_style
     aliases: ["platform:TF-21"]
+  - id: TASK-15
+    title: The root Taskfile's default task only lists the tasks
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
+  - id: TASK-16
+    title: A task name nests at most three namespaces
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
+  - id: TASK-17
+    title: A Taskfile names no path that exists on only one machine
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
+  - id: TASK-18
+    title: A task that destroys what nothing can restore declares a prompt
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
 ---
 
 # Taskfile style
@@ -192,7 +226,9 @@ Every requirement is `proposed` at severity `warning`.
 | TF-19, TF-20 | [EC-0016](task-interface.md) | A small shared set of verbs replaces one repository's allow-list. |
 | TF-22, TF-23 | Not adopted | Specific to the platform's tools and layout. |
 
-TASK-06 and TASK-09 are new.
+TASK-06 and TASK-09 are new. TASK-15 to TASK-18 put into checks what the platform's Taskfile authoring guide
+asked of every Taskfile in prose: a `default` task that only lists, shallow namespaces, no machine-specific paths,
+and a prompt before destroying data. Task's schema does not check any of them.
 
 ## Not required
 
@@ -476,6 +512,161 @@ tasks:
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform TF-21
+
+### TASK-15
+
+**The root Taskfile's `default` task only lists the tasks.**
+
+`task` with no arguments runs the root Taskfile's `default` task, and it is the first thing a newcomer types to find
+out what a repository offers. A `default` that builds, migrates or deploys does that work by surprise. Every command
+of a `default` task (or of the task that takes `default` as an alias) is a `task` call with flags only, among them
+`--list`, `--list-all`, `-l` or `-a`; or `task help` or `task list`, or a `task:` call to either, where that task
+itself only lists or prints; or a line that only prints text with `echo` or `printf`. A `default` task has no
+`deps`. A Taskfile with no `default` task is not affected: Task then lists the tasks itself.
+
+**Correct:**
+
+```yaml
+tasks:
+  default:
+    desc: List the tasks.
+    cmds:
+      - task --list
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  default:
+    desc: Build everything.
+    cmds:
+      - task: build             # name the work, and let default list it
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-16
+
+**A task name nests at most three namespaces.**
+
+A name is typed, read in `task --list`, and matched by hooks and workflows. Each `:` adds a level a reader has to
+hold, and past three the levels stop meaning anything: `check:biome:fix:unsafe:all` says no more than
+`check:biome:fix:unsafe-all`. A name has at most four segments, three namespaces and the name, counted in the
+Taskfile that declares it; the namespace an include adds is the including Taskfile's choice and is not counted.
+Aliases are counted the same way. Join the extra words with hyphens.
+
+**Correct:**
+
+```yaml
+tasks:
+  test:contract:openapi:public:
+    desc: Check the public API against its contract.
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  test:contract:openapi:public:v2:
+    desc: Check version 2 of the public API.
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-17
+
+**A Taskfile names no path that exists on only one machine.**
+
+A path into someone's home directory or into the place one environment keeps its checkout works for whoever wrote
+it, and fails in every other clone, container and CI runner, often far from the line that caused it. Task gives
+every Taskfile `{{.ROOT_DIR}}` and `{{.TASKFILE_DIR}}` for exactly this. The check reads each command line, each
+task's `dir`, `sources`, `generates` and `dotenv`, every variable, and each include's `taskfile` and `dir`, and looks
+for a path that starts `/home/<user>`, `/Users/<user>`, `/root/`, `/workspace` or `/workspaces`, or a Windows
+drive (`C:\`). It does not read a line that runs a container tool (`docker`, `podman`, `nerdctl`, `kubectl`,
+`devcontainer`), where a path may be the container's own, nor a path after `:`, such as a mount target or a URL,
+nor a line that only prints text or a comment. Shared system paths such as `/tmp`, `/dev/null`, `/usr/bin/env` and
+`/opt` are not one machine's.
+
+**Correct:**
+
+```yaml
+vars:
+  CACHE_DIR: '{{.ROOT_DIR}}/.cache'
+tasks:
+  build:
+    desc: Build the binary.
+    cmds:
+      - go build -o {{.ROOT_DIR}}/dist/app ./...
+      - docker run -v "{{.ROOT_DIR}}:/workspace" -w /workspace builder make
+```
+
+**Incorrect:**
+
+```yaml
+vars:
+  CACHE_DIR: /home/ana/project/.cache
+tasks:
+  build:
+    desc: Build the binary.
+    cmds:
+      - cd /workspaces/project && go build ./...
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-18
+
+**A task that destroys what nothing can restore declares a `prompt`.**
+
+`prompt:` makes Task ask before it runs a task, so a mistyped or autocompleted name cannot wipe data on its own;
+Task still runs it without asking under `--yes`, which is how a workflow calls it. The requirement covers what no
+checkout, build or rerun brings back:
+
+| Command | Loses |
+| --- | --- |
+| `docker volume rm` or `prune`, `docker system prune --volumes` (and `podman`) | Container volumes |
+| `compose … down -v` or `--volumes`, also behind a template such as `{{.COMPOSE}} down -v` | A stack's volumes |
+| `tofu` or `terraform` `destroy -auto-approve`, and `apply -auto-approve` without a saved plan | Infrastructure |
+| `git clean -f…` | Untracked files |
+| `git reset --hard` | Uncommitted changes |
+
+A task whose last name segment is `destroy`, `drop` or `wipe`, or that is named `db:reset` (or `database:reset`),
+promises to destroy data and needs a prompt as well. An internal task may leave the prompt to a task that calls it.
+
+Deleting files is not covered. `rm -rf` in a Taskfile almost always removes what a build writes (`dist`, `build`,
+`node_modules`) or a scratch directory the task made, which the next build or `git checkout` restores, and a check
+cannot tell build output from data. A `clean` task needs no prompt. Neither does a database the task drops and
+recreates as scratch, such as a migration tool's dev database or a test database; a database people keep data in is
+dropped by a task named for it (`db:reset`, `db:drop`), and that name is what the check reads.
+
+**Correct:**
+
+```yaml
+tasks:
+  db:reset:
+    desc: Drop the local database and migrate it from scratch.
+    prompt: This deletes every row in the local database. Continue?
+    cmds:
+      - docker compose down -v
+      - task: db:migrate
+  clean:
+    desc: Remove the build output.
+    cmds:
+      - rm -rf dist
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  stack:reset:
+    desc: Stop the stack and wipe its volumes.
+    cmds:
+      - docker compose down -v   # no prompt
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ## References
 

@@ -16,9 +16,9 @@ vars:
 
 tasks:
   schemas:check:
-    desc: Check every JSON Schema in checks/schemas against its metaschema.
+    desc: Check every JSON Schema in checks/schemas, the vendored ones included, against its metaschema.
     cmds:
-      - check-jsonschema --check-metaschema {{.SCHEMA_DIR}}/*.schema.json
+      - check-jsonschema --check-metaschema {{.SCHEMA_DIR}}/*.schema.json {{.SCHEMA_DIR}}/vendor/*/*.json
 
   schemas:validate:
     desc: Validate content, frontmatter and GitHub/Task config against their JSON Schemas.
@@ -35,6 +35,10 @@ tasks:
         vars:
           SCHEMA: families
           PATHSPEC: "'engineering-conventions/definitions/conventions/families.yml'"
+      - task: schemas:validate:files
+        vars:
+          SCHEMA: copy-style
+          PATHSPEC: "'engineering-conventions/definitions/copy/style.yml'"
       - task: schemas:validate:files
         vars:
           YQ_FLAGS: -p toml

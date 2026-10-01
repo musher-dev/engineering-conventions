@@ -302,3 +302,29 @@ def test_family_unread_by_waiver_checks_is_reported(
         "checks/rego/adoption/declaration.rego does not read data.conventions.checks.layout, "
         "so ADOPT-06 cannot see the findings its waivers cover; add it to raw_findings"
     ]
+
+
+def test_every_copy_rule_has_one_requirement(content: Content) -> None:
+    assert invariants.copy_rules_have_requirements(content) == []
+
+
+def test_a_copy_rule_without_a_requirement_is_reported(content: Content) -> None:
+    style = content.copy_style
+    extra = replace(style.rules[0], name="Unclaimed")
+    edited = replace(content, copy_style=replace(style, rules=(*style.rules, extra)))
+    assert invariants.copy_rules_have_requirements(edited) == [
+        "definitions/copy/style.yml: MusherCopy.Unclaimed has no requirement; "
+        "add one with engine: vale, style: MusherCopy.Unclaimed"
+    ]
+
+
+def test_a_requirement_naming_a_missing_copy_rule_is_reported(content: Content) -> None:
+    style = content.copy_style
+    banned = next(rule for rule in style.rules if rule.name == "Banned")
+    edited = replace(
+        content,
+        copy_style=replace(style, rules=tuple(r for r in style.rules if r is not banned)),
+    )
+    assert invariants.copy_rules_have_requirements(edited) == [
+        "COPY-05: validation.style MusherCopy.Banned is not a rule in definitions/copy/style.yml"
+    ]

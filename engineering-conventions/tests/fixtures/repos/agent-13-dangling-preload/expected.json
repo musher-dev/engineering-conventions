@@ -1,0 +1,7 @@
+[
+  {
+    "id": "AGENT-13",
+    "path": ".claude/agents/reviewer.md",
+    "severity": "warning"
+  }
+]

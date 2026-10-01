@@ -182,3 +182,20 @@ test_path_resolution if {
 	taskfiles.missing("docs/Taskfile.yml", "nowhere.txt") with input as repository
 	not taskfiles.missing("docs/Taskfile.yml", "{{.VAR}}") with input as repository
 }
+
+test_command_lines_drop_comments_and_printed_text if {
+	task := {"cmds": [
+		"# a note\ngo build \\\n  ./...",
+		{"cmd": "echo \"done; see docs\""},
+		"echo hi && rm -rf x",
+		{"task": "lint"},
+	]}
+	taskfiles.command_lines(task) == ["go build ./...", "echo hi && rm -rf x"]
+	taskfiles.command_lines("go vet ./...") == ["go vet ./..."]
+	taskfiles.command_lines(["a", 1]) == ["a"]
+	taskfiles.command_lines({"cmd": "make"}) == ["make"]
+}
+
+test_called_by if {
+	taskfiles.called_by({"cmds": [{"task": ":lint"}, "x"], "deps": ["setup", {"task": "b"}]}) == {"lint", "setup", "b"}
+}

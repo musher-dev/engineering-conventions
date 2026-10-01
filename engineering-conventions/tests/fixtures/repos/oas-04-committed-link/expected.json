@@ -1,0 +1,7 @@
+[
+  {
+    "id": "OAS-04",
+    "path": ".conventions/openapi.spectral.yaml",
+    "severity": "warning"
+  }
+]

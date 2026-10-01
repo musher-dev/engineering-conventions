@@ -101,6 +101,8 @@ index := {
 	"release_record_schema": release_record_schema,
 	"repository_schema": repository_schema,
 	"decision_schema": decision_schema,
+	"skill_frontmatter_schema": skill_frontmatter_schema,
+	"subagent_frontmatter_schema": subagent_frontmatter_schema,
 }
 
 # A cut-down dependencies schema with the shapes DEPS-02's messages depend on:
@@ -147,6 +149,34 @@ decision_schema := {
 		"superseded_by": {"type": "array"},
 		"amends": {"type": "array"},
 		"amended_by": {"type": "array"},
+	},
+}
+
+# A cut-down skill schema with the shapes AGENT-10's messages depend on: an
+# unknown key such as version, and a description over 1024 characters.
+skill_frontmatter_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["description"],
+	"properties": {
+		"name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+		"description": {"type": "string", "minLength": 1, "maxLength": 1024},
+		"metadata": {"type": "object", "additionalProperties": {"type": "string"}},
+		"disable-model-invocation": {"type": "boolean"},
+	},
+}
+
+# A cut-down subagent schema with the shape AGENT-12's messages depend on: a
+# missing description.
+subagent_frontmatter_schema := {
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["name", "description"],
+	"properties": {
+		"name": {"type": "string", "pattern": "^[^:-][^:]*$"},
+		"description": {"type": "string", "minLength": 1},
+		"tools": {"type": "string"},
+		"skills": {"type": ["array", "string"]},
 	},
 }
 

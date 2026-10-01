@@ -16,10 +16,19 @@ description: >-
   with setup, check and lint, the git hooks of any repository that uses
   lefthook, the agent context of any repository that has one, the shape
   of its decision records if it keeps any, and the format of any
-  environment schema it holds, and the dev container of any repository
-  that has one.
+  environment schema it holds, the dev container of any repository
+  that has one, the community files GitHub reads: issue and
+  discussion forms, FUNDING.yml, one CODEOWNERS and a security policy,
+  the OpenAPI documents of any OpenAPI interface it offers, the
+  commit messages and pull request titles of every repository, checked
+  by committed, and the Vale config that lints the copy of any site it
+  publishes.
 include:
-  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS]
+  # OAS asks nothing of a repository that declares no openapi interface,
+  # and an API can be offered by a service, a library or a specification, so
+  # every kind selects it. COPY likewise applies only to a repository that
+  # publishes a site.
+  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS, COMM, OAS, COMMIT, COPY]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
   # schema. Of EC-0016 and EC-0019, only what every repository shares is
   # selected here; the kind profiles add the rest by ID, because an

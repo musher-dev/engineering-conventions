@@ -1,0 +1,164 @@
+# The OpenAPI ruleset every repository that declares an `openapi` interface
+# extends (EC-0037, OAS-01). Spectral is the engine (decision 0023): a
+# consumer's own .config/openapi/spectral.yaml extends this file through the
+# .conventions/openapi.spectral.yaml link that `conventions openapi` refreshes,
+# and turns a rule off there, or in `overrides`, with its reason beside it.
+#
+# Each musher-* rule is explained, with a correct and an incorrect example, in
+# definitions/conventions/openapi/openapi-documents.md. Every rule is a warning
+# in the 0.x series, like every requirement.
+#
+# Core functions only, so the file runs on the standalone Spectral binary with
+# nothing else installed. Three details are load-bearing:
+#   - a filter tests `@ &&` before reading a key, so a null node in the
+#     document cannot stop the match;
+#   - a `schema` function names draft 2020-12: Spectral's default draft has no
+#     `minContains`, and `if`/`then` need draft 7 or later;
+#   - a rule on an array names it with `field:` from its parent, so the
+#     function sees the array itself rather than each item;
+#   - casing is a `pattern`, not `casing: camel`, which rejects initialisms.
+formats: [oas3]
+extends:
+  - [spectral:oas, recommended]
+rules:
+  musher-enum-upper-snake-case:
+    description: Enum values of two or more members are UPPER_SNAKE_CASE (AIP-126).
+    message: "Enum values must be UPPER_SNAKE_CASE"
+    severity: warn
+    resolved: false
+    given: "$..[?(@ && @.enum)]"
+    then:
+      field: enum
+      function: schema
+      functionOptions:
+        schema:
+          $schema: "https://json-schema.org/draft/2020-12/schema"
+          if: {type: array, minItems: 2}
+          then:
+            items:
+              if: {type: string}
+              then: {pattern: "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"}
+
+  musher-enum-no-unspecified:
+    description: No enum advertises an UNSPECIFIED sentinel; an unset value is omitted or null.
+    message: "Enum value is an UNSPECIFIED sentinel"
+    severity: warn
+    resolved: false
+    given: "$..enum[*]"
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "^(.*_)?UNSPECIFIED$"
+
+  musher-oneof-discriminator:
+    description: A oneOf union carries a discriminator.
+    message: "oneOf without a discriminator"
+    severity: warn
+    resolved: false
+    given: "$..[?(@ && @.oneOf)]"
+    then:
+      field: discriminator
+      function: truthy
+
+  musher-no-anyof-union:
+    description: >-
+      anyOf only makes a schema nullable; it never models a union of two or
+      more non-null schemas.
+    message: "anyOf models a union of non-null schemas; use oneOf with a discriminator"
+    severity: warn
+    resolved: false
+    given: "$..[?(@ && @.anyOf)]"
+    then:
+      field: anyOf
+      function: schema
+      functionOptions:
+        schema:
+          $schema: "https://json-schema.org/draft/2020-12/schema"
+          type: array
+          not:
+            contains:
+              not:
+                type: object
+                required: [type]
+                properties: {type: {const: "null"}}
+            minContains: 2
+
+  musher-error-problem-json:
+    description: Every 4xx and 5xx response declares application/problem+json (RFC 9457).
+    message: "Error response does not declare application/problem+json"
+    severity: warn
+    given: "$.paths[*][get,put,post,delete,options,head,patch,trace].responses[?(@property.match(/^[45]/))]"
+    then:
+      field: content.application/problem+json
+      function: truthy
+
+  musher-boolean-prefix:
+    description: A boolean property is named is, has, can or should, then PascalCase.
+    message: "Boolean property lacks an is/has/can/should prefix"
+    severity: warn
+    resolved: false
+    given: "$..properties[?(@ && @.type == 'boolean')]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^(is|has|can|should)[A-Z]"
+
+  musher-property-camel-case:
+    description: Property names are lowerCamelCase; an initialism inside one may stay upper case.
+    message: "Property is not camelCase"
+    severity: warn
+    resolved: false
+    given: "$..properties[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  musher-operation-id-snake-case:
+    description: An operationId is snake_case, verb then resource.
+    message: "operationId is not snake_case verb_resource"
+    severity: warn
+    given: "$.paths[*][get,put,post,delete,options,head,patch,trace].operationId"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z]+(_[a-z0-9]+)+$"
+
+  musher-named-body-schema:
+    description: >-
+      A request or response body schema is a $ref to a named component, or an
+      array, allOf, oneOf or anyOf of them.
+    message: "Inline anonymous body schema; declare a named component"
+    severity: warn
+    resolved: false
+    given:
+      - "$.paths[*][get,put,post,delete,options,head,patch,trace].responses[*].content[*]"
+      - "$.paths[*][get,put,post,delete,options,head,patch,trace].requestBody.content[*]"
+    then:
+      field: schema
+      function: schema
+      functionOptions:
+        schema:
+          $schema: "https://json-schema.org/draft/2020-12/schema"
+          anyOf:
+            - required: ["$ref"]
+            - required: [allOf]
+            - required: [oneOf]
+            - required: [anyOf]
+            - required: [items]
+              properties: {items: {required: ["$ref"]}}
+
+  musher-batch-207:
+    description: A batch custom method (":batchVerb") returns 207 Multi-Status, never 200.
+    message: "Batch operation must declare 207 and not 200"
+    severity: warn
+    given: "$.paths[?(@property.match(/:batch[A-Z]/))].post"
+    then:
+      field: responses
+      function: schema
+      functionOptions:
+        schema:
+          $schema: "https://json-schema.org/draft/2020-12/schema"
+          type: object
+          required: ["207"]
+          not: {required: ["200"]}

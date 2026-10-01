@@ -13,10 +13,12 @@ It has three layers. `definitions/` is the source of truth; `checks/` validates 
 | Defined | `definitions/conventions/README.md` | An index of every convention and requirement ID, retired ones included | yes |
 | Defined | `definitions/terminology/` | `global.yml`: terms, display forms and aliases | |
 | Defined | `definitions/profiles/` | Convention profiles, such as `base-repo` | |
+| Defined | `definitions/copy/` | `style.yml`: the MusherCopy rules and the Vale packages the copy rules adopt | |
 | Checked | `checks/rego/` | The Conftest checks and the `main` router that applies profiles, severities and waivers | |
 | Checked | `checks/schemas/` | JSON Schemas for the declarations, frontmatter, terminology and profiles | |
 | Checked | `checks/data/index.json` | Requirements, profiles and vocabulary, read by the Rego checks | yes |
 | Checked | `checks/vale/MusherConventions/` | The Vale style for prose-scope aliases | yes |
+| Checked | `checks/vale/MusherCopy/`, `checks/vale/MusherProse.ini` | The Vale style for public copy, and the `.vale.ini` of the `MusherProse` package | yes |
 | Shown | `examples/consumer/` | A worked repository that meets every check | |
 | Shown | `examples/staged-consumer/` | The same repository part-way through a staged adoption, with a waiver | |
 | Tooling | `bin/conventions` | The launcher a consumer runs; mise puts `bin/` on PATH | |

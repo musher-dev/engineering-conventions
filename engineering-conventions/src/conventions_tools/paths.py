@@ -54,8 +54,18 @@ def release_file(product: Path) -> Path:
     return product / "checks" / "data" / "release.json"
 
 
+def vale_dir(product: Path) -> Path:
+    """The Vale StylesPath the bundle ships: one directory per style."""
+    return product / "checks" / "vale"
+
+
 def vale_style_dir(product: Path) -> Path:
-    return product / "checks" / "vale" / "MusherConventions"
+    return vale_dir(product) / "MusherConventions"
+
+
+def copy_style_file(product: Path) -> Path:
+    """The source of the MusherCopy style and the MusherProse package (EC-0038)."""
+    return definitions_dir(product) / "copy" / "style.yml"
 
 
 def terminology_dir(product: Path) -> Path:

@@ -1,7 +1,7 @@
 version: '3'
 
 # The Rego rules: format, lint, type-check and unit-test
-# engineering-conventions/checks/rego. The fixture-repo pass (every requirement
+# engineering-conventions/checks/rego, and the shipped OpenAPI ruleset. The fixture-repo pass (every requirement
 # proved against a miniature repository) runs under `cli:test`, because the
 # CLI is what feeds a repository to conftest.
 
@@ -12,6 +12,8 @@ vars:
   INDEX: '{{.PRODUCT_DIR}}/checks/data/index.json'
   REGAL_CONFIG: .config/rego/regal.yaml
   COVERAGE_THRESHOLD: 80
+  OPENAPI_RULESET: '{{.PRODUCT_DIR}}/checks/openapi/musher.spectral.yaml'
+  OPENAPI_FIXTURES: '{{.PRODUCT_DIR}}/tests/fixtures/openapi'
 
 tasks:
   checks:fmt:
@@ -55,3 +57,27 @@ tasks:
           {{.REGO_DIR}} {{.INDEX}} > "${report}"
         coverage="$(opa eval --stdin-input --format raw 'input.coverage' < "${report}")"
         echo "Rego coverage: ${coverage}% (threshold {{.COVERAGE_THRESHOLD}}%)"
+
+  checks:openapi:
+    desc: Test the shipped Spectral ruleset; each musher-* rule fires once on trips.yaml, and nothing on clean.yaml.
+    cmds:
+      # The rules are warnings, so spectral exits 0 on both documents; a
+      # non-zero exit is a broken ruleset or document, and fails the task.
+      - |
+        clean="$(spectral lint --quiet --format json --ruleset {{.OPENAPI_RULESET}} {{.OPENAPI_FIXTURES}}/clean.yaml)"
+        if [[ "$(jq length <<< "${clean}")" != 0 ]]; then
+          jq -r '.[] | "clean.yaml: \(.code) at \(.path | join("."))"' <<< "${clean}" >&2
+          echo "checks:openapi: clean.yaml must pass every rule" >&2
+          exit 1
+        fi
+      - |
+        rules="$(yq -o json '.rules | keys' {{.OPENAPI_RULESET}} | jq -c 'map(select(startswith("musher-"))) | sort')"
+        fired="$(spectral lint --quiet --format json --ruleset {{.OPENAPI_RULESET}} {{.OPENAPI_FIXTURES}}/trips.yaml \
+          | jq -c 'map(.code) | sort')"
+        if [[ "${rules}" != "${fired}" ]]; then
+          echo "checks:openapi: trips.yaml must fire each musher-* rule exactly once and nothing else" >&2
+          echo "  rules: ${rules}" >&2
+          echo "  fired: ${fired}" >&2
+          exit 1
+        fi
+        echo "checks:openapi: $(jq length <<< "${rules}") rules each fire once on trips.yaml; clean.yaml passes"

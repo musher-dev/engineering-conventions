@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Subagent frontmatter",
+  "description": "The YAML frontmatter of a Claude Code subagent, a Markdown file under .claude/agents/ (EC-0034). It accepts the fields Claude Code reads and nothing else. AGENT-12 checks a subagent's frontmatter against this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "description"],
+  "properties": {
+    "name": {
+      "description": "The subagent's identity. Claude Code skips a file whose name starts with a hyphen or holds a colon, which it reserves for plugins.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^:-][^:]*$"
+    },
+    "description": {
+      "description": "When Claude should delegate to the subagent.",
+      "type": "string",
+      "minLength": 1
+    },
+    "tools": {
+      "description": "The tools the subagent may use, as a comma-separated string or a list. Omitted, it inherits every tool.",
+      "$ref": "#/definitions/words"
+    },
+    "disallowedTools": {
+      "description": "Tools removed from the inherited or listed set.",
+      "$ref": "#/definitions/words"
+    },
+    "model": {
+      "description": "An alias, a full model ID, or inherit.",
+      "type": "string",
+      "minLength": 1
+    },
+    "permissionMode": {
+      "description": "The permission mode the subagent runs in.",
+      "type": "string",
+      "enum": ["default", "acceptEdits", "auto", "dontAsk", "bypassPermissions", "plan", "manual"]
+    },
+    "maxTurns": {
+      "description": "The most agentic turns before the subagent stops.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "skills": {
+      "description": "Skills preloaded into the subagent's context, as a list or one comma-separated string, each the name of a skill in the repository (AGENT-13) that the model may invoke (AGENT-14).",
+      "$ref": "#/definitions/words"
+    },
+    "mcpServers": {
+      "description": "MCP servers, each a configured server's name or an inline definition.",
+      "type": "array",
+      "items": {
+        "type": ["string", "object"]
+      }
+    },
+    "hooks": {
+      "description": "Hooks scoped to the subagent.",
+      "type": "object"
+    },
+    "memory": {
+      "description": "Where the subagent keeps persistent memory.",
+      "type": "string",
+      "enum": ["user", "project", "local"]
+    },
+    "background": {
+      "description": "true: the subagent always runs in the background.",
+      "type": "boolean"
+    },
+    "omitClaudeMd": {
+      "description": "true: the subagent starts without the CLAUDE.md files.",
+      "type": "boolean"
+    },
+    "effort": {
+      "description": "The effort level the subagent runs at.",
+      "type": "string",
+      "enum": ["low", "medium", "high", "xhigh", "max"]
+    },
+    "isolation": {
+      "description": "worktree: the subagent works in a temporary git worktree.",
+      "type": "string",
+      "enum": ["worktree"]
+    },
+    "color": {
+      "description": "The subagent's colour in the task list and transcript.",
+      "type": "string",
+      "enum": ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"]
+    },
+    "initialPrompt": {
+      "description": "The first user turn when the subagent runs as the main session.",
+      "type": "string",
+      "minLength": 1
+    },
+    "experimental": {
+      "description": "Experimental settings, such as cacheTtl. Their names change between releases, so only the shape is checked.",
+      "type": "object"
+    }
+  },
+  "definitions": {
+    "words": {
+      "description": "One comma-separated string, or a list of strings.",
+      "oneOf": [{"type": "string", "minLength": 1}, {"type": "array", "items": {"type": "string", "minLength": 1}}]
+    }
+  }
+}

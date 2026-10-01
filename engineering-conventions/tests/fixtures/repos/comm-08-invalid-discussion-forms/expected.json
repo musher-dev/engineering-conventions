@@ -1,0 +1,4 @@
+[
+  {"id": "COMM-08", "path": ".github/DISCUSSION_TEMPLATE/ideas.yml", "severity": "warning"},
+  {"id": "COMM-08", "path": ".github/DISCUSSION_TEMPLATE/q-a.md", "severity": "warning"}
+]

@@ -1,4 +1,5 @@
 min_version = "2026.9.12"
 
 [tools]
+"github:crate-ci/committed" = "1.1.11"
 "github:musher-dev/engineering-conventions" = "0.2.0"

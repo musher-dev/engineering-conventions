@@ -9,6 +9,7 @@ this page only indexes what is here. A new file adds a row.
 | `lefthook.yml` | lefthook | The pre-commit and commit-msg hooks | lefthook, which discovers it (`task hooks:install`) |
 | `actions/actionlint.yaml` | actionlint | Workflow and composite-action lint | `task lint:actions` |
 | `actions/zizmor.yml` | zizmor | Workflow security audit | `task lint:actions:security` |
+| `commits/committed.toml` | committed | Commit message and pull request title rules: the types and scopes | the commit-msg hook, `Validate Pull Request / Title` |
 | `markdown/markdownlint.jsonc` | markdownlint-cli2 | Markdown style | `task lint:md`, the pre-commit hook |
 | `markdown/vale.ini` | Vale | Prose style and terminology | `task prose:lint`, the pre-commit hook |
 | `mise/config.toml` | mise | The pinned version of every CLI | mise, which discovers it (`task tools:install`, `setup-tools`, post-create) |

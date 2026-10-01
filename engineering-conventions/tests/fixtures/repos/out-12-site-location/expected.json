@@ -1,5 +1,10 @@
 [
   {
+    "id": "COPY-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  },
+  {
     "id": "OUT-12",
     "path": ".repo/outputs.toml",
     "severity": "warning"

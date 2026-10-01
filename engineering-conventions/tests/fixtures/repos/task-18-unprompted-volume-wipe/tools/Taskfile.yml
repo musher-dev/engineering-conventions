@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  stack:reset:
+    desc: Stop the local stack and wipe its data volumes.
+    cmds:
+      - docker compose down -v

@@ -214,3 +214,107 @@ test_fixture_configurations_are_not_checked if {
 	docs := [td.inventory(repository), declaration, td.file("tests/lefthook.yml", {})]
 	count(lefthook.findings) == 0 with input as docs
 }
+
+test_hooks_12_fixer_without_stage_fixed if {
+	runs := [
+		"prettier --write {staged_files}",
+		"ruff check --fix {staged_files}",
+		"eslint --fix=true .",
+		"ruff format {staged_files}",
+		"taplo fmt {staged_files}",
+		"cargo fmt",
+		"gofmt -l -w .",
+		"tofu fmt -recursive",
+		`FILES="$(printf '%s\n' {staged_files})" task fmt:files`,
+		"task lint db:fmt",
+		"task spelling:fix",
+	]
+	every run in runs {
+		"HOOKS-12" in td.ids(lefthook.findings) with input as pre_commit({"run": run, "stage_fixed": false})
+	}
+	found := lefthook.findings with input as pre_commit({"run": "prettier --write {staged_files}", "stage_fixed": false})
+	messages(found, "HOOKS-12") == {concat("", [
+		`pre-commit job "markdown" fixes files but does not set stage_fixed: true, so its fixes stay unstaged and `,
+		"the commit records the files as they were; add stage_fixed: true",
+	])}
+}
+
+test_hooks_12_quiet_on_checks_and_other_stages if {
+	runs := [
+		"prettier --check {staged_files}",
+		"ruff format --diff {staged_files}",
+		"taplo fmt --check",
+		"tofu fmt -check",
+		"task fmt:check",
+		"eslint --fix-dry-run .",
+		"task lint:files",
+		"gofmt -l .",
+		"task format-report",
+	]
+	every run in runs {
+		not "HOOKS-12" in td.ids(lefthook.findings) with input as pre_commit({"run": run, "stage_fixed": false})
+	}
+	push := {"pre-push": {"jobs": [{"name": "fmt", "run": "task fmt", "fail_text": "Run 'task fmt'."}]}}
+	not "HOOKS-12" in td.ids(lefthook.findings) with input as with_config(push)
+}
+
+test_hooks_13_same_command_in_both_stages if {
+	commit := {"name": "types", "run": "task typecheck  {staged_files}", "fail_text": "Run 'task typecheck'."}
+	push := {"name": "types-again", "run": "task typecheck {push_files}", "fail_text": "Run 'task typecheck'."}
+	found := lefthook.findings with input as with_config({
+		"pre-commit": {"jobs": [markdown_job, commit]},
+		"pre-push": {"jobs": [push]},
+	})
+	td.pairs(found) == {["HOOKS-13", config_path]}
+	messages(found, "HOOKS-13") == {concat("", [
+		`pre-push job "types-again" runs the same command as pre-commit job "types", so every push repeats `,
+		"what each commit already ran; keep it in one stage",
+	])}
+
+	script := {"script": "check.sh", "runner": "bash", "fail_text": "Run check.sh."}
+	scripts := lefthook.findings with input as with_config({
+		"pre-commit": {"jobs": [markdown_job, script]},
+		"pre-push": {"jobs": [script]},
+	})
+	td.pairs(scripts) == {["HOOKS-13", config_path]}
+}
+
+test_hooks_13_different_root_or_command if {
+	commit := {"name": "types", "root": "app/", "run": "task typecheck", "fail_text": "Run it."}
+	push := {"name": "types", "root": "web/", "run": "task typecheck", "fail_text": "Run it."}
+	other := {"name": "test", "run": "task test", "fail_text": "Run it."}
+	config := with_config({"pre-commit": {"jobs": [markdown_job, commit]}, "pre-push": {"jobs": [push, other]}})
+	not "HOOKS-13" in td.ids(lefthook.findings) with input as config
+}
+
+test_hooks_14_package_runners if {
+	run := "bunx --bun markdownlint-cli2@0.23.2 --fix {staged_files}"
+	found := lefthook.findings with input as pre_commit({"run": run})
+	messages(found, "HOOKS-14") == {concat("", [
+		`pre-commit job "markdown" runs "bunx" directly, so the tool's version is chosen in the hook and CI can run a `,
+		"different one; put the command in a task and run that task here and in CI",
+	])}
+	runs := [
+		"npx prettier --write .", "uvx ruff check", "uv run ruff check", "uv  tool run ruff",
+		"pnpm dlx eslint", "pnpm exec eslint", "yarn dlx eslint", "bun x eslint",
+		"pipx run black .", "go run ./cmd/lint", "npm exec -- eslint", "lint && pnpx eslint",
+	]
+	every run in runs {
+		"HOOKS-14" in td.ids(lefthook.findings) with input as pre_commit({"run": run})
+	}
+}
+
+test_hooks_14_quiet_on_pinned_tools_and_tasks if {
+	runs := [
+		"markdownlint-cli2 --fix {staged_files}",
+		"task lint:files",
+		"gitleaks git --pre-commit --staged",
+		"bash .github/scripts/lint-commit-msg.sh {1}",
+		"node scripts/check.mjs",
+		"cat docs/uv run.md",
+		"go vet ./...",
+	]
+	every run in runs {
+		not "HOOKS-14" in td.ids(lefthook.findings) with input as pre_commit({"run": run})
+	}
+}

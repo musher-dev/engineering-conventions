@@ -1,0 +1,7 @@
+[
+  {
+    "id": "COMMIT-03",
+    "path": ".config/lefthook.yml",
+    "severity": "warning"
+  }
+]

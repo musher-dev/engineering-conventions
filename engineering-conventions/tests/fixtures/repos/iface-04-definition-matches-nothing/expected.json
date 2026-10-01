@@ -10,6 +10,16 @@
     "severity": "warning"
   },
   {
+    "id": "OAS-02",
+    "path": ".config/openapi/spectral.yaml",
+    "severity": "warning"
+  },
+  {
+    "id": "OAS-03",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  },
+  {
     "id": "REL-01",
     "path": ".repo/outputs.toml",
     "severity": "warning"

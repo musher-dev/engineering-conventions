@@ -337,3 +337,71 @@ exposed(path) := own_names(path) | {name |
 default root_names := set()
 
 root_names := exposed(root_path)
+
+# The shell a task runs: a task written as a string or a list of strings, or
+# each string of its cmds, each cmds item's cmd, and its own cmd.
+default commands(_) := []
+
+commands(task) := [task] if is_string(task)
+
+commands(task) := [item | some item in task; is_string(item)] if is_array(task)
+
+commands(task) := array.concat(
+	[text | some item in object.get(task, "cmds", []); text := command_text(item)],
+	[task.cmd | is_string(task.cmd)],
+) if {
+	is_object(task)
+}
+
+command_text(item) := item if is_string(item)
+
+command_text(item) := item.cmd if is_string(item.cmd)
+
+# The lines a task's shell runs as commands: comment lines dropped,
+# backslash continuations joined, and a line that only prints text (echo,
+# printf) left out, since a command a task shows its reader is not one it
+# runs.
+command_lines(task) := [line |
+	some text in commands(task)
+	joined := regex.replace(text, `[ \t]*\\\r?\n[ \t]*`, " ")
+	some raw in split(joined, "\n")
+	line := trim_space(raw)
+	line != ""
+	not startswith(line, "#")
+	not printed(line)
+]
+
+printed(line) if {
+	regex.match(`^(echo|printf)(\s|$)`, line)
+	not regex.match(`(&&|\|\||;)`, regex.replace(line, `"[^"]*"|'[^']*'`, ""))
+}
+
+# The task names a task calls through task: items in cmds and deps.
+called_by(task) := {trim_prefix(name, ":") |
+	is_object(task)
+	some item in object.get(task, "cmds", [])
+	is_object(item)
+	name := called(item)
+} | {trim_prefix(name, ":") |
+	is_object(task)
+	some item in object.get(task, "deps", [])
+	name := called_dep(item)
+}
+
+# A task's own prompt.
+prompted(task) if {
+	is_object(task)
+	is_string(task.prompt)
+	trim_space(task.prompt) != ""
+}
+
+prompted(task) if {
+	is_object(task)
+	is_array(task.prompt)
+	count(task.prompt) > 0
+}
+
+# A call that reaches name, directly or through a namespace.
+called_as(called, name) if called == name
+
+called_as(called, name) if endswith(called, concat("", [":", name]))

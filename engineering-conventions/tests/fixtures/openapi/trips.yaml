@@ -1,0 +1,130 @@
+# Breaks each musher-* rule of checks/openapi/musher.spectral.yaml exactly
+# once, and no other rule: `task checks:openapi` expects one finding per rule.
+# The comment on each line says which rule it trips.
+openapi: 3.1.0
+info:
+  title: Orders
+  version: 1.0.0
+  description: Orders placed by a customer.
+  contact:
+    name: Orders team
+    url: https://example.com/orders
+servers:
+  - url: https://api.example.com
+tags:
+  - name: orders
+    description: Orders placed by a customer.
+paths:
+  /v1/orders:
+    get:
+      operationId: listOrders                     # musher-operation-id-snake-case
+      summary: List orders
+      description: List the orders of the calling customer.
+      tags: [orders]
+      responses:
+        "200":
+          description: The orders.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+        "404":
+          description: No such customer.
+          content:
+            application/json:                    # musher-error-problem-json
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /v1/orders:batchCreate:
+    post:
+      operationId: batch_create_orders
+      summary: Create several orders
+      description: Create several orders, each succeeding or failing on its own.
+      tags: [orders]
+      requestBody:
+        content:
+          application/json:
+            schema:                              # musher-named-body-schema
+              type: object
+              properties:
+                orders:
+                  type: array
+                  description: The orders.
+                  items:
+                    $ref: "#/components/schemas/Order"
+      responses:
+        "200":                                   # musher-batch-207
+          description: The created orders.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchCreateOrdersResponse"
+components:
+  schemas:
+    Order:
+      type: object
+      description: An order.
+      properties:
+        order_id:                                # musher-property-camel-case
+          type: string
+          description: The order's ID.
+        state:
+          $ref: "#/components/schemas/OrderState"
+        paid:                                    # musher-boolean-prefix
+          type: boolean
+          description: Whether the order is paid.
+        receiptURL:
+          description: Where the receipt is, as a link or an inline document.
+          anyOf:                                 # musher-no-anyof-union
+            - type: string
+            - type: object
+        payment:
+          $ref: "#/components/schemas/Payment"
+        priority:
+          $ref: "#/components/schemas/Priority"
+    OrderState:
+      type: string
+      description: Where the order is in its lifecycle.
+      enum: [pending, SHIPPED, DELIVERED]        # musher-enum-upper-snake-case
+    Priority:
+      type: string
+      description: How soon the order ships.
+      enum: [PRIORITY_UNSPECIFIED, STANDARD, EXPRESS]  # musher-enum-no-unspecified
+    Payment:
+      description: How the order is paid.
+      oneOf:                                     # musher-oneof-discriminator
+        - $ref: "#/components/schemas/CardPayment"
+        - $ref: "#/components/schemas/InvoicePayment"
+    CardPayment:
+      type: object
+      description: A card payment.
+      properties:
+        kind:
+          type: string
+          description: Always CARD.
+          enum: [CARD]
+    InvoicePayment:
+      type: object
+      description: An invoice payment.
+      properties:
+        kind:
+          type: string
+          description: Always INVOICE.
+          enum: [INVOICE]
+    BatchCreateOrdersResponse:
+      type: object
+      description: One result per order.
+      properties:
+        orders:
+          type: array
+          description: The created orders.
+          items:
+            $ref: "#/components/schemas/Order"
+    Problem:
+      type: object
+      description: An RFC 9457 problem.
+      properties:
+        title:
+          type: string
+          description: A short summary of the problem.

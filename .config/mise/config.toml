@@ -28,6 +28,10 @@ python = "3.13.15"
 "aqua:go-task/task" = "3.53.1"
 # Keep in lockstep with min_version in .config/lefthook.yml.
 "aqua:evilmartians/lefthook" = "2.1.14"
+# Lints commit messages and pull request titles against
+# .config/commits/committed.toml (COMMIT, EC-0035). The github: backend,
+# because aqua's registry entry has no linux/arm64 asset.
+"github:crate-ci/committed" = "1.1.11"
 
 # --- Rule engines ----------------------------------------------------------
 "aqua:open-policy-agent/conftest" = "0.70.1"
@@ -37,6 +41,10 @@ python = "3.13.15"
 "aqua:open-policy-agent/regal" = "0.42.0"
 "aqua:vale-cli/vale" = "3.22.0"
 "pipx:check-jsonschema" = "0.38.1"
+# The OpenAPI ruleset's engine (OAS-01, decision 0023): the launcher's
+# `conventions openapi` runs it, and `task checks:openapi` tests the shipped
+# ruleset with it. Lockstep with SPECTRAL_VERSION in bin/conventions.
+"aqua:stoplightio/spectral" = "6.16.3"
 
 # --- Linters (configs live in .config/; see docs/repository.md) -----------
 "npm:markdownlint-cli2" = "0.23.3"

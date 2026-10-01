@@ -68,3 +68,19 @@ families:
     title: Dependencies
     topic: dependencies
     owner: "@justinmerrell"
+  - prefix: COMM
+    title: Community files
+    topic: community-files
+    owner: "@justinmerrell"
+  - prefix: OAS
+    title: OpenAPI documents
+    topic: openapi
+    owner: "@justinmerrell"
+  - prefix: COMMIT
+    title: Commit messages
+    topic: commits
+    owner: "@justinmerrell"
+  - prefix: COPY
+    title: Public copy
+    topic: copy
+    owner: "@justinmerrell"

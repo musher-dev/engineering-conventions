@@ -12,3 +12,8 @@ pre-commit:
       glob: ".github/**/*.yml"
       run: yamllint --strict {staged_files}
       fail_text: "YAML lint failed. Run 'task lint:yaml'."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

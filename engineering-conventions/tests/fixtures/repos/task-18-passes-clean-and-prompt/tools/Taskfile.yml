@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  clean:
+    desc: Remove the build output.
+    cmds:
+      - rm -rf dist build node_modules
+      - git clean -n
+
+  stack:stop:
+    desc: Stop the local stack, keeping its data volumes.
+    cmds:
+      - docker compose down
+      - echo "Volumes kept; run 'docker compose down -v' to wipe them."
+
+  db:reset:
+    desc: Wipe the local database volume and start again.
+    prompt: This deletes every row in the local database. Continue?
+    cmds:
+      - docker compose down -v

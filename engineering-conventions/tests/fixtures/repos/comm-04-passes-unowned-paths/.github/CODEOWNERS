@@ -1,0 +1,3 @@
+# Only the API is codeowned; everything else merges on green checks.
+/platform-api/     @your-org/api
+/platform-api/generated/

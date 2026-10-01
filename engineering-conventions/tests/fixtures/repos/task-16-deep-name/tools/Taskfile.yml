@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  test:contract:openapi:public:v2:
+    desc: Check version 2 of the public API against its contract.
+    cmds:
+      - go test ./contract/...

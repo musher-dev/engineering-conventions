@@ -9,7 +9,7 @@
 #   then                       conventions check
 #
 # It needs only POSIX sh, git, and sha256sum, shasum or openssl to hash
-# vendored copies. conftest, jq and Vale come through
+# vendored copies. conftest, jq, Vale and Spectral come through
 # `mise exec` at the versions below, which move with this release, so the
 # bundle pin is the only pin. Without mise it uses them from PATH.
 #
@@ -25,6 +25,7 @@
 # Usage:
 #   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [--repository NAME] [-C DIR]
 #   conventions prose [-C DIR] [PATH...]
+#   conventions openapi [-C DIR] [--ruleset FILE] [FILE...]
 #   conventions version
 set -eu
 
@@ -32,6 +33,7 @@ set -eu
 CONFTEST_VERSION=0.70.1
 VALE_VERSION=3.22.0
 JQ_VERSION=1.8.2
+SPECTRAL_VERSION=6.16.3
 
 bundle=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 
@@ -117,18 +119,19 @@ repository_name() {
 }
 
 # What conftest reads: workflows, actions, rulesets, the release-please config
-# and release-please manifest, the commit rules, the TOML declarations under
-# .repo/ (conventions, outputs, repository identity and dependencies), the
-# release record of each vendored copy (DEPS-05), the mise
-# configuration ADOPT-09 looks for a pin in (lib/files.rego), a dev
+# and release-please manifest, committed's configuration (COMMIT-01), the
+# TOML declarations under .repo/ (conventions, outputs, repository identity
+# and dependencies), the release record of each vendored copy (DEPS-05), the
+# mise configuration ADOPT-09 looks for a pin in (lib/files.rego), a dev
 # container's lockfile and the compose stacks beside it (DEVC), and a
 # Taskfile at any depth under an OpenTofu directory, where a root keeps the
-# Taskfile that names its state key (TOFU-01).
+# Taskfile that names its state key (TOFU-01), and the issue forms, template
+# chooser, discussion forms and FUNDING.yml GitHub reads (COMM).
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
 INPUTS="${INPUTS}|"'^\.github/release-please/(config|manifest)\.json$'
-INPUTS="${INPUTS}|"'^\.github/conventional-commits\.ya?ml$'
+INPUTS="${INPUTS}|"'^\.config/commits/committed\.toml$'
 INPUTS="${INPUTS}|"'^\.repo/(conventions|outputs|repository|dependencies)\.toml$'
 INPUTS="${INPUTS}|"'^([^/]+/)?contracts/vendor/[^/]+/[^/]+/release\.json$'
 INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
@@ -143,6 +146,8 @@ INPUTS="${INPUTS}|"'^([^/]+/){0,2}package\.json$'
 INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.devcontainer(/[^/]+)?/devcontainer-lock\.json$|^\.devcontainer-lock\.json$'
 INPUTS="${INPUTS}|"'^\.devcontainer/(.+/)?(docker-)?compose(\.[^/]+)?\.ya?ml$'
+INPUTS="${INPUTS}|"'^\.github/(ISSUE|DISCUSSION)_TEMPLATE/[^/]+\.yml$'
+INPUTS="${INPUTS}|"'^\.github/FUNDING\.yml$'
 
 # Files conftest cannot choose a parser for by name, parsed before the check
 # with the parser named and added to the inventory (decision 0015):
@@ -155,13 +160,16 @@ DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0
 # named like a Dockerfile but is not one.
 NOT_DOCKERFILES='\.dockerignore$'
 
-# Files the checks read as text: agent context, decision records, the
-# .config/ index, and the one-line and ignore files no parser reads,
+# Files the checks read as text: agent context, skills and subagents, decision
+# records, the .config/ index, CODEOWNERS, the security policy, and the one-line
+# and ignore files no parser reads,
 # including an ignore file kept in .config/ without its dot (EC-0012). Only
 # files up to TEXT_LIMIT bytes are embedded.
 TEXTS='(^|/)CLAUDE\.md$'
 TEXTS="${TEXTS}|"'^AGENTS\.md$'
 TEXTS="${TEXTS}|"'^\.claude/rules/.+\.md$'
+TEXTS="${TEXTS}|"'(^|/)\.claude/skills/[^/]+/SKILL\.md$'
+TEXTS="${TEXTS}|"'(^|/)\.claude/agents/.+\.md$'
 TEXTS="${TEXTS}|"'^\.config/README\.md$'
 TEXTS="${TEXTS}|"'(^|/)(decisions|adrs)/.+\.md$'
 TEXTS="${TEXTS}|"'(^|/)\.(trivyignore|gitleaksignore|nvmrc|node-version|python-version|tool-versions)$'
@@ -169,6 +177,12 @@ TEXTS="${TEXTS}|"'^\.config/(.+/)?(trivyignore|gitleaksignore)$'
 # The configuration in .config/ itself, whatever its format, for the files it
 # names beside it (CONF-04).
 TEXTS="${TEXTS}|"'^\.config/.+\.(jsonc?|ya?ml|toml|ini)$'
+# CODEOWNERS and the security policy, wherever GitHub looks for them (COMM).
+TEXTS="${TEXTS}|"'^(\.github/|docs/)?CODEOWNERS$'
+TEXTS="${TEXTS}|"'^(\.github/|docs/)?[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]\.([Mm][Dd]|[Mm][Aa][Rr][Kk][Dd][Oo][Ww][Nn]|[Aa][Dd][Oo][Cc]|[Rr][Ss][Tt])$'
+# A Vale config where Vale finds one by itself; conftest's ini parser drops
+# the global keys Packages lives in, so the copy checks read its text (EC-0038).
+TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.
@@ -339,6 +353,59 @@ EOF
   fi
 }
 
+# Where a repository keeps its Vale config: where Vale finds one by itself,
+# or under .config/ (EC-0011). The copy checks read the same files (EC-0038).
+VALE_CONFIGS='^((\.|_)?vale\.ini|\.config/(.+/)?vale\.ini)$'
+
+# Files the copy pass hands Vale: the formats it reads natively, and the
+# component templates a config maps under [formats]. The config's own globs
+# decide which of them are copy.
+COPY_FILES='\.(md|mdx|markdown|html?|rst|adoc|txt|astro|ejs|erb|hbs|jinja|liquid|mdoc|njk|svelte|twig|vue)$'
+
+# copy_sections CONFIG: the parts of a repository's Vale config the copy pass
+# needs: [formats], and every section that applies MusherCopy or sets one of
+# its rules, with BasedOnStyles narrowed to MusherCopy. The adopted packages
+# need `vale sync`, so they run in the repository's own Vale call.
+copy_sections() {
+  awk '
+    /^[[:space:]]*[#;]/ { next }
+    /^[[:space:]]*\[.*\][[:space:]]*$/ {
+      section = $0
+      sub(/^[[:space:]]*\[/, "", section)
+      sub(/\][[:space:]]*$/, "", section)
+      next
+    }
+    section == "" || index($0, "=") == 0 { next }
+    {
+      key = substr($0, 1, index($0, "=") - 1)
+      gsub(/[[:space:]]/, "", key)
+      line = ""
+      if (section == "formats") line = $0
+      else if (key == "BasedOnStyles" && $0 ~ /[=,][[:space:]]*MusherCopy[[:space:]]*(,|$)/) line = "BasedOnStyles = MusherCopy"
+      else if (key ~ /^MusherCopy\./) line = $0
+      if (line == "") next
+      if (section != shown) { printf "\n[%s]\n", section; shown = section }
+      print line
+    }
+  ' "$1"
+}
+
+# vale_on CONFIG PATTERN [PATH...]: run Vale with CONFIG on each PATH, or,
+# with none, on every file of the repository that matches PATTERN.
+vale_on() {
+  vale_config=$1 pattern=$2
+  shift 2
+  if [ $# -eq 0 ]; then
+    while IFS= read -r file; do
+      if [ -n "${file}" ]; then set -- "$@" "${file}"; fi
+    done << EOF
+$(list_files | grep -E "${pattern}" || true)
+EOF
+    [ $# -gt 0 ] || return 0
+  fi
+  tool vale aqua:vale-cli/vale "${VALE_VERSION}" --config "${vale_config}" "$@" < /dev/null
+}
+
 prose() {
   given=''
   if [ "${1:-}" = -C ]; then
@@ -350,6 +417,9 @@ prose() {
   cd "${root}"
   scratch=$(mktemp -d)
   trap 'rm -rf "${scratch}"' EXIT
+  status=0
+
+  # The terminology the conventions are written in, on every Markdown file.
   cat > "${scratch}/vale.ini" << EOF
 StylesPath = ${bundle}/checks/vale
 MinAlertLevel = suggestion
@@ -357,15 +427,67 @@ MinAlertLevel = suggestion
 [*.md]
 BasedOnStyles = MusherConventions
 EOF
-  if [ $# -eq 0 ]; then
+  vale_on "${scratch}/vale.ini" '\.md$' "$@" || status=$?
+
+  # The copy rules of this release, offline, on the files each of the
+  # repository's Vale configs applies MusherCopy to (EC-0038).
+  list_files | grep -E "${VALE_CONFIGS}" > "${scratch}/configs" || true
+  count=0
+  while IFS= read -r config; do
+    count=$((count + 1))
+    sections=$(copy_sections "${config}")
+    case ${sections} in
+      *BasedOnStyles*) ;;
+      *) continue ;;
+    esac
+    printf 'StylesPath = %s\nMinAlertLevel = suggestion\n%s\n' "${bundle}/checks/vale" "${sections}" \
+      > "${scratch}/copy.${count}.ini"
+    vale_on "${scratch}/copy.${count}.ini" "${COPY_FILES}" "$@" || status=$?
+  done < "${scratch}/configs"
+  return "${status}"
+}
+
+# Lint OpenAPI documents with Spectral and the repository's own ruleset,
+# which extends the one this release ships (EC-0037, decision 0023). The
+# ruleset reaches the shipped file through .conventions/openapi.spectral.yaml,
+# a link refreshed on every run so it always names this release; the
+# repository ignores .conventions/ (OAS-04). With no FILE, it lints every
+# document an `openapi` interface in .repo/outputs.toml covers.
+openapi() {
+  given='' ruleset=.config/openapi/spectral.yaml
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      --ruleset) ruleset=${2:?--ruleset needs a file}; shift 2 ;;
+      --) shift; break ;;
+      -*) usage ;;
+      *) break ;;
+    esac
+  done
+  find_root
+  cd "${root}"
+  if [ $# -eq 0 ] && [ -f .repo/outputs.toml ]; then
+    scratch=$(mktemp -d)
+    trap 'rm -rf "${scratch}"' EXIT
+    files=$(list_files)
+    tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse .repo/outputs.toml \
+      > "${scratch}/outputs.json" || die "cannot read .repo/outputs.toml"
     while IFS= read -r file; do
       if [ -n "${file}" ]; then set -- "$@" "${file}"; fi
     done << EOF
-$(list_files | grep -E '\.md$' || true)
+$(printf '%s\n' "${files}" | tool jq aqua:jqlang/jq "${JQ_VERSION}" -Rnr \
+      --slurpfile outputs "${scratch}/outputs.json" -f "${bundle}/bin/openapi.jq")
 EOF
-    [ $# -gt 0 ] || { echo "conventions: no Markdown files to check" >&2; return 0; }
   fi
-  tool vale aqua:vale-cli/vale "${VALE_VERSION}" --config "${scratch}/vale.ini" "$@"
+  if [ $# -eq 0 ]; then
+    echo "conventions: no OpenAPI documents to check: .repo/outputs.toml declares no openapi interface" >&2
+    return 0
+  fi
+  [ -f "${ruleset}" ] ||
+    die "${ruleset} does not exist: add a Spectral ruleset that extends ../../.conventions/openapi.spectral.yaml (OAS-02)"
+  mkdir -p .conventions
+  ln -sfn "${bundle}/checks/openapi/musher.spectral.yaml" .conventions/openapi.spectral.yaml
+  tool spectral aqua:stoplightio/spectral "${SPECTRAL_VERSION}" lint --ruleset "${ruleset}" --fail-severity warn "$@"
 }
 
 version() {
@@ -382,6 +504,7 @@ command=${1:-}
 case ${command} in
   check) check "$@" ;;
   prose) prose "$@" ;;
+  openapi) openapi "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

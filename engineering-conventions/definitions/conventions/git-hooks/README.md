@@ -19,7 +19,7 @@ The convention is a **draft**, owned by this repository, and every requirement i
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0014 Lefthook configuration](lefthook.md) | HOOKS-01 – HOOKS-11 | The settings every configuration carries, its globs, its jobs, and what may run before a commit |
+| [EC-0014 Lefthook configuration](lefthook.md) | HOOKS-01 – HOOKS-14 | The settings every configuration carries, its globs, its jobs, what may run before a commit, and how a job restages, which stage it runs in and what it calls |
 
 The reasoning for adopting these from `musher-dev/platform` and `musher-dev/development-container` is recorded in
 [decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md).

@@ -1,0 +1,6 @@
+# The conventions' rules, extended as a [ruleset, mode] pair.
+extends:
+  - [../../.conventions/openapi.spectral.yaml, all]
+rules:
+  # Our operationIds carry the surface first.
+  musher-operation-id-snake-case: "off"

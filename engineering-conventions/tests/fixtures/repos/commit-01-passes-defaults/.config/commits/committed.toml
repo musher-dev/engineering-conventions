@@ -1,0 +1,5 @@
+# Only what committed has no suitable default for; subject_length at its limit.
+style = "conventional"
+subject_length = 72
+allowed_types = ["feat", "fix", "chore"]
+allowed_scopes = ["api", "release"]

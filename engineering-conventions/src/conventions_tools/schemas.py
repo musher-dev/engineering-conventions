@@ -24,6 +24,17 @@ RELEASE_RECORD = "release-record.schema.json"
 REPOSITORY = "repository.schema.json"
 ENV_SCHEMA = "env-schema.schema.json"
 DECISION = "decision.schema.json"
+SKILL = "skill-frontmatter.schema.json"
+SUBAGENT = "subagent-frontmatter.schema.json"
+
+# Third-party schemas, kept unmodified under vendor/ (their README names the
+# source and licence).
+VENDOR = "vendor"
+ISSUE_FORMS = "schemastore/github-issue-forms.json"
+ISSUE_CONFIG = "schemastore/github-issue-config.json"
+FUNDING = "schemastore/github-funding.json"
+DISCUSSION_FORMS = "schemastore/github-discussion.json"
+COPY_STYLE = "copy-style.schema.json"
 
 
 class Validator(Protocol):
@@ -145,3 +156,8 @@ def self_contained(product: Path, name: str) -> dict[str, object]:
         f"{_INLINED_PREFIX}{key}": _rewrite_refs(common[key], local) for key in sorted(reached)
     }
     return {**schema, "definitions": definitions}
+
+
+def vendored(product: Path, name: str) -> dict[str, object]:
+    """Vendored schema `name`, as published: each is already self-contained."""
+    return as_map(read_json(schemas_dir(product) / VENDOR / name))

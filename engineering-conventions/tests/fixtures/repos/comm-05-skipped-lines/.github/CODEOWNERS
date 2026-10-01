@@ -1,0 +1,5 @@
+/platform-api/            @your-org/api
+!/platform-api/generated/ @your-org/api
+/platform-api/[ab]*/      @your-org/api
+/docs/                    docs-team
+/platform-api/            @alice

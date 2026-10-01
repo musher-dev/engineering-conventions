@@ -31,6 +31,8 @@ KINDS = {
     "terminology": (schemas.TERMINOLOGY, "valid", "invalid/schema"),
     "conventions": (schemas.CONVENTION, "valid", "invalid"),
     "decisions": (schemas.DECISION, "valid", "invalid"),
+    "skill-frontmatter": (schemas.SKILL, "valid", "invalid"),
+    "subagent-frontmatter": (schemas.SUBAGENT, "valid", "invalid"),
 }
 
 

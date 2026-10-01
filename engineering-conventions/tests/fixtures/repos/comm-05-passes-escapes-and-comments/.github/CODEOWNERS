@@ -1,0 +1,7 @@
+# Broad first; the last match wins.
+/platform-api/              @your-org/api dev@example.com  # the API team and its list
+platform-api/               @your-org/api
+/docs/release\ notes/       @your-org/docs
+/docs/\[draft\]/            @your-org/docs
+*.md                        @your-org/docs @first_last
+/platform-api/generated/

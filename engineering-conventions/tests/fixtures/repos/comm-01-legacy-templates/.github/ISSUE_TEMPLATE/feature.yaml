@@ -1,0 +1,7 @@
+name: Feature request
+description: Ask for something new.
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should it do?

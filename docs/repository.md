@@ -22,7 +22,8 @@ engineering-conventions/               repository level: acts on the product
     ├── definitions/                   DEFINED: what is decided, the source of truth
     │   ├── conventions/               EC-NNNN documents by topic, families.yml
     │   ├── terminology/               global.yml
-    │   └── profiles/                  convention profiles
+    │   ├── profiles/                  convention profiles
+    │   └── copy/                      style.yml: the MusherCopy rules and the adopted Vale packages
     ├── checks/                        CHECKED: rego/, schemas/, data/ (generated), vale/ (generated)
     ├── examples/                      SHOWN: a worked, conforming consumer
     ├── bin/conventions                TOOLING: the launcher a consumer runs (mise puts bin/ on PATH)
@@ -73,7 +74,7 @@ Within the repository level:
 | A linter, formatter, rule tool or git hooks | `.config/<concern>/<tool>.<ext>` |
 | A CLI version | `.config/mise/config.toml`, locked by `.config/mise/mise.lock` |
 | The container: Features, mounts, editor settings, environment | `.devcontainer/devcontainer.json` |
-| GitHub's own configuration | `.github/`: workflows, rulesets, Dependabot, release-please, commit types |
+| GitHub's own configuration | `.github/`: workflows, rulesets, Dependabot, release-please |
 | Agent permissions and path-scoped policy | `.claude/` |
 
 Four rules keep `.config/` predictable:
@@ -117,14 +118,15 @@ run `task tools:lock`, `task tools:install` and `task tools:doctor`.
 ## Generated files and the bundle
 
 Some product files are written by `task generate` from `definitions/`: the conventions' frontmatter, `families.yml`,
-the profiles and the terminology. They are committed, so a consumer never needs the authoring CLI, and are never
-edited by hand: `task generate:check` fails when one is stale. [`.gitattributes`](../.gitattributes) lists them, marked
-`linguist-generated`.
+the profiles, the terminology and the copy style. They are committed, so a consumer never needs the authoring CLI,
+and are never edited by hand: `task generate:check` fails when one is stale. [`.gitattributes`](../.gitattributes)
+lists them, marked `linguist-generated`.
 
 A release is the product directory as a consumer runs it. `task bundle:build` writes it to `dist/`: the tarball
 without the authoring side (`src/`, `tests/`, the Python project files) or the Rego unit tests, which conftest would
-load as policy. It also writes the Vale package, `manifest.json` and `SHA256SUMS`. The build is reproducible, and
-`task bundle:verify` fails on any entry outside the allowed set. The exact contents are defined in
+load as policy. It also writes the two Vale packages, `MusherConventions.zip` and the config package
+`MusherProse.zip`, then `manifest.json` and `SHA256SUMS`. The build is reproducible, and `task bundle:verify` fails on
+any entry outside the allowed set. The exact contents are defined in
 [`taskfiles/bundle.Taskfile.yml`](../taskfiles/bundle.Taskfile.yml).
 
 ## Comments

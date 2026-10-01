@@ -14,7 +14,7 @@ applies_to:
   paths:
     - .github/release-please/config.json
     - .github/release-please/manifest.json
-    - .github/conventional-commits.yaml
+    - .config/commits/committed.toml
     - .github/workflows/*.yml
     - .github/workflows/*.yaml
     - .repo/outputs.toml
@@ -135,9 +135,9 @@ repository configure release-please the same way, so a reader, a tool and a revi
 ## Scope
 
 This convention governs `.github/release-please/`, the release-please steps in `.github/workflows/`, and the commit
-rules in `.github/conventional-commits.yaml` where a repository keeps them. REL-01 also reads `.repo/outputs.toml`
-([EC-0007](../outputs/outputs-declaration.md)). A repository that neither declares a versioned output nor runs
-release-please gets no finding from it.
+rules in `.config/commits/committed.toml` ([EC-0035](../commits/commit-messages.md)). REL-01 also reads
+`.repo/outputs.toml` ([EC-0007](../outputs/outputs-declaration.md)). A repository that neither declares a versioned
+output nor runs release-please gets no finding from it.
 
 ## Status and authority
 
@@ -315,8 +315,8 @@ with nothing for a single package, so the one pattern reads `chore(release): rel
 must pass the repository's commit rules, or the release pull request is the one pull request that cannot merge.
 
 The check reports a package whose effective `pull-request-title-pattern` is not the pattern above; a config with
-several packages that does not set `separate-pull-requests: true`; and a `.github/conventional-commits.yaml` whose
-`types` list leaves out `chore` or whose `scopes` list leaves out `release`.
+several packages that does not set `separate-pull-requests: true`; and a `.config/commits/committed.toml` whose
+`allowed_types` list leaves out `chore` or whose `allowed_scopes` list leaves out `release`.
 
 **Correct:**
 

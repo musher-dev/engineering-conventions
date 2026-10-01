@@ -1,0 +1,5 @@
+style = "conventional"
+subject_length = 100
+imperative_subject = false
+no_wip = false
+allowed_types = ["feat", "fix", "chore"]

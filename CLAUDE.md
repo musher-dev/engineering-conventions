@@ -48,9 +48,10 @@ each part lives in `.claude/rules/` and loads when you read a file it governs.
 
 ## Commits
 
-Conventional Commits, enforced at commit-msg and on the PR title. Types and
-scopes are in [`.github/conventional-commits.yaml`](.github/conventional-commits.yaml)
-and nowhere else.
+Conventional Commits, enforced by committed at commit-msg and on the PR title.
+Types and scopes are in [`.config/commits/committed.toml`](.config/commits/committed.toml)
+and nowhere else; the header is at most 72 columns, imperative, with a listed
+scope.
 
 **Agents open PRs; humans merge.** Never run `gh pr merge`, enable auto-merge,
 approve a PR, or push to `main`. Enforced by `permissions.deny` plus the

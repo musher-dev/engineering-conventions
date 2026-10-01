@@ -37,7 +37,8 @@ mise lock
 mise install --locked
 conventions check                      # report findings; fail only on errors
 conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
-conventions prose                      # lint Markdown with the MusherConventions Vale style
+conventions prose                      # lint Markdown with MusherConventions, and copy with MusherCopy
+conventions openapi                    # lint OpenAPI interfaces with the conventions' Spectral ruleset
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -45,8 +46,8 @@ With the identity declaration below, that is the whole adoption. What mise does 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
   proves this repository's release workflow built it. `mise lock` records both in
   `.config/mise/mise.lock`.
-- It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`) through `mise exec` at the
-  versions the release was tested with, so the release pin is the only pin to maintain.
+- It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`, Spectral for `openapi`)
+  through `mise exec` at the versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
 
 `conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. It needs only
@@ -270,6 +271,46 @@ environment binding reaches: `target = "platform-api#public-http"` for another s
 such as `postgresql`. The rules are the [dependencies](../engineering-conventions/definitions/conventions/dependencies/README.md)
 topic and [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md).
 
+## Lint a site's copy
+
+A repository that publishes a site, or whose kind is `website` or `documentation`, lints the site's copy with Vale
+([EC-0038](../engineering-conventions/definitions/conventions/copy/public-copy.md)). Each release attaches a Vale
+config package, `MusherProse.zip`, that installs the copy rules: the `MusherCopy` style, and `proselint`,
+`write-good`, `Microsoft.Wordiness` and `Google.ExcessiveClaims`, each pinned to one release. Name it at the release
+your mise configuration pins, and apply the styles to the site's sources:
+
+```ini
+# .config/markdown/vale.ini
+StylesPath = ../../.vale
+MinAlertLevel = warning
+# x-release-please-start-version
+Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.7.0/MusherProse.zip
+# x-release-please-end
+
+[formats]
+svelte = html
+
+[apps/site/src/**/*.{md,svelte}]
+BasedOnStyles = MusherCopy, proselint, write-good
+```
+
+Vale installs the packages under `StylesPath`, relative to the config. Point it outside `.config/`, which holds
+configuration and nothing downloaded, at a directory the repository ignores (`.vale/` here) and create it before
+`vale sync` runs: without it, Vale syncs into a directory in your home instead. Vale matches a section's glob against
+the path it is given, so run it from the repository root:
+
+```yaml
+lint:copy:
+  desc: Lint the site's copy with Vale.
+  cmds:
+    - mkdir -p .vale
+    - vale --config .config/markdown/vale.ini sync
+    - vale --config .config/markdown/vale.ini apps/site/src
+```
+
+`conventions check` reports COPY-01 to COPY-04 on the config, and `conventions prose` runs `MusherCopy` from the
+bundle, offline, over the sections that apply it.
+
 ## Without mise
 
 Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:
@@ -291,17 +332,41 @@ Later releases are attested by `release.yml` in the run that cut them, on the de
 
 With no mise pin, the pin is `conventions.version` in the declaration; ADOPT-08 reports a declaration that names a
 different release from the one being run. The release also attaches the Vale style alone, as `MusherConventions.zip`,
-for a repository that runs Vale itself.
+for a repository that runs Vale itself, and the copy rules' Vale config package, `MusherProse.zip`.
 
 ## Delegated checks
 
-GHA-33 is delegated to actionlint and zizmor, which `conventions check` does not run. Pin them in
-`.config/mise/config.toml` beside the conventions and run them in the repository's own validation:
+GHA-33 is delegated to actionlint and zizmor, and COMM-07 to OpenSSF Scorecard, which `conventions check` does not
+run. Pin them in `.config/mise/config.toml` beside the conventions and run them in the repository's own validation:
 
 ```sh
 actionlint
 zizmor --min-severity medium --persona regular .github/
+scorecard --local . --checks Security-Policy --format json   # COMM-07 passes at a score of 10
 ```
+
+OAS-01 is delegated to Spectral, with a ruleset the release ships. A repository that declares an `openapi`
+interface keeps its own ruleset in `.config/openapi/spectral.yaml`, extending the shipped one, ignores the link the
+command writes, and runs the command in validation (OAS-02 to OAS-04):
+
+```yaml
+# .config/openapi/spectral.yaml
+extends:
+  - ../../.conventions/openapi.spectral.yaml
+```
+
+```text
+# .gitignore
+.conventions/
+```
+
+```sh
+conventions openapi --ruleset .config/openapi/spectral.yaml
+```
+
+With no files named, it lints every document the `openapi` interfaces in `.repo/outputs.toml` cover. Turn a rule off
+in the repository's ruleset, or for one place in its `overrides`, with the reason beside it
+([EC-0037](../engineering-conventions/definitions/conventions/openapi/openapi-documents.md)).
 
 ## Reading the report
 

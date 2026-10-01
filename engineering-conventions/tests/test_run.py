@@ -204,6 +204,8 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/release-please/manifest.json",
         ".github/release-please/notes.json",
         ".github/conventional-commits.yaml",
+        ".config/commits/committed.toml",
+        "committed.toml",
         "release-please-config.json",
         ".repo/conventions.toml",
         ".repo/outputs.toml",
@@ -237,6 +239,7 @@ def test_input_files(tmp_path: Path) -> None:
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).write_text("{}\n")
     assert run.input_files(tmp_path) == [
+        ".config/commits/committed.toml",
         ".config/lefthook.yml",
         ".config/security/trivyignore.yaml",
         ".devcontainer-lock.json",
@@ -247,7 +250,6 @@ def test_input_files(tmp_path: Path) -> None:
         ".devcontainer/stacks/postgres/compose.yaml",
         ".github/actions/nested/deeper/action.yaml",
         ".github/actions/setup-tools/action.yml",
-        ".github/conventional-commits.yaml",
         ".github/dependabot.yml",
         ".github/release-please/config.json",
         ".github/release-please/manifest.json",
@@ -283,6 +285,10 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
         "CLAUDE.md",
         "api/CLAUDE.md",
         ".claude/rules/a/b.md",
+        ".claude/skills/writing-commits/SKILL.md",
+        "apps/web/.claude/skills/deploy/SKILL.md",
+        ".claude/agents/reviewer.md",
+        ".claude/agents/review/security.md",
         "docs/decisions/0001-x.md",
         "docs/adrs/0001-x/+page.md",
         ".nvmrc",
@@ -294,6 +300,7 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
     ):
         assert chosen.texts.search(name), name
     assert not chosen.texts.search("README.md")
+    assert not chosen.texts.search(".claude/skills/writing-commits/references/guide.md")
     assert not chosen.texts.search("docs/trivyignore")
     assert chosen.sizes.search("docs/guide.md")
     assert chosen.digests.search("web/contracts/vendor/platform-api/contracts/openapi/public.json")

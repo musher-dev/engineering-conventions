@@ -35,8 +35,8 @@ skips, and the aggregate accepts that skip.
 ## Commits and hooks
 
 `task setup` installs git hooks: fast checks run before each commit, the commit message is checked against the
-Conventional Commit types and scopes in `.github/conventional-commits.yaml`, and the Rego tests and the self-check run
-before each push. Pull requests are squash-merged, so the pull request title becomes the commit on `main`.
+rules in `.config/commits/committed.toml` (by [committed](https://github.com/crate-ci/committed)), and the Rego tests and
+the self-check run before each push. Pull requests are squash-merged, so the pull request title becomes the commit on `main`.
 
 ### Fast local checks
 

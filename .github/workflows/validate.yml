@@ -134,8 +134,9 @@ jobs:
           install-args: >-
             aqua:go-task/task aqua:open-policy-agent/conftest
             aqua:open-policy-agent/opa aqua:open-policy-agent/regal
-      - name: Check, lint and test the Rego rules
-        run: task checks:fmt:check checks:lint checks:check checks:test
+            aqua:stoplightio/spectral aqua:mikefarah/yq aqua:jqlang/jq
+      - name: Check, lint and test the Rego rules and the OpenAPI ruleset
+        run: task checks:fmt:check checks:lint checks:check checks:test checks:openapi
 
   content:
     name: Content
@@ -169,15 +170,16 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-tools
         with:
-          # The test suite shells out to four of these: conftest (every
+          # The test suite shells out to five of these: conftest (every
           # fixture repository runs through `conventions check`), vale (the
           # generated styles must load), check-jsonschema (the schemas'
-          # relative $refs must resolve from disk) and jq (the launcher tests
-          # run bin/conventions on the tools on PATH). A pipx tool installs from
-          # the lockfile only with the python mise pins, so python comes too.
+          # relative $refs must resolve from disk), jq (the launcher tests
+          # run bin/conventions on the tools on PATH) and spectral (they run
+          # `conventions openapi` too). A pipx tool installs from the lockfile
+          # only with the python mise pins, so python comes too.
           install-args: >-
             aqua:go-task/task aqua:astral-sh/uv python aqua:open-policy-agent/conftest
-            aqua:vale-cli/vale pipx:check-jsonschema aqua:jqlang/jq
+            aqua:vale-cli/vale pipx:check-jsonschema aqua:jqlang/jq aqua:stoplightio/spectral
       - name: Lint, type-check and test the conventions CLI
         run: task cli:lint cli:typecheck cli:test
       # The baseline is what the change builds on: the PR base, the merge

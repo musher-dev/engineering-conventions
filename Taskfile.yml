@@ -54,6 +54,7 @@ tasks:
       - task: cli:lint
       - task: cli:typecheck
       - task: checks:test
+      - task: checks:openapi
       - task: cli:test
       - task: invariants
       - task: conventions:self

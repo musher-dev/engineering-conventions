@@ -6,3 +6,8 @@ pre-commit:
     - name: lint
       run: task lint
       fail_text: "Lint failed. Run 'task lint' and fix what it reports."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

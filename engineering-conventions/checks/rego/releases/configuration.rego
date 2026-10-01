@@ -268,8 +268,8 @@ findings contains lib.finding("REL-06", rp.config_path, message) if {
 
 findings contains lib.finding("REL-06", path, message) if {
 	rp.configured
-	some path, commits in commit_types
-	some [key, value] in [["types", "chore"], ["scopes", "release"]]
+	some path, commits in commit_rules
+	some [key, value] in [["allowed_types", "chore"], ["allowed_scopes", "release"]]
 	is_array(commits[key])
 	not value in commits[key]
 	message := sprintf(
@@ -397,10 +397,11 @@ duplicate_components contains component if {
 	other_pkg.component == component
 }
 
-# The commit rules a repository keeps in .github/conventional-commits.yaml.
-commit_types[doc.path] := doc.contents if {
+# The commit rules committed reads (COMMIT-01). A list it leaves out is
+# committed's default: every scope, and a type list that includes chore.
+commit_rules[doc.path] := doc.contents if {
 	some doc in files.documents
-	regex.match(`^\.github/conventional-commits\.ya?ml$`, doc.path)
+	doc.path == ".config/commits/committed.toml"
 	is_object(doc.contents)
 }
 

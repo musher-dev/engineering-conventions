@@ -1,0 +1,4 @@
+min_version = "2026.9.12"
+
+[tools]
+"aqua:rhysd/actionlint" = "1.7.12"

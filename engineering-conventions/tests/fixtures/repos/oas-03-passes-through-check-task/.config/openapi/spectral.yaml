@@ -1,0 +1,3 @@
+# The conventions' OpenAPI rules, and this repository's exemptions.
+extends:
+  - ../../.conventions/openapi.spectral.yaml

@@ -1,0 +1,32 @@
+# The commit rules committed checks every commit message and pull request
+# title against, and the one list of the types and scopes this repository
+# accepts (COMMIT-01). The pull request workflow passes this path; so does a
+# lefthook commit-msg hook, if the repository runs one (COMMIT-03).
+style = "conventional"
+subject_length = 72
+line_length = 0
+subject_capitalized = false
+subject_not_punctuated = true
+imperative_subject = true
+no_fixup = false
+no_wip = true
+
+allowed_types = [
+  "feat",
+  "fix",
+  "perf",
+  "docs",
+  "chore",
+  "refactor",
+  "test",
+  "ci",
+  "build",
+]
+
+allowed_scopes = [
+  "api", # platform-api/**
+  "ci", # .github/workflows/**
+  "deps", # Renovate
+  "release", # release-please pull requests (REL-06)
+  "repo", # Taskfile, .config/, .devcontainer/
+]

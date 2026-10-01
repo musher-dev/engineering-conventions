@@ -830,6 +830,10 @@
     [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true],
     [".repo/outputs.toml", "OUT-12", "warning", "output \"docs-site\" is a site but its location \"docs.example.com\" is not an https:// origin; give the URL people and tools fetch it from", true]
   ],
+  "out-13-passes-metadata-labels": [],
+  "out-13-unlabelled-image": [
+    [".github/workflows/publish.yml", "OUT-13", "warning", "job \"image\" step \"Publish the image\" publishes an image to ghcr.io without the label org.opencontainers.image.source=https://github.com/musher-dev/platform-api, so GHCR connects the package to no repository; add the label to the build, take the labels from docker/metadata-action, or set it with LABEL in the Dockerfile", true]
+  ],
   "rel-01-unreleased-output": [
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-bundle) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],

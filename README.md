@@ -112,7 +112,7 @@ Start from the part of your repository you are working on:
 | [Interfaces](engineering-conventions/definitions/conventions/interfaces/README.md) | `[[interfaces]]` in `.repo/outputs.toml`, `<product>/contracts/` | EC-0030, EC-0031 | IFACE-01 – IFACE-14 |
 | [OpenAPI](engineering-conventions/definitions/conventions/openapi/README.md) | OpenAPI interface documents, `.config/openapi/spectral.yaml` | EC-0037 | OAS-01 – OAS-03 |
 | [OpenTofu](engineering-conventions/definitions/conventions/opentofu/README.md) | Each OpenTofu root's state key, stated in its Taskfile | EC-0029 | TOFU-01 |
-| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-12 |
+| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-13 |
 | [Releases](engineering-conventions/definitions/conventions/releases/README.md) | `.github/release-please/`, the release tag ruleset, `release.yml` | EC-0024 – EC-0026 | REL-01 – REL-20 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
 | [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-24 |

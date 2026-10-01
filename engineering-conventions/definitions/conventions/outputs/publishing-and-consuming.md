@@ -3,7 +3,8 @@ id: EC-0008
 title: Publishing and consuming outputs
 summary: >-
   An output documents how to consume it, is published only from a release
-  tag and never overwritten, carries its provenance when it is an image, and
+  tag and never overwritten, carries its provenance when it is an image,
+  names its own repository as its source when it is published to GHCR, and
   is consumed by an exact version.
 status: draft
 topic: outputs
@@ -12,6 +13,8 @@ applies_to:
     - .repo/outputs.toml
     - .github/workflows/*.yml
     - .github/workflows/*.yaml
+    - .github/actions/**/action.yml
+    - "**/Dockerfile"
 created: 2026-09-24
 owners:
   - "@justinmerrell"
@@ -22,6 +25,10 @@ references:
     url: https://github.com/opencontainers/image-spec/blob/main/annotations.md
   - title: "Semantic Versioning 2.0.0"
     url: https://semver.org/
+  - title: "GitHub Docs: Connecting a repository to a package"
+    url: https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
+  - title: "docker/metadata-action"
+    url: https://github.com/docker/metadata-action
 requirements:
   - id: OUT-08
     title: An output's docs say how to consume it
@@ -51,6 +58,14 @@ requirements:
     since: 0.3.0
     validation:
       engine: review
+  - id: OUT-13
+    title: An image published to GHCR names its own repository in org.opencontainers.image.source
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.outputs.publishing
 ---
 
 # Publishing and consuming outputs
@@ -196,6 +211,61 @@ declaration and `@musher-dev/` packages.
 ```
 
 Checked by: review · Severity: warning · Since: 0.3.0
+
+### OUT-13
+
+**An image published to GHCR names its own repository in `org.opencontainers.image.source`.**
+
+The GitHub Container Registry connects a package to a repository when the package is first published, from the
+image's `org.opencontainers.image.source` label. Without the label the package is connected to no repository: it is
+missing from the repository's page, does not inherit its access, and a reader holding the image cannot find where it
+came from. With another repository's URL, the package is connected there instead. So an image a workflow pushes to
+`ghcr.io` carries the label, and it names `https://github.com/<organization>/<name>`: the organization of the team in
+`owner` and the `name` of [`.repo/repository.toml`](../repository/identity-declaration.md). This is the static half:
+whether the package GHCR shows is in fact connected, and to the repository the publisher means, is not checked here.
+
+The check reads each job of a workflow, and each composite action, for a step that publishes to GHCR:
+
+- a `docker/build-push-action` step whose `push` is `true` or an expression, and whose `tags` name `ghcr.io/`, directly
+  or through the `tags` output of a `docker/metadata-action` step whose `images` do; or
+- a `run:` line that runs `docker push`, or `docker build` or `docker buildx build` with `--push`, naming `ghcr.io/`.
+
+A value written as `${{ env.NAME }}` is read from the workflow's, job's or step's `env:`. The label counts as set when:
+
+- the `docker/build-push-action` step's `labels` sets it, or takes the `labels` output of a `docker/metadata-action`
+  step, which sets the label to the repository the workflow runs in;
+- for a `run:` push, a `run:` line in the same job passes `--label org.opencontainers.image.source=…`, or reads a
+  `docker/metadata-action` step's labels (`steps.<id>.outputs.labels` or `DOCKER_METADATA_OUTPUT_LABELS`); or
+- a Dockerfile in the repository sets it with `LABEL`.
+
+A label written as a literal URL for another repository is reported, in the workflow or, in a repository that
+publishes to GHCR, in the Dockerfile. A value computed when the workflow or build runs, such as
+`${{ github.server_url }}/${{ github.repository }}` or a build argument, is not judged.
+
+**Correct:**
+
+```yaml
+- id: meta
+  uses: docker/metadata-action@<sha>
+  with:
+    images: ghcr.io/musher-dev/platform-api
+- uses: docker/build-push-action@<sha>
+  with:
+    push: true
+    tags: ${{ steps.meta.outputs.tags }}
+    labels: ${{ steps.meta.outputs.labels }}   # includes org.opencontainers.image.source
+```
+
+**Incorrect:**
+
+```yaml
+- uses: docker/build-push-action@<sha>
+  with:
+    push: true
+    tags: ghcr.io/musher-dev/platform-api:${{ github.ref_name }}   # no source label anywhere
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ## References
 

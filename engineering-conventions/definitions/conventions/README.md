@@ -259,6 +259,7 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
 | [OUT-12](outputs/outputs-declaration.md#out-12) | A site output's location is an https:// origin | EC-0007 | proposed | warning | conftest |
+| [OUT-13](outputs/publishing-and-consuming.md#out-13) | An image published to GHCR names its own repository in org.opencontainers.image.source | EC-0008 | proposed | warning | conftest |
 | [REL-01](releases/release-configuration.md#rel-01) | A repository that declares a versioned output releases it with release-please | EC-0024 | proposed | warning | conftest |
 | [REL-02](releases/release-configuration.md#rel-02) | The release-please config and release-please manifest are .github/release-please/config.json and manifest.json | EC-0024 | proposed | warning | conftest |
 | [REL-03](releases/release-configuration.md#rel-03) | The release-please action reads those two files and sets no release type of its own | EC-0024 | proposed | warning | conftest |

@@ -1,0 +1,15 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  lint:md:
+    desc: Lint the Markdown.
+    vars:
+      PATTERN: '**/*.md'
+    env:
+      NO_COLOR: '1'
+    cmds:
+      - markdownlint-cli2 '{{.PATTERN}}'

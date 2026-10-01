@@ -1,0 +1,21 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:all:
+    desc: Lint everything.
+    cmds:
+      - echo "Linting Markdown, then YAML"
+      - task: lint:md
+      - task: lint:yaml
+
+  lint:md:
+    desc: Lint the Markdown.
+    cmds:
+      - markdownlint-cli2 '**/*.md'
+
+  lint:yaml:
+    desc: Lint the YAML.
+    cmds:
+      - yamllint .

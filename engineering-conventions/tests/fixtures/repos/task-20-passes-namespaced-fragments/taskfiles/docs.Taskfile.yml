@@ -1,0 +1,9 @@
+version: '3'
+
+# Docs: build the documentation site.
+
+tasks:
+  build:
+    desc: Build the documentation site.
+    cmds:
+      - mkdocs build --strict

@@ -199,3 +199,30 @@ test_command_lines_drop_comments_and_printed_text if {
 test_called_by if {
 	taskfiles.called_by({"cmds": [{"task": ":lint"}, "x"], "deps": ["setup", {"task": "b"}]}) == {"lint", "setup", "b"}
 }
+
+test_fragments_are_included_area_files if {
+	taskfiles.fragments == {"taskfiles/lint.Taskfile.yml": "lint"} with input as repository
+	{include.namespace | some include in taskfiles.fragment_includes} == {"lint"} with input as repository
+}
+
+test_shell_lines_and_echoes if {
+	task := {"cmds": ["# note", "echo 'start' \\\n  now", {"task": "x"}, {"cmd": "go build"}]}
+	taskfiles.shell_lines(task) == ["echo 'start' now", "go build"]
+	taskfiles.echoes(task)
+	not taskfiles.echoes({"cmds": ["go build"]})
+}
+
+test_silent_from_the_task_or_its_taskfile if {
+	taskfiles.silent("x", {"silent": true})
+	quiet := [td.inventory(["Taskfile.yml"]), td.file("Taskfile.yml", {"version": "3", "silent": true, "tasks": {}})]
+	taskfiles.silent("Taskfile.yml", {"cmds": ["go build"]}) with input as quiet
+	taskfiles.silent("Taskfile.yml", "go build") with input as quiet
+	not taskfiles.silent("Taskfile.yml", {"silent": false}) with input as quiet
+	not taskfiles.silent("Taskfile.yml", {"cmds": ["go build"]}) with input as repository
+}
+
+test_flattened_fragments if {
+	taskfiles.flattened_fragments == {"taskfiles/lint.Taskfile.yml": "lint"} with input as repository
+	taskfiles.flattens_fragments("Taskfile.yml") with input as repository
+	not taskfiles.flattens_fragments("docs/Taskfile.yml") with input as repository
+}

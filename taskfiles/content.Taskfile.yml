@@ -6,14 +6,6 @@ version: '3'
 
 set: [errexit, nounset, pipefail]
 
-vars:
-  SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
-  VALE_CONFIG: .config/markdown/vale.ini
-  PROSE_PATHS: >-
-    README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs
-    engineering-conventions/definitions/conventions
-  WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
-
 tasks:
   schemas:check:
     desc: Check every JSON Schema in checks/schemas, the vendored ones included, against its metaschema.
@@ -108,6 +100,7 @@ tasks:
       YQ_FLAGS: '{{.YQ_FLAGS | default ""}}'
       SCHEMA_FILE: '{{.SCHEMA_DIR}}/{{.SCHEMA}}.schema.json'
     cmds:
+      - echo "Validating files against {{.SCHEMA_FILE}}"
       # Through yq to JSON first, so YAML typing (a bare date becomes a string)
       # matches what the conventions CLI's loader sees, rather than
       # check-jsonschema's own YAML loader. yq rejects an unquoted TOML date,
@@ -131,9 +124,11 @@ tasks:
 
   schemas:validate:builtin:
     internal: true
+    silent: true
     requires:
       vars: [SCHEMA, PATHSPEC]
     cmds:
+      - echo "Validating files against the {{.SCHEMA}} schema"
       - '{{.LIST_FILES}} {{.PATHSPEC}} | xargs -0 -r check-jsonschema --builtin-schema {{.SCHEMA}}'
 
   generate:

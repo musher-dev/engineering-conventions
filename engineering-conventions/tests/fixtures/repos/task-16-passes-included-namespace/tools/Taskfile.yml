@@ -1,8 +1,0 @@
-version: '3'
-
-tasks:
-  test:contract:openapi:public:
-    desc: Check the public API against its contract.
-    aliases: [test:contract:openapi:v1]
-    cmds:
-      - go test ./contract/...

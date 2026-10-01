@@ -8,13 +8,6 @@ version: '3'
 
 set: [errexit, nounset, pipefail]
 
-vars:
-  REGO_DIR: '{{.PRODUCT_DIR}}/checks/rego'
-  INDEX: '{{.PRODUCT_DIR}}/checks/data/index.json'
-  REGAL_CONFIG: .config/rego/regal.yaml
-  COVERAGE_THRESHOLD: 80
-  OPENAPI_FIXTURES: '{{.PRODUCT_DIR}}/tests/fixtures/openapi'
-
 tasks:
   checks:fmt:
     desc: Format the Rego rules in place with opa fmt.

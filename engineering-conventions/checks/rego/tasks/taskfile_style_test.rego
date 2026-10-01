@@ -258,48 +258,27 @@ default_message(offence) := sprintf(
 	[offence],
 )
 
-test_task_16_namespace_depth if {
-	four := with_task("test:contract:openapi:public", {"desc": "Test.", "aliases": ["t:c:o:p"]})
-	not "TASK-16" in td.ids(style.findings) with input as four
-
-	found := style.findings with input as with_task("check:biome:fix:unsafe:all", {
-		"desc": "Fix.",
-		"aliases": ["a:b:c:d:e:f"],
-	})
-	messages(found, "TASK-16") == {
-		concat("", [
-			`task name "check:biome:fix:unsafe:all" nests 4 namespaces; a name has at most three namespaces `,
-			`before it, so join words with hyphens instead, such as "check:biome:fix:unsafe-all"`,
-		]),
-		concat("", [
-			`task name "a:b:c:d:e:f" nests 5 namespaces; a name has at most three namespaces `,
-			`before it, so join words with hyphens instead, such as "a:b:c:d-e-f"`,
-		]),
-	}
-}
-
-test_task_17_host_paths if {
+test_task_16_host_paths if {
 	found := style.findings with input as with_root({
 		"includes": object.union(conforming.includes, {"far": {"taskfile": "/Users/ana/shared/Taskfile.yml"}}),
 		"vars": object.union(conforming.vars, {"CACHE": "/home/ana/.cache/tool"}),
 		"tasks": object.union(conforming.tasks, {"build": {
 			"desc": "Build.",
-			"dir": "/workspaces/app",
+			"dir": "/home/ana/app",
 			"env": {"OUT": `C:\build`},
-			"cmds": ["cd /workspace && go build ./...", "cp x '/root/.config/tool'"],
+			"cmds": ["cd /Users/bo/src && go build ./..."],
 		}}),
 	})
-	messages(found, "TASK-17") == {
+	messages(found, "TASK-16") == {
 		host_message(`include "far" taskfile`, "/Users/ana"),
 		host_message("variable CACHE", "/home/ana"),
-		host_message(`task "build" dir`, "/workspaces/app"),
+		host_message(`task "build" dir`, "/home/ana"),
 		host_message(`task "build" variable OUT`, `C:\`),
-		host_message(`task "build"`, "/workspace"),
-		host_message(`task "build"`, "/root/"),
+		host_message(`task "build"`, "/Users/bo"),
 	}
 }
 
-test_task_17_near_misses if {
+test_task_16_near_misses if {
 	task := {
 		"desc": "Build.",
 		"sources": ["go.mod"],
@@ -312,9 +291,12 @@ test_task_17_near_misses if {
 			"cp a {{.ROOT_DIR}}/workspace/x",
 			"curl https://example.com/home/page",
 			"ls /workspace-cache /opt/tool",
+			"cd /workspaces/app && go build ./...",
+			"cp x /root/.config/tool",
 		],
+		"vars": {"WORKSPACE": "/workspaces/app"},
 	}
-	not "TASK-17" in td.ids(style.findings) with input as with_task("build", task)
+	not "TASK-16" in td.ids(style.findings) with input as with_task("build", task)
 }
 
 host_message(where, path) := sprintf(
@@ -325,7 +307,7 @@ host_message(where, path) := sprintf(
 	[where, path],
 )
 
-test_task_18_destructive_commands if {
+test_task_17_destructive_commands if {
 	found := style.findings with input as with_root({"tasks": object.union(conforming.tasks, {
 		"volumes": {"desc": "Wipe.", "cmds": ["docker volume rm app_data"]},
 		"prune": {"desc": "Prune.", "cmds": ["podman system prune -a --volumes"]},
@@ -334,10 +316,11 @@ test_task_18_destructive_commands if {
 		"infra:destroy": {"desc": "Destroy.", "cmds": ["tofu -chdir=infra destroy -auto-approve"]},
 		"infra:apply": {"desc": "Apply.", "cmd": "terraform apply -auto-approve"},
 		"scrub": {"desc": "Scrub.", "cmds": ["git clean -fdx"]},
+		"scrub:all": {"desc": "Scrub.", "cmds": ["git clean -fdX && git clean -f"]},
 		"discard": {"desc": "Discard.", "cmds": ["git reset -q --hard HEAD"]},
 		"db:reset": {"desc": "Reset.", "cmds": ["psql -c 'drop database app'"]},
 	})})
-	messages(found, "TASK-18") == {
+	messages(found, "TASK-17") == {
 		loss_message("volumes", "removes container volumes"),
 		loss_message("prune", "prunes container volumes"),
 		loss_message("down", "takes a compose stack down with its volumes"),
@@ -346,14 +329,15 @@ test_task_18_destructive_commands if {
 		loss_message("infra:destroy", "is named for destroying data"),
 		loss_message("infra:apply", "applies infrastructure changes with -auto-approve and no saved plan"),
 		loss_message("scrub", "deletes untracked files with git clean"),
+		loss_message("scrub:all", "deletes untracked files with git clean"),
 		loss_message("discard", "discards uncommitted changes with git reset --hard"),
 		loss_message("db:reset", "is named for destroying data"),
 	} - {loss_message("infra:destroy", "is named for destroying data")}
 }
 
-test_task_18_prompted_and_safe_tasks if {
+test_task_17_prompted_and_safe_tasks if {
 	tasks := object.union(conforming.tasks, {
-		"clean": {"desc": "Clean.", "cmds": ["rm -rf dist build node_modules", "git clean -n"]},
+		"clean": {"desc": "Clean.", "cmds": ["rm -rf dist build node_modules", "git clean -n", "git clean -fdX"]},
 		"db:reset": {"desc": "Reset.", "prompt": "This drops the local database. Continue?", "cmds": [{"task": "_drop"}]},
 		"_drop": {"internal": true, "cmds": ["docker volume rm db_data"]},
 		"stop": {"desc": "Stop.", "cmds": ["docker compose down", "echo 'run docker volume rm x to wipe'"]},
@@ -361,16 +345,16 @@ test_task_18_prompted_and_safe_tasks if {
 		"apply:plan": {"desc": "Apply the plan.", "cmds": ["tofu apply -auto-approve tfplan"]},
 		"plan": {"desc": "Plan.", "cmds": ["tofu plan -out tfplan", "git reset --soft HEAD~1"]},
 	})
-	not "TASK-18" in td.ids(style.findings) with input as with_root({"tasks": tasks})
+	not "TASK-17" in td.ids(style.findings) with input as with_root({"tasks": tasks})
 }
 
-test_task_18_internal_task_without_a_prompted_caller if {
+test_task_17_internal_task_without_a_prompted_caller if {
 	tasks := object.union(conforming.tasks, {
 		"setup": {"desc": "Install.", "deps": ["_deps", "_wipe"]},
 		"_wipe": {"internal": true, "cmds": ["docker volume prune -f"]},
 	})
 	found := style.findings with input as with_root({"tasks": tasks})
-	messages(found, "TASK-18") == {loss_message("_wipe", "removes container volumes")}
+	messages(found, "TASK-17") == {loss_message("_wipe", "removes container volumes")}
 }
 
 loss_message(name, loss) := sprintf(

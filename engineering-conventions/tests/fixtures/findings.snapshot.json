@@ -999,18 +999,43 @@
     ["Taskfile.yml", "TASK-15", "warning", "the default task calls task \"build\", so a bare `task` does work; make default only list the tasks (task --list) or run a help task that does, and give that work a name of its own", true]
   ],
   "task-15-passes-default-lists": [],
-  "task-16-deep-name": [
-    ["tools/Taskfile.yml", "TASK-16", "warning", "task name \"test:contract:openapi:public:v2\" nests 4 namespaces; a name has at most three namespaces before it, so join words with hyphens instead, such as \"test:contract:openapi:public-v2\"", true]
+  "task-16-host-path": [
+    ["tools/Taskfile.yml", "TASK-16", "warning", "task \"build\" names \"/home/ana\", a path on one machine, so the task breaks in any other checkout, container or CI runner; write it from {{.ROOT_DIR}} or {{.TASKFILE_DIR}}", true]
   ],
-  "task-16-passes-included-namespace": [],
-  "task-17-host-path": [
-    ["tools/Taskfile.yml", "TASK-17", "warning", "task \"build\" names \"/workspaces/platform-api\", a path on one machine, so the task breaks in any other checkout, container or CI runner; write it from {{.ROOT_DIR}} or {{.TASKFILE_DIR}}", true]
+  "task-16-passes-container-paths": [],
+  "task-17-passes-clean-and-prompt": [],
+  "task-17-unprompted-volume-wipe": [
+    ["tools/Taskfile.yml", "TASK-17", "warning", "task \"stack:reset\" takes a compose stack down with its volumes and declares no prompt:, so one mistyped command loses what nothing in the repository can restore; add a prompt naming what is lost (a workflow passes --yes)", true]
   ],
-  "task-17-passes-container-paths": [],
-  "task-18-passes-clean-and-prompt": [],
-  "task-18-unprompted-volume-wipe": [
-    ["tools/Taskfile.yml", "TASK-18", "warning", "task \"stack:reset\" takes a compose stack down with its volumes and declares no prompt:, so one mistyped command loses what nothing in the repository can restore; add a prompt naming what is lost (a workflow passes --yes)", true]
+  "task-18-noisy-internal-task": [
+    ["taskfiles/lint.Taskfile.yml", "TASK-18", "warning", "internal task \"_markdownlint\" runs commands of its own but is not silent, so Task prints each command line it runs; set silent: true and echo what it is doing", true]
   ],
+  "task-18-passes-silent-echoes": [],
+  "task-19-composite-echo": [
+    ["taskfiles/lint.Taskfile.yml", "TASK-19", "warning", "task \"lint:all\" only calls other tasks, yet adds \"echo \\\"Linting Markdown, then YAML\\\"\"; the tasks it calls say what they do, so remove the echo", true]
+  ],
+  "task-19-passes-echo-with-command": [],
+  "task-20-optional-fragment": [
+    ["Taskfile.yml", "TASK-20", "warning", "include \"docs\" of fragment \"taskfiles/docs.Taskfile.yml\" sets optional:, so a fragment that goes missing drops its tasks without a word; remove it", true]
+  ],
+  "task-20-passes-namespaced-fragments": [],
+  "task-20-passes-shared-fragment": [],
+  "task-21-fragment-vars": [
+    ["taskfiles/lint.Taskfile.yml", "TASK-21", "warning", "the fragment declares a top-level vars:, which Task merges into the scope of every Taskfile, so a name here can change what a task elsewhere runs; move them to the including Taskfile or into the tasks that use them", true]
+  ],
+  "task-21-passes-task-vars": [],
+  "task-22-no-area-comment": [
+    ["taskfiles/lint.Taskfile.yml", "TASK-22", "warning", "the fragment has no comment above its tasks that names its area, \"lint\"; open it with one saying what the lint tasks are for", true]
+  ],
+  "task-22-passes-hyphenated-area": [],
+  "task-23-passes-unprefixed-output": [],
+  "task-23-silent-without-prefix": [
+    ["tools/Taskfile.yml", "TASK-23", "warning", "task \"db:migrate\" is silent in prefixed output and sets no prefix; add a kebab-case prefix, such as \"db-migrate\"", true]
+  ],
+  "task-24-loud-dev-server": [
+    ["Taskfile.yml", "TASK-24", "warning", "task \"dev\" starts a long-running process in prefixed output but is not silent, so Task prints its whole command line ahead of the process's own output; set silent: true and echo what it starts", true]
+  ],
+  "task-24-passes-silent-dev-server": [],
   "tofu-01-no-repository": [
     ["taskfiles/tofu.Taskfile.yml", "TOFU-01", "warning", "TOFU_STATE_KEY \"tfstate/dns/terraform.tfstate\" names no repository after tfstate/, so it is unique only by luck and says nothing of its owner; name the state key tfstate/platform-api/dns/terraform.tfstate, or tfstate/platform-api/dns/<env>/terraform.tfstate for a root split by environment, and migrate a used key rather than edit it", true]
   ],

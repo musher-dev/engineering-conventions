@@ -1,0 +1,64 @@
+version: '3'
+
+output: prefixed
+
+vars:
+  IMAGE: platform-api
+
+tasks:
+  setup:
+    desc: Install the pinned tools.
+    cmds:
+      - mise install
+
+  check:
+    desc: Run every gate CI runs.
+    cmds:
+      - task: lint
+      - task: test
+
+  lint:
+    desc: Lint the workflows.
+    cmds:
+      - actionlint
+
+  build:
+    desc: Build the image.
+    deps: [_login]
+    cmds:
+      - docker build -t {{.IMAGE}} .
+
+  test:
+    desc: Run the tests.
+    cmds:
+      - go test ./...
+
+  dev:
+    desc: Run the API locally, with its docs beside it.
+    deps: [dev:api, docs:serve]
+
+  dev:api:
+    desc: Run the API locally.
+    silent: true
+    prefix: api
+    cmds:
+      - echo "Starting the API on :8080"
+      - go run .
+
+  docs:serve:
+    desc: Serve the docs.
+    silent: true
+    prefix: docs
+    cmds:
+      - echo "Serving the docs on :8000"
+      - mkdocs serve
+
+  devtools:
+    desc: Install the development tools.
+    cmds:
+      - go install ./tools/...
+
+  _login:
+    internal: true
+    cmds:
+      - docker login ghcr.io

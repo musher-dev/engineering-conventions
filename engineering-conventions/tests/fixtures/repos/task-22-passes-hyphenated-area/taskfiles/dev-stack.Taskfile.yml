@@ -1,0 +1,8 @@
+# The local dev stack: the compose services the API needs.
+version: '3'
+
+tasks:
+  stack:up:
+    desc: Start the local stack.
+    cmds:
+      - docker compose up -d

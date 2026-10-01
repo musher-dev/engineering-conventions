@@ -1,0 +1,20 @@
+version: '3'
+
+# The web app's tasks. Its own fragments sit in taskfiles/ beside this file
+# and are flattened; the shared Knip fragment at the root is included under a
+# namespace and hidden, which is not the fragment set TASK-20 holds.
+
+includes:
+  lint:
+    taskfile: taskfiles/lint.Taskfile.yml
+    flatten: true
+  knip:
+    taskfile: ../../taskfiles/knip.Taskfile.yml
+    internal: true
+
+tasks:
+  build:
+    desc: Build the web app.
+    cmds:
+      - task: knip:run
+      - vite build

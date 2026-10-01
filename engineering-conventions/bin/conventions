@@ -182,6 +182,9 @@ TEXTS="${TEXTS}|"'^\.config/.+\.(jsonc?|ya?ml|toml|ini)$'
 # CODEOWNERS and the security policy, wherever GitHub looks for them (COMM).
 TEXTS="${TEXTS}|"'^(\.github/|docs/)?CODEOWNERS$'
 TEXTS="${TEXTS}|"'^(\.github/|docs/)?[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]\.([Mm][Dd]|[Mm][Aa][Rr][Kk][Dd][Oo][Ww][Nn]|[Aa][Dd][Oo][Cc]|[Rr][Ss][Tt])$'
+# A Taskfile fragment, for the comment it opens with, which YAML drops
+# (EC-0015).
+TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.Taskfile\.ya?ml$'
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'

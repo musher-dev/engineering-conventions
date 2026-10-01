@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build the binary.
+    cmds:
+      - cd /home/ana/src/platform-api && go build ./...

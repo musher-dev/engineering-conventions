@@ -314,9 +314,15 @@ ID is permanent: it is never renumbered or reused.
 | [TASK-13](tasks/task-interface.md#task-13) | The check task runs every gate CI runs | EC-0016 | proposed | warning | review |
 | [TASK-14](tasks/taskfile-style.md#task-14) | Every literal sources entry names something the repository holds | EC-0015 | proposed | warning | conftest |
 | [TASK-15](tasks/taskfile-style.md#task-15) | The root Taskfile's default task only lists the tasks | EC-0015 | proposed | warning | conftest |
-| [TASK-16](tasks/taskfile-style.md#task-16) | A task name nests at most three namespaces | EC-0015 | proposed | warning | conftest |
-| [TASK-17](tasks/taskfile-style.md#task-17) | A Taskfile names no path that exists on only one machine | EC-0015 | proposed | warning | conftest |
-| [TASK-18](tasks/taskfile-style.md#task-18) | A task that destroys what nothing can restore declares a prompt | EC-0015 | proposed | warning | conftest |
+| [TASK-16](tasks/taskfile-style.md#task-16) | A Taskfile names no path that exists on only one machine | EC-0015 | proposed | warning | conftest |
+| [TASK-17](tasks/taskfile-style.md#task-17) | A task that destroys what nothing can restore declares a prompt | EC-0015 | proposed | warning | conftest |
+| [TASK-18](tasks/taskfile-style.md#task-18) | A fragment's silent task echoes what it is doing, and its internal task with commands of its own is silent | EC-0015 | proposed | warning | conftest |
+| [TASK-19](tasks/taskfile-style.md#task-19) | A fragment's task that only calls other tasks echoes nothing of its own | EC-0015 | proposed | warning | conftest |
+| [TASK-20](tasks/taskfile-style.md#task-20) | A Taskfile that flattens its fragments includes each with flatten, never optional, dir or internal | EC-0015 | proposed | warning | conftest |
+| [TASK-21](tasks/taskfile-style.md#task-21) | A fragment declares no top-level includes, vars, env or dotenv | EC-0015 | proposed | warning | conftest |
+| [TASK-22](tasks/taskfile-style.md#task-22) | A fragment opens with a comment that names its area | EC-0015 | proposed | warning | conftest |
+| [TASK-23](tasks/taskfile-style.md#task-23) | In prefixed output, every silent task sets a kebab-case prefix | EC-0015 | proposed | warning | conftest |
+| [TASK-24](tasks/taskfile-style.md#task-24) | In prefixed output, a task that runs a long-lived process is silent | EC-0015 | proposed | warning | conftest |
 | [TOFU-01](opentofu/state-keys.md#tofu-01) | An OpenTofu root's state key is tfstate/\<repository\>/\<root\>/terraform.tfstate | EC-0029 | proposed | warning | conftest |
 | [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
 | [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |

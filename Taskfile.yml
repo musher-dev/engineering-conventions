@@ -5,7 +5,9 @@ version: '3'
 # the product through PRODUCT_DIR; every tool gets its config by explicit path
 # (docs/repository.md). Environment tasks (setup, tools:*, hooks:*) and the
 # `check` aggregate live here; everything else is a module under taskfiles/,
-# flattened so a task's full name is written where it is defined.
+# flattened so a task's full name is written where it is defined. The
+# modules' variables are declared here too, under the module that uses them:
+# Task merges an included file's vars into every task's scope anyway (TASK-21).
 
 set: [errexit, nounset, pipefail]
 
@@ -35,6 +37,61 @@ vars:
   # from the committed lockfile: --locked fails rather than re-resolving.
   UV_RUN: uv run --project {{.ROOT_DIR}}/engineering-conventions --locked
   LIST_FILES: bash {{.ROOT_DIR}}/.github/scripts/list-files.sh
+
+  # taskfiles/lint.Taskfile.yml
+  MD_CONFIG: .config/markdown/markdownlint.jsonc
+  YAML_CONFIG: .config/yaml/yamllint.yaml
+  TYPOS_CONFIG: .config/spelling/typos.toml
+  ACTIONLINT_CONFIG: .config/actions/actionlint.yaml
+  ZIZMOR_CONFIG: .config/actions/zizmor.yml
+  GITLEAKS_CONFIG: .config/security/gitleaks.toml
+  TOML_CONFIG: .config/toml/taplo.toml
+  # CHANGELOG.md is written by release-please, whose output markdownlint
+  # rejects and no commit can fix. The PR template is a PR body, whose H1 is
+  # the PR title, so it starts at `##` by design (MD041). Fixtures are data
+  # for the checks under test.
+  MD_PATHSPEC: >-
+    '**/*.md' ':!:CHANGELOG.md' ':!:.github/pull_request_template.md'
+    ':!:engineering-conventions/tests/fixtures/**'
+  # Fixture repos are linted by the checks they exist to exercise, and some
+  # carry deliberate faults; the product's own YAML is otherwise in scope.
+  YAML_PATHSPEC: >-
+    '**/*.yml' '**/*.yaml' ':!:engineering-conventions/tests/fixtures/**'
+  # Fixture repos carry TOML exactly as a consumer might write it; the same
+  # exclusion is in .config/toml/taplo.toml for the editor.
+  TOML_PATHSPEC: >-
+    '**/*.toml' ':!:engineering-conventions/tests/fixtures/**'
+
+  # taskfiles/checks.Taskfile.yml
+  REGO_DIR: '{{.PRODUCT_DIR}}/checks/rego'
+  INDEX: '{{.PRODUCT_DIR}}/checks/data/index.json'
+  REGAL_CONFIG: .config/rego/regal.yaml
+  COVERAGE_THRESHOLD: 80
+  OPENAPI_FIXTURES: '{{.PRODUCT_DIR}}/tests/fixtures/openapi'
+
+  # taskfiles/content.Taskfile.yml
+  SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
+  VALE_CONFIG: .config/markdown/vale.ini
+  PROSE_PATHS: >-
+    README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs
+    engineering-conventions/definitions/conventions
+  WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
+
+  # taskfiles/bundle.Taskfile.yml
+  DIST: '{{.ROOT_DIR}}/dist'
+  VERSION:
+    sh: tr -d '[:space:]' < '{{.ROOT_DIR}}/version.txt'
+  TARBALL: engineering-conventions-{{.VERSION}}.tar.gz
+  VALE_PACKAGE: MusherConventions.zip
+  # The config package (EC-0038, decision 0024). Vale requires its root
+  # directory to have the zip's name.
+  PROSE_PACKAGE: MusherProse
+  PROSE_STYLES: MusherConventions MusherCopy
+  # The bundle's top-level entries under engineering-conventions/. The
+  # authoring side (src/, tests/, pyproject.toml, uv.lock, .python-version)
+  # is excluded because consumers run the rules with conftest and Vale alone.
+  # So are the Rego unit tests: conftest would load them as policy.
+  BUNDLE_ENTRIES: README.md bin checks definitions examples
 
 tasks:
   check:

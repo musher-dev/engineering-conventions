@@ -5,8 +5,10 @@
 #   UPPER_SNAKE (TASK-02) and its tasks in kebab-case with `:` namespaces
 #   (TASK-03), writes templates without inner spaces (TASK-04), describes
 #   every public task (TASK-05), calls every internal task (TASK-06), sets
-#   prefix only where output is prefixed (TASK-07), and names only paths,
-#   includes and sources that exist (TASK-08, TASK-09, TASK-14).
+#   prefix only where output is prefixed (TASK-07), names only paths,
+#   includes and sources that exist (TASK-08, TASK-09, TASK-14), keeps its
+#   default task to listing (TASK-15), names no machine-specific path
+#   (TASK-16) and prompts before destroying data (TASK-17).
 # scope: package
 # custom:
 #   convention: EC-0015
@@ -47,7 +49,7 @@ findings contains lib.finding("TASK-03", path, message) if {
 			"task name %q is not kebab-case; use lowercase words joined by hyphens, with `:`",
 			"between a namespace and a name, such as %q",
 		]),
-		[name, kebab(name)],
+		[name, taskfiles.kebab(name)],
 	)
 }
 
@@ -99,7 +101,7 @@ findings contains lib.finding("TASK-07", path, message) if {
 	some name, task in taskfiles.tasks(path)
 	is_object(task)
 	"prefix" in object.keys(task)
-	not prefixed(path)
+	not taskfiles.prefixed(path)
 	message := sprintf(
 		concat(" ", [
 			"task %q sets prefix, but no Taskfile that loads it sets output: prefixed, the only",
@@ -180,26 +182,8 @@ findings contains lib.finding("TASK-15", path, message) if {
 	)
 }
 
-# TASK-16. Counted in the Taskfile that declares the name; an include's
-# namespace is the includer's choice and is not counted.
+# TASK-16
 findings contains lib.finding("TASK-16", path, message) if {
-	some path, _ in taskfiles.documents
-	some task_name, task in taskfiles.tasks(path)
-	some name in array.concat([task_name], taskfiles.aliases(task))
-	is_string(name)
-	segments := split(name, ":")
-	count(segments) > max_segments
-	message := sprintf(
-		concat(" ", [
-			"task name %q nests %d namespaces; a name has at most three namespaces before it,",
-			"so join words with hyphens instead, such as %q",
-		]),
-		[name, count(segments) - 1, shallower(segments)],
-	)
-}
-
-# TASK-17
-findings contains lib.finding("TASK-17", path, message) if {
 	some path, taskfile in taskfiles.documents
 	some [where, value] in path_values(path, taskfile)
 	some host_path in host_paths(value)
@@ -212,8 +196,8 @@ findings contains lib.finding("TASK-17", path, message) if {
 	)
 }
 
-# TASK-18. An internal task may leave the prompt to the task that calls it.
-findings contains lib.finding("TASK-18", path, message) if {
+# TASK-17. An internal task may leave the prompt to the task that calls it.
+findings contains lib.finding("TASK-17", path, message) if {
 	some path, _ in taskfiles.documents
 	some name, task in taskfiles.tasks(path)
 	not taskfiles.prompted(task)
@@ -270,8 +254,6 @@ upper_snake(name) := upper(regex.replace(regex.replace(name, `([a-z0-9])([A-Z])`
 
 task_name_pattern := `^_?[a-z][a-z0-9-]*(:([a-z][a-z0-9-]*|\*))*$`
 
-kebab(name) := lower(trim(regex.replace(regex.replace(name, `([a-z0-9])([A-Z])`, "${1}-${2}"), `[_. ]+`, "-"), "-"))
-
 spaced_templates(taskfile) := {expression |
 	walk(taskfile, [_, value])
 	is_string(value)
@@ -284,11 +266,6 @@ tight(expression) := regex.replace(regex.replace(expression, `^\{\{[ \t]+`, "{{"
 described(task) if {
 	is_string(task.desc)
 	trim_space(task.desc) != ""
-}
-
-prefixed(path) if {
-	some ancestor in taskfiles.ancestors(path)
-	taskfiles.documents[ancestor].output == "prefixed"
 }
 
 path_var_pattern := `_(DIR|FILE|CONFIG)$`
@@ -404,13 +381,6 @@ calls_a_task(task) if {
 	"task" in object.keys(item)
 }
 
-max_segments := 4
-
-shallower(segments) := concat(":", array.concat(
-	array.slice(segments, 0, max_segments - 1),
-	[concat("-", array.slice(segments, max_segments - 1, count(segments)))],
-))
-
 # Every value of a Taskfile that a task reads as a path or runs: each
 # command line, each task's dir, sources and generates, every variable, and
 # each include's taskfile and dir.
@@ -444,12 +414,13 @@ path_values(path, taskfile) := ((({[sprintf("task %q", [name]), line] |
 # such as a mount target or a working directory inside the image.
 container_command(line) if regex.match(`(^|[\s;&|(])(docker|podman|nerdctl|kubectl|devcontainer)\s`, line)
 
-# A path into a home directory, a dev container or Codespaces checkout, or a
-# Windows drive. A path after `:` is not one: it is the target of a mount or
-# part of a URL.
+# A path into a person's home directory, or a Windows drive. A path after
+# `:` is not one: it is the target of a mount or part of a URL. A container's
+# working directory, such as /workspaces/<name>, is the same in every clone
+# of the container, so it is not one machine's.
 host_path_pattern := concat("", [
 	`(^|[\s"'=(,])`,
-	`(/(home|Users)/[^/\s"']+|/root/|/workspaces?(/[^\s"';)]*|[\s"';)]|$)|[A-Za-z]:\\)`,
+	`(/(home|Users)/[^/\s"']+|[A-Za-z]:\\)`,
 ])
 
 host_paths(value) := {trim_space(trim(match[2], `"';)`)) |
@@ -479,6 +450,7 @@ command_losses(task) := {loss |
 	some line in taskfiles.command_lines(task)
 	some pattern, loss in destructive_patterns
 	regex.match(pattern, line)
+	not spared(loss, line)
 } | {"applies infrastructure changes with -auto-approve and no saved plan" |
 	some line in taskfiles.command_lines(task)
 	regex.match(`(^|[\s;&|(])(tofu|terraform)\s(.*\s)?apply\s(.*\s)?-auto-approve`, line)
@@ -492,6 +464,15 @@ destructive_patterns := {
 	`(^|[\s;&|(])(tofu|terraform)\s(.*\s)?destroy\s(.*\s)?-auto-approve`: "destroys infrastructure with -auto-approve",
 	`(^|[\s;&|(])git\s+clean(\s+\S+)*\s+(-[A-Za-z]*f[A-Za-z]*|--force)(\s|$)`: "deletes untracked files with git clean",
 	`(^|[\s;&|(])git\s+reset(\s+\S+)*\s+--hard(\s|$)`: "discards uncommitted changes with git reset --hard",
+}
+
+# git clean -X removes only the files .gitignore names, which a build
+# writes and the next build restores. Every git clean on the line must be
+# one.
+spared("deletes untracked files with git clean", line) if {
+	every clean in regex.find_n(`git\s+clean(\s+[^\s;&|]+)*`, line, -1) {
+		regex.match(`\s-[A-Za-z]*X`, clean)
+	}
 }
 
 destructive_name_pattern := `(^|:)((destroy|drop|wipe)|(db|database):reset)$`

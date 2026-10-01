@@ -10,7 +10,7 @@ schema_version = 1
 waivers = []
 
 [conventions]
-version = "0.7.0" # x-release-please-version
+version = "0.7.1" # x-release-please-version
 
 # The fixture repositories and the example consumer are separate
 # repositories that tests check on their own; many are wrong on purpose.

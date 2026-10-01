@@ -102,7 +102,7 @@ severity `warning`
 | --- | --- | --- |
 | `contracts:generate` | an interface is `generated` | Writes every generated definition from the code. |
 | `contracts:check` | any interface | Regenerates, then fails when a committed definition differs, and lints each format. |
-| `contracts:breaking` | any interface | Compares each interface with the one the last release delivered, by its compatibility: fails a `gated` break unless the change is released as a major, and fails any change to a published `versioned` file. Skips `lockstep`. |
+| `contracts:breaking` | any interface | Compares each interface with the one the last release delivered, by its compatibility: fails a `gated` break unless a commit since the last release is marked breaking, and fails any change to a published `versioned` file. Skips `lockstep`. |
 | `contracts:bundle` | an interface is delivered by a `bundle` | Writes the bundle and its `release.json` for the version being released. |
 
 ## The release record
@@ -166,15 +166,17 @@ Checked by: review · Severity: warning · Since: 0.7.0
 
 **A change to an interface keeps its compatibility promise.**
 
-A `gated` interface's breaking change ships only in a major release (a `feat!` commit); a `versioned` interface's
-published file never changes, and a break is a new `.vN+1.` file; a `lockstep` interface is used only by consumers
-released with it. `contracts:breaking` catches the structural part. The reviewer checks what no structural comparison
-sees: a field whose meaning changed while its shape stayed the same.
+A `gated` interface's break ships only in a release marked breaking: a major release from 1.0.0, a minor release in
+the 0.x series, as Semantic Versioning §4 allows. Either is cut by a commit marked `!` or carrying `BREAKING CHANGE`;
+`contracts:breaking` checks the mark, not the number. A `versioned` interface's published file never changes, and a
+break is a new `.vN+1.` file; a `lockstep` interface is used only by consumers released with it.
+`contracts:breaking` catches the structural part. The reviewer checks what no structural comparison sees: a field
+whose meaning changed while its shape stayed the same.
 
 **Correct:**
 
 ```text
-feat(api)!: remove the deprecated /v1/tokens endpoint     # a gated break, released as a major
+feat(api)!: remove the deprecated /v1/tokens endpoint     # a gated break, marked breaking
 ```
 
 **Incorrect:**

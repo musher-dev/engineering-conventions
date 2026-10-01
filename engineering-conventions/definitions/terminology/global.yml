@@ -463,9 +463,11 @@ terms:
     display_name: gated
     token: gated
     definition: >-
-      A change that breaks a consumer ships only in a major release: the
-      producer's contracts:breaking task compares each change with the last
-      release and fails on a break the release would not signal.
+      A change that breaks a consumer ships only in a release marked
+      breaking: a major release from 1.0.0, a minor release in the 0.x
+      series. The producer's contracts:breaking task compares each change
+      with the last release and fails on a break that no commit marked ! or
+      carrying BREAKING CHANGE signals.
     tags: [interfaces.compatibility]
     stability: provisional
   - id: interfaces.compatibility.versioned

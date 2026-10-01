@@ -208,9 +208,13 @@ terminology change.
 
 | Compatibility | Promise | Fits |
 | --- | --- | --- |
-| `gated` | A change that breaks a consumer ships only in a major release. `contracts:breaking` compares each change with the last release and fails on a break the release would not signal. | A public or partner API |
+| `gated` | A change that breaks a consumer ships only in a release marked breaking. `contracts:breaking` compares each change with the last release and fails on a break no commit marked breaking signals. | A public or partner API |
 | `versioned` | A published `.vN.` file never changes. A break is a new file with the next number, and the old one stays for the consumers that read it. | Event schemas, webhooks: anything read long after it was written |
 | `lockstep` | No promise across releases. Only consumers released in the same composition as the producer may depend on it. | An internal API that ships with its only clients |
+
+A release marked breaking is a major release from 1.0.0, and a minor release in the 0.x series, as Semantic Versioning
+§4 allows. Either is cut by a commit marked `!` or carrying `BREAKING CHANGE`; `contracts:breaking` checks the mark,
+not the number.
 
 ### The contracts directory
 

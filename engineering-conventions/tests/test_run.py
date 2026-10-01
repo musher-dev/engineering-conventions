@@ -204,6 +204,8 @@ def test_input_files(tmp_path: Path) -> None:
         ".github/release-please/manifest.json",
         ".github/release-please/notes.json",
         ".github/conventional-commits.yaml",
+        ".config/commits/committed.toml",
+        "committed.toml",
         "release-please-config.json",
         ".repo/conventions.toml",
         ".repo/outputs.toml",
@@ -237,6 +239,7 @@ def test_input_files(tmp_path: Path) -> None:
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).write_text("{}\n")
     assert run.input_files(tmp_path) == [
+        ".config/commits/committed.toml",
         ".config/lefthook.yml",
         ".config/security/trivyignore.yaml",
         ".devcontainer-lock.json",
@@ -247,7 +250,6 @@ def test_input_files(tmp_path: Path) -> None:
         ".devcontainer/stacks/postgres/compose.yaml",
         ".github/actions/nested/deeper/action.yaml",
         ".github/actions/setup-tools/action.yml",
-        ".github/conventional-commits.yaml",
         ".github/dependabot.yml",
         ".github/release-please/config.json",
         ".github/release-please/manifest.json",
@@ -277,12 +279,19 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
     for name in ("Dockerfile", "docker/build.Dockerfile", "Containerfile", "Dockerfile.dev"):
         assert chosen.dockerfiles.search(name), name
     assert not chosen.dockerfiles.search(".dockerignore")
+    assert chosen.env_schemas.search("api/env.schema.yaml")
+    assert not chosen.env_schemas.search("api/contracts/vendor/x/y/env.schema.yaml")
+    assert chosen.derivation == product / "bin" / "env-contract.jq"
     assert chosen.not_dockerfiles.search("docker/build.Dockerfile.dockerignore")
     assert not chosen.not_dockerfiles.search("docker/build.Dockerfile")
     for name in (
         "CLAUDE.md",
         "api/CLAUDE.md",
         ".claude/rules/a/b.md",
+        ".claude/skills/writing-commits/SKILL.md",
+        "apps/web/.claude/skills/deploy/SKILL.md",
+        ".claude/agents/reviewer.md",
+        ".claude/agents/review/security.md",
         "docs/decisions/0001-x.md",
         "docs/adrs/0001-x/+page.md",
         ".nvmrc",
@@ -294,6 +303,7 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
     ):
         assert chosen.texts.search(name), name
     assert not chosen.texts.search("README.md")
+    assert not chosen.texts.search(".claude/skills/writing-commits/references/guide.md")
     assert not chosen.texts.search("docs/trivyignore")
     assert chosen.sizes.search("docs/guide.md")
     assert chosen.digests.search("web/contracts/vendor/platform-api/contracts/openapi/public.json")
@@ -348,6 +358,64 @@ def test_inventory_document_embeds_text_sizes_and_parses(product: Path, tmp_path
     }
     assert parsed[".devcontainer/devcontainer.json"] == {"name": "x"}
     assert as_map(as_list(parsed["Dockerfile"])[1])["Cmd"] == "from"
+
+
+def test_inventory_document_derives_from_each_environment_schema(
+    product: Path, tmp_path: Path
+) -> None:
+    # What bin/env-contract.jq derives, keyed by the schema's path; a schema
+    # that does not parse, or is not a mapping, derives nothing.
+    (tmp_path / "api").mkdir()
+    (tmp_path / "api" / "env.schema.yaml").write_text(
+        "service: api\nruntime: go\nbindings:\n"
+        "  API_PORT: {type: integer, default: 8080, sensitivity: internal, description: x}\n"
+    )
+    (tmp_path / "env.schema.yaml").write_text("- a list\n")
+    (tmp_path / "web").mkdir()
+    (tmp_path / "web" / "env.schema.yaml").write_text("service: [\n")
+    files = run.inventory(tmp_path)
+    listing = as_map(
+        run.inventory_document(tmp_path, files, None, run.selection(product))[
+            "conventions_inventory"
+        ]
+    )
+    derived = as_map(listing["derived"])
+    assert list(derived) == ["api/env.schema.yaml"]
+    contract = as_map(as_map(derived["api/env.schema.yaml"])["contract"])
+    assert contract["title"] == "api"
+    assert as_map(contract["properties"])["API_PORT"] == {
+        "default": 8080,
+        "description": "x",
+        "type": "integer",
+        "x-musher-sensitivity": "internal",
+    }
+    assert "# API_PORT=8080\n" in get_str(as_map(derived["api/env.schema.yaml"]), "example")
+
+
+def test_the_contract_carries_runtime_requirements(product: Path) -> None:
+    # A deploy preflight compares x-musher-requires with what infrastructure
+    # reports (decision 0026).
+    schema = product / "tests" / "fixtures" / "env-schema" / "valid" / "runtime-requirements.yaml"
+    derived = as_map(run.derive(schema.parent, schema.name, run.selection(product).derivation))
+    contract = as_map(derived["contract"])
+    assert as_map(contract["x-musher-requires"])["cache"] == {
+        "capability": "valkey",
+        "description": "Rate-limit counters and short-lived sessions.",
+        "version": ">=9, <10",
+    }
+    assert as_map(as_map(contract["properties"])["CACHE_URL"])["x-musher-requires"] == "cache"
+
+
+def test_derive_needs_jq(product: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / "env.schema.yaml").write_text("service: api\nruntime: go\nbindings: {}\n")
+    which = shutil.which
+
+    def without_jq(name: str) -> str | None:
+        return None if name == "jq" else which(name)
+
+    monkeypatch.setattr(run.shutil, "which", without_jq)
+    with pytest.raises(RunnerError, match="jq is not on PATH"):
+        run.derive(tmp_path, "env.schema.yaml", run.selection(product).derivation)
 
 
 def test_inventory_walks_a_plain_directory(tmp_path: Path) -> None:

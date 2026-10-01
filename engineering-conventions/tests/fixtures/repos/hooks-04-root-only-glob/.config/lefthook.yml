@@ -7,3 +7,8 @@ pre-commit:
       glob: "*.md"
       run: markdownlint-cli2 {staged_files}
       fail_text: "Markdown lint failed. Run 'task lint:md'."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

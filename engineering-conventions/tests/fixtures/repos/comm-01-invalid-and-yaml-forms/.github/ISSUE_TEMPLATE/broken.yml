@@ -1,0 +1,4 @@
+name: Broken form
+body:
+  - type: textarea
+    attributes: {}

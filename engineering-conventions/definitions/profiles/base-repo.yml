@@ -15,20 +15,33 @@ description: >-
   with workflows shares, Taskfile style and a root Taskfile
   with setup, check and lint, the git hooks of any repository that uses
   lefthook, the agent context of any repository that has one, the shape
-  of its decision records if it keeps any, and the format of any
-  environment schema it holds, and the dev container of any repository
-  that has one.
+  of its decision records if it keeps any, the format of any
+  environment schema it holds and the documents derived from it, the
+  dev container of any repository that has one, the community files
+  GitHub reads: issue and discussion forms, CODEOWNERS where it has one, and a security policy,
+  the OpenAPI documents of any OpenAPI interface it offers, the
+  commit messages and pull request titles of every repository, checked
+  by committed, and the Vale config that lints the copy of any site it
+  publishes.
 include:
-  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS]
+  # OAS asks nothing of a repository that declares no openapi interface,
+  # and an API can be offered by a service, a library or a specification, so
+  # every kind selects it. COPY likewise applies only to a repository that
+  # publishes a site.
+  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS, COMM, OAS, COMMIT, COPY]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
-  # schema. Of EC-0016 and EC-0019, only what every repository shares is
+  # schema. Of EC-0016 and EC-0019, only what every repository shares
+  # (for EC-0019, where schemas live and what is derived from them) is
   # selected here; the kind profiles add the rest by ID, because an
   # exclude here would win over their includes. Of EC-0030, IFACE-08 (the
   # contracts directory) is added by the kinds whose product is not itself
   # the interfaces.
   conventions: [EC-0015, EC-0020, EC-0031]
   requirements:
-    [TASK-10, TASK-13, ENVS-02, ENVS-15, IFACE-01, IFACE-02, IFACE-03, IFACE-04, IFACE-05, IFACE-06, IFACE-07]
+    [
+      TASK-10, TASK-13, ENVS-02, ENVS-15, ENVS-20, ENVS-21,
+      IFACE-01, IFACE-02, IFACE-03, IFACE-04, IFACE-05, IFACE-06, IFACE-07,
+    ]
 # Every requirement is proposed until the platform hands workflow naming over
 # to this repository (docs/decisions/0002). Opting in here reports them at
 # their warning severity now, so repositories see the migration they face

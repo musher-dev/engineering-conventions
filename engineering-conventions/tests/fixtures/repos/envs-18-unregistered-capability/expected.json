@@ -3,5 +3,10 @@
     "id": "ENVS-18",
     "path": "platform-api/env.schema.yaml",
     "severity": "warning"
+  },
+  {
+    "id": "ENVS-22",
+    "path": "platform-api/env.schema.yaml",
+    "severity": "warning"
   }
 ]

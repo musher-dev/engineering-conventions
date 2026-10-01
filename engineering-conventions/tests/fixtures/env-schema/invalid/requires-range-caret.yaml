@@ -1,0 +1,6 @@
+# A caret range: write both bounds out.
+service: api
+runtime: go
+requires:
+  cache: {capability: valkey, version: "^9", description: Counters.}
+bindings: {}

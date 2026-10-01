@@ -1,0 +1,39 @@
+name: Bug report
+description: Something does not work as documented.
+title: "[Bug] "
+labels: [bug, triage]
+assignees: [octocat]
+projects: ["your-org/1"]
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to report this.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "1.2.3"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      render: shell
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - API
+        - Console
+      default: 0
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched the existing issues
+          required: true

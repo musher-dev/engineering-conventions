@@ -4,7 +4,7 @@ date: 2026-09-28
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
-amended_by: ["0022"]
+amended_by: ["0022", "0026"]
 ---
 
 # 0015 — The runner reads what conftest cannot select

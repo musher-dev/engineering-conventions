@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "repository": "fleet-agent",
+  "output": "units",
+  "version": "0.4.2",
+  "tag": "v0.4.2",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "interfaces": [
+    {
+      "id": "units",
+      "format": "systemd-unit",
+      "compatibility": "gated",
+      "files": [
+        {
+          "path": "units/agent.service",
+          "sha256": "a0a151d1feb1d56d0fbd19f9c358b9a6a11ec85682ac990c05552c67b6cd8a98"
+        }
+      ]
+    }
+  ]
+}

@@ -428,6 +428,36 @@ def compare_to_baseline(content: Content, baseline: dict[str, object], ref: str)
     return found
 
 
+def copy_rules_have_requirements(content: Content) -> list[str]:
+    """Every MusherCopy rule is one vale requirement, and every such requirement is a rule.
+
+    The rule's alerts link to that requirement's heading, so a rule without
+    one has nowhere to send a reader, and a requirement without a rule checks
+    nothing.
+    """
+    style = content.copy_style
+    rules = {f"{style.style}.{rule.name}" for rule in style.rules}
+    named: dict[str, list[str]] = {}
+    for req in content.requirements:
+        if req.engine == "vale" and req.style and req.style.startswith(f"{style.style}."):
+            named.setdefault(req.style, []).append(req.id)
+    found = [
+        f"{style.path}: {rule} has no requirement; add one with engine: vale, style: {rule}"
+        for rule in sorted(rules - set(named))
+    ]
+    found += [
+        f"{', '.join(ids)}: validation.style {check} is not a rule in {style.path}"
+        for check, ids in sorted(named.items())
+        if check not in rules
+    ]
+    found += [
+        f"{', '.join(ids)}: more than one requirement names {check}; a rule links to one"
+        for check, ids in sorted(named.items())
+        if len(ids) > 1
+    ]
+    return found
+
+
 CHECKS: tuple[Check, ...] = (
     ids_unique,
     families_registered,
@@ -440,6 +470,7 @@ CHECKS: tuple[Check, ...] = (
     terminology_consistent,
     profiles_resolve,
     kinds_have_profiles,
+    copy_rules_have_requirements,
 )
 
 

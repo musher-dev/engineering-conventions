@@ -1,0 +1,36 @@
+name: Validate Pull Request
+on: [pull_request]
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  title:
+    name: Validate Pull Request / Title
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Set up the tools
+        id: setup_tools
+        uses: ./.github/actions/setup-tools
+        with:
+          tool-version: "1.0.0"
+      - name: Check the title passes committed
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$TITLE" | committed --commit-file=- --config .config/commits/committed.toml
+      - name: Check the title has a scope
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          requireScope: "true"

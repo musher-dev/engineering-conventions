@@ -6,8 +6,9 @@ summary: >-
   locks its Features, builds on an image that moves only with a commit, runs
   as a user other than root, runs lifecycle scripts the repository holds,
   commits no secret, names its volumes for the container and mounts them in
-  the remote user's home, gives the container no fixed name, and is kept
-  current by Dependabot or Renovate and built in CI.
+  the remote user's home, gives the container no fixed name, is valid
+  against the specification's schema and uses only its variables, and is
+  kept current by Dependabot or Renovate and built in CI.
 status: draft
 topic: dev-containers
 applies_to:
@@ -27,6 +28,8 @@ migration: authoritative
 references:
   - title: "Dev Container specification: devcontainer.json reference"
     url: https://containers.dev/implementors/json_reference/
+  - title: "Dev Container specification: devContainer.base.schema.json"
+    url: https://github.com/devcontainers/spec/blob/main/schemas/devContainer.base.schema.json
   - title: "Dev Container specification: Lockfile"
     url: https://github.com/devcontainers/spec/blob/main/docs/specs/devcontainer-lockfile.md
   - title: "Dev Container specification: Prebuilding images"
@@ -132,6 +135,22 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.configuration
+  - id: DEVC-17
+    title: devcontainer.json is valid against the Dev Container specification's schema
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.specification
+  - id: DEVC-18
+    title: Every variable in devcontainer.json is one the specification defines, used where it resolves
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.specification
 ---
 
 # Dev container configuration
@@ -148,7 +167,7 @@ Every requirement applies only to a repository that has a dev container: a `devc
 or the root `.devcontainer.json`. A repository without one has no finding here.
 
 Where a value is written with a variable (`${localEnv:…}`, `${VERSION}` in a `FROM`), the check leaves it alone: the
-environment or the build decides it.
+environment or the build decides it. Whether the variable itself is one the specification defines is DEVC-18's.
 
 ## Status and authority
 
@@ -467,3 +486,75 @@ state is silently lost on every rebuild. The check compares the user in each vol
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.0
+
+### DEVC-17
+
+**`devcontainer.json` is valid against the Dev Container specification's schema.**
+
+Editors and the Dev Container CLI accept a property they do not know, a misspelt one (`postCreateCommands`) or a value
+outside a property's range (`"waitFor": "postCreate"`) without a word, and the setting then does nothing: the
+lifecycle command never runs, or the editor connects before the container is ready. The specification publishes a
+JSON Schema for the file, and this requirement checks against it rather than restating it. The schema is
+[vendored](https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/checks/schemas/vendor/devcontainers/README.md)
+at a pinned commit and read as JSONC, comments allowed. OPA validates draft-07, so the check reads a rewritten form
+of the schema, which is never stricter than the original; the README beside it says how. Properties a tool adds
+under `customizations` are the tool's, and the schema does not judge them.
+
+**Correct:**
+
+```jsonc
+{
+  "image": "mcr.microsoft.com/devcontainers/base:2-ubuntu-24.04",
+  "waitFor": "postCreateCommand",
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh"
+}
+```
+
+**Incorrect:**
+
+```jsonc
+{
+  "image": "mcr.microsoft.com/devcontainers/base:2-ubuntu-24.04",
+  "waitFor": "postCreate",                                         // not a lifecycle command
+  "postCreateCommands": "bash .devcontainer/scripts/post-create.sh"  // misspelt, never runs
+}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### DEVC-18
+
+**Every variable in `devcontainer.json` is one the specification defines, used where it resolves.**
+
+The tools replace a `${...}` they know and leave any other as literal text, so a typo is not an error: the text
+`${devContainerId}` ends up in a volume's name, and a container env value of `${PATH}` sets PATH to those seven
+characters. The [variables](https://containers.dev/implementors/json_reference/#variables-in-devcontainerjson) are
+`${localEnv:NAME}` and `${containerEnv:NAME}`, each with an optional `:default`, `${localWorkspaceFolder}`,
+`${containerWorkspaceFolder}`, their `Basename` forms, and `${devcontainerId}`. Two of them resolve only in some
+properties: `${containerEnv:…}` only in `remoteEnv`, since the container's environment exists only once it runs, and
+`${devcontainerId}` only in `name`, `runArgs`, the lifecycle commands, `workspaceFolder`, `workspaceMount`, `mounts`,
+`containerEnv`, `remoteEnv`, `containerUser`, `remoteUser` and `customizations`. A lifecycle command is shell, so a
+shell expansion in one (`${HOME}`, `${VAR:-x}`) is not reported, unless its name is a specification variable spelt in
+another case. Neither is a variable under `customizations`, which belongs to the tool that reads it, such as VS
+Code's `${workspaceFolder}` in a setting.
+
+**Correct:**
+
+```jsonc
+{
+  "mounts": ["source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume"],
+  "remoteEnv": { "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin" },
+  "postCreateCommand": "echo \"setting up ${HOME}\""
+}
+```
+
+**Incorrect:**
+
+```jsonc
+{
+  "mounts": ["source=musher-${devContainerId}-gh-config,target=/home/vscode/.config/gh,type=volume"],
+  "containerEnv": { "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin" }
+}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1

@@ -21,6 +21,7 @@ from conventions_tools.loading import (
 )
 from conventions_tools.paths import (
     conventions_dir,
+    copy_style_file,
     families_file,
     profiles_dir,
     terminology_dir,
@@ -46,6 +47,7 @@ class Requirement:
     engine: str
     package: str | None
     schema: str | None
+    style: str | None
     aliases: tuple[str, ...]
     replaced_by: tuple[str, ...]
     convention: str
@@ -115,12 +117,56 @@ class Profile:
 
 
 @dataclass(frozen=True)
+class Toggle:
+    rule: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AdoptedPackage:
+    """A published Vale package the MusherProse package installs, pinned to one release."""
+
+    style: str
+    version: str
+    license: str
+    source: str
+    package: str
+    use: str
+    disable: tuple[Toggle, ...]
+    enable: tuple[Toggle, ...]
+
+
+@dataclass(frozen=True)
+class CopyRule:
+    """One rule of the MusherCopy style; `settings` are its Vale keys after extends and level."""
+
+    name: str
+    extends: str
+    level: str
+    message: str
+    note: str | None
+    settings: tuple[tuple[str, object], ...]
+
+
+@dataclass(frozen=True)
+class CopyStyle:
+    path: str
+    package: str
+    style: str
+    native_formats: tuple[str, ...]
+    template_formats: tuple[tuple[str, str], ...]
+    adopted: tuple[AdoptedPackage, ...]
+    rules: tuple[CopyRule, ...]
+
+
+@dataclass(frozen=True)
 class Content:
     product: Path
     families: tuple[Family, ...]
     conventions: tuple[Convention, ...]
     terminology: Terminology
     profiles: tuple[Profile, ...]
+    copy_style: CopyStyle
 
     @property
     def requirements(self) -> tuple[Requirement, ...]:
@@ -168,6 +214,7 @@ def _requirement(data: dict[str, object], convention: str, path: str) -> Require
         engine=get_str(validation, "engine"),
         package=get_opt_str(validation, "package"),
         schema=get_opt_str(validation, "schema"),
+        style=get_opt_str(validation, "style"),
         aliases=get_str_list(data, "aliases"),
         replaced_by=get_str_list(data, "replaced_by"),
         convention=convention,
@@ -266,6 +313,59 @@ def load_profile(product: Path, path: Path) -> Profile:
     )
 
 
+def _toggles(data: dict[str, object], key: str) -> tuple[Toggle, ...]:
+    return tuple(
+        Toggle(rule=get_str(item, "rule"), reason=get_str(item, "reason"))
+        for item in map(as_map, as_list(data.get(key)))
+    )
+
+
+# The keys every rule has; the rest are the Vale settings its `extends` takes.
+_RULE_KEYS = frozenset({"name", "extends", "level", "message", "note"})
+
+
+def _copy_rule(data: dict[str, object]) -> CopyRule:
+    return CopyRule(
+        name=get_str(data, "name"),
+        extends=get_str(data, "extends"),
+        level=get_str(data, "level"),
+        message=get_str(data, "message"),
+        note=get_opt_str(data, "note"),
+        settings=tuple((key, value) for key, value in data.items() if key not in _RULE_KEYS),
+    )
+
+
+def load_copy_style(product: Path, path: Path | None = None) -> CopyStyle:
+    path = path or copy_style_file(product)
+    data = _validated(product, schemas.COPY_STYLE, read_yaml(path), path)
+    formats = as_map(data.get("formats"))
+    return CopyStyle(
+        path=_relative(product, path),
+        package=get_str(data, "package"),
+        style=get_str(data, "style"),
+        native_formats=get_str_list(formats, "native"),
+        template_formats=tuple(
+            (key, value)
+            for key, value in sorted(as_map(formats.get("templates")).items())
+            if isinstance(value, str)
+        ),
+        adopted=tuple(
+            AdoptedPackage(
+                style=get_str(item, "style"),
+                version=get_str(item, "version"),
+                license=get_str(item, "license"),
+                source=get_str(item, "source"),
+                package=get_str(item, "package"),
+                use=get_str(item, "use"),
+                disable=_toggles(item, "disable"),
+                enable=_toggles(item, "enable"),
+            )
+            for item in map(as_map, as_list(data.get("adopted")))
+        ),
+        rules=tuple(_copy_rule(as_map(item)) for item in as_list(data.get("rules"))),
+    )
+
+
 def profile_files(directory: Path) -> list[Path]:
     return sorted(directory.glob("*.yml"))
 
@@ -296,6 +396,7 @@ def load_content(product: Path) -> Content:
     conventions: tuple[Convention, ...] = ()
     terminology: Terminology | None = None
     profiles: tuple[Profile, ...] = ()
+    copy_style: CopyStyle | None = None
     try:
         families = load_families(product)
     except ContentError as error:
@@ -312,7 +413,11 @@ def load_content(product: Path) -> Content:
         profiles = load_profiles(product)
     except ContentError as error:
         found.extend(error.problems)
-    if found or terminology is None:
+    try:
+        copy_style = load_copy_style(product)
+    except ContentError as error:
+        found.extend(error.problems)
+    if found or terminology is None or copy_style is None:
         raise ContentError(found)
     return Content(
         product=product,
@@ -320,4 +425,5 @@ def load_content(product: Path) -> Content:
         conventions=conventions,
         terminology=terminology,
         profiles=profiles,
+        copy_style=copy_style,
     )

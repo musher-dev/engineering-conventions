@@ -1,0 +1,21 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+# Each runner runs the version the repository's lockfile pins, the same one CI
+# runs, so none is a one-shot fetch.
+pre-commit:
+  jobs:
+    - name: python
+      run: uv run ruff check .
+      fail_text: "Ruff failed. Run 'task lint'."
+    - name: javascript
+      run: pnpm exec eslint .
+      fail_text: "ESLint failed. Run 'task lint'."
+    - name: generated
+      run: go run ./cmd/generate --check
+      fail_text: "Generated files are stale. Run 'task generate'."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

@@ -1,0 +1,4 @@
+# The OWASP API security ruleset, at whatever release unpkg serves today.
+extends:
+  - spectral:oas
+  - https://unpkg.com/@stoplight/spectral-owasp-ruleset/dist/ruleset.mjs

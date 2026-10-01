@@ -1,0 +1,17 @@
+[
+  {
+    "id": "IFACE-04",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "REL-01",
+    "path": ".repo/outputs.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "ENVS-20",
+    "path": "platform-api/env.schema.yaml",
+    "severity": "warning"
+  }
+]

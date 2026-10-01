@@ -28,7 +28,7 @@ def _generate(arguments: argparse.Namespace) -> int:
             print("generated files are out of date; run `conventions generate`", file=sys.stderr)
             return EXIT_FINDINGS
         return EXIT_OK
-    for path in generate.write(outputs):
+    for path in generate.write(outputs, product):
         print(f"wrote {path.relative_to(product)}")
     return EXIT_OK
 

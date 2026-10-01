@@ -5,8 +5,10 @@
 #   never declares a retired name again (ENVS-05), commits no secret value
 #   (ENVS-06), keeps the invariants the format cannot express (ENVS-07),
 #   agrees with the repository's other schemas on shared variables
-#   (ENVS-08), and names what a binding reaches as either a Musher
-#   interface or a registered capability (ENVS-16 to ENVS-18).
+#   (ENVS-08), names what a binding reaches as either a Musher
+#   interface or a registered capability (ENVS-16 to ENVS-18), and reaches
+#   a runtime through an instance declared under requires (ENVS-22,
+#   ENVS-23).
 # scope: package
 # custom:
 #   convention: EC-0020
@@ -88,9 +90,21 @@ findings contains lib.finding("ENVS-16", entry.path, message) if {
 	some entry in env.bindings
 	files_has(entry.binding, "provider")
 	not files_has(entry.binding, "capability")
+	not files_has(entry.binding, "requires")
 	message := sprintf(
 		"binding %s names a provider but no capability; name the capability the provider offers, or drop the provider",
 		[entry.name],
+	)
+}
+
+findings contains lib.finding("ENVS-16", entry.path, message) if {
+	some entry in env.bindings
+	files_has(entry.binding, "requires")
+	some field in ["target", "capability", "provider"]
+	files_has(entry.binding, field)
+	message := sprintf(
+		"binding %s names both requires and %s; the instance %q already says what it reaches, so drop %s",
+		[entry.name, field, entry.binding.requires, field],
 	)
 }
 
@@ -130,6 +144,53 @@ findings contains lib.finding("ENVS-18", entry.path, message) if {
 	message := sprintf(
 		"binding %s has capability %q, which is not a registered capability; use one of %s, or propose a new one",
 		[entry.name, entry.binding.capability, concat(", ", sort([sprintf("%q", [c]) | some c in capabilities]))],
+	)
+}
+
+# ENVS-22
+findings contains lib.finding("ENVS-22", entry.path, message) if {
+	some entry in env.bindings
+	is_string(entry.binding.capability)
+	message := sprintf(
+		concat(" ", [
+			"binding %s names capability %q inline; declare the instance under requires, with the versions",
+			"the code works with, and write requires: <instance> on the binding",
+		]),
+		[entry.name, entry.binding.capability],
+	)
+}
+
+# ENVS-23. A binding names an instance the schema does not declare.
+findings contains lib.finding("ENVS-23", entry.path, message) if {
+	some entry in env.bindings
+	is_string(entry.binding.requires)
+	not entry.binding.requires in object.keys(instances(entry.path))
+	message := sprintf(
+		"binding %s requires %q, which is not declared under requires; declare it, or name a declared instance",
+		[entry.name, entry.binding.requires],
+	)
+}
+
+# ENVS-23. An instance no binding reaches.
+findings contains lib.finding("ENVS-23", path, message) if {
+	some path, _ in env.documents
+	some id, _ in instances(path)
+	not reached(path, id)
+	message := sprintf(
+		"requires declares %s, which no binding reaches; name it with requires: %s on the binding that does, or remove it",
+		[id, id],
+	)
+}
+
+# ENVS-23. An instance whose capability is not a term.
+findings contains lib.finding("ENVS-23", path, message) if {
+	some path, _ in env.documents
+	some id, instance in instances(path)
+	is_string(instance.capability)
+	not instance.capability in capabilities
+	message := sprintf(
+		"requires.%s has capability %q, which is not a registered capability; use one of %s, or propose a new one",
+		[id, instance.capability, concat(", ", sort([sprintf("%q", [c]) | some c in capabilities]))],
 	)
 }
 
@@ -369,6 +430,22 @@ sharing_pairs contains {"path": path, "other": other, "name": name} if {
 	declares_shared(other_contents, name)
 	is_object(env.bindings_of(path)[name])
 	is_object(env.bindings_of(other)[name])
+}
+
+# The runtime instances a schema declares, by ID.
+default instances(_) := {}
+
+instances(path) := {id: instance |
+	some id, instance in env.documents[path].requires
+	is_object(instance)
+} if {
+	is_object(env.documents[path].requires)
+}
+
+reached(path, id) if {
+	some binding in env.bindings_of(path)
+	is_object(binding)
+	binding.requires == id
 }
 
 target_pattern := `^[A-Za-z0-9][A-Za-z0-9._-]*#[a-z][a-z0-9]*(-[a-z0-9]+)*$`

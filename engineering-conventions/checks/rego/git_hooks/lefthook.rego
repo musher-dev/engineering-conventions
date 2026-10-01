@@ -265,3 +265,95 @@ findings contains lib.finding("HOOKS-11", entry.path, message) if {
 		[label(entry), pattern],
 	)
 }
+
+# HOOKS-12. lefthook restages only in pre-commit.
+findings contains lib.finding("HOOKS-12", entry.path, message) if {
+	some entry in jobs
+	entry.hook == "pre-commit"
+	filled(entry.job, "run")
+	fixes(entry.job)
+	not entry.job.stage_fixed == true
+	message := sprintf(
+		concat(" ", [
+			"%s fixes files but does not set stage_fixed: true, so its fixes stay unstaged and",
+			"the commit records the files as they were; add stage_fixed: true",
+		]),
+		[label(entry)],
+	)
+}
+
+# HOOKS-13
+findings contains lib.finding("HOOKS-13", push.path, message) if {
+	some push in jobs
+	push.hook == "pre-push"
+	some commit in jobs
+	commit.path == push.path
+	commit.hook == "pre-commit"
+	signature(push.job) == signature(commit.job)
+	message := sprintf(
+		concat(" ", [
+			"%s runs the same command as %s, so every push repeats what each commit already ran;",
+			"keep it in one stage",
+		]),
+		[label(push), label(commit)],
+	)
+}
+
+# HOOKS-14
+findings contains lib.finding("HOOKS-14", entry.path, message) if {
+	some entry in jobs
+	some match in regex.find_all_string_submatch_n(package_runner_pattern, body(entry.job), -1)
+	message := sprintf(
+		concat(" ", [
+			"%s runs %q directly, so the tool's version is chosen in the hook and CI can run a",
+			"different one; put the command in a task and run that task here and in CI",
+		]),
+		[label(entry), regex.replace(match[2], `\s+`, " ")],
+	)
+}
+
+# A command that writes the fixes it finds (HOOKS-12): a --write or --fix
+# flag, a formatter that writes by default, or a task named for fixing.
+fix_patterns := [
+	`(^|\s)--(write|fix)([\s=]|$)`,
+	concat("", [
+		`(^|[\s;&|(])(ruff\s+format|taplo\s+(fmt|format)|cargo\s+fmt|go\s+fmt|`,
+		`gofmt\s+(\S+\s+)*-w|(terraform|tofu)\s+fmt)(\s|$)`,
+	]),
+	`(^|[\s;&|(])task(\s+[^\s;&|]+)*?\s+([\w-]+:)*(fmt|format|fix)(:[\w-]+)*(\s|[;&|]|$)`,
+]
+
+# A flag that turns a fixer back into a report.
+report_pattern := concat("", [
+	`(--check([^\w-]|$)|:check([^\w-]|$)|--dry-run|--exit-code|`,
+	`--diff([^\w-]|$)|(^|\s)-check(\s|$)|--list-different)`,
+])
+
+fixes(job) if {
+	not regex.match(report_pattern, body(job))
+	some pattern in fix_patterns
+	regex.match(pattern, body(job))
+}
+
+# What a job runs, with its file-list template unified, so the same command
+# over staged files and over pushed files reads the same (HOOKS-13).
+signature(job) := ["run", object.get(job, "root", ""), normalised(body(job))] if is_string(job.run)
+
+signature(job) := ["script", object.get(job, "root", ""), job.script, object.get(job, "runner", "")] if {
+	is_string(job.script)
+}
+
+normalised(text) := trim_space(regex.replace(
+	regex.replace(text, `\{(staged_files|push_files|all_files|files)\}`, "{files}"),
+	`\s+`,
+	" ",
+))
+
+# A one-shot package runner: a command that fetches the tool it runs at the
+# moment it runs, at whatever version it resolves then (HOOKS-14). `bun x`
+# and `uv tool run` are bunx's and uvx's long forms. Runners of lockfile-pinned
+# tools (uv run, pnpm exec, npm exec, go run) are not among them.
+package_runner_pattern := concat("", [
+	`(^|[\s;&|(])(npx|bunx|pnpx|uvx|bun\s+x|pnpm\s+dlx|yarn\s+dlx|`,
+	`uv\s+tool\s+run|pipx\s+run)(\s|$)`,
+])

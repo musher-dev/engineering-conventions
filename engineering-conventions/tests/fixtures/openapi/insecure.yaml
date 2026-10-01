@@ -1,0 +1,14 @@
+# Breaks a rule of spectral:oas recommended (no operation description) and of
+# the OWASP API security ruleset (no security scheme on a write): `task
+# checks:openapi` expects both rulesets to report it.
+openapi: 3.1.0
+info:
+  title: Orders
+  version: 1.0.0
+paths:
+  /v1/orders:
+    post:
+      operationId: create_order
+      responses:
+        "201":
+          description: The order.

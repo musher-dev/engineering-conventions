@@ -193,13 +193,19 @@ pre-commit:
       run: vale --config .config/markdown/vale.ini {staged_files}
       fail_text: "Prose lint failed against the MusherConventions style. Run 'task prose:lint'."
 
+# A merge commit's generated message is not a Conventional Commit, and a
+# rebase replays messages already checked (COMMIT-03).
 commit-msg:
+  skip:
+    - merge
+    - rebase
   jobs:
-    - name: conventional-commit
-      run: bash .github/scripts/lint-commit-msg.sh {1}
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
       fail_text: >-
-        The subject must be a Conventional Commit, type(scope): summary, with
-        the types and scopes in .github/conventional-commits.yaml.
+        The message must be a Conventional Commit, type(scope): summary, with a
+        type and scope from .config/commits/committed.toml, an imperative
+        subject and a header of at most 72 columns.
 
 pre-push:
   parallel: true

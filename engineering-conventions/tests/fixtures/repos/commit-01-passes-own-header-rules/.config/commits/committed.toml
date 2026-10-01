@@ -1,0 +1,8 @@
+# Only what COMMIT-01 asks for; header length and the rest are this
+# repository's choice.
+style = "conventional"
+subject_capitalized = false
+subject_length = 100
+imperative_subject = false
+allowed_types = ["feat", "fix", "chore"]
+allowed_scopes = ["api", "release"]

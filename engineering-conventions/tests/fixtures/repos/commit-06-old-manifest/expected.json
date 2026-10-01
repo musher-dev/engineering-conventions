@@ -1,0 +1,7 @@
+[
+  {
+    "id": "COMMIT-06",
+    "path": ".github/conventional-commits.yaml",
+    "severity": "warning"
+  }
+]

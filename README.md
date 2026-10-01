@@ -99,19 +99,23 @@ Start from the part of your repository you are working on:
 | --- | --- | --- | --- |
 | [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-11 |
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `CLAUDE.md`, `.claude/rules/`, `AGENTS.md` | EC-0013 | AGENT-01 – AGENT-08 |
+| [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-06 |
+| [Community files](engineering-conventions/definitions/conventions/community-files/README.md) | `.github/ISSUE_TEMPLATE/`, `.github/DISCUSSION_TEMPLATE/`, `CODEOWNERS`, `SECURITY.md` | EC-0036 | COMM-01 – COMM-07 |
 | [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-12 |
+| [Copy](engineering-conventions/definitions/conventions/copy/README.md) | A site's copy and the Vale config that lints it: `.config/**/vale.ini` | EC-0038 | COPY-01 – COPY-04 |
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
 | [Dependencies](engineering-conventions/definitions/conventions/dependencies/README.md) | `.repo/dependencies.toml`, vendored copies under `<product>/contracts/vendor/` | EC-0032, EC-0033 | DEPS-01 – DEPS-10 |
-| [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-15 |
-| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches | EC-0019, EC-0020 | ENVS-01 – ENVS-19 |
+| [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-18 |
+| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract and `.env.example` derived from them | EC-0019, EC-0020 | ENVS-01 – ENVS-25 |
 | [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-11 |
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-49 |
 | [Interfaces](engineering-conventions/definitions/conventions/interfaces/README.md) | `[[interfaces]]` in `.repo/outputs.toml`, `<product>/contracts/` | EC-0030, EC-0031 | IFACE-01 – IFACE-14 |
+| [OpenAPI](engineering-conventions/definitions/conventions/openapi/README.md) | OpenAPI interface documents, `.config/openapi/spectral.yaml` | EC-0037 | OAS-01 – OAS-03 |
 | [OpenTofu](engineering-conventions/definitions/conventions/opentofu/README.md) | Each OpenTofu root's state key, stated in its Taskfile | EC-0029 | TOFU-01 |
-| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-12 |
+| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-13 |
 | [Releases](engineering-conventions/definitions/conventions/releases/README.md) | `.github/release-please/`, the release tag ruleset, `release.yml` | EC-0024 – EC-0026 | REL-01 – REL-20 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
-| [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-14 |
+| [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-24 |
 | [Toolchain](engineering-conventions/definitions/conventions/toolchain/README.md) | `.config/mise/config.toml` and every version pinned outside it | EC-0017 | TOOL-01 – TOOL-11 |
 
 A topic's README gives the reading order. Two other ways in:
@@ -201,7 +205,8 @@ To add or change a requirement, read [Authoring conventions](docs/authoring.md) 
 ## Releases
 
 Releases are cut by release-please from Conventional Commit titles. Each `vX.Y.Z` release attaches the bundle
-tarball, the `MusherConventions` Vale package, a manifest, `SHA256SUMS`, and a build-provenance attestation. The
+tarball, the `MusherConventions` Vale package, the `MusherProse` Vale config package that lints a site's copy, a
+manifest, `SHA256SUMS`, and a build-provenance attestation. The
 version number says what an upgrade can break; see [Versioning](docs/versioning.md).
 
 ## Security

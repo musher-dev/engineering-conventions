@@ -11,7 +11,9 @@ from pathlib import Path
 
 import pytest
 
+from conventions_tools import generate
 from conventions_tools.cli import main
+from conventions_tools.content import Content
 from conventions_tools.fixtures import expected_findings, materialize
 from conventions_tools.loading import as_list, as_map, get_str
 from conventions_tools.paths import HOME_ENV, fixture_repos_dir, product_dir
@@ -39,6 +41,11 @@ CASES = [
     # The launcher hashes vendored copies itself (DEPS-06, decision 0022).
     "deps-06-edited-file",
     "deps-06-passes-every-interface-when-none-named",
+    # The launcher derives the contract and .env.example with
+    # bin/env-contract.jq, as the runner does (decision 0026).
+    "envs-20-stale-contract",
+    "envs-20-passes-derived-contract",
+    "envs-21-stale-example",
 ]
 
 
@@ -136,6 +143,7 @@ def test_tool_versions_move_with_the_repository_pins() -> None:
         ("CONFTEST_VERSION", "aqua:open-policy-agent/conftest"),
         ("VALE_VERSION", "aqua:vale-cli/vale"),
         ("JQ_VERSION", "aqua:jqlang/jq"),
+        ("SPECTRAL_VERSION", "aqua:stoplightio/spectral"),
     ):
         declared = re.search(rf"^{variable}=(\S+)$", text, re.MULTILINE)
         assert declared, f"{variable} is not set in bin/conventions"
@@ -148,9 +156,16 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     completed = _launch("check", "--output", "json", "-C", str(case), cwd=PRODUCT)
     assert completed.returncode == 0, completed.stderr
     found = {finding_id for _, finding_id, _, _ in _found(completed.stdout)}
-    # The case holds no .repo/ declarations and no Taskfile, so they are
-    # reported missing: this repository's own were not read.
-    assert found == {"GHA-07", "ADOPT-09", "REPO-01", "TASK-10"}
+    # The case holds no .repo/ declarations, Taskfile or commit rules, so they
+    # are reported missing: this repository's own were not read.
+    assert found == {
+        "GHA-07",
+        "ADOPT-09",
+        "REPO-01",
+        "TASK-10",
+        "COMMIT-01",
+        "COMMIT-04",
+    }
 
 
 def test_launcher_is_committed_executable() -> None:
@@ -426,3 +441,123 @@ def test_sha256_falls_back_to_whichever_tool_exists(tool: str, tmp_path: Path) -
         completed.stdout.strip()
         == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     )
+
+
+def test_env_contract_prints_what_the_check_compares(tmp_path: Path) -> None:
+    # The committed contract and .env.example of the passing cases are what
+    # the command prints today, so a change to the mapping shows up here.
+    schema = fixture_repos_dir(PRODUCT) / "clean" / "platform-api" / "env.schema.yaml"
+    contract = _launch("env-contract", str(schema), cwd=tmp_path)
+    assert contract.returncode == 0, contract.stderr
+    committed = (
+        fixture_repos_dir(PRODUCT)
+        / "envs-20-passes-derived-contract"
+        / "platform-api"
+        / "contracts"
+        / "env"
+        / "platform-api.env.schema.json"
+    )
+    assert contract.stdout == committed.read_text(encoding="utf-8")
+    example = _launch("env-contract", "--example", str(schema), cwd=tmp_path)
+    assert example.returncode == 0, example.stderr
+    case = fixture_repos_dir(PRODUCT) / "envs-21-passes-derived-example"
+    committed = case / "platform-api" / ".env.example"
+    assert example.stdout == committed.read_text(encoding="utf-8")
+
+
+def test_env_contract_needs_a_schema_that_parses(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text("- a list\n")
+    completed = _launch("env-contract", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert completed.returncode == 2
+    assert "cannot derive the environment contract from env.schema.yaml" in completed.stderr
+    missing = _launch("env-contract", "absent.yaml", cwd=tmp_path)
+    assert missing.returncode == 2
+    assert "absent.yaml does not exist" in missing.stderr
+    assert _launch("env-contract", cwd=tmp_path).returncode == 2
+
+
+OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"
+
+
+def _openapi_repo(tmp_path: Path) -> Path:
+    # A repository that declares one openapi interface, as a YAML document,
+    # with a ruleset that extends spectral:oas and the OWASP ruleset.
+    repo = materialize(
+        fixture_repos_dir(PRODUCT) / "oas-03-passes-through-check-task", tmp_path / "repo"
+    )
+    outputs = repo / ".repo" / "outputs.toml"
+    outputs.write_text(outputs.read_text(encoding="utf-8").replace("public.json", "public.yaml"))
+    documents = repo / "platform-api" / "contracts" / "openapi"
+    (documents / "public.json").unlink()
+    shutil.copy(OPENAPI_FIXTURES / "clean.yaml", documents / "public.yaml")
+    return repo
+
+
+def test_openapi_lints_the_declared_documents(tmp_path: Path) -> None:
+    if shutil.which("spectral") is None:
+        pytest.skip("spectral is not installed")
+    repo = _openapi_repo(tmp_path)
+    completed = _launch("openapi", "--ruleset", ".config/openapi/spectral.yaml", cwd=repo)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert not (repo / ".conventions").exists()
+
+
+def test_openapi_fails_on_an_error_in_a_named_file(tmp_path: Path) -> None:
+    if shutil.which("spectral") is None:
+        pytest.skip("spectral is not installed")
+    repo = _openapi_repo(tmp_path)
+    shutil.copy(OPENAPI_FIXTURES / "insecure.yaml", repo / "insecure.yaml")
+    completed = _launch("openapi", "-C", str(repo), "insecure.yaml", cwd=tmp_path)
+    assert completed.returncode == 1, completed.stdout + completed.stderr
+    assert "owasp:api2:2023-write-restricted" in completed.stdout
+
+
+def test_openapi_without_a_ruleset_cannot_run(tmp_path: Path) -> None:
+    repo = _openapi_repo(tmp_path)
+    shutil.rmtree(repo / ".config" / "openapi")
+    completed = _launch("openapi", cwd=repo)
+    assert completed.returncode == 2
+    assert "(OAS-02)" in completed.stderr
+
+
+def test_openapi_with_no_interface_has_nothing_to_check(tmp_path: Path) -> None:
+    repo = materialize(fixture_repos_dir(PRODUCT) / "clean", tmp_path / "repo")
+    completed = _launch("openapi", cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert "no OpenAPI documents to check" in completed.stderr
+    assert not (repo / ".conventions").exists()
+
+
+def test_prose_runs_the_copy_style_where_the_vale_config_applies_it(tmp_path: Path) -> None:
+    config = tmp_path / ".config" / "markdown" / "vale.ini"
+    config.parent.mkdir(parents=True)
+    config.write_text(
+        "StylesPath = styles\n"
+        "Packages = https://github.com/musher-dev/engineering-conventions/releases/download/"
+        "v0.7.1/MusherProse.zip\n"
+        "[formats]\nsvelte = html\n"
+        "[site/**/*.{md,svelte}]\nBasedOnStyles = MusherCopy, proselint, write-good\n"
+        "[site/reference/*.md]\nMusherCopy.Placeholders = NO\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "site" / "reference").mkdir(parents=True)
+    (tmp_path / "site" / "index.svelte").write_text("<p>Pricing: coming soon.</p>\n")
+    (tmp_path / "site" / "reference" / "terms.md").write_text("# Terms\n\nPricing: coming soon.\n")
+    (tmp_path / "README.md").write_text("# Readme\n\nPricing: coming soon.\n")
+    completed = _launch("prose", "-C", str(tmp_path), cwd=tmp_path)
+    # Placeholders is a warning, which does not fail Vale's run.
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    # The copy style runs where the config applies it, honours the config's
+    # [formats] and its toggles, and nowhere else.
+    assert re.findall(r"^ (\S+)$", re.sub(r"\x1b\[[0-9;]*m", "", completed.stdout), re.M) == [
+        "site/index.svelte"
+    ]
+    assert "MusherCopy.Placeholders" in completed.stdout
+
+
+def test_prose_hands_vale_every_copy_extension(content: Content) -> None:
+    text = LAUNCHER.read_text(encoding="utf-8")
+    found = re.search(r"^COPY_FILES='\\\.\(([a-z0-9|?]+)\)\$'$", text, re.M)
+    assert found, "bin/conventions defines COPY_FILES as '\\.(ext|ext)$'"
+    listed = set(found.group(1).replace("html?", "html|htm").split("|"))
+    assert listed == set(generate.copy_extensions(content.copy_style))

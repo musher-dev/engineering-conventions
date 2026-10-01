@@ -1,0 +1,6 @@
+# A version needs an operator; an exact one is ==.
+service: api
+runtime: go
+requires:
+  cache: {capability: valkey, version: "9", description: Counters.}
+bindings: {}

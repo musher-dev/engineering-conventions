@@ -21,7 +21,7 @@ Both conventions are **drafts**, owned by this repository, and every requirement
 | Convention | Requirements | Covers |
 | --- | --- | --- |
 | [EC-0007 Outputs declaration](outputs-declaration.md) | OUT-01 – OUT-06, OUT-12 (OUT-07 retired) | The file, the output kinds, and the checks on it |
-| [EC-0008 Publishing and consuming outputs](publishing-and-consuming.md) | OUT-08 – OUT-11 | Consumption docs, immutable versions, image provenance, exact pins |
+| [EC-0008 Publishing and consuming outputs](publishing-and-consuming.md) | OUT-08 – OUT-11, OUT-13 | Consumption docs, immutable versions, image provenance and the source repository GHCR connects an image to, exact pins |
 
 The reasoning is recorded in
 [decision 0010](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0010-outputs-declaration.md).

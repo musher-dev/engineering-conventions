@@ -1,5 +1,5 @@
 # Dependabot: weekly, grouped, with a cooldown, and with commit messages that
-# pass this repo's own PR-title check (.github/conventional-commits.yaml).
+# pass this repo's own PR-title check (.config/commits/committed.toml).
 # Docs: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 #
 # `include: scope` turns each prefix into `<type>(deps)`, or `<type>(deps-dev)`

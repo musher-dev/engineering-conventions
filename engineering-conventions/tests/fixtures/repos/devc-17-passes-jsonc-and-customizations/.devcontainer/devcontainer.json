@@ -1,0 +1,25 @@
+// Comments, trailing commas and a tool's own customizations are all valid.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "waitFor": "postCreateCommand",
+  "shutdownAction": "stopContainer",
+  "hostRequirements": { "cpus": 2, "memory": "4gb" },
+  "postCreateCommand": {
+    "setup": ["bash", ".devcontainer/scripts/post-create.sh"],
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["redhat.vscode-yaml"],
+      "settings": { "editor.formatOnSave": true },
+    },
+    "someOtherTool": { "anything": [1, 2, 3] },
+  },
+}

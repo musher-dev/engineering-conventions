@@ -1,0 +1,11 @@
+version: '3'
+
+output: prefixed
+
+tasks:
+  db:migrate:
+    desc: Apply the database migrations.
+    silent: true
+    cmds:
+      - echo "Applying the migrations"
+      - atlas migrate apply

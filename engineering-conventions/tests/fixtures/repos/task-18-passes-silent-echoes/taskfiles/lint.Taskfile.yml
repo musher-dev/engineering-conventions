@@ -1,0 +1,25 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:md:
+    desc: Lint the Markdown.
+    silent: true
+    cmds:
+      - task: _markdownlint
+
+  lint:all:
+    desc: Lint everything, saying so first.
+    silent: true
+    cmds:
+      - cmd: printf 'Linting everything\n'
+      - task: lint:md
+      - yamllint .
+
+  _markdownlint:
+    internal: true
+    silent: true
+    cmds:
+      - echo "Linting Markdown"
+      - markdownlint-cli2 '**/*.md'

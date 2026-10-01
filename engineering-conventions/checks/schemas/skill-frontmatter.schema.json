@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill frontmatter",
+  "description": "The YAML frontmatter of a skill, .claude/skills/<name>/SKILL.md (EC-0034). It checks the shape of each field the Agent Skills specification and Claude Code define, and accepts fields it does not know, as Claude Code does, so a field a newer release adds is never a finding. Every field is optional, as in Claude Code. AGENT-10 checks a skill's frontmatter against this schema.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "description": "The skill's name: lower-case letters, digits and single hyphens, at most 64 characters, equal to its directory's name (AGENT-11). Agent Skills specification.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "description": {
+      "description": "What the skill does and when to use it, at most 1024 characters. An agent reads it to decide whether to load the skill. Recommended; Claude Code falls back to the first line of the body. Agent Skills specification.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "license": {
+      "description": "The skill's license: a name or a bundled file. Agent Skills specification.",
+      "type": "string",
+      "minLength": 1
+    },
+    "compatibility": {
+      "description": "What the skill needs from its environment, at most 500 characters. Agent Skills specification.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "metadata": {
+      "description": "Anything else, as a map from string to string, such as a version. Agent Skills specification.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "allowed-tools": {
+      "description": "Tools the skill may use without asking. Agent Skills specification; Claude Code also accepts a list.",
+      "$ref": "#/definitions/words"
+    },
+    "when_to_use": {
+      "description": "More on when to invoke the skill, appended to the description. Claude Code.",
+      "type": "string"
+    },
+    "argument-hint": {
+      "description": "The arguments shown when the skill is invoked by name. Claude Code.",
+      "type": "string"
+    },
+    "arguments": {
+      "description": "Named arguments, as a space-separated string or a list. Claude Code.",
+      "$ref": "#/definitions/words"
+    },
+    "disable-model-invocation": {
+      "description": "true: only a person can invoke the skill, and no subagent can preload it (AGENT-14). Claude Code.",
+      "$ref": "#/definitions/flag"
+    },
+    "user-invocable": {
+      "description": "false: the skill is hidden from the / menu. Claude Code.",
+      "$ref": "#/definitions/flag"
+    },
+    "disallowed-tools": {
+      "description": "Tools the skill may not use. Claude Code.",
+      "$ref": "#/definitions/words"
+    },
+    "model": {
+      "description": "The model the skill runs with, or inherit. Claude Code.",
+      "type": "string",
+      "minLength": 1
+    },
+    "effort": {
+      "description": "The effort level the skill runs at. Claude Code.",
+      "type": "string",
+      "enum": ["low", "medium", "high", "xhigh", "max"]
+    },
+    "context": {
+      "description": "fork: the skill runs in a subagent of its own. Claude Code.",
+      "type": "string",
+      "enum": ["fork"]
+    },
+    "agent": {
+      "description": "The subagent a forked skill runs in. Claude Code.",
+      "type": "string",
+      "minLength": 1
+    },
+    "background": {
+      "description": "Whether a forked skill runs in the background. Claude Code.",
+      "$ref": "#/definitions/flag"
+    },
+    "hooks": {
+      "description": "Hooks scoped to the skill. Claude Code.",
+      "type": "object"
+    },
+    "paths": {
+      "description": "Globs naming the files the skill applies to, as a comma-separated string or a list. Claude Code.",
+      "$ref": "#/definitions/words"
+    },
+    "shell": {
+      "description": "The shell for the skill's inline commands: bash (the default) or powershell. Claude Code.",
+      "type": "string",
+      "enum": ["bash", "powershell"]
+    }
+  },
+  "definitions": {
+    "words": {
+      "description": "One string, separated by spaces or commas, or a list of strings.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      ]
+    },
+    "flag": {
+      "description": "A boolean. Claude Code also reads these words as one.",
+      "oneOf": [
+        { "type": "boolean" },
+        { "type": "string", "enum": ["true", "false", "yes", "no", "on", "off", "1", "0"] }
+      ]
+    }
+  }
+}

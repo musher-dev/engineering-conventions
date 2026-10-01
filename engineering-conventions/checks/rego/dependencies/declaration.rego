@@ -1,12 +1,13 @@
 # METADATA
 # title: Dependencies declaration
 # description: >-
-#   Every vendored copy is declared (DEPS-01) in a valid declaration
+#   Every vendored copy is declared, and not as fetched (DEPS-01) in a valid declaration
 #   (DEPS-02), once and never on the repository itself (DEPS-03), at an
 #   exact release, as is every package another Musher repository publishes
 #   (DEPS-04); each copy carries the producer's release record for that
-#   release (DEPS-05) and exactly the bytes it lists (DEPS-06); and no pin
-#   lives in a file of its own (DEPS-07).
+#   release (DEPS-05) and exactly the bytes it lists (DEPS-06), unless the
+#   dependency is fetched at test or build time; and no pin lives in a file
+#   of its own (DEPS-07).
 # scope: package
 # custom:
 #   convention: EC-0032
@@ -29,6 +30,21 @@ findings contains lib.finding("DEPS-01", path, message) if {
 			"the release it is, or remove the copy",
 		]),
 		[path, copy.repository, copy.output, files.dependencies_path],
+	)
+}
+
+# DEPS-01. A copy of a dependency declared as fetched, which nothing proves.
+findings contains lib.finding("DEPS-01", path, message) if {
+	some dep in dependencies
+	fetched(dep)
+	key(dep) in copies
+	path := contracts.copy_dir(dep.repository, dep.output)
+	message := sprintf(
+		concat(" ", [
+			"%s/ is a vendored copy of %s's %q, but %s declares it fetched, so no check proves the copy;",
+			"remove the copy, or drop `fetched` so the release record proves it",
+		]),
+		[path, dep.repository, dep.output, files.dependencies_path],
 	)
 }
 
@@ -95,7 +111,7 @@ findings contains lib.finding("DEPS-04", path, message) if {
 
 # DEPS-05
 findings contains lib.finding("DEPS-05", files.dependencies_path, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	record_path := contracts.record_path(dep.repository, dep.output)
 	not contracts.records[record_path]
 	message := sprintf(
@@ -108,7 +124,7 @@ findings contains lib.finding("DEPS-05", files.dependencies_path, message) if {
 }
 
 findings contains lib.finding("DEPS-05", record_path, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	record_path := contracts.record_path(dep.repository, dep.output)
 	record := contracts.records[record_path]
 	problems := schema.problems_of([record], data.conventions.index.release_record_schema, "the release record")
@@ -120,7 +136,7 @@ findings contains lib.finding("DEPS-05", record_path, message) if {
 }
 
 findings contains lib.finding("DEPS-05", record_path, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	record_path := contracts.record_path(dep.repository, dep.output)
 	record := contracts.records[record_path]
 	some field in ["repository", "output", "version"]
@@ -137,7 +153,7 @@ findings contains lib.finding("DEPS-05", record_path, message) if {
 
 # DEPS-06. An interface the dependency names that the release does not have.
 findings contains lib.finding("DEPS-06", files.dependencies_path, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	record := contracts.records[contracts.record_path(dep.repository, dep.output)]
 	some id in object.get(dep, "interfaces", [])
 	not id in {entry.id | some entry in record_interfaces(record)}
@@ -149,7 +165,7 @@ findings contains lib.finding("DEPS-06", files.dependencies_path, message) if {
 
 # DEPS-06. A file the release lists that is missing or changed.
 findings contains lib.finding("DEPS-06", path, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	some path, digest in expected(dep)
 	not path in files.repository_files
 	message := sprintf(
@@ -162,7 +178,7 @@ findings contains lib.finding("DEPS-06", path, message) if {
 }
 
 findings contains lib.finding("DEPS-06", path, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	some path, digest in expected(dep)
 	actual := files.digests[path]
 	actual != digest
@@ -177,7 +193,7 @@ findings contains lib.finding("DEPS-06", path, message) if {
 
 # DEPS-06. A file in the copy that no interface it depends on lists.
 findings contains lib.finding("DEPS-06", entry.file, message) if {
-	some dep in dependencies
+	some dep in vendored_dependencies
 	contracts.records[contracts.record_path(dep.repository, dep.output)]
 	some entry in contracts.vendored
 	entry.repository == dep.repository
@@ -216,6 +232,12 @@ dependencies := [dep |
 ] if {
 	is_array(files.dependencies_declaration.dependencies)
 }
+
+# The dependencies the repository vendors: every one not fetched at test or
+# build time, which has no copy for DEPS-05 and DEPS-06 to prove.
+vendored_dependencies := [dep | some dep in dependencies; not fetched(dep)]
+
+fetched(dep) if dep.fetched == true
 
 key(dep) := {"repository": dep.repository, "output": dep.output}
 

@@ -1,0 +1,3 @@
+# Who reviews which paths. The last matching pattern wins.
+/.github/          @your-org/maintainers
+/platform-api/     @your-org/api

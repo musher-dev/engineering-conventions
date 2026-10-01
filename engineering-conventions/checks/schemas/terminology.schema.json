@@ -54,7 +54,7 @@
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "token": {
-          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle, repository.audience, interfaces.format, interfaces.compatibility or runtime.capability. A token joined to others with hyphens, in a filename or a repository name, is one word; the rest may be kebab-case, e.g. json-schema.",
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle, repository.audience, interfaces.format, interfaces.compatibility, runtime.capability or env.org-scoped. A token joined to others with hyphens, in a filename or a repository name, is one word; the rest may be kebab-case, e.g. json-schema.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
         },
@@ -126,7 +126,8 @@
                     "repository.audience",
                     "interfaces.format",
                     "interfaces.compatibility",
-                    "runtime.capability"
+                    "runtime.capability",
+                    "env.org-scoped"
                   ]
                 }
               }

@@ -1,0 +1,69 @@
+version: '3'
+
+vars:
+  IMAGE: platform-api
+
+tasks:
+  setup:
+    desc: Install the pinned tools.
+    cmds:
+      - mise install
+
+  check:
+    desc: Run every gate CI runs.
+    cmds:
+      - task: lint
+      - task: openapi
+      - task: test
+
+  lint:
+    desc: Lint the workflows.
+    cmds:
+      - actionlint
+
+  build:
+    desc: Build the image.
+    deps: [_login]
+    cmds:
+      - docker build -t {{.IMAGE}} .
+
+  test:
+    desc: Run the tests.
+    cmds:
+      - go test ./...
+
+  dev:
+    desc: Run the API locally.
+    cmds:
+      - go run .
+
+  contracts:generate:
+    desc: Write the generated interface definitions.
+    cmds:
+      - go run ./cmd/contracts
+
+  contracts:check:
+    desc: Fail when a committed interface definition is not current.
+    cmds:
+      - task: contracts:generate
+      - git diff --exit-code -- platform-api/contracts
+
+  contracts:breaking:
+    desc: Compare each interface with the last release.
+    cmds:
+      - oasdiff breaking --fail-on ERR base.json platform-api/contracts/openapi/public.json
+
+  contracts:bundle:
+    desc: Write the contracts bundle and its release record.
+    cmds:
+      - go run ./cmd/bundle
+
+  openapi:
+    desc: Lint the OpenAPI interfaces with the repository's Spectral ruleset.
+    cmds:
+      - conventions openapi --ruleset .config/openapi/spectral.yaml
+
+  _login:
+    internal: true
+    cmds:
+      - docker login ghcr.io

@@ -1,0 +1,8 @@
+schema_version = 1
+
+[[dependencies]]
+repository = "specifications"
+output = "examples"
+version = "1.7.0"
+fetched = true
+description = "The conformance suite reads the examples corpus, verified against the release's SHA256SUMS."

@@ -1,0 +1,10 @@
+version: '3'
+
+# Markdown and YAML checks.
+
+tasks:
+  # lint tasks below
+  lint:md:
+    desc: Lint the Markdown.
+    cmds:
+      - markdownlint-cli2 '**/*.md'

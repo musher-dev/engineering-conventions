@@ -123,7 +123,7 @@ repository, the proposal carries `authority` pointing there
    task check
    ```
 
-   `task generate` rewrites `checks/data/index.json`, the Vale style and `definitions/conventions/README.md`; commit
+   `task generate` rewrites `checks/data/index.json`, the Vale styles and `definitions/conventions/README.md`; commit
    them with the change. `task check` runs every gate CI runs except the dev container build.
 
 ## Adding or changing a term

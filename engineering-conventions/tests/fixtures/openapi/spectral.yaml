@@ -1,0 +1,6 @@
+# A repository ruleset that meets OAS-02: Spectral's OpenAPI rules and the
+# OWASP API security ruleset, at an exact release. `task checks:openapi`
+# lints clean.yaml and insecure.yaml with it.
+extends:
+  - [spectral:oas, recommended]
+  - https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs

@@ -18,7 +18,7 @@ They adopt the Taskfile rules of `musher-dev/platform` (TF-*) and one path rule 
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0015 Taskfile style](taskfile-style.md) | TASK-01 – TASK-09, TASK-14 | Version, names, templates, descriptions, internal tasks, output prefixes, and paths, includes and sources that exist |
+| [EC-0015 Taskfile style](taskfile-style.md) | TASK-01 – TASK-09, TASK-14 – TASK-24 | Version, names, templates, descriptions, internal tasks, output prefixes, paths, includes and sources that exist, the default task, machine-specific paths, prompts before destroying data, fragments, silent tasks and opt-in prefixed output |
 | [EC-0016 Task interface](task-interface.md) | TASK-10 – TASK-13 | The verbs the root Taskfile defines, by kind of repository, and what `check` runs |
 
 ## Quick reference

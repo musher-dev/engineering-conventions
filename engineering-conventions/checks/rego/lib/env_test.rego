@@ -31,3 +31,12 @@ test_client_prefixes if {
 	})
 	env.client_prefixes("api/env.schema.yaml") == {"APP_", "WEB_"} with input as docs
 }
+
+test_vendored_copies_are_not_schemas if {
+	docs := [
+		td.repository(object.union(td.identity, {"layout": {"product": "api"}})),
+		td.file("api/contracts/vendor/host-agent/contracts/env.schema.yaml", {"service": "host-agent", "bindings": {}}),
+		td.file("api/env.schema.yaml", {"service": "api", "bindings": {}}),
+	]
+	object.keys(env.documents) == {"api/env.schema.yaml"} with input as docs
+}

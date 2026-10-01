@@ -4,8 +4,12 @@ title: Taskfile style
 summary: >-
   Every Taskfile declares schema version '3', names its variables in
   UPPER_SNAKE and its tasks in kebab-case, writes templates without inner
-  spaces, describes every public task and calls every internal one, and
-  names only includes, paths and sources that exist.
+  spaces, describes every public task and calls every internal one,
+  names only includes, paths and sources that exist, keeps its default
+  task to listing, names no machine-specific path, and prompts before
+  destroying data. A fragment flattened into its Taskfile keeps to itself
+  and says what it does, and a Taskfile that opts into prefixed output
+  labels its silent tasks.
 status: draft
 topic: tasks
 applies_to:
@@ -143,6 +147,86 @@ requirements:
       engine: conftest
       package: conventions.checks.tasks.taskfile_style
     aliases: ["platform:TF-21"]
+  - id: TASK-15
+    title: The root Taskfile's default task only lists the tasks
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
+  - id: TASK-16
+    title: A Taskfile names no path that exists on only one machine
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
+  - id: TASK-17
+    title: A task that destroys what nothing can restore declares a prompt
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
+  - id: TASK-18
+    title: A fragment's silent task echoes what it is doing, and its internal task with commands of its own is silent
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-19
+    title: A fragment's task that only calls other tasks echoes nothing of its own
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-20
+    title: A Taskfile that flattens its fragments includes each with flatten, never optional, dir or internal
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-21
+    title: A fragment declares no top-level includes, vars, env or dotenv
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-22
+    title: A fragment opens with a comment that names its area
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-23
+    title: In prefixed output, every silent task sets a kebab-case prefix
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-24
+    title: In prefixed output, a task that runs a long-lived process is silent
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
 ---
 
 # Taskfile style
@@ -170,6 +254,23 @@ also `{{.ROOT_DIR}}`, and `{{.TASKFILE_DIR}}` is its own directory. The checks s
 task that uses it sets `dir:`, and they skip any value that holds another template, a glob or a variable. Such a path
 can only be known when the task runs.
 
+### Fragments
+
+A **fragment** is a Taskfile named `<area>.Taskfile.yml` (or `.yaml`) in a `taskfiles/` directory, at the root or up
+to two directories below it, that another Taskfile includes: `taskfiles/lint.Taskfile.yml` holds the `lint` area.
+A repository splits a long Taskfile this way and, usually, flattens the fragments back into it, so each task keeps
+the full name its fragment writes. TASK-18 and TASK-19 apply to every fragment. TASK-20 to TASK-22 hold the layout
+to one shape, and apply to the fragments of a Taskfile that flattens at least one of them; a Taskfile that namespaces
+every fragment is not affected. A Taskfile with another name, or one nothing includes, is not a fragment. TASK-05
+already asks every public task in a fragment for a `desc`.
+
+### Prefixed output
+
+Task's [`prefixed` output mode](https://taskfile.dev/docs/reference/schema) labels each line a task prints with its
+`prefix`. A Taskfile opts into the output style of TASK-23 and TASK-24 by declaring `output: prefixed` at its top
+level, and the opt-in covers it and every Taskfile it includes. A repository has one profile, so there is no other
+switch: a Taskfile without `output: prefixed` is not affected.
+
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`). Its requirements are adopted from
@@ -187,12 +288,18 @@ Every requirement is `proposed` at severity `warning`.
 | TF-15 (`prefix:` needs `silent: true`) | TASK-07 | Generalized: `prefix:` only changes output in the `prefixed` mode, whatever else the task sets. |
 | TF-21 (literal `sources:` exist) | TASK-14 | Adopted, resolved from the directory the task runs in. |
 | PATH-03 (`{{.ROOT_DIR}}` variables exist) | TASK-08 | Generalized to any literal path in a variable named for a path. |
-| TF-02, TF-13, TF-14, TF-16, TF-17, TF-18 | Not adopted | They describe one repository's output style, not a rule every repository needs. |
-| TF-03, TF-04, TF-05, TF-10, TF-11 | Not adopted | Layout, which a formatter owns. |
-| TF-19, TF-20 | [EC-0016](task-interface.md) | A small shared set of verbs replaces one repository's allow-list. |
-| TF-22, TF-23 | Not adopted | Specific to the platform's tools and layout. |
+| TF-13, TF-16 (silent tasks echo; internal tasks are silent) | TASK-18 | Combined and held to fragments: either alone hides what a task is doing or prints it twice. |
+| TF-17 (a composite adds no echo) | TASK-19 | Held to fragments. |
+| TF-23 (the fragment layout) | TASK-20, TASK-21, TASK-22 | Generalized from one repository's layout to any `taskfiles/<area>.Taskfile.yml` set. |
+| TF-02, TF-14, TF-18 (`output: prefixed`, a prefix on each silent task, silent dev tasks) | TASK-23, TASK-24 | An output style a Taskfile opts into with `output: prefixed`, not a baseline, so TASK-07 still means something. |
+| TF-03, TF-10 (key order) | Not adopted | Layout, which a formatter owns. |
+| TF-04, TF-05, TF-11 | Not adopted | Indentation and spacing, which a formatter and yamllint own. |
+| TF-19, TF-20 | [EC-0016](task-interface.md) | Superseded: a small shared set of verbs replaces one repository's allow-list. |
+| TF-22 (`ansible-galaxy --no-cache`) | Not adopted | Applies only to a repository that runs Ansible. |
 
-TASK-06 and TASK-09 are new.
+TASK-06 and TASK-09 are new. TASK-15 to TASK-17 put into checks what the platform's Taskfile authoring guide
+asked of every Taskfile in prose: a `default` task that only lists, no machine-specific paths, and a prompt before
+destroying data. Task's schema does not check any of them.
 
 ## Not required
 
@@ -476,6 +583,407 @@ tasks:
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform TF-21
+
+### TASK-15
+
+**The root Taskfile's `default` task only lists the tasks.**
+
+`task` with no arguments runs the root Taskfile's `default` task, and it is the first thing a newcomer types to find
+out what a repository offers. A `default` that builds, migrates or deploys does that work by surprise. Every command
+of a `default` task (or of the task that takes `default` as an alias) is a `task` call with flags only, among them
+`--list`, `--list-all`, `-l` or `-a`; or `task help` or `task list`, or a `task:` call to either, where that task
+itself only lists or prints; or a line that only prints text with `echo` or `printf`. A `default` task has no
+`deps`. A Taskfile with no `default` task is not affected: Task then lists the tasks itself.
+
+**Correct:**
+
+```yaml
+tasks:
+  default:
+    desc: List the tasks.
+    cmds:
+      - task --list
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  default:
+    desc: Build everything.
+    cmds:
+      - task: build             # name the work, and let default list it
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-16
+
+**A Taskfile names no path that exists on only one machine.**
+
+A path into someone's home directory works for whoever wrote it, and fails in every other clone, container and CI
+runner, often far from the line that caused it. Task gives every Taskfile `{{.ROOT_DIR}}` and `{{.TASKFILE_DIR}}`
+for exactly this. The check reads each command line, each task's `dir`, `sources`, `generates` and `dotenv`, every
+variable, and each include's `taskfile` and `dir`, and looks for a path that starts `/home/<user>` or
+`/Users/<user>`, or a Windows drive (`C:\`). It does not read a line that runs a container tool (`docker`,
+`podman`, `nerdctl`, `kubectl`, `devcontainer`), where a path may be the container's own, nor a path after `:`,
+such as a mount target or a URL, nor a line that only prints text or a comment. A container's working directory,
+such as `/workspaces/<name>`, is the same in every clone of the container, and shared system paths such as `/tmp`,
+`/dev/null`, `/usr/bin/env` and `/opt` are not one machine's, so neither is reported.
+
+**Correct:**
+
+```yaml
+vars:
+  CACHE_DIR: '{{.ROOT_DIR}}/.cache'
+  WORKSPACE: /workspaces/platform-api   # the dev container's working directory
+tasks:
+  build:
+    desc: Build the binary.
+    cmds:
+      - go build -o {{.ROOT_DIR}}/dist/app ./...
+```
+
+**Incorrect:**
+
+```yaml
+vars:
+  CACHE_DIR: /home/ana/project/.cache
+tasks:
+  build:
+    desc: Build the binary.
+    cmds:
+      - cd /Users/ana/src/project && go build ./...
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-17
+
+**A task that destroys what nothing can restore declares a `prompt`.**
+
+`prompt:` makes Task ask before it runs a task, so a mistyped or autocompleted name cannot wipe data on its own;
+Task still runs it without asking under `--yes`, which is how a workflow calls it. The requirement covers what no
+checkout, build or rerun brings back:
+
+| Command | Loses |
+| --- | --- |
+| `docker volume rm` or `prune`, `docker system prune --volumes` (and `podman`) | Container volumes |
+| `compose … down -v` or `--volumes`, also behind a template such as `{{.COMPOSE}} down -v` | A stack's volumes |
+| `tofu` or `terraform` `destroy -auto-approve`, and `apply -auto-approve` without a saved plan | Infrastructure |
+| `git clean -f…`, unless it passes `-X` | Untracked files |
+| `git reset --hard` | Uncommitted changes |
+
+A task whose last name segment is `destroy`, `drop` or `wipe`, or that is named `db:reset` (or `database:reset`),
+promises to destroy data and needs a prompt as well. An internal task may leave the prompt to a task that calls it.
+
+Deleting files is not covered. `rm -rf` in a Taskfile almost always removes what a build writes (`dist`, `build`,
+`node_modules`) or a scratch directory the task made, which the next build or `git checkout` restores, and a check
+cannot tell build output from data. A `clean` task needs no prompt, and `git clean -X` (capital X) removes only the
+files `.gitignore` names, so it needs none either; `-x` also removes untracked files and does. Neither does a
+database the task drops and recreates as scratch, such as a migration tool's dev database or a test database; a
+database people keep data in is dropped by a task named for it (`db:reset`, `db:drop`), and that name is what the
+check reads.
+
+**Correct:**
+
+```yaml
+tasks:
+  db:reset:
+    desc: Drop the local database and migrate it from scratch.
+    prompt: This deletes every row in the local database. Continue?
+    cmds:
+      - docker compose down -v
+      - task: db:migrate
+  clean:
+    desc: Remove the build output.
+    cmds:
+      - rm -rf dist
+      - git clean -fdX
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  stack:reset:
+    desc: Stop the stack and wipe its volumes.
+    cmds:
+      - docker compose down -v   # no prompt
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-18
+
+**A fragment's silent task echoes what it is doing, and its internal task with commands of its own is silent.**
+
+Task prints each command line before it runs it, unless the task is `silent`. An internal task is a step of a
+larger one, and its raw command lines bury the output a reader is waiting for; a silent task that echoes nothing
+leaves the reader with no sign of what is running, or where it stalled. The two halves only work together. A task
+is silent when it sets `silent: true`, or its Taskfile does and it does not set `silent: false`. It echoes when a
+line of its commands, or of a `cmd:`, starts with `echo` or `printf`. A task with commands of its own runs a shell
+line that is not a `task:` call; a silent task that only calls other tasks has nothing to echo.
+
+**Correct:**
+
+```yaml
+tasks:
+  _generate:
+    internal: true
+    silent: true
+    cmds:
+      - echo "Generating the client from openapi.yaml"
+      - openapi-generator generate -i openapi.yaml -g go -o client
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  _generate:                  # prints its whole command line
+    internal: true
+    cmds:
+      - openapi-generator generate -i openapi.yaml -g go -o client
+  migrate:                    # silent, and says nothing
+    desc: Apply the migrations.
+    silent: true
+    cmds:
+      - atlas migrate apply
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-19
+
+**A fragment's task that only calls other tasks echoes nothing of its own.**
+
+A composite task runs other tasks, and each of those says what it is doing (TASK-18). An `echo` in the composite
+repeats that, or announces a step list that goes stale the first time someone adds a call and not the line. A task is
+a composite when every item of its `cmds` is a `task:` call or text that only prints, and at least one is a call; a
+task that also runs a command of its own is not a composite, and may echo.
+
+**Correct:**
+
+```yaml
+tasks:
+  check:
+    desc: Run every gate.
+    cmds:
+      - task: lint
+      - task: test
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  check:
+    desc: Run every gate.
+    cmds:
+      - echo "Linting, then testing"
+      - task: lint
+      - task: test
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-20
+
+**A Taskfile that flattens its fragments includes each with `flatten`, never `optional`, `dir` or `internal`.**
+
+Flattened fragments read as one Taskfile: every task is called by the name its fragment writes, and runs where every
+other task runs. One fragment included without `flatten: true` puts its tasks under a namespace no one wrote down.
+`optional: true` lets a fragment that was moved or deleted drop its tasks without a word. `dir:` moves one fragment's
+tasks away from its siblings', so the same relative path means two things. `internal: true` hides every task in the
+fragment and makes none of them runnable. A Taskfile's fragments are the ones in the `taskfiles/` directory beside
+it. A Taskfile that includes none of them with `flatten: true` is not affected: namespacing every fragment is a choice
+this requirement leaves alone. Neither is a shared fragment elsewhere, such as the repository root's
+`taskfiles/knip.Taskfile.yml` that each app includes under a namespace.
+
+**Correct:**
+
+```yaml
+includes:
+  lint:
+    taskfile: taskfiles/lint.Taskfile.yml
+    flatten: true
+  test:
+    taskfile: taskfiles/test.Taskfile.yml
+    flatten: true
+```
+
+**Incorrect:**
+
+```yaml
+includes:
+  lint:
+    taskfile: taskfiles/lint.Taskfile.yml
+    flatten: true
+  test: taskfiles/test.Taskfile.yml       # namespaced: test:test, test:unit
+  docs:
+    taskfile: taskfiles/docs.Taskfile.yml
+    flatten: true
+    optional: true                        # a missing file drops the docs tasks
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-21
+
+**A fragment declares no top-level `includes`, `vars`, `env` or `dotenv`.**
+
+A fragment looks like its own scope, and is not. Task merges an included Taskfile's top-level `vars` and `env` into
+the scope every Taskfile's tasks see, in include order, so a `NAME` set in one fragment silently changes a task in
+another, or in the root Taskfile. Task refuses a top-level `dotenv` in an included Taskfile ("Included Taskfiles
+can't have dotenv declarations"), which stops every task. And a fragment that includes more Taskfiles hides where a
+task is defined, and the name it answers to, behind a second level. Put shared variables, environment and dotenv in
+the including Taskfile, a variable only one task needs in that task, and include every fragment from the including
+Taskfile.
+
+**Correct:**
+
+```yaml
+# Lint: the linters and the configuration each one reads.
+version: '3'
+tasks:
+  lint:md:
+    desc: Lint Markdown.
+    vars:
+      MD_CONFIG: .config/markdown/markdownlint.jsonc
+    cmds:
+      - markdownlint-cli2 --config {{.MD_CONFIG}} '**/*.md'
+```
+
+**Incorrect:**
+
+```yaml
+# Lint: the linters and the configuration each one reads.
+version: '3'
+vars:
+  CONFIG: .config/markdown/markdownlint.jsonc   # every task now sees CONFIG
+dotenv: [.env]                                    # Task refuses to load
+tasks:
+  lint:md:
+    desc: Lint Markdown.
+    cmds:
+      - markdownlint-cli2 --config {{.CONFIG}} '**/*.md'
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-22
+
+**A fragment opens with a comment that names its area.**
+
+A flattened fragment's tasks show up in `task --list` with nothing to say which file holds them, so the file is
+found by its area, and the comment at its top is where a reader learns what belongs in it and what does not. Without
+one, tasks drift into whichever fragment was open. The check reads the fragment's raw text (decision 0015): some
+comment line above its `tasks:` key must contain the area from its file name, in any case, with a hyphen also
+matching a space (`dev-stack` matches "dev stack").
+
+**Correct:**
+
+```yaml
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:md:
+    desc: Lint Markdown.
+```
+
+**Incorrect:**
+
+```yaml
+version: '3'
+
+tasks:
+  lint:md:
+    desc: Lint Markdown.
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-23
+
+**In prefixed output, every silent task sets a kebab-case `prefix`.**
+
+This requirement applies only where a Taskfile opts into [prefixed output](#prefixed-output). There, the prefix is
+the label on every line a task prints, and the only way a reader can tell interleaved output apart. A silent task
+prints only what it echoes and what its tools write, so without a short, deliberate label its lines carry Task's
+default, the full task name. A kebab-case label (`lowercase-words`) is one a reader can grep for. A prefix written
+as a template is not judged.
+
+**Correct:**
+
+```yaml
+output: prefixed
+tasks:
+  api:dev:
+    desc: Run the API with reload.
+    silent: true
+    prefix: api
+    cmds:
+      - echo "Starting the API on :8080"
+      - air
+```
+
+**Incorrect:**
+
+```yaml
+output: prefixed
+tasks:
+  api:dev:
+    desc: Run the API with reload.
+    silent: true
+    prefix: API_Server
+    cmds:
+      - echo "Starting the API on :8080"
+      - air
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-24
+
+**In prefixed output, a task that runs a long-lived process is silent.**
+
+This requirement applies only where a Taskfile opts into [prefixed output](#prefixed-output). A dev server or a
+watcher runs until it is stopped, usually beside others under one `task dev`. Unless the task is silent, Task first
+prints its whole command line, flags and environment included, among the labeled output of every process started
+with it. The check reads a task as long-running when the last segment of its name, or of an alias, is `dev`,
+`serve` or `watch` (`dev`, `api:dev`, `docs:serve`, `web:watch`), and it runs a command of its own; a task that only
+calls others has no command line to print.
+
+**Correct:**
+
+```yaml
+output: prefixed
+tasks:
+  docs:serve:
+    desc: Serve the docs with live reload.
+    silent: true
+    prefix: docs
+    cmds:
+      - echo "Serving the docs on http://localhost:8000"
+      - mkdocs serve
+```
+
+**Incorrect:**
+
+```yaml
+output: prefixed
+tasks:
+  docs:serve:
+    desc: Serve the docs with live reload.
+    prefix: docs
+    cmds:
+      - mkdocs serve --dev-addr 0.0.0.0:8000 --watch-theme
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ## References
 

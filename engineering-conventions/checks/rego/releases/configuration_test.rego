@@ -180,22 +180,22 @@ test_rel_05_several_tags if {
 
 test_rel_06_release_pull_requests if {
 	grouped := object.union(several, {"separate-pull-requests": false, "pull-request-title-pattern": "chore: release"})
-	rules := td.file(".github/conventional-commits.yaml", {"types": ["feat", "fix"], "scopes": ["repo"]})
+	rules := td.file(".config/commits/committed.toml", {"allowed_types": ["feat", "fix"], "allowed_scopes": ["repo"]})
 	docs := [config(grouped), manifest({"schemas/blueprint": "1.0.0", "schemas/listing": "1.0.0"}), rules]
 	results := checks.findings with input as docs with data.conventions.index as td.index
 	count(messages(results, "REL-06")) == 4
-	commit_rules := {f.message | some f in results; f.path == ".github/conventional-commits.yaml"}
+	commit_rules := {f.message | some f in results; f.path == ".config/commits/committed.toml"}
 	commit_rules == {
 		concat(" ", [
-			`the commit rules do not list "chore" under types, so the release pull request's title`,
+			`the commit rules do not list "chore" under allowed_types, so the release pull request's title`,
 			"chore(release): fails them; add it",
 		]),
 		concat(" ", [
-			`the commit rules do not list "release" under scopes, so the release pull request's title`,
+			`the commit rules do not list "release" under allowed_scopes, so the release pull request's title`,
 			"chore(release): fails them; add it",
 		]),
 	}
-	accepting := td.file(".github/conventional-commits.yaml", {"types": ["chore"], "scopes": ["release"]})
+	accepting := td.file(".config/commits/committed.toml", {"allowed_types": ["chore"], "allowed_scopes": ["release"]})
 	results_accepting := checks.findings with input as [config(single), one_manifest, accepting]
 		with data.conventions.index as td.index
 	count(messages(results_accepting, "REL-06")) == 0

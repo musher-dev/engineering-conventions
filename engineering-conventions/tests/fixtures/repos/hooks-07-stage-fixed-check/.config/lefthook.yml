@@ -8,3 +8,8 @@ pre-commit:
       run: prettier --check {staged_files}
       stage_fixed: true
       fail_text: "YAML lint failed. Run 'task lint:yaml'."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

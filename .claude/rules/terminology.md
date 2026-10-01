@@ -2,6 +2,7 @@
 paths:
   - "engineering-conventions/definitions/terminology/**"
   - "engineering-conventions/checks/vale/**"
+  - "engineering-conventions/definitions/copy/**"
 ---
 
 # Terminology
@@ -14,6 +15,11 @@ style, and the words the conventions use. Change it here and regenerate; never e
 
 - **MUST NOT** hand-edit `checks/vale/MusherConventions/**`. `task generate`
   writes it from `definitions/terminology/`; `task generate:check` fails on drift.
+- **MUST NOT** hand-edit `checks/vale/MusherCopy/**` or
+  `checks/vale/MusherProse.ini`. `task generate` writes them from
+  `definitions/copy/style.yml` (EC-0038, decision 0024).
+- **MUST** check the adopted Vale packages before adding a `MusherCopy` rule:
+  a rule one of them ships is adopted with a toggle, never written again.
 - **MUST** keep a term's `id` stable; it is referenced from outside this file.
 - **MUST** point at the owner instead of restating a definition this
   repository does not own: an `authority` entry carries no `definition`.

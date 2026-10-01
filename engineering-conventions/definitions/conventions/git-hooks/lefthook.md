@@ -5,8 +5,9 @@ summary: >-
   A repository that runs its git hooks with lefthook fails loudly when
   lefthook is missing or older than the version it pins, matches globs the
   way they read, defines its hooks as jobs that say how to fix a failure,
-  keeps tests out of pre-commit, never lets a hook pass on a failure, and
-  takes its hooks from no other repository.
+  keeps tests out of pre-commit, never lets a hook pass on a failure,
+  stages the fixes it makes, runs each check in one stage, calls package
+  runners only through tasks, and takes its hooks from no other repository.
 status: draft
 topic: git-hooks
 applies_to:
@@ -150,6 +151,30 @@ requirements:
       engine: conftest
       package: conventions.checks.git_hooks.lefthook
     aliases: ["development-container:PATH-01"]
+  - id: HOOKS-12
+    title: A pre-commit job that fixes files sets stage_fixed
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.git_hooks.lefthook
+  - id: HOOKS-13
+    title: No job runs the same command in pre-commit and pre-push
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.git_hooks.lefthook
+  - id: HOOKS-14
+    title: A job runs no one-shot package runner directly
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.git_hooks.lefthook
 ---
 
 # Lefthook configuration
@@ -198,6 +223,14 @@ severity `warning`.
 | LH-06 allows a pre-push test only as a `:changed` verb | HOOKS-08 covers pre-commit only | What pre-push may run depends on the size of the suite, which differs by repository |
 | LH-07 requires a hook-level `files:` and `parallel: true` on pre-push | Not adopted | It guarded against lefthook before 2.1.5 finding no files on a branch's first push. Since then lefthook diffs against the remote's default branch, and HOOKS-02 pins the version; `parallel` is speed, not correctness |
 | LH-08 bans TODO comments | Not adopted | YAML parsers discard comments, so no engine here can see them |
+
+HOOKS-12 to HOOKS-14 come from the platform's hook authoring guide, which asked for them in prose: a fixer restages
+its fixes, a job runs in one stage, and a job calls a task rather than a package runner. `lefthook validate` checks
+none of them. The guide asks every hook job to call a task; HOOKS-14 is narrower, because a tool pinned in mise is
+the same binary in a hook and in CI, and only a package runner chooses its version at the call site. The guide's
+other request, that every hook check has a CI counterpart, is not checked: a hook usually runs a fixing or
+file-scoped variant (`fmt:files`) of the task CI runs (`fmt:check`), often from a subdirectory or through a
+workflow matrix, so no reliable mapping from one to the other can be read from the files.
 
 ## Requirements
 
@@ -493,6 +526,120 @@ glob: "app/**/*.py"           # app/ was renamed to src/
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container PATH-01
+
+### HOOKS-12
+
+**A pre-commit job that fixes files sets `stage_fixed`.**
+
+A job that rewrites the files it checks changes the working tree, not the commit. Without `stage_fixed: true` the
+commit records the files as they were staged, unfixed, and the fixes sit in the working tree where the next commit
+picks them up by accident or `git stash` hides them. This is the complement of HOOKS-07. A job fixes when its `run`
+passes `--write` or `--fix`, runs a formatter that writes by default (`ruff format`, `taplo fmt`, `cargo fmt`,
+`go fmt`, `gofmt -w`, `tofu fmt`, `terraform fmt`), or runs a task with a `fmt`, `format` or `fix` segment in its
+name (`task fmt:files`, `task db:fmt`), unless it also passes a flag that only reports (`--check`, `:check`,
+`--diff`, `--dry-run`, `--exit-code`, `-check`, `--list-different`). Only pre-commit is checked: lefthook restages
+nowhere else.
+
+**Correct:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: format
+      run: FILES="$(printf '%s\n' {staged_files})" task fmt:files
+      stage_fixed: true
+      fail_text: "Formatting failed. Run 'task fmt'."
+```
+
+**Incorrect:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: format
+      run: prettier --write {staged_files}   # the fixes stay unstaged
+      fail_text: "Formatting failed. Run 'task fmt'."
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### HOOKS-13
+
+**No job runs the same command in pre-commit and pre-push.**
+
+Every push runs pre-push over commits that each already ran pre-commit, so a job in both stages runs twice for one
+change and spends the budget that keeps contributors from reaching for `--no-verify`. Pick the stage: pre-commit for
+what is fast on the staged files, pre-push for what is too slow for every commit. Two jobs are the same when they run
+the same `run` (or the same `script` and `runner`) from the same `root`; `{staged_files}`, `{push_files}`,
+`{all_files}` and `{files}` count as one file list, and spacing does not count.
+
+**Correct:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: lint
+      run: task lint:files
+      fail_text: "Lint failed. Run 'task lint'."
+pre-push:
+  jobs:
+    - name: types
+      run: task typecheck
+      fail_text: "Type check failed. Run 'task typecheck'."
+```
+
+**Incorrect:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: types
+      run: task typecheck
+      fail_text: "Type check failed. Run 'task typecheck'."
+pre-push:
+  jobs:
+    - name: types
+      run: task typecheck          # already ran at every commit
+      fail_text: "Type check failed. Run 'task typecheck'."
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### HOOKS-14
+
+**A job runs no one-shot package runner directly.**
+
+A one-shot package runner fetches the tool it runs when it runs, at whatever version it resolves then: `npx`, `bunx`
+(or `bun x`), `pnpx`, `pnpm dlx`, `yarn dlx`, `uvx` (or `uv tool run`) and `pipx run`. Written into a hook, the
+version and the flags live in that one line, and CI, which calls a task, runs whatever the task says, so the two
+drift apart without anyone deciding they should. A job that needs such a tool runs the task that wraps it, the same
+task CI runs. A runner of a tool the repository's lockfile already pins, such as `uv run`, `pnpm exec`, `npm exec` or
+`go run`, runs the same version in the hook and in CI, and so does a tool from the repository's pinned toolchain, such
+as one from mise: both may be called directly.
+
+**Correct:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: markdown
+      glob: "**/*.md"
+      run: FILES="$(printf '%s\n' {staged_files})" task lint:md:files
+      fail_text: "Markdown lint failed. Run 'task lint:md'."
+```
+
+**Incorrect:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: markdown
+      glob: "**/*.md"
+      run: bunx markdownlint-cli2@0.23.2 {staged_files}
+      fail_text: "Markdown lint failed. Run 'task lint:md'."
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ## References
 

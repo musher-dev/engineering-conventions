@@ -1,0 +1,7 @@
+[
+  {
+    "id": "COPY-02",
+    "path": ".config/markdown/vale.ini",
+    "severity": "warning"
+  }
+]

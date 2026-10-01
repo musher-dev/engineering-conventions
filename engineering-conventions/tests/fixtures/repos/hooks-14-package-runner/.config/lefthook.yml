@@ -1,0 +1,14 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+pre-commit:
+  jobs:
+    - name: yaml
+      glob: ".github/**/*.yml"
+      run: npx prettier --check {staged_files}
+      fail_text: "YAML is not formatted. Run 'task fmt'."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

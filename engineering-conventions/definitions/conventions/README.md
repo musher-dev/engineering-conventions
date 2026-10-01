@@ -43,6 +43,11 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0031](interfaces/publishing-interfaces.md) | Publishing interfaces | interfaces | draft |
 | [EC-0032](dependencies/dependencies-declaration.md) | Dependencies declaration | dependencies | draft |
 | [EC-0033](dependencies/keeping-dependencies-current.md) | Keeping dependencies current | dependencies | draft |
+| [EC-0034](agents/skills-and-subagents.md) | Skills and subagents | agents | draft |
+| [EC-0035](commits/commit-messages.md) | Commit messages | commits | draft |
+| [EC-0036](community-files/community-files.md) | Community files | community-files | draft |
+| [EC-0037](openapi/openapi-documents.md) | OpenAPI documents | openapi | draft |
+| [EC-0038](copy/public-copy.md) | Public copy | copy | draft |
 
 ## Requirements
 
@@ -67,6 +72,25 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
 | [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
+| [AGENT-09](agents/skills-and-subagents.md#agent-09) | A skill or subagent file starts with YAML frontmatter that parses | EC-0034 | proposed | warning | conftest |
+| [AGENT-10](agents/skills-and-subagents.md#agent-10) | A skill's frontmatter is valid against the skill schema | EC-0034 | proposed | warning | conftest |
+| [AGENT-11](agents/skills-and-subagents.md#agent-11) | A skill's name, when set, is its directory's name | EC-0034 | proposed | warning | conftest |
+| [AGENT-12](agents/skills-and-subagents.md#agent-12) | A subagent's frontmatter is valid against the subagent schema | EC-0034 | proposed | warning | conftest |
+| [AGENT-13](agents/skills-and-subagents.md#agent-13) | Every skill a subagent preloads is a skill in the repository | EC-0034 | proposed | warning | conftest |
+| [AGENT-14](agents/skills-and-subagents.md#agent-14) | A subagent does not preload a skill that disables model invocation | EC-0034 | proposed | warning | conftest |
+| [COMM-01](community-files/community-files.md#comm-01) | An issue form is a .yml file valid against GitHub's issue-forms schema | EC-0036 | proposed | warning | conftest |
+| [COMM-02](community-files/community-files.md#comm-02) | Issue forms come with a template chooser that is valid and sets blank_issues_enabled | EC-0036 | proposed | warning | conftest |
+| [COMM-03](community-files/community-files.md#comm-03) | A repository with a CODEOWNERS has exactly one, at .github/CODEOWNERS | EC-0036 | proposed | warning | conftest |
+| [COMM-04](community-files/community-files.md#comm-04) | CODEOWNERS uses only syntax GitHub honours, names well-formed owners and repeats no pattern | EC-0036 | proposed | warning | conftest |
+| [COMM-05](community-files/community-files.md#comm-05) | A repository's own security policy has a heading on reporting a vulnerability | EC-0036 | proposed | warning | conftest |
+| [COMM-06](community-files/community-files.md#comm-06) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
+| [COMM-07](community-files/community-files.md#comm-07) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
+| [COMMIT-01](commits/commit-messages.md#commit-01) | .config/commits/committed.toml states the repository's commit rules | EC-0035 | proposed | warning | conftest |
+| [COMMIT-02](commits/commit-messages.md#commit-02) | committed is pinned in mise | EC-0035 | proposed | warning | conftest |
+| [COMMIT-03](commits/commit-messages.md#commit-03) | Lefthook's commit-msg hook runs committed on the message being written | EC-0035 | proposed | warning | conftest |
+| [COMMIT-04](commits/commit-messages.md#commit-04) | A pull request workflow checks the title with committed and requires a scope | EC-0035 | proposed | warning | conftest |
+| [COMMIT-05](commits/commit-messages.md#commit-05) | Every commit message and pull request title passes committed | EC-0035 | proposed | warning | delegated |
+| [COMMIT-06](commits/commit-messages.md#commit-06) | No .github/conventional-commits.yaml keeps a second list of types and scopes | EC-0035 | proposed | warning | conftest |
 | [CONF-01](configuration/tool-configuration.md#conf-01) | A known tool's configuration does not sit at the repository root | EC-0011 | proposed | warning | conftest |
 | [CONF-02](configuration/tool-configuration.md#conf-02) | A repository with a .config/ directory indexes it in .config/README.md | EC-0011 | proposed | warning | conftest |
 | [CONF-03](configuration/tool-configuration.md#conf-03) | Every file under .config/ is named in .config/README.md | EC-0011 | proposed | warning | conftest |
@@ -79,6 +103,10 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-10](configuration/suppressions.md#conf-10) | Every entry in a trivyignore.yaml has a statement and an expiry within the term | EC-0012 | proposed | warning | conftest |
 | [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
+| [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
+| [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
+| [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |
+| [COPY-04](copy/public-copy.md#copy-04) | Public copy holds no placeholder | EC-0038 | proposed | warning | vale |
 | [DEC-01](decisions/decision-records.md#dec-01) | A decision record is named NNNN-kebab-slug in the repository's decisions directory | EC-0021 | proposed | warning | conftest |
 | [DEC-02](decisions/decision-records.md#dec-02) | A decision record's frontmatter is valid against the decision schema | EC-0021 | proposed | warning | conftest |
 | [DEC-03](decisions/decision-records.md#dec-03) | Decision numbers are unique and contiguous from 0000 or 0001 | EC-0021 | proposed | warning | conftest |
@@ -111,6 +139,9 @@ ID is permanent: it is never renumbered or reused.
 | [DEVC-13](dev-containers/dev-container-stacks.md#devc-13) | A dev container stack publishes its host ports from the reserved range 15432-15460 | EC-0028 | proposed | warning | conftest |
 | [DEVC-14](dev-containers/dev-container-configuration.md#devc-14) | A dev container does not give its container a fixed name | EC-0027 | proposed | warning | conftest |
 | [DEVC-15](dev-containers/dev-container-configuration.md#devc-15) | A volume mounted under /home belongs to remoteUser | EC-0027 | proposed | warning | conftest |
+| [DEVC-16](dev-containers/dev-container-stacks.md#devc-16) | A dev container stack that labels the capability it provides runs a version every environment schema accepts | EC-0028 | proposed | warning | conftest |
+| [DEVC-17](dev-containers/dev-container-configuration.md#devc-17) | devcontainer.json is valid against the Dev Container specification's schema | EC-0027 | proposed | warning | conftest |
+| [DEVC-18](dev-containers/dev-container-configuration.md#devc-18) | Every variable in devcontainer.json is one the specification defines, used where it resolves | EC-0027 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
@@ -130,6 +161,12 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-17](environment/env-schema.md#envs-17) | A binding's target is another repository's interface, written \<repository\>#\<interface\> | EC-0020 | proposed | warning | conftest |
 | [ENVS-18](environment/env-schema.md#envs-18) | A binding's capability is a registered runtime capability | EC-0020 | proposed | warning | conftest |
 | [ENVS-19](environment/env-schema.md#envs-19) | A binding that reaches another service or an outside capability names it | EC-0020 | proposed | warning | review |
+| [ENVS-20](environment/env-contract.md#envs-20) | A service that offers its environment as an interface commits the contract derived from its schema | EC-0019 | proposed | warning | conftest |
+| [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | proposed | warning | conftest |
+| [ENVS-22](environment/env-schema.md#envs-22) | A binding that reaches a runtime capability names it through requires | EC-0020 | proposed | warning | conftest |
+| [ENVS-23](environment/env-schema.md#envs-23) | Every runtime instance is declared, reached by a binding, and a registered capability | EC-0020 | proposed | warning | conftest |
+| [ENVS-24](environment/env-schema.md#envs-24) | A consumer prefix is MUSHER_ and the repository's component | EC-0020 | proposed | warning | conftest |
+| [ENVS-25](environment/env-schema.md#envs-25) | Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -190,6 +227,9 @@ ID is permanent: it is never renumbered or reused.
 | [HOOKS-09](git-hooks/lefthook.md#hooks-09) | A lefthook configuration uses neither remotes nor extends | EC-0014 | proposed | warning | conftest |
 | [HOOKS-10](git-hooks/lefthook.md#hooks-10) | A job never discards its command's exit code | EC-0014 | proposed | warning | conftest |
 | [HOOKS-11](git-hooks/lefthook.md#hooks-11) | Every job glob matches a file in the repository | EC-0014 | proposed | warning | conftest |
+| [HOOKS-12](git-hooks/lefthook.md#hooks-12) | A pre-commit job that fixes files sets stage_fixed | EC-0014 | proposed | warning | conftest |
+| [HOOKS-13](git-hooks/lefthook.md#hooks-13) | No job runs the same command in pre-commit and pre-push | EC-0014 | proposed | warning | conftest |
+| [HOOKS-14](git-hooks/lefthook.md#hooks-14) | A job runs no one-shot package runner directly | EC-0014 | proposed | warning | conftest |
 | [IFACE-01](interfaces/interfaces-declaration.md#iface-01) | Every file in the contracts directory belongs to a declared interface | EC-0030 | proposed | warning | conftest |
 | [IFACE-02](interfaces/interfaces-declaration.md#iface-02) | An interface's format, compatibility and audience are registered values | EC-0030 | proposed | warning | conftest |
 | [IFACE-03](interfaces/interfaces-declaration.md#iface-03) | Interface IDs are unique within a repository | EC-0030 | proposed | warning | conftest |
@@ -204,6 +244,9 @@ ID is permanent: it is never renumbered or reused.
 | [IFACE-12](interfaces/publishing-interfaces.md#iface-12) | A validate workflow runs contracts:check and contracts:breaking | EC-0031 | proposed | warning | conftest |
 | [IFACE-13](interfaces/publishing-interfaces.md#iface-13) | The workflow that publishes a bundle of interfaces runs contracts:bundle | EC-0031 | proposed | warning | conftest |
 | [IFACE-14](interfaces/publishing-interfaces.md#iface-14) | A bundle of interfaces carries a release record of every file it delivers | EC-0031 | proposed | warning | review |
+| [OAS-01](openapi/openapi-documents.md#oas-01) | Every OpenAPI interface document passes the repository's Spectral ruleset | EC-0037 | proposed | warning | delegated |
+| [OAS-02](openapi/openapi-documents.md#oas-02) | The Spectral ruleset extends spectral:oas and the OWASP API security ruleset at an exact release | EC-0037 | proposed | warning | conftest |
+| [OAS-03](openapi/openapi-documents.md#oas-03) | A validate workflow lints the OpenAPI interfaces with the repository's ruleset | EC-0037 | proposed | warning | conftest |
 | [OUT-01](outputs/outputs-declaration.md#out-01) | A repository with a publish workflow declares its outputs in .repo/outputs.toml | EC-0007 | proposed | warning | conftest |
 | [OUT-02](outputs/outputs-declaration.md#out-02) | The outputs declaration is valid against its schema | EC-0007 | proposed | warning | conftest |
 | [OUT-03](outputs/outputs-declaration.md#out-03) | An output's kind is a registered output kind | EC-0007 | proposed | warning | conftest |
@@ -216,6 +259,7 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-10](outputs/publishing-and-consuming.md#out-10) | A container image carries the OCI source, revision and version annotations | EC-0008 | proposed | warning | review |
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
 | [OUT-12](outputs/outputs-declaration.md#out-12) | A site output's location is an https:// origin | EC-0007 | proposed | warning | conftest |
+| [OUT-13](outputs/publishing-and-consuming.md#out-13) | An image published to GHCR names its own repository in org.opencontainers.image.source | EC-0008 | proposed | warning | conftest |
 | [REL-01](releases/release-configuration.md#rel-01) | A repository that declares a versioned output releases it with release-please | EC-0024 | proposed | warning | conftest |
 | [REL-02](releases/release-configuration.md#rel-02) | The release-please config and release-please manifest are .github/release-please/config.json and manifest.json | EC-0024 | proposed | warning | conftest |
 | [REL-03](releases/release-configuration.md#rel-03) | The release-please action reads those two files and sets no release type of its own | EC-0024 | proposed | warning | conftest |
@@ -272,6 +316,16 @@ ID is permanent: it is never renumbered or reused.
 | [TASK-12](tasks/task-interface.md#task-12) | The root Taskfile of a service also defines dev | EC-0016 | proposed | warning | conftest |
 | [TASK-13](tasks/task-interface.md#task-13) | The check task runs every gate CI runs | EC-0016 | proposed | warning | review |
 | [TASK-14](tasks/taskfile-style.md#task-14) | Every literal sources entry names something the repository holds | EC-0015 | proposed | warning | conftest |
+| [TASK-15](tasks/taskfile-style.md#task-15) | The root Taskfile's default task only lists the tasks | EC-0015 | proposed | warning | conftest |
+| [TASK-16](tasks/taskfile-style.md#task-16) | A Taskfile names no path that exists on only one machine | EC-0015 | proposed | warning | conftest |
+| [TASK-17](tasks/taskfile-style.md#task-17) | A task that destroys what nothing can restore declares a prompt | EC-0015 | proposed | warning | conftest |
+| [TASK-18](tasks/taskfile-style.md#task-18) | A fragment's silent task echoes what it is doing, and its internal task with commands of its own is silent | EC-0015 | proposed | warning | conftest |
+| [TASK-19](tasks/taskfile-style.md#task-19) | A fragment's task that only calls other tasks echoes nothing of its own | EC-0015 | proposed | warning | conftest |
+| [TASK-20](tasks/taskfile-style.md#task-20) | A Taskfile that flattens its fragments includes each with flatten, never optional, dir or internal | EC-0015 | proposed | warning | conftest |
+| [TASK-21](tasks/taskfile-style.md#task-21) | A fragment declares no top-level includes, vars, env or dotenv | EC-0015 | proposed | warning | conftest |
+| [TASK-22](tasks/taskfile-style.md#task-22) | A fragment opens with a comment that names its area | EC-0015 | proposed | warning | conftest |
+| [TASK-23](tasks/taskfile-style.md#task-23) | In prefixed output, every silent task sets a kebab-case prefix | EC-0015 | proposed | warning | conftest |
+| [TASK-24](tasks/taskfile-style.md#task-24) | In prefixed output, a task that runs a long-lived process is silent | EC-0015 | proposed | warning | conftest |
 | [TOFU-01](opentofu/state-keys.md#tofu-01) | An OpenTofu root's state key is tfstate/\<repository\>/\<root\>/terraform.tfstate | EC-0029 | proposed | warning | conftest |
 | [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
 | [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |
@@ -305,3 +359,7 @@ ID is permanent: it is never renumbered or reused.
 | TOFU | OpenTofu | opentofu |
 | IFACE | Interfaces | interfaces |
 | DEPS | Dependencies | dependencies |
+| COMM | Community files | community-files |
+| OAS | OpenAPI documents | openapi |
+| COMMIT | Commit messages | commits |
+| COPY | Public copy | copy |

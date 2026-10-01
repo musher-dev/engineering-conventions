@@ -104,7 +104,9 @@ repository: the graph built from every repository's declarations answers it
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`), and its requirements are `proposed` at
-severity `warning`. DEPS-04 is the checked form of OUT-11 for the pins it can read.
+severity `warning`. DEPS-04 is the checked form of OUT-11 for the pins it can read. Fetched dependencies were added
+by
+[decision 0027](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0027-data-units-and-fetched-dependencies.md).
 
 ## The declaration
 
@@ -128,10 +130,12 @@ description = "The console's API client is generated from the public API."
 | `dependencies[].interfaces` | no | The IDs of the producer's interfaces this repository vendors. Every interface the output delivers when omitted. |
 | `dependencies[].version` | yes | The exact release, without a leading `v`. The only copy of the pin (DEPS-04). |
 | `dependencies[].description` | no | One line on what the repository uses it for. |
+| `dependencies[].fetched` | no | `true` when the repository fetches the release's assets when it tests or builds, and verifies them against the release's `SHA256SUMS`, instead of vendoring them ([Fetched dependencies](#fetched-dependencies)). |
 
-Only vendored dependencies are declared. A package or a tool keeps its pin in the manifest its package manager reads,
-and a runtime edge is named on the binding that reaches it; listing them here again would give one fact two copies.
-The authoritative shape is `checks/schemas/dependencies.schema.json`, and DEPS-02 checks the file against it.
+Only vendored and fetched dependencies are declared. A package or a tool keeps its pin in the manifest its package
+manager reads, and a runtime edge is named on the binding that reaches it; listing them here again would give one fact
+two copies. The authoritative shape is `checks/schemas/dependencies.schema.json`, and DEPS-02 checks the file against
+it.
 
 ### The vendored copy
 
@@ -149,6 +153,46 @@ web/contracts/vendor/platform-api/contracts/
 The copy is committed, so a review shows what changed between two releases, and it is never edited: code generated
 from it lives elsewhere in the product. The release record lists each file's SHA-256, and the conventions runner
 hashes every vendored file, so DEPS-05 and DEPS-06 prove the copy without reaching the network.
+
+Files a consumer deploys rather than builds against are vendored the same way. A producer offers its systemd units as
+a `systemd-unit` interface ([EC-0030](../interfaces/interfaces-declaration.md#formats)); the consumer vendors them
+unchanged and deploys from the copy, or has its own build derive a copy where its tool reads them, such as a
+configuration role's `files/` directory. A file that is edited where it is deployed is no longer the released one.
+
+```text
+<product>/contracts/vendor/<repository>/<output>/
+├── release.json
+└── units/agent.service             the systemd-unit interface's files
+```
+
+### Fetched dependencies
+
+A suite that reads a large corpus at test time, such as a specification release's examples, would put hundreds of
+files in a vendored copy for no review to read. Such a dependency is declared with `fetched = true`: the repository
+downloads the pinned release's assets when it tests or builds, and checks each against the `SHA256SUMS` the release
+attaches ([REL-18](../releases/release-workflows.md#rel-18)) before it reads them. The pin still lives here, as an exact
+release, so the scheduled update raises it and the graph shows the edge; there is no vendored copy, so DEPS-05 and
+DEPS-06 do not apply to it.
+
+**Correct:**
+
+```toml
+[[dependencies]]
+repository = "specifications"
+output = "examples"
+version = "1.7.0"
+fetched = true
+description = "The conformance suite reads the examples corpus, verified against SHA256SUMS."
+```
+
+**Incorrect:**
+
+```text
+config/specifications-examples.ref   # 1.7.0, a pin outside the declaration
+```
+
+A fetched dependency is never vendored as well: when the repository commits the files, it declares the dependency
+without `fetched`, and the copy proves its bytes offline.
 
 ## Requirements
 
@@ -274,7 +318,8 @@ Checked by: conftest · Severity: warning · Since: 0.7.0
 
 The release record is what ties the copy to a release: its repository, output and version must be the ones declared,
 and it must be valid against `checks/schemas/release-record.schema.json`. A copy without one, or with the record of
-another release, is a pin the files do not honour, usually a half-finished update.
+another release, is a pin the files do not honour, usually a half-finished update. A `fetched` dependency has no copy
+and is not checked.
 
 **Correct:**
 
@@ -297,7 +342,7 @@ Checked by: conftest · Severity: warning · Since: 0.7.0
 Every file of each interface the dependency names must be present with the SHA-256 the release record lists, the
 record must deliver every interface the dependency names, and the copy holds nothing else. A changed digest is a hand
 edit or a file from another release; a missing file is a partial update; an extra file is something no release
-vouches for. Each problem is reported on the file.
+vouches for. Each problem is reported on the file. A `fetched` dependency has no copy and is not checked.
 
 **Correct:**
 
@@ -320,7 +365,9 @@ Checked by: conftest · Severity: warning · Since: 0.7.0
 
 A `config/<repository>.ref` or a hand-kept `*.lock.json` is a second place a pin can live, in a form no tool
 recognises and no check reads, and in practice it often holds a commit SHA. Moving the pin into the declaration puts
-every vendored dependency in one file, in one form, where the scheduled update and the graph both read it.
+every vendored dependency in one file, in one form, where the scheduled update and the graph both read it. A release
+whose assets are fetched at test or build time is pinned there too, as a
+[fetched dependency](#fetched-dependencies).
 
 **Correct:**
 

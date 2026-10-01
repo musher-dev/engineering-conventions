@@ -19,6 +19,23 @@ messages(documents, schema, subject) := [message(error, subject) |
 	some error in sorted(errors)
 ]
 
+# The problems of `documents` against a third-party schema, less the errors
+# that only say a combinator failed ("Must validate all the schemas (allOf)")
+# when a more specific error says why. SchemaStore's schemas nest if/then and
+# allOf deeply, and those errors name no field a reader can fix.
+specific_problems_of(documents, schema, subject) := unique([message(error, subject) |
+	some contents in documents
+	[_, errors] := json.match_schema(contents, schema)
+	some error in sorted(specific(errors))
+])
+
+combinator_errors := {"condition_then", "condition_else", "number_all_of", "number_any_of", "number_one_of"}
+
+specific(errors) := narrowed if {
+	narrowed := [error | some error in errors; not error.type in combinator_errors]
+	count(narrowed) > 0
+} else := errors
+
 unique(items) := [item |
 	some index, item in items
 	not item in array.slice(items, 0, index)

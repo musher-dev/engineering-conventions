@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TASK-22",
+    "path": "taskfiles/lint.Taskfile.yml",
+    "severity": "warning"
+  }
+]

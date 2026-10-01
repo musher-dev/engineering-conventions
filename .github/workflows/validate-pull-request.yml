@@ -49,48 +49,60 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-tools
         with:
-          install-args: aqua:mikefarah/yq aqua:go-task/task aqua:astral-sh/uv python
+          install-args: github:crate-ci/committed aqua:mikefarah/yq aqua:go-task/task aqua:astral-sh/uv python
 
-      # .github/conventional-commits.yaml is the single list of types and
-      # scopes. The action takes newline-delimited lists; the comment below
-      # shows comma-delimited ones.
+      # committed checks the title against .config/commits/committed.toml, the
+      # same rules the commit-msg hook applies (COMMIT-04). The title reaches it
+      # on stdin from the environment, never interpolated into the script, so
+      # it cannot inject into the shell.
+      - name: Check the title passes committed
+        id: committed
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$TITLE" | committed --config .config/commits/committed.toml --commit-file -
+
+      # committed cannot require a scope or a lowercase subject; the action
+      # checks only those, with the types and scopes read from the same file.
+      # It takes newline-delimited lists; the comment below shows
+      # comma-delimited ones.
       - name: Read the allowed types and scopes
         id: allowed
+        if: always()
         run: |
           set -euo pipefail
-          manifest=.github/conventional-commits.yaml
+          rules=.config/commits/committed.toml
           {
             echo "types<<EOF"
-            yq '.types[]' "$manifest"
+            yq -p toml -o yaml '.allowed_types[]' "$rules"
             echo "EOF"
             echo "scopes<<EOF"
-            yq '.scopes[]' "$manifest"
+            yq -p toml -o yaml '.allowed_scopes[]' "$rules"
             echo "EOF"
-            echo "types_csv=$(yq '.types | join(", ")' "$manifest")"
-            echo "scopes_csv=$(yq '.scopes | join(", ")' "$manifest")"
+            echo "types_csv=$(yq -p toml -o yaml '.allowed_types | join(", ")' "$rules")"
+            echo "scopes_csv=$(yq -p toml -o yaml '.allowed_scopes | join(", ")' "$rules")"
           } >> "$GITHUB_OUTPUT"
 
       # The title is read by the action from the event payload and never
       # reaches a shell, so it cannot inject into one.
-      - name: Check the title is a Conventional Commit
+      - name: Check the title has a scope and a lowercase subject
         id: title
+        if: always()
         uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50  # v6.1.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           types: ${{ steps.allowed.outputs.types }}
           scopes: ${{ steps.allowed.outputs.scopes }}
-          subjectPattern: ^[a-z].+[^.]$
+          requireScope: true
+          subjectPattern: ^[a-z].+$
           subjectPatternError: |
-            The subject "{subject}" must:
-            - Start with a lowercase letter
-            - Not end with a period
+            The subject "{subject}" must start with a lowercase letter.
 
             Example: "feat(checks): check that every job sets timeout-minutes"
           wip: false
 
       - name: Comment on the pull request with the error
-        if: always() && steps.title.outputs.error_message != null
+        if: always() && (steps.committed.outcome == 'failure' || steps.title.outputs.error_message != null)
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88  # v3.0.5
         with:
           header: pull-request-title-error
@@ -101,7 +113,9 @@ jobs:
             [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
 
             **Error:** the reason is in the [check's log][run]; it is not
-            repeated here because it quotes the title verbatim.
+            repeated here because it quotes the title verbatim. The header is
+            at most 72 columns, its subject imperative, lowercase and without
+            a final period.
 
             **Expected format:** `type(scope): description`
 
@@ -109,13 +123,13 @@ jobs:
 
             **Allowed scopes:** ${{ steps.allowed.outputs.scopes_csv }}
 
-            **Source of truth:** [`.github/conventional-commits.yaml`][manifest]
+            **Source of truth:** [`.config/commits/committed.toml`][rules]
 
-            [manifest]: https://github.com/${{ github.repository }}/blob/main/.github/conventional-commits.yaml
+            [rules]: https://github.com/${{ github.repository }}/blob/main/.config/commits/committed.toml
             [run]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Remove the error comment
-        if: steps.title.outputs.error_message == null
+        if: steps.committed.outcome == 'success' && steps.title.outputs.error_message == null
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88  # v3.0.5
         with:
           header: pull-request-title-error

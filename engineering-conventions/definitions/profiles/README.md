@@ -15,7 +15,7 @@ next choice rather than switching every check off.
 
 | Profile | For |
 | --- | --- |
-| [`base-repo`](base-repo.yml) | Every repository |
+| [`base-repo`](base-repo.yml) | Every repository; the copy of any site it publishes (COPY) |
 | [`service`](service.yml) | `kind = "service"`; adds TASK-11, TASK-12 and ENVS-01 |
 | [`website`](website.yml) | `kind = "website"`; adds TASK-11 |
 | [`library`](library.yml) | `kind = "library"`; adds TASK-11 |

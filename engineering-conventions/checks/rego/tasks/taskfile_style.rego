@@ -5,13 +5,16 @@
 #   UPPER_SNAKE (TASK-02) and its tasks in kebab-case with `:` namespaces
 #   (TASK-03), writes templates without inner spaces (TASK-04), describes
 #   every public task (TASK-05), calls every internal task (TASK-06), sets
-#   prefix only where output is prefixed (TASK-07), and names only paths,
-#   includes and sources that exist (TASK-08, TASK-09, TASK-14).
+#   prefix only where output is prefixed (TASK-07), names only paths,
+#   includes and sources that exist (TASK-08, TASK-09, TASK-14), keeps its
+#   default task to listing (TASK-15), names no machine-specific path
+#   (TASK-16) and prompts before destroying data (TASK-17).
 # scope: package
 # custom:
 #   convention: EC-0015
 package conventions.checks.tasks.taskfile_style
 
+import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.taskfiles
 
@@ -46,7 +49,7 @@ findings contains lib.finding("TASK-03", path, message) if {
 			"task name %q is not kebab-case; use lowercase words joined by hyphens, with `:`",
 			"between a namespace and a name, such as %q",
 		]),
-		[name, kebab(name)],
+		[name, taskfiles.kebab(name)],
 	)
 }
 
@@ -98,7 +101,7 @@ findings contains lib.finding("TASK-07", path, message) if {
 	some name, task in taskfiles.tasks(path)
 	is_object(task)
 	"prefix" in object.keys(task)
-	not prefixed(path)
+	not taskfiles.prefixed(path)
 	message := sprintf(
 		concat(" ", [
 			"task %q sets prefix, but no Taskfile that loads it sets output: prefixed, the only",
@@ -163,6 +166,52 @@ findings contains lib.finding("TASK-14", path, message) if {
 	)
 }
 
+# TASK-15. `task` with no arguments runs the root Taskfile's default task, or
+# the task that takes default as an alias.
+findings contains lib.finding("TASK-15", path, message) if {
+	path := taskfiles.root_path
+	some name, task in taskfiles.tasks(path)
+	answers_default(name, task)
+	some offence in default_offences(task)
+	message := sprintf(
+		concat(" ", [
+			"the default task %s, so a bare `task` does work; make default only list the tasks",
+			"(task --list) or run a help task that does, and give that work a name of its own",
+		]),
+		[offence],
+	)
+}
+
+# TASK-16
+findings contains lib.finding("TASK-16", path, message) if {
+	some path, taskfile in taskfiles.documents
+	some [where, value] in path_values(path, taskfile)
+	some host_path in host_paths(value)
+	message := sprintf(
+		concat(" ", [
+			"%s names %q, a path on one machine, so the task breaks in any other checkout,",
+			"container or CI runner; write it from {{.ROOT_DIR}} or {{.TASKFILE_DIR}}",
+		]),
+		[where, host_path],
+	)
+}
+
+# TASK-17. An internal task may leave the prompt to the task that calls it.
+findings contains lib.finding("TASK-17", path, message) if {
+	some path, _ in taskfiles.documents
+	some name, task in taskfiles.tasks(path)
+	not taskfiles.prompted(task)
+	not prompted_caller(name, task)
+	some loss in losses(name, task)
+	message := sprintf(
+		concat(" ", [
+			"task %q %s and declares no prompt:, so one mistyped command loses what nothing in",
+			"the repository can restore; add a prompt naming what is lost (a workflow passes --yes)",
+		]),
+		[name, loss],
+	)
+}
+
 version_message(taskfile) := "the Taskfile has no version; add version: '3' as its first key" if {
 	not "version" in object.keys(taskfile)
 }
@@ -205,8 +254,6 @@ upper_snake(name) := upper(regex.replace(regex.replace(name, `([a-z0-9])([A-Z])`
 
 task_name_pattern := `^_?[a-z][a-z0-9-]*(:([a-z][a-z0-9-]*|\*))*$`
 
-kebab(name) := lower(trim(regex.replace(regex.replace(name, `([a-z0-9])([A-Z])`, "${1}-${2}"), `[_. ]+`, "-"), "-"))
-
 spaced_templates(taskfile) := {expression |
 	walk(taskfile, [_, value])
 	is_string(value)
@@ -219,11 +266,6 @@ tight(expression) := regex.replace(regex.replace(expression, `^\{\{[ \t]+`, "{{"
 described(task) if {
 	is_string(task.desc)
 	trim_space(task.desc) != ""
-}
-
-prefixed(path) if {
-	some ancestor in taskfiles.ancestors(path)
-	taskfiles.documents[ancestor].output == "prefixed"
 }
 
 path_var_pattern := `_(DIR|FILE|CONFIG)$`
@@ -253,3 +295,184 @@ path_vars(path, taskfile) := {["variable", name, value] |
 	regex.match(path_var_pattern, name)
 	is_string(value)
 }
+
+answers_default("default", _)
+
+answers_default(name, task) if {
+	name != "default"
+	"default" in taskfiles.aliases(task)
+}
+
+# What a default task does beyond listing: each a phrase for the message.
+default_offences(task) := (dep_offences(task) | line_offences(task)) | call_offences(task)
+
+dep_offences(task) := {sprintf("has deps (%s)", [listed_deps]) |
+	is_object(task)
+	is_array(task.deps)
+	count(task.deps) > 0
+	listed_deps := concat(", ", [sprintf("%v", [dep]) | some dep in task.deps])
+}
+
+line_offences(task) := {sprintf("runs %q", [line]) |
+	some line in taskfiles.command_lines(task)
+	not listing_line(line)
+	not listing_help_call(line)
+}
+
+listing_help_call(line) if listing_help(root_tasks, help_call(line))
+
+call_offences(task) := {sprintf("calls task %q", [called]) |
+	is_object(task)
+	some item in object.get(task, "cmds", [])
+	is_object(item)
+	called := taskfiles.called(item)
+	not listing_help(root_tasks, called)
+}
+
+root_tasks := taskfiles.tasks(taskfiles.root_path)
+
+task_executables := {"task", "{{.TASK_EXE}}"}
+
+# A Task invocation with flags only, one of which lists the tasks.
+listing_line(line) if {
+	tokens := regex.split(`\s+`, line)
+	tokens[0] in task_executables
+	flags := array.slice(tokens, 1, count(tokens))
+	every i, token in flags {
+		flag_or_value(flags, i, token)
+	}
+	some token in flags
+	regex.match(`^(-l|-a|--list|--list-all|-[a-zA-Z]*[la][a-zA-Z]*)$`, token)
+}
+
+flag_or_value(_, _, token) if startswith(token, "-")
+
+flag_or_value(flags, i, _) if {
+	i > 0
+	flags[i - 1] == "--sort"
+}
+
+# `task help` or `task list` on its own: the name of the task it runs.
+help_call(line) := name if {
+	tokens := regex.split(`\s+`, line)
+	count(tokens) == 2
+	tokens[0] in task_executables
+	name := tokens[1]
+	name in help_names
+}
+
+help_names := {"help", "list"}
+
+# A help task that itself only lists or prints.
+listing_help(tasks, name) if {
+	name in help_names
+	helper := tasks[name]
+	is_object(helper)
+	count(object.get(helper, "deps", [])) == 0
+	every line in taskfiles.command_lines(helper) {
+		listing_line(line)
+	}
+	not calls_a_task(helper)
+}
+
+calls_a_task(task) if {
+	some item in task.cmds
+	is_object(item)
+	"task" in object.keys(item)
+}
+
+# Every value of a Taskfile that a task reads as a path or runs: each
+# command line, each task's dir, sources and generates, every variable, and
+# each include's taskfile and dir.
+path_values(path, taskfile) := ((({[sprintf("task %q", [name]), line] |
+	some name, task in taskfiles.tasks(path)
+	some line in taskfiles.command_lines(task)
+	not container_command(line)
+} | {[sprintf("task %q %s", [name, key]), value] |
+	some name, task in taskfiles.tasks(path)
+	is_object(task)
+	some key in ["dir", "sources", "generates", "dotenv"]
+	some value in files.as_list(task[key])
+	is_string(value)
+}) | {[sprintf("variable %s", [name]), value] |
+	some name, value in object.union(taskfiles.vars(taskfile), taskfiles.env(taskfile))
+	is_string(value)
+}) | {[sprintf("task %q variable %s", [task_name, name]), value] |
+	some task_name, task in taskfiles.tasks(path)
+	is_object(task)
+	some name, value in object.union(taskfiles.vars(task), taskfiles.env(task))
+	is_string(value)
+}) | {[sprintf("include %q %s", [namespace, key]), value] |
+	is_object(taskfile.includes)
+	some namespace, spec in taskfile.includes
+	some key in ["taskfile", "dir"]
+	value := taskfiles.entry(spec)[key]
+	is_string(value)
+}
+
+# A line that runs a container tool: its paths may be the container's own,
+# such as a mount target or a working directory inside the image.
+container_command(line) if regex.match(`(^|[\s;&|(])(docker|podman|nerdctl|kubectl|devcontainer)\s`, line)
+
+# A path into a person's home directory, or a Windows drive. A path after
+# `:` is not one: it is the target of a mount or part of a URL. A container's
+# working directory, such as /workspaces/<name>, is the same in every clone
+# of the container, so it is not one machine's.
+host_path_pattern := concat("", [
+	`(^|[\s"'=(,])`,
+	`(/(home|Users)/[^/\s"']+|[A-Za-z]:\\)`,
+])
+
+host_paths(value) := {trim_space(trim(match[2], `"';)`)) |
+	some match in regex.find_all_string_submatch_n(host_path_pattern, value, -1)
+}
+
+# An internal task that a prompted task calls.
+prompted_caller(name, task) if {
+	taskfiles.is_internal(task)
+	some path, _ in taskfiles.documents
+	some caller in taskfiles.tasks(path)
+	taskfiles.prompted(caller)
+	some called in taskfiles.called_by(caller)
+	taskfiles.called_as(called, name)
+}
+
+# What a task destroys, each a phrase for the message: the commands that
+# lose data no build or checkout restores, or else a name that promises it.
+losses(_, task) := command_losses(task) if count(command_losses(task)) > 0
+
+losses(name, task) := {"is named for destroying data"} if {
+	count(command_losses(task)) == 0
+	regex.match(destructive_name_pattern, name)
+}
+
+command_losses(task) := {loss |
+	some line in taskfiles.command_lines(task)
+	some pattern, loss in destructive_patterns
+	regex.match(pattern, line)
+	not spared(loss, line)
+} | {"applies infrastructure changes with -auto-approve and no saved plan" |
+	some line in taskfiles.command_lines(task)
+	regex.match(`(^|[\s;&|(])(tofu|terraform)\s(.*\s)?apply\s(.*\s)?-auto-approve`, line)
+	not regex.match(`(?i)\s[^-\s]\S*plan\S*(\s|$)`, line)
+}
+
+destructive_patterns := {
+	`(^|[\s;&|(])(docker|podman)\s+volume\s+(rm|prune)(\s|$)`: "removes container volumes",
+	`(^|[\s;&|(])(docker|podman)\s+system\s+prune(\s.*)?\s--volumes(\s|=|$)`: "prunes container volumes",
+	`(compose|\}\})(\s+\S+)*\s+down(\s+\S+)*\s+(-v|--volumes)(\s|$)`: "takes a compose stack down with its volumes",
+	`(^|[\s;&|(])(tofu|terraform)\s(.*\s)?destroy\s(.*\s)?-auto-approve`: "destroys infrastructure with -auto-approve",
+	`(^|[\s;&|(])git\s+clean(\s+\S+)*\s+(-[A-Za-z]*f[A-Za-z]*|--force)(\s|$)`: "deletes untracked files with git clean",
+	`(^|[\s;&|(])git\s+reset(\s+\S+)*\s+--hard(\s|$)`: "discards uncommitted changes with git reset --hard",
+}
+
+# git clean -X removes only the files .gitignore names, which a build
+# writes and the next build restores. Every git clean on the line must be
+# one.
+spared("deletes untracked files with git clean", line) if {
+	every clean in regex.find_n(`git\s+clean(\s+[^\s;&|]+)*`, line, -1) {
+		regex.match(`\s-[A-Za-z]*X`, clean)
+	}
+}
+
+destructive_name_pattern := `(^|:)((destroy|drop|wipe)|(db|database):reset)$`

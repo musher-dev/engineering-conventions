@@ -1,0 +1,85 @@
+# The source of the MusherCopy Vale style and the MusherProse Vale package
+# (EC-0038, decision 0024). `task generate` writes from it:
+#   checks/vale/MusherCopy/<name>.yml   one Vale rule per entry in rules
+#   checks/vale/MusherProse.ini         the package's .vale.ini
+#   checks/data/index.json              the copy block the COPY checks read
+# Validated against checks/schemas/copy-style.schema.json.
+#
+# The rules below are only what no adopted package covers, and only what holds
+# for any site: voice and vocabulary (banned words, claims, tone, sentence
+# length) belong to the site's owner, in a style of its own layered on top.
+# Before adding one, check proselint, write-good and the Microsoft and Google
+# styles: a rule one of them ships is adopted, not rewritten.
+schema_version: 1
+package: MusherProse
+style: MusherCopy
+
+# The files copy is written in. Vale reads the native formats as they are; a
+# template is mostly HTML, and Vale skips it unless the consumer's [formats]
+# maps its extension (COPY-03). The package's toggles apply to these
+# extensions only, so they never reach a code file's comments.
+formats:
+  native: [adoc, htm, html, markdown, md, mdx, rst, txt]
+  templates:
+    astro: html
+    ejs: html
+    erb: html
+    hbs: html
+    jinja: html
+    liquid: html
+    mdoc: md
+    njk: html
+    svelte: html
+    twig: html
+    vue: html
+
+adopted:
+  - style: proselint
+    version: 0.3.4
+    license: BSD-3-Clause
+    source: https://github.com/vale-cli/proselint
+    package: https://github.com/vale-cli/proselint/releases/download/v0.3.4/proselint.zip
+    use: whole
+  - style: write-good
+    version: 0.4.1
+    license: MIT
+    source: https://github.com/vale-cli/write-good
+    package: https://github.com/vale-cli/write-good/releases/download/v0.4.1/write-good.zip
+    use: whole
+    disable:
+      - rule: E-Prime
+        reason: Flags every form of "to be", which most correct sentences use.
+      - rule: Passive
+        reason: Passive voice is often the right choice in reference text, where the actor is the system.
+      - rule: TooWordy
+        reason: Duplicates Microsoft.Wordiness with a longer, noisier list.
+  - style: Microsoft
+    version: 0.15.1
+    license: MIT
+    source: https://github.com/vale-cli/Microsoft
+    package: https://github.com/vale-cli/Microsoft/releases/download/v0.15.1/Microsoft.zip
+    use: rules
+    enable:
+      - rule: Wordiness
+        reason: Wordy phrases with a shorter replacement for each.
+  - style: Google
+    version: 0.7.1
+    license: MIT
+    source: https://github.com/vale-cli/Google
+    package: https://github.com/vale-cli/Google/releases/download/v0.7.1/Google.zip
+    use: rules
+    enable:
+      - rule: ExcessiveClaims
+        reason: Claims nobody can verify, such as "guarantee" and "simplest".
+
+rules:
+  - name: Placeholders
+    extends: existence
+    level: warning
+    note: TODO, FIXME and XXX are proselint.Annotations.
+    message: "'%s' is a placeholder. Ship the content, or remove the section and track it in an issue."
+    tokens:
+      - TBD
+      - TBC
+      - coming soon
+      - lorem ipsum

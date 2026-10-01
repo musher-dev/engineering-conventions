@@ -1,0 +1,8 @@
+service: platform-api
+runtime: go
+bindings: {}
+retired:
+  - name: CACHE_URL
+    retired_on: "2026-10-01"
+    reason: Renamed after the program that reads it.
+    replacement: the cache URL

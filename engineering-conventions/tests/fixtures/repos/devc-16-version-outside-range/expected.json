@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEVC-16",
+    "path": ".devcontainer/stacks/cache/compose.yaml",
+    "severity": "warning"
+  }
+]

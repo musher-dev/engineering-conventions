@@ -1,0 +1,7 @@
+[
+  {
+    "id": "AGENT-09",
+    "path": ".claude/skills/writing-commits/SKILL.md",
+    "severity": "warning"
+  }
+]

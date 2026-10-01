@@ -1,0 +1,53 @@
+version: '3'
+
+vars:
+  IMAGE: platform-api
+
+tasks:
+  default:
+    desc: List the tasks.
+    cmds:
+      - task: help
+
+  help:
+    desc: List the tasks, then the everyday workflows.
+    cmds:
+      - '{{.TASK_EXE}} --list-all --sort none'
+      - echo "task check runs every gate CI runs"
+
+  setup:
+    desc: Install the pinned tools.
+    cmds:
+      - mise install
+
+  check:
+    desc: Run every gate CI runs.
+    cmds:
+      - task: lint
+      - task: test
+
+  lint:
+    desc: Lint the workflows.
+    cmds:
+      - actionlint
+
+  build:
+    desc: Build the image.
+    deps: [_login]
+    cmds:
+      - docker build -t {{.IMAGE}} .
+
+  test:
+    desc: Run the tests.
+    cmds:
+      - go test ./...
+
+  dev:
+    desc: Run the API locally.
+    cmds:
+      - go run .
+
+  _login:
+    internal: true
+    cmds:
+      - docker login ghcr.io

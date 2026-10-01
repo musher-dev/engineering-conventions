@@ -7,8 +7,11 @@ summary: >-
   format with optional blocks for code generation, secret delivery and the
   deployment platform. Binding names follow one grammar over a vocabulary
   the schema declares, retired names stay retired, no secret value is
-  committed, a variable shared between deployables agrees everywhere, and a
-  binding that reaches another service or an outside capability names it.
+  committed, a variable shared between deployables agrees everywhere, a
+  binding that reaches another service or an outside capability names it,
+  the runtime instances a service needs are declared once, with the
+  range of versions its code works with, and a schema can name every
+  binding after the program that reads it.
 status: draft
 topic: environment
 applies_to:
@@ -184,14 +187,48 @@ requirements:
     since: 0.7.0
     validation:
       engine: review
+  - id: ENVS-22
+    title: A binding that reaches a runtime capability names it through requires
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_schema
+  - id: ENVS-23
+    title: Every runtime instance is declared, reached by a binding, and a registered capability
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_schema
+  - id: ENVS-24
+    title: A consumer prefix is MUSHER_ and the repository's component
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_grammar
+  - id: ENVS-25
+    title: Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy
+    status: proposed
+    severity: warning
+    since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_grammar
 ---
 
 # Environment schema
 
 An `env.schema.yaml` declares every variable a product, or a dev environment, reads from its environment. It is
-written by hand and is the source everything else is derived from: a generated settings module, a local environment
-file, a deploy preflight, a reference page. None of those is checked here; what is checked is that the source is
-well-formed, named consistently and safe to commit.
+written by hand and is the source everything else is derived from: the environment contract an `env-schema` interface
+delivers, a local environment file, a generated settings module, a deploy preflight, a reference page. What is checked
+here is that the source is well-formed, named consistently and safe to commit. The contract and `.env.example` are
+derived by a mapping the release ships, and [EC-0019](env-contract.md#what-is-derived-from-the-schema) checks them
+(ENVS-20, ENVS-21).
 
 ## Scope
 
@@ -199,8 +236,10 @@ This convention covers the content of every environment schema; where one lives 
 format is the one `musher-dev/platform` and `musher-dev/development-container` already use, unified: every field
 either repository defines is part of it, and a schema from either validates unchanged.
 
+A vendored copy under `contracts/vendor/` is another repository's schema; ENVS-03 to ENVS-19 do not read it.
+
 Checks that need the code are out of scope: that the code reads only declared variables, that every binding has a
-reader, and that generated files are current. They stay with each product's own tooling.
+reader, and that a generated settings module is current. They stay with each product's own tooling.
 
 ## Status and authority
 
@@ -263,9 +302,10 @@ against it.
 | `service` | yes | The deployable the schema describes, e.g. `platform-api`; `devcontainer` for the dev environment's |
 | `runtime` | yes | What reads the environment, as a lowercase token: `python`, `sveltekit`, `node`, `go`, `rust`, `docker-compose` |
 | `bindings` | yes | Every variable, keyed by name. `{}` when there are none |
-| `naming` | no | The schema's vocabulary for the naming grammar: `components`, `client_prefixes`, `vendor_prefixes` |
+| `naming` | no | The schema's vocabulary for the naming grammar: `components`, `client_prefixes`, `vendor_prefixes`, and `consumer_prefix` and `legacy` (ENVS-24, ENVS-25) |
+| `requires` | no | Every runtime instance the service needs, keyed by an instance ID: `capability`, `version` (a range), optionally `provider`, and `description` (ENVS-22, ENVS-23) |
 | `vendor_passthrough` | no | Variables a vendor library reads by its own name, passed through rather than bound; the grammar does not apply. A trailing `*` passes a prefix |
-| `retired` | no | Names the product stopped reading on purpose: `name`, `retired_on` (a quoted date), `reason` (ENVS-05) |
+| `retired` | no | Names the product stopped reading on purpose: `name`, `retired_on` (a quoted date), `reason`, and `replacement` when it was renamed (ENVS-05) |
 | `shared_with` | no | Variables that hold the same value in several deployables: `name`, and `apps` of `service` and `path` (ENVS-08) |
 | `settings_file` | no | Where a generated settings module is written, or `null` |
 | `env_file` | no | The one file the process reads its environment from, when it reads a file |
@@ -302,6 +342,7 @@ against it.
 | `target` | no | The other Musher service the value reaches, as `<repository>#<interface>`, e.g. `platform-api#public-http` (ENVS-16, ENVS-17) |
 | `capability` | no | What the value reaches when it is not a Musher service: a registered runtime capability, e.g. `postgresql` (ENVS-16, ENVS-18) |
 | `provider` | no | The vendor whose API the code speaks for that capability, e.g. `stripe`; only with `capability` (ENVS-16) |
+| `requires` | no | The runtime instance the value reaches, by its ID under the top-level `requires`; never with `target`, `capability` or `provider` (ENVS-16, ENVS-22, ENVS-23) |
 
 ### What a binding reaches
 
@@ -338,7 +379,9 @@ that is a fact of each environment, held in its configuration. Several bindings 
 URL and its admin URL), and each names it.
 
 The capabilities are terms tagged `runtime.capability` in `definitions/terminology/global.yml`, so a new one is a
-terminology change:
+terminology change. A capability that names an engine, such as `postgresql` or `valkey`, means that engine: its
+protocol and semantics are what the code depends on, and a compatible server from another project is a different
+engine. `cdn` covers content delivery only; an edge platform's key-value store or functions are `edge-compute`.
 
 | Capability | Is |
 | --- | --- |
@@ -351,10 +394,50 @@ terminology change:
 | `oauth-identity` | An OAuth or OpenID Connect provider users sign in with |
 | `code-hosting` | A source code host the process calls as an application |
 | `dns` | A DNS provider whose records the process reads or changes |
-| `cdn` | A content delivery network or edge platform |
+| `cdn` | A content delivery network whose caching and delivery the process configures or purges |
 | `vpn-mesh` | An overlay network the process joins or manages |
 | `block-storage` | A block storage system whose volumes the process provisions |
 | `cloud-compute` | A cloud provider whose machines the process creates or destroys |
+| `web-search` | A search engine API the process queries |
+| `container-registry` | A container image registry the process, or the machines it manages, pull from or push to |
+| `edge-compute` | An edge platform's key-value store or functions the process writes to or deploys |
+| `access-proxy` | An identity-aware proxy in front of services the process calls, presenting a service credential |
+| `valkey` | A Valkey key-value server the process reads from and writes to over its Redis-compatible protocol: a cache, counters, short-lived state |
+
+### Runtime requirements
+
+Some capabilities are engines the code depends on by version: a query that needs PostgreSQL 18, a command Valkey added
+in 9. That fact belongs to the service, which knows what its code uses, while the exact version in an environment
+belongs to whoever provisions it, who moves minor and patch versions as routine maintenance. So a schema declares each
+runtime instance the service needs once, at the top level, with the **range** of versions its code works with, and
+each binding that reaches the instance names it:
+
+```yaml
+requires:
+  primary-db:
+    capability: postgresql
+    version: ">=18"
+    description: Every account, workspace and job.
+  cache:
+    capability: valkey
+    version: ">=9, <10"
+    provider: digitalocean
+    description: Rate-limit counters and short-lived sessions.
+bindings:
+  DATABASE_URL: {type: string, format: url, sensitivity: secret, requires: primary-db, description: "…"}
+  DATABASE_ADMIN_URL: {type: string, format: url, sensitivity: secret, requires: primary-db, description: "…"}
+  CACHE_URL: {type: string, format: url, sensitivity: secret, requires: cache, description: "…"}
+```
+
+A range is one or more comparators separated by commas, all of which must hold. An operator is `>=`, `>`, `<=`, `<`
+or `==`, and a version is integers separated by dots, a missing component counting as 0, so `<10` excludes `10.0` and
+`==1.2` matches `1.2.0`. There is no `^`, `~` or wildcard: write both bounds out. ENVS-03 checks the grammar.
+
+A range is not a pin. The exact version a vendored release is pinned to belongs in `.repo/dependencies.toml`
+([EC-0032](../dependencies/dependencies-declaration.md)); a runtime the code runs against never goes there. The
+derived contract carries `requires` ([EC-0019](env-contract.md#the-contract)), so a deploy preflight can compare it
+with what infrastructure reports, and a dev container's compose stack is compared with it when it labels its services
+([DEVC-16](../dev-containers/dev-container-stacks.md#devc-16)).
 
 ### Sensitivity
 
@@ -382,7 +465,55 @@ The components are the schema's own: `naming.components` lists them, generalizin
 ENVS-04 checks the first word against them only when the list is declared. `naming.client_prefixes` defaults to
 `VITE_` and `PUBLIC_`, plus `generated.ts.client_prefix`. A name that something outside the repository fixes, such as
 `OTEL_EXPORTER_OTLP_ENDPOINT`, is either a `vendor_passthrough` entry, a binding under a `naming.vendor_prefixes`
-prefix, or a binding with `grammar_exempt: true` and its reason. ENVS-04 and ENVS-09 to ENVS-14 skip all three.
+prefix, or a binding with `grammar_exempt: true` and its reason. ENVS-04 and ENVS-09 to ENVS-14 skip all three, and
+the reserved organization-wide names below.
+
+The test for a vendor's name is narrow: **a name is a vendor's only if a library the repository does not own reads
+it**, by that name, without the repository's code in between. `OTEL_SERVICE_NAME`, read by the OpenTelemetry SDK, is
+one. `STRIPE_API_KEY`, read by the repository's own code and handed to the Stripe client, is not: the repository chose
+the name, so the grammar applies to it.
+
+### Naming a binding after its reader
+
+A name with no reader in it collides. A shared secret store that injects `CACHE_URL` into every service cannot point
+two services at two caches, and `DATABASE_URL` means something different in every repository that reads it. The names
+that age well are named after the program that reads them, as `SPRING_*`, `OTEL_*` and `POSTGRES_*` are. So a schema
+may declare a consumer prefix, and every binding is then named after the service that reads it:
+
+```text
+[<client prefix>]<consumer prefix>_<COMPONENT>_<WHAT>[_<UNIT>]      MUSHER_API_CACHE_URL, VITE_MUSHER_WEB_API_BASE_URL
+```
+
+```yaml
+service: platform-api
+naming:
+  consumer_prefix: MUSHER_API         # MUSHER_ and component = "api" from .repo/repository.toml (ENVS-24)
+  components: [CACHE, DATABASE, HTTP]
+  legacy: [DATABASE_URL]              # unprefixed when the schema adopted the prefix; only shrinks
+bindings:
+  MUSHER_API_CACHE_URL: {...}
+  MUSHER_API_HTTP_PORT: {...}
+  DATABASE_URL: {...}
+  MUSHER_ENVIRONMENT: {...}           # reserved, organization-wide
+```
+
+The prefix is `MUSHER_` and the repository's component in upper snake case. With one declared, the grammar (ENVS-04
+and ENVS-09 to ENVS-14) applies to the part after it, and ENVS-25 asks every binding to carry it, except:
+
+- a **reserved organization-wide name**, a term tagged `env.org-scoped` in the terminology, such as
+  `MUSHER_ENVIRONMENT`, which every Musher program may read. Reserving them keeps `MUSHER_<WORD>` unambiguous;
+- a **vendor's name**, under the test above: a `naming.vendor_prefixes` prefix, a `vendor_passthrough` entry, or a
+  binding with `grammar_exempt: true`;
+- a **legacy name** in `naming.legacy`: a binding that was unprefixed when the schema adopted the prefix.
+
+Infrastructure maps a supplier's name to the consumer's at the seam: a secret-store reference, a platform's variable
+reference or a Kubernetes `valueFrom` sets `MUSHER_API_CACHE_URL` from the cache's own output. The code never reads the
+supplier's name, and never maps one name to another.
+
+Moving to the prefix is a rename, and a rename is recorded. A binding that gains the prefix leaves `naming.legacy`,
+and its old name moves to `retired` with the new name as its `replacement`, so ENVS-05 refuses the old name from then
+on. A product that must accept both for a release reads both in its settings module, not in the schema.
+`naming.legacy` only shrinks; a reviewer rejects a name added to it.
 
 ## Requirements
 
@@ -717,7 +848,9 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform 
 **A binding names at most one of `target` and `capability`, and a `provider` only with a `capability`.**
 
 A value reaches one thing. A binding with both says two contradictory things about what it connects to, and a
-provider without a capability names a vendor without saying what the code uses it for.
+provider without a capability names a vendor without saying what the code uses it for. A binding that names a runtime
+instance with `requires` names nothing else: the instance already says its capability and provider, and an instance
+is not another service.
 
 **Correct:**
 
@@ -798,6 +931,123 @@ DATABASE_URL: {type: string, format: url, sensitivity: secret, description: "…
 ```
 
 Checked by: review · Severity: warning · Since: 0.7.0
+
+### ENVS-22
+
+**A binding that reaches a runtime capability names it through `requires`.**
+
+An inline `capability` says what a binding reaches but not which versions the code works with, and the three bindings
+that reach one database each say it again. Declared once under `requires`, the instance carries its range, and every
+binding that reaches it points at it. An inline `capability` stays valid against the format while schemas move over;
+this requirement reports each one.
+
+**Correct:**
+
+```yaml
+requires:
+  primary-db: {capability: postgresql, version: ">=18", description: "Every account, workspace and job."}
+bindings:
+  DATABASE_URL: {type: string, format: url, sensitivity: secret, requires: primary-db, description: "…"}
+```
+
+**Incorrect:**
+
+```yaml
+bindings:
+  DATABASE_URL: {type: string, format: url, sensitivity: secret, capability: postgresql, description: "…"}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### ENVS-23
+
+**Every runtime instance is declared, reached by a binding, and a registered capability.**
+
+`requires` is only useful when it agrees with the bindings: a binding that names an undeclared instance has no
+version to check, an instance no binding reaches is a requirement nothing uses, and an instance whose capability is not
+a registered term ([ENVS-18](#envs-18)) cannot be grouped or compared with what an environment provides. The check
+reports each.
+
+**Correct:**
+
+```yaml
+requires:
+  cache: {capability: valkey, version: ">=9, <10", description: "Rate-limit counters and short-lived sessions."}
+bindings:
+  CACHE_URL: {type: string, format: url, sensitivity: secret, requires: cache, description: "…"}
+```
+
+**Incorrect:**
+
+```yaml
+requires:
+  cache: {capability: redis, version: ">=9", description: "…"}       # not a registered capability
+  search: {capability: web-search, version: ">=1", description: "…"} # no binding reaches it
+bindings:
+  CACHE_URL: {type: string, format: url, sensitivity: secret, requires: kv, description: "…"}   # kv is undeclared
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### ENVS-24
+
+**A consumer prefix is `MUSHER_` and the repository's component.**
+
+The prefix names the program that reads the variables, so it has one spelling everywhere that program is deployed:
+`MUSHER_`, then the `component` of `.repo/repository.toml` in upper snake case, its hyphens as underscores. Any other
+prefix names a reader nobody can find, or another repository's. The check needs the identity declaration's
+`component`, and reports nothing without one.
+
+**Correct:**
+
+```yaml
+# .repo/repository.toml: name = "platform-api", component = "api"
+naming:
+  consumer_prefix: MUSHER_API
+```
+
+**Incorrect:**
+
+```yaml
+naming:
+  consumer_prefix: MUSHER_PLATFORM_API     # the component is api
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### ENVS-25
+
+**Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy.**
+
+A prefix that only some names carry says nothing about the rest. Once a schema declares `naming.consumer_prefix`, each
+binding is `<consumer prefix>_…`, after its client prefix if it has one, unless it is a reserved organization-wide
+name, a vendor's name, or listed in `naming.legacy` ([Naming a binding after its reader](#naming-a-binding-after-its-reader)).
+A `naming.legacy` entry that is no longer a binding is reported too: the name has moved to `retired`, so it leaves the
+list.
+
+**Correct:**
+
+```yaml
+naming:
+  consumer_prefix: MUSHER_API
+  vendor_prefixes: [OTEL_]
+  legacy: [DATABASE_URL]
+bindings:
+  MUSHER_API_CACHE_URL: {...}
+  OTEL_SERVICE_NAME: {...}
+  DATABASE_URL: {...}
+```
+
+**Incorrect:**
+
+```yaml
+naming:
+  consumer_prefix: MUSHER_API
+bindings:
+  CACHE_URL: {...}              # no prefix, and not legacy
+```
+
+Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ## References
 

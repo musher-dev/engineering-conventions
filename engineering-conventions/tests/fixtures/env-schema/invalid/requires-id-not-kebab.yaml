@@ -1,0 +1,5 @@
+service: api
+runtime: go
+requires:
+  primaryDb: {capability: postgresql, version: ">=18", description: Every account.}
+bindings: {}

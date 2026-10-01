@@ -95,7 +95,7 @@ test_iface_02_unregistered_values if {
 	messages(found, "IFACE-02") == {
 		concat("", [
 			`interface "public-http" has format "swagger", which is not registered; use one of "asyncapi", `,
-			`"env-schema", "json-schema", "openapi", "protobuf", "weaver"`,
+			`"data", "env-schema", "json-schema", "openapi", "protobuf", "systemd-unit", "weaver"`,
 		]),
 		concat("", [
 			`interface "public-http" has compatibility "stable", which is not registered; use one of `,
@@ -218,8 +218,8 @@ test_labels_without_an_id if {
 	found := declaration.findings with input as repo([], [public, events, {"format": "swagger"}])
 		with data.conventions.index as td.index
 	expected := concat("", [
-		`interface 3 has format "swagger", which is not registered; use one of "asyncapi", "env-schema", `,
-		`"json-schema", "openapi", "protobuf", "weaver"`,
+		`interface 3 has format "swagger", which is not registered; use one of "asyncapi", "data", `,
+		`"env-schema", "json-schema", "openapi", "protobuf", "systemd-unit", "weaver"`,
 	])
 	expected in messages(found, "IFACE-02")
 }

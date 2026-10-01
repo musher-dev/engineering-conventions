@@ -16,6 +16,9 @@ AUDIENCE_TAG = "repository.audience"
 INTERFACE_FORMAT_TAG = "interfaces.format"
 COMPATIBILITY_TAG = "interfaces.compatibility"
 RUNTIME_CAPABILITY_TAG = "runtime.capability"
+# Environment variable names reserved for every Musher program; the token is
+# the name in lower kebab-case (musher-environment is MUSHER_ENVIRONMENT).
+ORG_SCOPED_VARIABLE_TAG = "env.org-scoped"
 # Every tag whose terms carry a token the checks read; a token is unique
 # within each (invariants.terminology_consistent).
 TOKEN_TAGS = (
@@ -30,6 +33,7 @@ TOKEN_TAGS = (
     INTERFACE_FORMAT_TAG,
     COMPATIBILITY_TAG,
     RUNTIME_CAPABILITY_TAG,
+    ORG_SCOPED_VARIABLE_TAG,
 )
 REPOSITORY_NAME_SCOPE = "repository-name"
 # Words that stand in for an action token as the first token of a composite
@@ -131,6 +135,13 @@ def schedule_tokens(terminology: Terminology) -> list[str]:
     )
 
 
+def org_scoped_variables(terminology: Terminology) -> list[str]:
+    """The reserved variable names ENVS-25 accepts under any consumer prefix."""
+    return sorted(
+        token.upper().replace("-", "_") for token in tokens(terminology, ORG_SCOPED_VARIABLE_TAG)
+    )
+
+
 def display_forms(terminology: Terminology) -> dict[str, str]:
     return dict(terminology.display_forms)
 
@@ -155,6 +166,7 @@ def project(terminology: Terminology) -> dict[str, object]:
         "display_forms": display_forms(terminology),
         "interface_compatibilities": tokens(terminology, COMPATIBILITY_TAG),
         "interface_formats": tokens(terminology, INTERFACE_FORMAT_TAG),
+        "org_scoped_variables": org_scoped_variables(terminology),
         "output_kinds": tokens(terminology, OUTPUT_KIND_TAG),
         "repository_audiences": tokens(terminology, AUDIENCE_TAG),
         "repository_kinds": tokens(terminology, KIND_TAG),

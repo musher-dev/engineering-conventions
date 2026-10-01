@@ -21,3 +21,12 @@ source = "engineering-conventions/checks/vale/"
 publish_workflow = "release.yml"
 location = "https://github.com/musher-dev/engineering-conventions/releases"
 docs = "docs/consuming.md#without-mise"
+
+[[outputs]]
+id = "musher-prose-vale"
+kind = "bundle"
+description = "The MusherProse Vale config package: the copy rules, the styles they adopt, and MusherConventions."
+source = "engineering-conventions/checks/vale/"
+publish_workflow = "release.yml"
+location = "https://github.com/musher-dev/engineering-conventions/releases"
+docs = "docs/consuming.md#lint-a-sites-copy"

@@ -9,7 +9,8 @@ description: >-
   expected.json, outputs declaration, identity declaration, repository name, system, kind, REPO-, layout,
   product directory, root exception, ENVS-, env.schema.yaml, environment schema, binding, AGENT-, agent context,
   TASK-, Taskfile, HOOKS-, lefthook, DEC-, decision record, ADR, CONF-, tool configuration, .config/, suppression,
-  TOOL-, tool pins,
+  TOOL-, tool pins, COMMIT-, committed, commit message,
+  COPY-, public copy, Vale style, MusherCopy,
   task generate, change class, feat!.
 ---
 

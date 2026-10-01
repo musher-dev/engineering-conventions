@@ -8,27 +8,18 @@ version: '3'
 # dist/ holds:
 #   engineering-conventions-<V>.tar.gz  the product dir minus the authoring
 #                                       CLI, plus checks/data/release.json
-#   MusherConventions.zip               the Vale style as a Vale package
+#   MusherConventions.zip               the terminology Vale style alone
+#   MusherProse.zip                     the Vale config package: its .vale.ini
+#                                       (the adopted packages, pinned, and
+#                                       their toggles) and both Musher styles
 #   manifest.json                       version, commit, per-file sha256
-#   SHA256SUMS                          `sha256sum -c` input for all three
+#   SHA256SUMS                          `sha256sum -c` input for all four
 #
 # Byte-for-byte reproducible from a commit: sorted entries, the commit's
 # timestamp on every file, numeric root ownership, normalised modes, and
 # gzip -n (no name or time in the gzip header).
 
 set: [errexit, nounset, pipefail]
-
-vars:
-  DIST: '{{.ROOT_DIR}}/dist'
-  VERSION:
-    sh: tr -d '[:space:]' < '{{.ROOT_DIR}}/version.txt'
-  TARBALL: engineering-conventions-{{.VERSION}}.tar.gz
-  VALE_PACKAGE: MusherConventions.zip
-  # The bundle's top-level entries under engineering-conventions/. The
-  # authoring side (src/, tests/, pyproject.toml, uv.lock, .python-version)
-  # is excluded because consumers run the rules with conftest and Vale alone.
-  # So are the Rego unit tests: conftest would load them as policy.
-  BUNDLE_ENTRIES: README.md bin checks definitions examples
 
 tasks:
   bundle:build:
@@ -79,22 +70,41 @@ tasks:
           && find MusherConventions -print | LC_ALL=C sort \
           | TZ=UTC zip -X -q -@ "{{.DIST}}/{{.VALE_PACKAGE}}")
 
+        # A config package is a zip whose root holds .vale.ini and styles/;
+        # `vale sync` installs the styles and the packages the .vale.ini names.
+        package="$(mktemp -d)"
+        trap 'rm -rf "${stage}" "${package}"' EXIT
+        vale_dir="${stage}/engineering-conventions/checks/vale"
+        mkdir -p "${package}/{{.PROSE_PACKAGE}}/styles"
+        cp "${vale_dir}/{{.PROSE_PACKAGE}}.ini" "${package}/{{.PROSE_PACKAGE}}/.vale.ini"
+        for style in {{.PROSE_STYLES}}; do
+          cp -R "${vale_dir}/${style}" "${package}/{{.PROSE_PACKAGE}}/styles/${style}"
+        done
+        find "${package}" -exec touch -h -d "@{{.EPOCH}}" {} +
+        chmod -R u=rwX,go=rX "${package}"
+        (cd "${package}" \
+          && find {{.PROSE_PACKAGE}} -print | LC_ALL=C sort \
+          | TZ=UTC zip -X -q -@ "{{.DIST}}/{{.PROSE_PACKAGE}}.zip")
+
         tarball_sha="$(sha256sum "{{.DIST}}/{{.TARBALL}}" | cut -d' ' -f1)"
         vale_sha="$(sha256sum "{{.DIST}}/{{.VALE_PACKAGE}}" | cut -d' ' -f1)"
+        prose_sha="$(sha256sum "{{.DIST}}/{{.PROSE_PACKAGE}}.zip" | cut -d' ' -f1)"
         (cd "${stage}" && find engineering-conventions -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) \
           | jq -R -n \
               --arg version "{{.VERSION}}" --arg commit "{{.COMMIT}}" \
               --arg tarball "{{.TARBALL}}" --arg tarball_sha "${tarball_sha}" \
               --arg vale "{{.VALE_PACKAGE}}" --arg vale_sha "${vale_sha}" \
+              --arg prose "{{.PROSE_PACKAGE}}.zip" --arg prose_sha "${prose_sha}" \
               '{
                 name: "engineering-conventions",
                 version: $version,
                 commit: $commit,
-                artifacts: {($tarball): $tarball_sha, ($vale): $vale_sha},
+                artifacts: {($tarball): $tarball_sha, ($vale): $vale_sha, ($prose): $prose_sha},
                 files: ([inputs | capture("^(?<sha>[0-9a-f]{64})  (?<path>.+)$") | {(.path): .sha}] | add)
               }' > "{{.DIST}}/manifest.json"
 
-        (cd "{{.DIST}}" && sha256sum "{{.TARBALL}}" "{{.VALE_PACKAGE}}" manifest.json > SHA256SUMS)
+        (cd "{{.DIST}}" \
+          && sha256sum "{{.TARBALL}}" "{{.VALE_PACKAGE}}" "{{.PROSE_PACKAGE}}.zip" manifest.json > SHA256SUMS)
         ls -l "{{.DIST}}"
 
   bundle:verify:
@@ -121,6 +131,14 @@ tasks:
         tar -tvzf "{{.TARBALL}}" engineering-conventions/bin/conventions | grep -q '^-rwxr-xr-x ' \
           || fail "engineering-conventions/bin/conventions is missing or not executable"
 
+        # `conventions openapi` finds consumers' documents with openapi.jq
+        # (decision 0023); `conventions check` and `conventions env-contract`
+        # derive with env-contract.jq (decision 0026).
+        for shipped in bin/openapi.jq bin/env-contract.jq; do
+          tar -tzf "{{.TARBALL}}" "engineering-conventions/${shipped}" > /dev/null 2>&1 \
+            || fail "engineering-conventions/${shipped} is missing"
+        done
+
         rego_tests="$(tar -tzf "{{.TARBALL}}" | grep '_test\.rego$' || true)"
         [[ -z "${rego_tests}" ]] || fail "the bundle carries Rego unit tests: ${rego_tests}"
 
@@ -136,6 +154,21 @@ tasks:
         unzip -Z1 "{{.VALE_PACKAGE}}" | grep '^MusherConventions/.*\.yml$' > /dev/null \
           || fail "{{.VALE_PACKAGE}} contains no Vale rules"
 
+        prose="{{.PROSE_PACKAGE}}.zip"
+        prose_roots="$(unzip -Z1 "${prose}" | cut -d/ -f1 | sort -u)"
+        [[ "${prose_roots}" == "{{.PROSE_PACKAGE}}" ]] \
+          || fail "${prose} root must be exactly {{.PROSE_PACKAGE}}/, the zip's name, got: ${prose_roots}"
+        prose_styles="$(unzip -Z1 "${prose}" | awk -F/ '$2 == "styles" && $3 != "" { print $3 }' | sort -u | xargs)"
+        [[ "${prose_styles}" == "$(printf '%s\n' {{.PROSE_STYLES}} | sort | xargs)" ]] \
+          || fail "${prose} styles must be exactly {{.PROSE_STYLES}}, got: ${prose_styles}"
+        # A bare package name would install whatever is latest when a
+        # consumer syncs; every package the config names is a release URL.
+        packages="$(unzip -p "${prose}" "{{.PROSE_PACKAGE}}/.vale.ini" | sed -n 's/^Packages *= *//p')"
+        [[ -n "${packages}" ]] || fail "${prose}'s .vale.ini names no Packages"
+        release_url='^https://github\.com/[^/]+/[^/]+/releases/download/v[0-9.]+/[^/]+\.zip$'
+        unpinned="$(tr ',' '\n' <<< "${packages}" | tr -d ' ' | grep -Ev "${release_url}" || true)"
+        [[ -z "${unpinned}" ]] || fail "${prose}'s .vale.ini names packages without a release URL: ${unpinned}"
+
         jq -e --arg v "{{.VERSION}}" '.version == $v and (.files | length > 0)' manifest.json > /dev/null \
           || fail "manifest.json does not describe version {{.VERSION}}"
-        echo "bundle:verify: {{.TARBALL}} and {{.VALE_PACKAGE}} are well-formed"
+        echo "bundle:verify: {{.TARBALL}}, {{.VALE_PACKAGE}} and ${prose} are well-formed"

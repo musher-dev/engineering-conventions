@@ -38,3 +38,23 @@ test_problems_name_their_subject if {
 test_unique_keeps_first_occurrences if {
 	schema.unique(["b", "a", "b"]) == ["b", "a"]
 }
+
+conditional := {
+	"type": "object",
+	"properties": {"kind": {"type": "string"}, "label": {"type": "string"}},
+	"if": {"properties": {"kind": {"const": "input"}}},
+	"then": {"required": ["label"]},
+}
+
+test_specific_problems_drop_combinators_that_name_no_field if {
+	schema.specific_problems_of([{"kind": "input"}], conditional, "the form") == ["the form: label is required."]
+}
+
+test_specific_problems_keep_a_combinator_when_it_is_all_there_is if {
+	either := {"properties": {"v": {"anyOf": [{"type": "string"}, {"type": "integer"}]}}}
+	found := schema.specific_problems_of([{"v": true}], either, "the value")
+	count(found) > 0
+	every problem in found {
+		startswith(problem, "`v`:")
+	}
+}

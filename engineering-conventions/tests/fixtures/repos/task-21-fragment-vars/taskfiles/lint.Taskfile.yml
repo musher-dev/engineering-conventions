@@ -1,0 +1,12 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+vars:
+  PATTERN: '**/*.md'
+
+tasks:
+  lint:md:
+    desc: Lint the Markdown.
+    cmds:
+      - markdownlint-cli2 '{{.PATTERN}}'

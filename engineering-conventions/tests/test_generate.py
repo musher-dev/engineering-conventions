@@ -9,7 +9,7 @@ import pytest
 from conventions_tools import generate, vocabulary
 from conventions_tools.cli import main
 from conventions_tools.content import Content, load_profiles
-from conventions_tools.loading import as_list, as_map
+from conventions_tools.loading import ContentError, as_list, as_map
 from conventions_tools.paths import HOME_ENV
 from conventions_tools.profiles import ProfileError, ResolvedProfile, resolve_all
 
@@ -38,10 +38,15 @@ def test_index_top_level_shape(content: Content) -> None:
     index = _index(content)
     assert sorted(index) == [
         "conventions",
+        "copy",
         "decision_schema",
         "declaration_schema",
         "dependencies_schema",
+        "devcontainer_schema",
+        "discussion_forms_schema",
         "env_schema",
+        "issue_config_schema",
+        "issue_forms_schema",
         "outputs_schema",
         "product_dir",
         "profiles",
@@ -50,6 +55,8 @@ def test_index_top_level_shape(content: Content) -> None:
         "repository_schema",
         "requirements",
         "schema_version",
+        "skill_frontmatter_schema",
+        "subagent_frontmatter_schema",
         "vocabulary",
     ]
     assert index["schema_version"] == 1
@@ -158,14 +165,18 @@ def test_vocabulary_projection(content: Content) -> None:
     assert projected["schedule_tokens"] == ["cron", "daily", "nightly", "scheduled", "weekly"]
     assert projected["interface_formats"] == [
         "asyncapi",
+        "data",
         "env-schema",
         "json-schema",
         "openapi",
         "protobuf",
+        "systemd-unit",
         "weaver",
     ]
     assert projected["interface_compatibilities"] == ["gated", "lockstep", "versioned"]
     assert "postgresql" in as_list(projected["runtime_capabilities"])
+    assert "valkey" in as_list(projected["runtime_capabilities"])
+    assert projected["org_scoped_variables"] == ["MUSHER_DEVELOPER_SLUG", "MUSHER_ENVIRONMENT"]
 
 
 def test_repository_vocabulary_projection(content: Content) -> None:
@@ -434,3 +445,101 @@ def test_generate_check_reports_drift(
     assert index.read_text(encoding="utf-8").count('"GHA-7"') == 1
     assert main(["generate"]) == 0
     assert main(["generate", "--check"]) == 0
+
+
+def test_index_copy_block(content: Content) -> None:
+    assert _index(content)["copy"] == {
+        "based_on": ["MusherCopy", "proselint", "write-good"],
+        "package": "MusherProse",
+        "release_url": "https://github.com/musher-dev/engineering-conventions/releases/download",
+        "style": "MusherCopy",
+        "template_formats": dict(content.copy_style.template_formats),
+    }
+    assert as_map(as_map(_index(content)["copy"])["template_formats"])["svelte"] == "html"
+
+
+def test_a_vale_requirement_records_its_style(content: Content) -> None:
+    requirements = as_map(_index(content)["requirements"])
+    assert as_map(requirements["COPY-04"])["style"] == "MusherCopy.Placeholders"
+    assert "style" not in as_map(requirements["GHA-07"])
+
+
+def test_each_copy_rule_links_to_its_requirement(content: Content) -> None:
+    outputs = {output.path.name: output.text for output in generate.build_outputs(content)}
+    assert (
+        outputs["Placeholders.yml"].count(
+            '"https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/'
+            'definitions/conventions/copy/public-copy.md#copy-04"'
+        )
+        == 1
+    )
+    assert "level: warning" in outputs["Placeholders.yml"]
+    assert "ignorecase: true" in outputs["Placeholders.yml"]
+
+
+def test_adopted_packages_are_pinned_to_their_version(content: Content) -> None:
+    for item in content.copy_style.adopted:
+        assert f"/releases/download/v{item.version}/{item.style}.zip" in item.package
+
+
+def test_the_package_config_installs_and_toggles_the_adopted_packages(content: Content) -> None:
+    text = generate.render_package_config(content.copy_style)
+    packages = next(line for line in text.splitlines() if line.startswith("Packages = "))
+    assert packages.count("https://github.com/vale-cli/") == len(content.copy_style.adopted)
+    assert "\nwrite-good.Passive = NO\n" in text
+    assert "\nMicrosoft.Wordiness = YES\n" in text
+    assert "BasedOnStyles" not in text
+    # The toggles reach copy files, never a code file's comments.
+    section = next(line for line in text.splitlines() if line.startswith("["))
+    assert section == f"[*.{{{','.join(generate.copy_extensions(content.copy_style))}}}]"
+    assert "svelte" in section
+    assert ",ts," not in section
+
+
+def test_a_rule_without_a_requirement_fails_generation(content: Content) -> None:
+    style = content.copy_style
+    extra = replace(style.rules[0], name="Unclaimed")
+    edited = replace(content, copy_style=replace(style, rules=(*style.rules, extra)))
+    with pytest.raises(ContentError, match=r"MusherCopy\.Unclaimed needs exactly one requirement"):
+        generate.build_outputs(edited)
+
+
+def test_a_removed_rule_is_stale(content: Content, product: Path, tmp_path: Path) -> None:
+    copy = _copy_product(product, tmp_path)
+    leftover = copy / "checks" / "vale" / "MusherCopy" / "Retired.yml"
+    leftover.write_text("extends: existence\n", encoding="utf-8")
+    outputs = generate.build_outputs(replace(content, product=copy))
+    assert generate.stale(outputs, copy) == [leftover]
+    drifted = generate.drift(outputs, copy)
+    assert any("Retired.yml: committed, but nothing generates it" in d for d in drifted)
+    generate.write(outputs, copy)
+    assert not leftover.exists()
+
+
+COPY_SAMPLE = """# Sample
+
+Our seamless platform is coming soon. It is really powerful.
+
+Plain words that say what the product does.
+"""
+
+
+def test_vale_accepts_the_copy_style(product: Path, tmp_path: Path) -> None:
+    executable = shutil.which("vale")
+    assert executable, "vale must be on PATH (see .config/mise/config.toml)"
+    styles = product / "checks" / "vale"
+    (tmp_path / ".vale.ini").write_text(
+        f"StylesPath = {styles}\nMinAlertLevel = suggestion\n[*.md]\nBasedOnStyles = MusherCopy\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "sample.md").write_text(COPY_SAMPLE, encoding="utf-8")
+    completed = subprocess.run(
+        [executable, "--output", "JSON", "sample.md"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    alerts = as_list(as_map(json.loads(completed.stdout)).get("sample.md"))
+    found = sorted({(str(as_map(a).get("Check")), str(as_map(a).get("Match"))) for a in alerts})
+    assert found == [("MusherCopy.Placeholders", "coming soon")]

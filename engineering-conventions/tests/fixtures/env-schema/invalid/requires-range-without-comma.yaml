@@ -1,0 +1,6 @@
+# Comparators are separated by commas.
+service: api
+runtime: go
+requires:
+  cache: {capability: valkey, version: ">=9 <10", description: Counters.}
+bindings: {}

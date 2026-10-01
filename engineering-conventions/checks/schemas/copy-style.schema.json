@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Copy style",
+  "description": "The source of the MusherCopy Vale style and of the MusherProse Vale package that ships it (definitions/copy/style.yml, EC-0038). `conventions generate` writes one Vale rule per entry in rules, the package's .vale.ini from adopted, and the copy block of index.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "package", "style", "formats", "adopted", "rules"],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "package": {
+      "description": "The Vale package's name: the release asset <package>.zip, whose root directory has the same name.",
+      "$ref": "#/definitions/styleName"
+    },
+    "style": {
+      "description": "The Vale style the rules below make up.",
+      "$ref": "#/definitions/styleName"
+    },
+    "formats": {
+      "description": "The file extensions copy is written in: those Vale reads natively, and component templates with the format Vale reads each as once [formats] maps it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["native", "templates"],
+      "properties": {
+        "native": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/extension" }
+        },
+        "templates": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/definitions/extension" },
+          "additionalProperties": { "type": "string", "enum": ["html", "md"] }
+        }
+      }
+    },
+    "adopted": {
+      "description": "Published Vale packages the package installs beside its own styles, each pinned to one release. `whole` styles are applied by the consumer's BasedOnStyles (COPY-03); `rules` styles contribute only the rules they enable.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/adopted" }
+    },
+    "rules": {
+      "description": "The style's own rules: only what no adopted package covers, and only what holds for any site's copy.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/rule" }
+    }
+  },
+  "definitions": {
+    "extension": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+$"
+    },
+    "styleName": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$"
+    },
+    "ruleName": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9-]*$"
+    },
+    "toggle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "reason"],
+      "properties": {
+        "rule": { "$ref": "#/definitions/ruleName" },
+        "reason": {
+          "description": "Why the rule is turned off or on, written beside it in the package's .vale.ini.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        }
+      }
+    },
+    "adopted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["style", "version", "license", "source", "package", "use"],
+      "properties": {
+        "style": { "$ref": "#/definitions/styleName" },
+        "version": { "$ref": "common.schema.json#/definitions/version" },
+        "license": {
+          "description": "The package's SPDX license identifier.",
+          "type": "string",
+          "enum": ["Apache-2.0", "BSD-3-Clause", "MIT"]
+        },
+        "source": {
+          "description": "The package's repository.",
+          "$ref": "common.schema.json#/definitions/httpsUrl"
+        },
+        "package": {
+          "description": "The release asset Vale downloads: a URL that names the version, never a bare package name, which resolves to the latest release.",
+          "type": "string",
+          "pattern": "^https://github\\.com/[^/]+/[^/]+/releases/download/v[0-9]+\\.[0-9]+\\.[0-9]+/[A-Za-z][A-Za-z0-9-]*\\.zip$"
+        },
+        "use": {
+          "description": "whole: every rule applies, less those disabled. rules: only the rules enabled apply.",
+          "type": "string",
+          "enum": ["whole", "rules"]
+        },
+        "disable": {
+          "description": "Rules of a whole style that do not apply, each with its reason.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/toggle" }
+        },
+        "enable": {
+          "description": "The rules a `rules` style contributes, each with its reason.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/toggle" }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "use": { "const": "rules" } } },
+          "then": { "required": ["enable"], "not": { "required": ["disable"] } },
+          "else": { "not": { "required": ["enable"] } }
+        }
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "extends", "level", "message", "tokens"],
+      "properties": {
+        "name": {
+          "description": "The rule's file name without .yml, and its name in alerts: <style>.<name>. A requirement whose validation.style names it links its alerts.",
+          "$ref": "#/definitions/ruleName"
+        },
+        "extends": {
+          "description": "The Vale rule type. Only existence rules are authored here.",
+          "const": "existence"
+        },
+        "level": {
+          "description": "The level Vale reports at, matching the severity of the requirement that names the rule.",
+          "type": "string",
+          "enum": ["suggestion", "warning", "error"]
+        },
+        "message": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+        "note": {
+          "description": "Why the rule is shaped as it is, written as a comment in the generated file.",
+          "$ref": "common.schema.json#/definitions/nonEmptyString"
+        },
+        "tokens": {
+          "description": "Regular expressions (Vale's regexp2 syntax), matched case-insensitively on word boundaries.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/definitions/nonEmptyString" }
+        }
+      }
+    }
+  }
+}

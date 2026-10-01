@@ -1,0 +1,9 @@
+version: '3'
+
+# Knip: unused files and exports, shared by every app.
+
+tasks:
+  run:
+    desc: Report unused files and exports.
+    cmds:
+      - knip

@@ -189,3 +189,178 @@ test_task_14_missing_source if {
 test_task_14_skips_a_task_with_its_own_dir if {
 	count(style.findings) == 0 with input as with_task("build", {"desc": "Build.", "dir": "app", "sources": ["x.go"]})
 }
+
+test_task_15_default_lists_the_tasks if {
+	for_list := with_task("default", {"desc": "List the tasks.", "silent": true, "cmds": ["task --list"]})
+	count(style.findings) == 0 with input as for_list
+
+	exe := with_task("default", {"desc": "List.", "cmds": ["{{.TASK_EXE}} --list-all --sort none", "echo hi"]})
+	count(style.findings) == 0 with input as exe
+
+	help := {"desc": "Show workflows.", "cmds": ["echo 'task check runs every gate'", "task -l"]}
+	through_help := with_root({"tasks": object.union(conforming.tasks, {
+		"default": {"desc": "Help.", "cmds": [{"task": "help"}, "task help"]},
+		"help": help,
+	})})
+	count(style.findings) == 0 with input as through_help
+}
+
+test_task_15_default_that_does_work if {
+	found := style.findings with input as with_task("default", {
+		"desc": "Build.",
+		"deps": ["setup"],
+		"cmds": ["go build ./...", {"task": "check"}, "task lint", "task --list build"],
+	})
+	messages(found, "TASK-15") == {
+		default_message(`has deps (setup)`),
+		default_message(`runs "go build ./..."`),
+		default_message(`calls task "check"`),
+		default_message(`runs "task lint"`),
+		default_message(`runs "task --list build"`),
+	}
+}
+
+test_task_15_alias_and_help_that_does_work if {
+	found := style.findings with input as with_root({"tasks": object.union(conforming.tasks, {
+		"build": {"desc": "Build.", "aliases": ["default"], "cmds": ["go build ./..."]},
+		"help": {"desc": "Help.", "cmds": ["task --list", {"task": "build"}]},
+		"list": {"desc": "List.", "deps": ["setup"], "cmds": ["task -l"]},
+	})})
+	messages(found, "TASK-15") == {default_message(`runs "go build ./..."`)}
+
+	via_help := style.findings with input as with_root({"tasks": object.union(conforming.tasks, {
+		"default": {"desc": "Help.", "cmds": [{"task": "help"}, "task list"]},
+		"help": {"desc": "Help.", "cmds": ["task --list", {"task": "build"}]},
+		"list": {"desc": "List.", "deps": ["setup"], "cmds": ["task -l"]},
+		"build": {"desc": "Build."},
+	})})
+	messages(via_help, "TASK-15") == {default_message(`calls task "help"`), default_message(`runs "task list"`)}
+}
+
+test_task_15_only_the_root_taskfile if {
+	lint_default := {"version": "3", "tasks": {
+		"lint": {"desc": "Lint.", "vars": {"LINT_CONFIG": "{{.TASKFILE_DIR}}/../.config/vale.ini"}},
+		"default": {"desc": "Lint.", "cmds": [{"task": "lint"}]},
+	}}
+	docs := [
+		td.inventory(paths),
+		td.file("Taskfile.yml", conforming),
+		td.file("taskfiles/lint.Taskfile.yml", lint_default),
+	]
+	not "TASK-15" in td.ids(style.findings) with input as docs
+}
+
+default_message(offence) := sprintf(
+	concat("", [
+		"the default task %s, so a bare `task` does work; make default only list the tasks ",
+		"(task --list) or run a help task that does, and give that work a name of its own",
+	]),
+	[offence],
+)
+
+test_task_16_host_paths if {
+	found := style.findings with input as with_root({
+		"includes": object.union(conforming.includes, {"far": {"taskfile": "/Users/ana/shared/Taskfile.yml"}}),
+		"vars": object.union(conforming.vars, {"CACHE": "/home/ana/.cache/tool"}),
+		"tasks": object.union(conforming.tasks, {"build": {
+			"desc": "Build.",
+			"dir": "/home/ana/app",
+			"env": {"OUT": `C:\build`},
+			"cmds": ["cd /Users/bo/src && go build ./..."],
+		}}),
+	})
+	messages(found, "TASK-16") == {
+		host_message(`include "far" taskfile`, "/Users/ana"),
+		host_message("variable CACHE", "/home/ana"),
+		host_message(`task "build" dir`, "/home/ana"),
+		host_message(`task "build" variable OUT`, `C:\`),
+		host_message(`task "build"`, "/Users/bo"),
+	}
+}
+
+test_task_16_near_misses if {
+	task := {
+		"desc": "Build.",
+		"sources": ["go.mod"],
+		"cmds": [
+			"go build -o /tmp/app ./... 2>/dev/null",
+			"/usr/bin/env bash -c true",
+			`docker run -v "{{.ROOT_DIR}}:/workspace" -w /workspace image`,
+			"echo 'open /home/you/project in your editor'",
+			"# cd /workspace",
+			"cp a {{.ROOT_DIR}}/workspace/x",
+			"curl https://example.com/home/page",
+			"ls /workspace-cache /opt/tool",
+			"cd /workspaces/app && go build ./...",
+			"cp x /root/.config/tool",
+		],
+		"vars": {"WORKSPACE": "/workspaces/app"},
+	}
+	not "TASK-16" in td.ids(style.findings) with input as with_task("build", task)
+}
+
+host_message(where, path) := sprintf(
+	concat("", [
+		"%s names %q, a path on one machine, so the task breaks in any other checkout, ",
+		"container or CI runner; write it from {{.ROOT_DIR}} or {{.TASKFILE_DIR}}",
+	]),
+	[where, path],
+)
+
+test_task_17_destructive_commands if {
+	found := style.findings with input as with_root({"tasks": object.union(conforming.tasks, {
+		"volumes": {"desc": "Wipe.", "cmds": ["docker volume rm app_data"]},
+		"prune": {"desc": "Prune.", "cmds": ["podman system prune -a --volumes"]},
+		"down": {"desc": "Down.", "cmds": ["{{.COMPOSE}} down -v"]},
+		"compose": {"desc": "Down.", "cmds": ["docker compose -p x down --remove-orphans --volumes"]},
+		"infra:destroy": {"desc": "Destroy.", "cmds": ["tofu -chdir=infra destroy -auto-approve"]},
+		"infra:apply": {"desc": "Apply.", "cmd": "terraform apply -auto-approve"},
+		"scrub": {"desc": "Scrub.", "cmds": ["git clean -fdx"]},
+		"scrub:all": {"desc": "Scrub.", "cmds": ["git clean -fdX && git clean -f"]},
+		"discard": {"desc": "Discard.", "cmds": ["git reset -q --hard HEAD"]},
+		"db:reset": {"desc": "Reset.", "cmds": ["psql -c 'drop database app'"]},
+	})})
+	messages(found, "TASK-17") == {
+		loss_message("volumes", "removes container volumes"),
+		loss_message("prune", "prunes container volumes"),
+		loss_message("down", "takes a compose stack down with its volumes"),
+		loss_message("compose", "takes a compose stack down with its volumes"),
+		loss_message("infra:destroy", "destroys infrastructure with -auto-approve"),
+		loss_message("infra:destroy", "is named for destroying data"),
+		loss_message("infra:apply", "applies infrastructure changes with -auto-approve and no saved plan"),
+		loss_message("scrub", "deletes untracked files with git clean"),
+		loss_message("scrub:all", "deletes untracked files with git clean"),
+		loss_message("discard", "discards uncommitted changes with git reset --hard"),
+		loss_message("db:reset", "is named for destroying data"),
+	} - {loss_message("infra:destroy", "is named for destroying data")}
+}
+
+test_task_17_prompted_and_safe_tasks if {
+	tasks := object.union(conforming.tasks, {
+		"clean": {"desc": "Clean.", "cmds": ["rm -rf dist build node_modules", "git clean -n", "git clean -fdX"]},
+		"db:reset": {"desc": "Reset.", "prompt": "This drops the local database. Continue?", "cmds": [{"task": "_drop"}]},
+		"_drop": {"internal": true, "cmds": ["docker volume rm db_data"]},
+		"stop": {"desc": "Stop.", "cmds": ["docker compose down", "echo 'run docker volume rm x to wipe'"]},
+		"apply": {"desc": "Apply.", "prompt": ["Apply?", "Really?"], "cmds": ["tofu apply -auto-approve"]},
+		"apply:plan": {"desc": "Apply the plan.", "cmds": ["tofu apply -auto-approve tfplan"]},
+		"plan": {"desc": "Plan.", "cmds": ["tofu plan -out tfplan", "git reset --soft HEAD~1"]},
+	})
+	not "TASK-17" in td.ids(style.findings) with input as with_root({"tasks": tasks})
+}
+
+test_task_17_internal_task_without_a_prompted_caller if {
+	tasks := object.union(conforming.tasks, {
+		"setup": {"desc": "Install.", "deps": ["_deps", "_wipe"]},
+		"_wipe": {"internal": true, "cmds": ["docker volume prune -f"]},
+	})
+	found := style.findings with input as with_root({"tasks": tasks})
+	messages(found, "TASK-17") == {loss_message("_wipe", "removes container volumes")}
+}
+
+loss_message(name, loss) := sprintf(
+	concat("", [
+		"task %q %s and declares no prompt:, so one mistyped command loses what nothing in ",
+		"the repository can restore; add a prompt naming what is lost (a workflow passes --yes)",
+	]),
+	[name, loss],
+)

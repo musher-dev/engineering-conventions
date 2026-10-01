@@ -1,0 +1,2 @@
+# Spectral's own rules only: the OWASP API security rules never run.
+extends: [[spectral:oas, recommended]]

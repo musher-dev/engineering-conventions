@@ -1,0 +1,6 @@
+# A consumer prefix starts with MUSHER_.
+service: platform-api
+runtime: go
+naming:
+  consumer_prefix: API
+bindings: {}

@@ -456,6 +456,25 @@ terms:
       (https://github.com/open-telemetry/weaver).
     tags: [interfaces.format]
     stability: provisional
+  - id: interfaces.format.data
+    display_name: data document
+    token: data
+    definition: >-
+      One or more JSON or YAML documents that are themselves the published
+      fact, such as a registry, a vocabulary or a rate card, rather than a
+      schema describing other documents. When a data document has a schema,
+      the schema is a json-schema interface of its own or ships beside it.
+    tags: [interfaces.format]
+    stability: provisional
+  - id: interfaces.format.systemd-unit
+    display_name: systemd unit
+    token: systemd-unit
+    definition: >-
+      systemd unit files (service, timer, socket and the other unit types)
+      that another repository installs on the hosts it configures
+      (https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html).
+    tags: [interfaces.format]
+    stability: provisional
 
   # Interface compatibility: what a producer promises about a change to an
   # interface, the compatibility field of an [[interfaces]] entry.
@@ -463,9 +482,11 @@ terms:
     display_name: gated
     token: gated
     definition: >-
-      A change that breaks a consumer ships only in a major release: the
-      producer's contracts:breaking task compares each change with the last
-      release and fails on a break the release would not signal.
+      A change that breaks a consumer ships only in a release marked
+      breaking: a major release from 1.0.0, a minor release in the 0.x
+      series. The producer's contracts:breaking task compares each change
+      with the last release and fails on a break that no commit marked ! or
+      carrying BREAKING CHANGE signals.
     tags: [interfaces.compatibility]
     stability: provisional
   - id: interfaces.compatibility.versioned
@@ -558,7 +579,8 @@ terms:
     display_name: CDN
     token: cdn
     definition: >-
-      A content delivery network or edge platform the process configures or purges.
+      A content delivery network whose caching and delivery the process configures or purges. It does not cover an
+      edge platform's storage or compute, which is edge-compute.
     tags: [runtime.capability]
     stability: provisional
   - id: runtime.capability.vpn-mesh
@@ -581,6 +603,65 @@ terms:
     definition: >-
       A cloud provider whose machines the process creates or destroys.
     tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.web-search
+    display_name: web search
+    token: web-search
+    definition: >-
+      A search engine API the process queries.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.container-registry
+    display_name: container registry
+    token: container-registry
+    definition: >-
+      A container image registry the process, or the machines it manages, pull images from or push images to.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.edge-compute
+    display_name: edge compute
+    token: edge-compute
+    definition: >-
+      An edge platform's key-value store or functions the process writes to or deploys.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.access-proxy
+    display_name: access proxy
+    token: access-proxy
+    definition: >-
+      An identity-aware proxy in front of services the process calls, to which the process presents a service
+      credential.
+    tags: [runtime.capability]
+    stability: provisional
+  - id: runtime.capability.valkey
+    display_name: Valkey
+    token: valkey
+    definition: >-
+      A Valkey key-value server the process reads from and writes to over its Redis-compatible protocol: a cache,
+      counters or short-lived state. It names the engine, as postgresql does, because the engine's protocol and
+      semantics are what the code depends on. A Redis server is a different engine, not this one.
+    tags: [runtime.capability]
+    stability: provisional
+
+  # Organization-wide variables: environment variable names every Musher
+  # program may read, reserved so that MUSHER_<WORD> stays unambiguous
+  # beside the consumer prefixes MUSHER_<COMPONENT> (ENVS-25). The token is
+  # the name in lower kebab-case.
+  - id: env.org-scoped.musher-environment
+    display_name: MUSHER_ENVIRONMENT
+    token: musher-environment
+    definition: >-
+      The name of the environment a process runs in, such as production or one developer's own, set by whatever
+      deploys or starts the process.
+    tags: [env.org-scoped]
+    stability: provisional
+  - id: env.org-scoped.musher-developer-slug
+    display_name: MUSHER_DEVELOPER_SLUG
+    token: musher-developer-slug
+    definition: >-
+      A short, stable name for the developer whose environment a process runs in, used to name the resources that
+      belong to that environment alone.
+    tags: [env.org-scoped]
     stability: provisional
 
   # Systems: the first token of a repository's name (REPO-09) and the system

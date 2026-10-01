@@ -1,0 +1,7 @@
+# Both rulesets, as [ruleset, mode] pairs.
+extends:
+  - [spectral:oas, all]
+  - [https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, recommended]
+rules:
+  # The gateway in front of the API adds Retry-After to every 429.
+  owasp:api4:2023-rate-limit-retry-after: "off"

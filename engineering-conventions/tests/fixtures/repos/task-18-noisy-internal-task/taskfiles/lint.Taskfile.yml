@@ -1,0 +1,13 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:md:
+    desc: Lint the Markdown.
+    deps: [_markdownlint]
+
+  _markdownlint:
+    internal: true
+    cmds:
+      - markdownlint-cli2 '**/*.md'

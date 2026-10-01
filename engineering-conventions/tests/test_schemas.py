@@ -1,9 +1,10 @@
 import shutil
 import subprocess
 from pathlib import Path
+from typing import cast
 
 import pytest
-from jsonschema import Draft7Validator
+from jsonschema import Draft7Validator, Draft201909Validator
 
 from conventions_tools import schemas
 from conventions_tools.content import convention_files
@@ -31,6 +32,8 @@ KINDS = {
     "terminology": (schemas.TERMINOLOGY, "valid", "invalid/schema"),
     "conventions": (schemas.CONVENTION, "valid", "invalid"),
     "decisions": (schemas.DECISION, "valid", "invalid"),
+    "skill-frontmatter": (schemas.SKILL, "valid", "invalid"),
+    "subagent-frontmatter": (schemas.SUBAGENT, "valid", "invalid"),
 }
 
 
@@ -153,3 +156,41 @@ def test_check_jsonschema_resolves_refs_from_disk(tmp_path: Path) -> None:
         check=False,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
+
+
+VALID_DEVCONTAINERS: list[object] = [
+    {"image": "mcr.microsoft.com/devcontainers/base:ubuntu"},
+    {"build": {"dockerfile": "Dockerfile", "args": {"A": "1"}}, "remoteUser": "vscode"},
+    {"dockerComposeFile": ["compose.yml"], "service": "dev", "workspaceFolder": "/w"},
+    {"image": "x", "hostRequirements": {"cpus": 2}, "mounts": [{"type": "volume", "target": "/a"}]},
+    {},
+]
+
+INVALID_DEVCONTAINERS: list[object] = [
+    {"image": "x", "postCreateCommands": "echo"},
+    {"image": "x", "waitFor": "postCreate"},
+    {"image": "x", "shutdownAction": "stopCompose"},
+    {"image": "x", "hostRequirements": {"cpu": 2}},
+    {"build": {"dockerfile": "Dockerfile", "target": "dev", "bogus": 1}},
+    {"name": "no image"},
+]
+
+
+def _devcontainer_errors(document: object) -> tuple[int, int]:
+    """The errors the specification's 2019-09 schema and its draft-07 rendition find."""
+    original = schemas.vendored(PRODUCT, schemas.DEVCONTAINER)
+    as_published = cast("schemas.Validator", Draft201909Validator(original))
+    for_opa = cast("schemas.Validator", Draft7Validator(schemas.for_draft_07(original)))
+    return len(list(as_published.iter_errors(document))), len(list(for_opa.iter_errors(document)))
+
+
+@pytest.mark.parametrize("document", VALID_DEVCONTAINERS)
+def test_draft_07_devcontainer_schema_accepts_what_the_specification_does(document: object) -> None:
+    assert _devcontainer_errors(document) == (0, 0)
+
+
+@pytest.mark.parametrize("document", INVALID_DEVCONTAINERS)
+def test_draft_07_devcontainer_schema_rejects_what_the_specification_does(document: object) -> None:
+    published, for_opa = _devcontainer_errors(document)
+    assert published > 0
+    assert for_opa > 0

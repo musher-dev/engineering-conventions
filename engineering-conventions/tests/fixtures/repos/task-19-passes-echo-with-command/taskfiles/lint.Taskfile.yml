@@ -1,0 +1,16 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:all:
+    desc: Lint everything, then the spelling.
+    cmds:
+      - task: lint:md
+      - echo "Checking the spelling"
+      - typos
+
+  lint:md:
+    desc: Lint the Markdown.
+    cmds:
+      - echo "Linting Markdown" && markdownlint-cli2 '**/*.md'

@@ -1,0 +1,9 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+commit-msg:
+  jobs:
+    - name: committed
+      # No --commit-file {1}: committed checks HEAD, the previous commit.
+      run: committed --config .config/commits/committed.toml
+      fail_text: "The message must pass .config/commits/committed.toml."

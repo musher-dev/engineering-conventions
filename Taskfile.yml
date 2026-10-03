@@ -46,6 +46,10 @@ vars:
   ZIZMOR_CONFIG: .config/actions/zizmor.yml
   GITLEAKS_CONFIG: .config/security/gitleaks.toml
   TOML_CONFIG: .config/toml/taplo.toml
+  HADOLINT_CONFIG: .config/docker/hadolint.yaml
+  # The fixture repos' Dockerfiles break hadolint's rules on purpose.
+  DOCKERFILE_PATHSPEC: >-
+    '**/Dockerfile' '**/*.Dockerfile' ':!:engineering-conventions/tests/fixtures/**'
   # CHANGELOG.md is written by release-please, whose output markdownlint
   # rejects and no commit can fix. The PR template is a PR body, whose H1 is
   # the PR title, so it starts at `##` by design (MD041). Fixtures are data
@@ -73,7 +77,7 @@ vars:
   SCHEMA_DIR: '{{.PRODUCT_DIR}}/checks/schemas'
   VALE_CONFIG: .config/markdown/vale.ini
   PROSE_PATHS: >-
-    README.md CONTRIBUTING.md SECURITY.md CLAUDE.md AGENTS.md docs
+    README.md CONTRIBUTING.md SECURITY.md AGENTS.md docs
     engineering-conventions/definitions/conventions
   WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
 

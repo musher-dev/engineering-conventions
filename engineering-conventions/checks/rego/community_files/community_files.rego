@@ -3,7 +3,8 @@
 # description: >-
 #   The files GitHub reads to route people to a repository: its issue forms
 #   (COMM-01) and template chooser (COMM-02), its one CODEOWNERS where it has
-#   one (COMM-03) written in syntax GitHub honours (COMM-04), its own security
+#   one (COMM-03) written in syntax GitHub honours (COMM-04), which every
+#   repository has (COMM-08), its own security
 #   policy, which says how to report a vulnerability (COMM-05), and its
 #   discussion category forms (COMM-07). The forms are validated against
 #   SchemaStore's schemas, vendored under checks/schemas/vendor/.
@@ -260,6 +261,9 @@ findings contains lib.finding("COMM-04", path, message) if {
 	)
 }
 
+# COMM-08
+findings contains lib.finding("COMM-08", codeowners_path, missing_codeowners) if count(codeowners_files) == 0
+
 # A policy too large to embed has no text here, and is not judged.
 findings contains lib.finding("COMM-05", path, message) if {
 	not any_policy_reports
@@ -270,3 +274,8 @@ findings contains lib.finding("COMM-05", path, message) if {
 	some path in security_files
 	files.texts[path]
 }
+
+missing_codeowners := concat(" ", [
+	"the repository has no CODEOWNERS, so no pull request asks anyone in particular for review and a",
+	"ruleset cannot require a code owner's approval; add .github/CODEOWNERS naming the owning team",
+])

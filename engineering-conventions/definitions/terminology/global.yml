@@ -1132,15 +1132,15 @@ terms:
     display_name: agent context
     definition: >-
       The files a repository commits to give a coding agent its
-      instructions: every CLAUDE.md, the rules under .claude/rules/, and
-      AGENTS.md.
+      instructions: every AGENTS.md, the rules under .claude/rules/, and
+      the skills and subagents under .claude/.
     tags: [meta]
     stability: provisional
   - id: conventions.project-memory
     display_name: project memory
     definition: >-
-      The one CLAUDE.md, at the root or in .claude/, that Claude Code loads
-      at every launch, together with the files it imports.
+      The one AGENTS.md at the repository root that every coding agent
+      reads at launch, together with the files it imports.
     tags: [meta]
     stability: provisional
   - id: conventions.path-scoped-rule

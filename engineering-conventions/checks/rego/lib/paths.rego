@@ -1,7 +1,7 @@
 # METADATA
 # title: Relative paths
 # description: >-
-#   Resolves a path written relative to a file, as an @import in a CLAUDE.md
+#   Resolves a path written relative to a file, as an @import in an AGENTS.md
 #   is, into a repository path: `.` segments dropped and each `..` folded
 #   into the segment before it.
 package conventions.lib.paths

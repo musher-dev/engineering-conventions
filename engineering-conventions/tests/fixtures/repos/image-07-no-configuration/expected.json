@@ -1,0 +1,7 @@
+[
+  {
+    "id": "IMAGE-07",
+    "path": ".config/docker/hadolint.yaml",
+    "severity": "warning"
+  }
+]

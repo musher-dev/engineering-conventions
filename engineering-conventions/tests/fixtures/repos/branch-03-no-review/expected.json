@@ -1,0 +1,7 @@
+[
+  {
+    "id": "BRANCH-03",
+    "path": ".github/rulesets/main-branch.json",
+    "severity": "warning"
+  }
+]

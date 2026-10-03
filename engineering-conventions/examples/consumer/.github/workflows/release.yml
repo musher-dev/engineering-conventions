@@ -119,6 +119,7 @@ jobs:
           set -euo pipefail
           version="${TAG#v}"
           docker buildx build platform-api \
+            --file platform-api/docker/Dockerfile \
             --push \
             --tag "$IMAGE:$version" \
             --annotation "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \

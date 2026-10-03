@@ -1,7 +1,7 @@
 [
   {
     "id": "TOOL-07",
-    "path": "Dockerfile",
+    "path": "docker/Dockerfile",
     "severity": "warning"
   }
 ]

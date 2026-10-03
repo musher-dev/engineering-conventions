@@ -14,6 +14,7 @@ package conventions.checks.repository.layout
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.layout
+import data.conventions.lib.updates
 
 # REPO-14. Only a declaration that exists; without one, REPO-01 reports it.
 findings contains lib.finding("REPO-14", files.repository_path, message) if {
@@ -191,19 +192,8 @@ existing_directories contains dir if {
 	dir := concat("/", array.slice(parts, 0, i))
 }
 
-# What a product is built from, by ecosystem: the manifests that mark a
-# product directory as one, and the Dependabot ecosystems that read them.
-ecosystems := {
-	"rust": {"manifests": ["Cargo.toml"], "dependabot": ["cargo"]},
-	"node": {"manifests": ["package.json"], "dependabot": ["npm", "bun"]},
-	"python": {"manifests": ["pyproject.toml"], "dependabot": ["pip", "uv"]},
-	"go": {"manifests": ["go.mod"], "dependabot": ["gomod"]},
-	"deno": {"manifests": ["deno.json", "deno.jsonc"], "dependabot": []},
-	"java": {
-		"manifests": ["pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"],
-		"dependabot": ["maven", "gradle"],
-	},
-}
+# What a product is built from, by ecosystem (lib/updates.rego).
+ecosystems := updates.ecosystems
 
 manifests contains manifest if {
 	some ecosystem in ecosystems
@@ -256,26 +246,10 @@ root_content := {
 	"src", "crates", "cmd", "internal", "pkg", "lib", "tests", "apps", "packages",
 }
 
-# Every update in the Dependabot configuration, with the file it is in.
-dependabot_updates contains {"path": doc.path, "update": update} if {
-	some doc in files.own_documents
-	regex.match(`^\.github/dependabot\.ya?ml$`, doc.path)
-	some update in doc.contents.updates
-	is_object(update)
-}
+# The Dependabot updates and the directories each scans (lib/updates.rego).
+dependabot_updates := updates.dependabot_updates
 
-default update_directories(_) := ["/"]
-
-update_directories(update) := [d | some d in update.directories; is_string(d)] if has_directories(update)
-
-update_directories(update) := [update.directory] if {
-	not has_directories(update)
-	is_string(update.directory)
-}
-
-# Negated through a rule: `not is_array(update.directories)` is undefined, not
-# true, when the key is missing.
-has_directories(update) if is_array(update.directories)
+update_directories(update) := updates.update_directories(update)
 
 is_root(directory) if trim(directory, "/ ") == ""
 

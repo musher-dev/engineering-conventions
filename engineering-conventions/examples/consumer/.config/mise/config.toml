@@ -23,3 +23,6 @@ min_version = "2026.9.12"
 "github:crate-ci/committed" = "1.1.11"
 # Reads the types and scopes out of committed.toml for the title check.
 "aqua:mikefarah/yq" = "4.53.6"
+
+# IMAGE-06 delegates Dockerfile lint to hadolint (IMAGE-08).
+"aqua:hadolint/hadolint" = "2.15.1"

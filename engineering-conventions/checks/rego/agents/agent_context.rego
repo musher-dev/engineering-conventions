@@ -1,11 +1,12 @@
 # METADATA
 # title: Agent context
 # description: >-
-#   The files that give a coding agent its instructions: one project memory
-#   file (AGENT-01) that imports its README (AGENT-02), path-scoped rules
-#   (AGENT-03), a bounded always-loaded context (AGENT-04), imports that
-#   resolve (AGENT-05), one root AGENTS.md (AGENT-06), and no personal
-#   agent files in git (AGENT-07).
+#   The files that give a coding agent its instructions: one root AGENTS.md
+#   as the project memory (AGENT-15), no CLAUDE.md (AGENT-16), the README
+#   imported (AGENT-17), path-scoped rules (AGENT-03), a bounded
+#   always-loaded context (AGENT-04), imports that resolve (AGENT-18), and
+#   no personal agent files in git (AGENT-07). AGENT-01, 02, 05, 06 and 08
+#   are retired.
 # scope: package
 # custom:
 #   convention: EC-0013
@@ -15,27 +16,6 @@ import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.paths
 import data.conventions.lib.text
-
-# AGENT-01
-findings contains lib.finding("AGENT-01", ".claude/CLAUDE.md", message) if {
-	count(project_memory) == 2
-	message := concat(" ", [
-		"the repository has both CLAUDE.md and .claude/CLAUDE.md, and Claude Code loads both as",
-		"project memory; merge them into one of the two",
-	])
-}
-
-# AGENT-02
-findings contains lib.finding("AGENT-02", path, message) if {
-	some path, _ in memory_texts
-	readme := paired_readme(path)
-	readme in files.repository_files
-	not readme in imports(path)
-	message := sprintf(
-		"%s does not import %s; add the line @%s so the orientation is written once, in the README",
-		[path, readme, import_token(path, readme)],
-	)
-}
 
 # AGENT-03
 findings contains lib.finding("AGENT-03", path, unscoped_message) if {
@@ -55,8 +35,52 @@ findings contains lib.finding("AGENT-04", budget_path, message) if {
 	)
 }
 
-# AGENT-05
-findings contains lib.finding("AGENT-05", path, message) if {
+# AGENT-15
+findings contains lib.finding("AGENT-15", "AGENTS.md", message) if {
+	count(instruction_files) > 0
+	not "AGENTS.md" in files.repository_files
+	message := concat(" ", [
+		"the repository has agent context but no AGENTS.md at its root; add one as the project",
+		"memory every coding agent reads, and import the README from it",
+	])
+}
+
+findings contains lib.finding("AGENT-15", ".claude/AGENTS.md", message) if {
+	".claude/AGENTS.md" in files.repository_files
+	message := concat(" ", [
+		"Claude Code loads .claude/AGENTS.md beside the root AGENTS.md, which splits the project",
+		"memory in two; move what it says into the root AGENTS.md",
+	])
+}
+
+# AGENT-16
+findings contains lib.finding("AGENT-16", path, message) if {
+	some path in files.repository_files
+	files.basename(path) == "CLAUDE.md"
+	message := sprintf(
+		concat(" ", [
+			"Claude Code reads %s and ignores every AGENTS.md while it exists; move what it says",
+			"into the AGENTS.md beside it and delete it",
+		]),
+		[path],
+	)
+}
+
+# AGENT-17
+findings contains lib.finding("AGENT-17", path, message) if {
+	some path, _ in memory_texts
+	path != ".claude/AGENTS.md"
+	readme := concat("", [paths.directory(path), "README.md"])
+	readme in files.repository_files
+	not readme in imports(path)
+	message := sprintf(
+		"%s does not import %s; add the line @README.md so the orientation is written once, in the README",
+		[path, readme],
+	)
+}
+
+# AGENT-18
+findings contains lib.finding("AGENT-18", path, message) if {
 	some path, content in memory_texts
 	some written in text.imports(content)
 	not startswith(written, "~")
@@ -70,22 +94,6 @@ findings contains lib.finding("AGENT-05", path, message) if {
 	)
 }
 
-# AGENT-06
-findings contains lib.finding("AGENT-06", path, nested_message) if {
-	some path in files.repository_files
-	files.basename(path) == "AGENTS.md"
-	path != "AGENTS.md"
-}
-
-findings contains lib.finding("AGENT-06", "AGENTS.md", message) if {
-	count(project_memory) > 0
-	not "AGENTS.md" in files.repository_files
-	message := concat(" ", [
-		"the repository has project memory but no AGENTS.md; add a root AGENTS.md that points",
-		"coding agents other than Claude Code at it",
-	])
-}
-
 # AGENT-07
 findings contains lib.finding("AGENT-07", path, message) if {
 	some path in files.repository_files
@@ -96,18 +104,39 @@ findings contains lib.finding("AGENT-07", path, message) if {
 	)
 }
 
-# The two places Claude Code reads a project's memory from at launch.
-project_memory_paths := ["CLAUDE.md", ".claude/CLAUDE.md"]
-
-project_memory contains path if {
-	some path in project_memory_paths
+# What Claude Code loads as project memory at launch: the root AGENTS.md
+# and .claude/AGENTS.md, unless a root CLAUDE.md or .claude/CLAUDE.md is
+# committed, which it then reads instead (AGENT-16 reports those).
+claude_memory contains path if {
+	some path in ["CLAUDE.md", ".claude/CLAUDE.md"]
 	path in files.repository_files
 }
 
-# Every CLAUDE.md whose text the runner embedded, at any depth.
+agents_memory contains path if {
+	some path in ["AGENTS.md", ".claude/AGENTS.md"]
+	path in files.repository_files
+}
+
+project_memory := claude_memory if count(claude_memory) > 0
+
+project_memory := agents_memory if count(claude_memory) == 0
+
+# Anything that gives a coding agent instructions: an AGENTS.md or a
+# CLAUDE.md at any depth, or a rule.
+instruction_files contains path if {
+	some path in files.repository_files
+	files.basename(path) in {"AGENTS.md", "CLAUDE.md"}
+}
+
+instruction_files contains path if {
+	some path in files.repository_files
+	regex.match(rule_pattern, path)
+}
+
+# Every AGENTS.md whose text the runner embedded, at any depth.
 memory_texts[path] := content if {
 	some path, content in files.texts
-	files.basename(path) == "CLAUDE.md"
+	files.basename(path) == "AGENTS.md"
 }
 
 # The repository paths a file imports. An import from the home directory
@@ -116,16 +145,6 @@ imports(path) := {paths.resolve(path, target) |
 	some target in text.imports(files.texts[path])
 	not startswith(target, "~")
 }
-
-# AGENT-02 pairs the project memory file .claude/CLAUDE.md with the root
-# README, and every other CLAUDE.md with the README beside it.
-paired_readme(".claude/CLAUDE.md") := "README.md"
-
-paired_readme(path) := concat("", [paths.directory(path), "README.md"]) if path != ".claude/CLAUDE.md"
-
-import_token(".claude/CLAUDE.md", _) := "../README.md"
-
-import_token(path, readme) := files.basename(readme) if path != ".claude/CLAUDE.md"
 
 rule_pattern := `^\.claude/rules/.+\.md$`
 
@@ -191,11 +210,6 @@ resolves(target) if {
 	not paths.outside(target)
 	target in files.all_files
 }
-
-nested_message := concat(" ", [
-	"an AGENTS.md below the root is a second set of agent instructions; move what it says",
-	"into a CLAUDE.md or a path-scoped rule, and keep one AGENTS.md at the root",
-])
 
 personal(".claude/settings.local.json")
 

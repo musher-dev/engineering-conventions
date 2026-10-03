@@ -288,7 +288,8 @@ suggested_name(path) := concat(".", [lower(root_configs[path]), files.extension(
 # Tool configuration that belongs in .config/: the root file names each tool
 # searches for. Absent on purpose: files only their tool's root search can
 # find and that no flag replaces (Taskfile.yml, .gitattributes, .gitignore,
-# .dockerignore, .editorconfig, package manifests and lockfiles), and a
+# Docker ignore files, which EC-0039 places beside their Dockerfile,
+# .editorconfig, package manifests and lockfiles), and a
 # configuration written as a program (eslint.config.js), which .config/ does
 # not hold (CONF-08).
 root_configs := {

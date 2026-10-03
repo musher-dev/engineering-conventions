@@ -79,7 +79,8 @@ jobs:
           install-args: >-
             aqua:go-task/task node npm:markdownlint-cli2 aqua:astral-sh/uv python
             pipx:yamllint aqua:tamasfe/taplo aqua:crate-ci/typos aqua:koalaman/shellcheck
-      - name: Lint Markdown, YAML, TOML, spelling and shell scripts
+            aqua:hadolint/hadolint
+      - name: Lint Markdown, YAML, TOML, spelling, shell scripts and Dockerfiles
         run: task lint
 
   repository_secrets:

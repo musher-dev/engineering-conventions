@@ -1,3 +1,17 @@
 [
-  {"id": "DEVC-09", "path": ".github/dependabot.yml", "severity": "warning"}
+  {
+    "id": "DEPS-11",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "DEPS-13",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "DEVC-09",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  }
 ]

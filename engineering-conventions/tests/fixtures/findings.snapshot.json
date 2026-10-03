@@ -31,7 +31,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"BRANCH\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"IMAGE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -40,26 +40,11 @@
   "adoption-enforce-subset": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", false]
   ],
-  "agent-01-two-project-memories": [
-    [".claude/CLAUDE.md", "AGENT-01", "warning", "the repository has both CLAUDE.md and .claude/CLAUDE.md, and Claude Code loads both as project memory; merge them into one of the two", true]
-  ],
-  "agent-02-readme-not-imported": [
-    ["CLAUDE.md", "AGENT-02", "warning", "CLAUDE.md does not import README.md; add the line @README.md so the orientation is written once, in the README", true]
-  ],
   "agent-03-unscoped-rule": [
     [".claude/rules/everywhere.md", "AGENT-03", "warning", "the rule has no paths: frontmatter, so Claude Code loads it in every session; add a paths: list naming the files the rule governs", true]
   ],
   "agent-04-over-budget": [
-    ["CLAUDE.md", "AGENT-04", "warning", "the context Claude Code loads at every launch is 49760 bytes, over the 40960-byte budget: CLAUDE.md (49 bytes), README.md (49711 bytes); move content into path-scoped rules, or trim the project memory and what it imports", true]
-  ],
-  "agent-05-unresolved-import": [
-    ["CLAUDE.md", "AGENT-05", "warning", "@docs/testing.md does not name a file in the repository; correct the path, or put the text in backticks if it is not meant as an import", true]
-  ],
-  "agent-06-missing-root-agents-md": [
-    ["AGENTS.md", "AGENT-06", "warning", "the repository has project memory but no AGENTS.md; add a root AGENTS.md that points coding agents other than Claude Code at it", true]
-  ],
-  "agent-06-nested-agents-md": [
-    ["docs/api/AGENTS.md", "AGENT-06", "warning", "an AGENTS.md below the root is a second set of agent instructions; move what it says into a CLAUDE.md or a path-scoped rule, and keep one AGENTS.md at the root", true]
+    ["AGENTS.md", "AGENT-04", "warning", "the context Claude Code loads at every launch is 49760 bytes, over the 40960-byte budget: AGENTS.md (49 bytes), README.md (49711 bytes); move content into path-scoped rules, or trim the project memory and what it imports", true]
   ],
   "agent-07-personal-settings": [
     [".claude/settings.local.json", "AGENT-07", "warning", "settings.local.json is one person's local agent configuration; remove it from git and add it to .gitignore", true]
@@ -92,6 +77,47 @@
   "agent-14-preloads-manual-skill": [
     [".claude/agents/reviewer.md", "AGENT-14", "warning", "skills: lists deploy, but .claude/skills/deploy/SKILL.md sets disable-model-invocation: true, so Claude Code cannot preload it; remove the entry, or let the model invoke the skill", true]
   ],
+  "agent-15-dot-claude-agents-md": [
+    [".claude/AGENTS.md", "AGENT-15", "warning", "Claude Code loads .claude/AGENTS.md beside the root AGENTS.md, which splits the project memory in two; move what it says into the root AGENTS.md", true]
+  ],
+  "agent-15-missing-root-agents-md": [
+    ["AGENTS.md", "AGENT-15", "warning", "the repository has agent context but no AGENTS.md at its root; add one as the project memory every coding agent reads, and import the README from it", true]
+  ],
+  "agent-15-passes-nested-agents-md": [],
+  "agent-16-claude-md": [
+    ["CLAUDE.md", "AGENT-16", "warning", "Claude Code reads CLAUDE.md and ignores every AGENTS.md while it exists; move what it says into the AGENTS.md beside it and delete it", true]
+  ],
+  "agent-16-passes-agents-md-only": [],
+  "agent-17-passes-standalone-nested": [],
+  "agent-17-readme-not-imported": [
+    ["AGENTS.md", "AGENT-17", "warning", "AGENTS.md does not import README.md; add the line @README.md so the orientation is written once, in the README", true]
+  ],
+  "agent-18-passes-handles-and-code": [],
+  "agent-18-unresolved-import": [
+    ["AGENTS.md", "AGENT-18", "warning", "@docs/testing.md does not name a file in the repository; correct the path, or put the text in backticks if it is not meant as an import", true]
+  ],
+  "branch-01-evaluate-only": [
+    [".github/rulesets/main-branch.json", "BRANCH-01", "warning", "no active branch ruleset in .github/rulesets/ covers the default branch, so anyone who can push may delete it, force-push to it, or merge without review or checks; add one whose ref_name includes ~DEFAULT_BRANCH", true]
+  ],
+  "branch-01-no-ruleset": [
+    [".github/rulesets/main-branch.json", "BRANCH-01", "warning", "no active branch ruleset in .github/rulesets/ covers the default branch, so anyone who can push may delete it, force-push to it, or merge without review or checks; add one whose ref_name includes ~DEFAULT_BRANCH", true],
+    [".github/workflows/validate-pull-request.yml", "GHA-12", "warning", "job \"title\" is named \"Validate Pull Request / Title\", but GitHub already shows the workflow name before the job's, so it reads twice; rename it to \"Title\" (only a required-check job leads with its workflow's name)", true]
+  ],
+  "branch-01-passes-all-branches": [],
+  "branch-02-force-push-allowed": [
+    [".github/rulesets/main-branch.json", "BRANCH-02", "warning", "the rulesets covering the default branch have no non_fast_forward rule; add non_fast_forward, so the branch is never deleted or rewritten and every change reaches it through a checked pull request", true]
+  ],
+  "branch-02-passes-split-rulesets": [],
+  "branch-03-no-review": [
+    [".github/rulesets/main-branch.json", "BRANCH-03", "warning", "the pull_request rule requires no review: set required_approving_review_count to 1 or more, or set require_code_owner_review and keep a CODEOWNERS that names an owner for every path", true]
+  ],
+  "branch-03-passes-code-owner-review": [],
+  "branch-04-passes-aggregate-only": [],
+  "branch-04-validate-not-required": [
+    [".github/rulesets/main-branch.json", "BRANCH-04", "warning", "the default branch requires no check a validate workflow reports, so a change can merge without its validation; require the validate workflow's aggregate, such as \"Validate / Required\"", true],
+    [".github/workflows/validate-pull-request.yml", "GHA-12", "warning", "job \"title\" is named \"Validate Pull Request / Title\", but GitHub already shows the workflow name before the job's, so it reads twice; rename it to \"Title\" (only a required-check job leads with its workflow's name)", true],
+    [".github/workflows/validate.yml", "GHA-12", "warning", "job \"required\" is named \"Validate / Required\", but GitHub already shows the workflow name before the job's, so it reads twice; rename it to \"Required\" (only a required-check job leads with its workflow's name)", true]
+  ],
   "clean": [],
   "comm-01-invalid-and-yaml-forms": [
     [".github/ISSUE_TEMPLATE/broken.yml", "COMM-01", "warning", "GitHub's issue-forms schema rejects this file, so GitHub will not offer the form: the form: description is required. (1 more problem in the form)", true],
@@ -110,7 +136,9 @@
     ["CODEOWNERS", "COMM-03", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true],
     ["docs/CODEOWNERS", "COMM-03", "warning", "GitHub reads only the first CODEOWNERS it finds, CODEOWNERS, and ignores this one; merge its rules there and delete it", true]
   ],
-  "comm-03-passes-no-codeowners": [],
+  "comm-03-passes-no-codeowners": [
+    [".github/CODEOWNERS", "COMM-08", "warning", "the repository has no CODEOWNERS, so no pull request asks anyone in particular for review and a ruleset cannot require a code owner's approval; add .github/CODEOWNERS naming the owning team", true]
+  ],
   "comm-03-passes-unowned-paths": [],
   "comm-04-passes-escapes-and-comments": [],
   "comm-04-skipped-lines": [
@@ -129,6 +157,12 @@
     [".github/DISCUSSION_TEMPLATE/q-a.md", "COMM-07", "warning", "GitHub reads a discussion category form only as <category-slug>.yml; rename .github/DISCUSSION_TEMPLATE/q-a.md to .github/DISCUSSION_TEMPLATE/q-a.yml", true]
   ],
   "comm-07-passes-discussion-form": [],
+  "comm-08-no-codeowners": [
+    [".github/CODEOWNERS", "COMM-08", "warning", "the repository has no CODEOWNERS, so no pull request asks anyone in particular for review and a ruleset cannot require a code owner's approval; add .github/CODEOWNERS naming the owning team", true]
+  ],
+  "comm-08-passes-root-codeowners": [
+    ["CODEOWNERS", "COMM-03", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true]
+  ],
   "commit-01-capitalized-by-default": [
     [".config/commits/committed.toml", "COMMIT-01", "warning", "subject_capitalized is true, so committed rejects a lower-case description such as \"feat: add x\"; set subject_capitalized = false", true]
   ],
@@ -248,9 +282,12 @@
   ],
   "deps-03-passes-other-repository-same-output": [],
   "deps-04-package-range": [
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the node dependencies platform-api/package.json declares; add an update with package-ecosystem npm or bun and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true],
     ["platform-api/package.json", "DEPS-04", "warning", "platform-api/package.json pins @musher-dev/ui to \"^1.0.2\" in dependencies; pin the exact version it released, so the repository builds against one release until it chooses another", true]
   ],
-  "deps-04-passes-exact-and-workspace-packages": [],
+  "deps-04-passes-exact-and-workspace-packages": [
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the node dependencies platform-api/package.json declares; add an update with package-ecosystem npm or bun and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true]
+  ],
   "deps-05-passes-fetched": [],
   "deps-05-passes-prerelease-version": [],
   "deps-05-record-of-another-release": [
@@ -277,6 +314,18 @@
     [".repo/dependencies.toml", "DEPS-10", "warning", "the repository vendors dependencies but has no maintain-dependencies.yml; add it, on a schedule, to run `task deps:sync` and open a pull request for each new release", true]
   ],
   "deps-10-passes-schedule-only": [],
+  "deps-11-action-not-updated": [
+    [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true]
+  ],
+  "deps-11-passes-action-glob": [],
+  "deps-12-image-not-updated": [
+    [".github/dependabot.yml", "DEPS-12", "warning", "nothing updates the base images of the Dockerfiles in \"/platform-api/docker\"; add a docker update for that directory to the Dependabot configuration, or configure Renovate", true]
+  ],
+  "deps-12-passes-docker-update": [],
+  "deps-13-passes-renovate": [],
+  "deps-13-product-not-updated": [
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies platform-api/go.mod declares; add an update with package-ecosystem gomod and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true]
+  ],
   "devc-01-passes-named-config": [],
   "devc-01-root-config": [
     [".devcontainer.json", "DEVC-01", "warning", "move the dev container configuration to .devcontainer/devcontainer.json, beside the files it names", true],
@@ -312,6 +361,9 @@
     [".devcontainer/devcontainer.json", "DEVC-08", "warning", "the volume gh-config is not named musher-${devcontainerId}-<purpose>; rename it so it belongs to this container", true]
   ],
   "devc-09-no-updates": [
+    [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
+    [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the workflows; add \"/\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies platform-api/go.mod declares; add an update with package-ecosystem gomod and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true],
     [".github/dependabot.yml", "DEVC-09", "warning", "nothing updates the dev container's image and Features; add a devcontainers entry to Dependabot, or configure Renovate", true]
   ],
   "devc-09-passes-renovate": [],
@@ -434,10 +486,6 @@
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/env/platform-api.env.schema.json", "ENVS-20", "warning", "this is not the contract platform-api/env.schema.yaml derives; generate it again with conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json", true]
   ],
-  "envs-21-passes-derived-example": [],
-  "envs-21-stale-example": [
-    ["platform-api/.env.example", "ENVS-21", "warning", "this is not the .env.example platform-api/env.schema.yaml derives; generate it again with conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example", true]
-  ],
   "envs-22-inline-capability": [
     ["platform-api/env.schema.yaml", "ENVS-22", "warning", "binding DATABASE_URL names capability \"postgresql\" inline; declare the instance under requires, with the versions the code works with, and write requires: <instance> on the binding", true]
   ],
@@ -455,6 +503,18 @@
   "envs-25-unprefixed-binding": [
     ["platform-api/env.schema.yaml", "ENVS-25", "warning", "binding CACHE_URL does not start with the consumer prefix MUSHER_API; rename it MUSHER_API_CACHE_URL and retire the old name with it as the replacement, or list it in naming.legacy if it was unprefixed when the schema adopted the prefix", true]
   ],
+  "envs-26-committed-example": [
+    ["platform-api/.env.example", "ENVS-26", "warning", ".env.example is an environment file in the repository; delete it from git, keep the variables in env.schema.yaml, and write a local .env with conventions env-file platform-api/env.schema.yaml", true]
+  ],
+  "envs-26-passes-example-app": [],
+  "envs-27-negated": [
+    ["platform-api/env.schema.yaml", "ENVS-27", "warning", "git does not ignore platform-api/.env, where conventions env-file writes this schema's local values and secrets; add /platform-api/.env to the root .gitignore", true]
+  ],
+  "envs-27-not-ignored": [
+    ["platform-api/env.schema.yaml", "ENVS-27", "warning", "git does not ignore platform-api/.env, where conventions env-file writes this schema's local values and secrets; add /platform-api/.env to the root .gitignore", true]
+  ],
+  "envs-27-passes-glob": [],
+  "envs-27-passes-product-gitignore": [],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],
@@ -770,6 +830,42 @@
     [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
+  "image-01-passes-dev-container-and-tests": [],
+  "image-01-root-dockerfile": [
+    ["Dockerfile", "IMAGE-01", "warning", "Dockerfile is not in a docker/ directory; move it to docker/, with its ignore file and compose files, and point the build at it with -f", true]
+  ],
+  "image-02-passes-named-alone": [],
+  "image-02-suffix-name": [
+    ["api/docker/Dockerfile.dev", "IMAGE-02", "warning", "Dockerfile.dev is not a Dockerfile name editors and linters recognise; rename it to dev.Dockerfile", true]
+  ],
+  "image-03-missing-ignore": [
+    ["api/docker/Dockerfile", "IMAGE-03", "warning", "api/docker/Dockerfile has no Dockerfile.dockerignore beside it, so the build sends its whole context; add one that starts from * and lists what the image needs", true]
+  ],
+  "image-03-passes-one-per-image": [],
+  "image-04-context-root-ignore": [
+    ["api/.dockerignore", "IMAGE-04", "warning", "a .dockerignore belongs to no image, and BuildKit skips it for a Dockerfile with its own ignore file; move its patterns into <Dockerfile>.dockerignore beside each Dockerfile", true]
+  ],
+  "image-04-passes-dev-container": [],
+  "image-05-passes-variants": [],
+  "image-05-root-compose": [
+    ["docker-compose.yml", "IMAGE-05", "warning", "docker-compose.yml runs an image, so it belongs beside the Dockerfile; move it to docker/", true]
+  ],
+  "image-07-no-configuration": [
+    [".config/docker/hadolint.yaml", "IMAGE-07", "warning", "the repository has Dockerfiles, such as api/docker/Dockerfile, but no hadolint configuration; add .config/docker/hadolint.yaml (failure-threshold: warning, and each rule turned off with its reason), so every run judges a Dockerfile the same way", true]
+  ],
+  "image-07-passes-yml": [],
+  "image-08-passes-pinned": [],
+  "image-08-unpinned": [
+    [".config/mise/config.toml", "IMAGE-08", "warning", "the mise configuration does not pin hadolint, so the hook and CI can lint a Dockerfile with different releases; add \"aqua:hadolint/hadolint\" = \"<version>\" under [tools]", true]
+  ],
+  "image-09-glob-misses-named": [
+    [".config/lefthook.yml", "IMAGE-09", "warning", "the pre-commit hook does not run hadolint with --config .config/docker/hadolint.yaml on every staged Dockerfile; add a job with glob \"**/{Dockerfile,*.Dockerfile}\" that runs hadolint --config .config/docker/hadolint.yaml {staged_files}", true]
+  ],
+  "image-09-passes-brace-glob": [],
+  "image-10-not-validated": [
+    ["api/docker/Dockerfile", "IMAGE-10", "warning", "no validate workflow lints the Dockerfiles; run `conventions hadolint`, or `hadolint --config .config/docker/hadolint.yaml` on every Dockerfile, in a validate workflow, directly or through a task, so a Dockerfile that breaks a rule cannot merge", true]
+  ],
+  "image-10-passes-through-a-task": [],
   "mise-pin-without-declaration": [],
   "oas-02-floating-owasp-version": [
     [".config/openapi/spectral.yaml", "OAS-02", "warning", ".config/openapi/spectral.yaml extends the OWASP API security ruleset as https://unpkg.com/@stoplight/spectral-owasp-ruleset/dist/ruleset.mjs, which names no exact release; extend https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which names one exact release", true],
@@ -932,9 +1028,11 @@
     [".repo/repository.toml", "REPO-14", "warning", "the identity declaration does not say where the product lives; add [layout] with product = \"<repository-name>\", or product = \"\" when the repository has no product directory", true]
   ],
   "repo-15-missing-product": [
+    [".github/dependabot.yml", "REPO-22", "warning", "the gomod update names the directory \"/platform-api\", which does not exist; correct it, or remove it", true],
     [".repo/repository.toml", "REPO-15", "warning", "the declared product directory platform-api/ does not exist; create it, or correct [layout] product", true]
   ],
   "repo-16-product-name": [
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies api/go.mod declares; add an update with package-ecosystem gomod and directory \"/api\" to the Dependabot configuration, or configure Renovate", true],
     [".repo/repository.toml", "REPO-16", "warning", "the product directory api/ is not named after the repository; rename it to platform-api/ and set [layout] product = \"platform-api\"", true]
   ],
   "repo-17-no-manifest": [
@@ -948,12 +1046,16 @@
     [".repo/repository.toml", "REPO-19", "warning", "the root exception \"go.sum\" gives no reason; say why it stays at the root, or remove the entry", true]
   ],
   "repo-20-dependabot-root": [
+    [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
+    [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the workflows; add \"/\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies platform-api/go.mod declares; add an update with package-ecosystem gomod and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true],
     [".github/dependabot.yml", "REPO-20", "warning", "the gomod update scans \"/\", the repository root, which holds no go.mod; set its directory to /platform-api", true]
   ],
   "repo-21-product-dir-var": [
     ["Taskfile.yml", "REPO-21", "warning", "vars.PRODUCT_DIR is '{{.ROOT_DIR}}/.github'; set it to '{{.ROOT_DIR}}/platform-api' so tasks reach the product through dir: '{{.PRODUCT_DIR}}'", true]
   ],
   "repo-22-dependabot-directory": [
+    [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
     [".github/dependabot.yml", "REPO-22", "warning", "the github-actions update names the directory \"/.github/actions/setup\", which does not exist; correct it, or remove it", true]
   ],
   "repository-github-exempt": [
@@ -1075,15 +1177,16 @@
     [".config/mise/config.toml", "TOOL-05", "warning", "no .config/mise/mise.lock beside the mise configuration, so each install resolves download URLs and checksums afresh; run `mise lock` and commit it", true]
   ],
   "tool-06-floating-argument": [
-    ["Dockerfile", "TOOL-06", "warning", "ARG NODE_VERSION defaults to \"24\", which is not one release; set an exact version, such as NODE_VERSION=1.2.3", true]
+    ["docker/Dockerfile", "TOOL-06", "warning", "ARG NODE_VERSION defaults to \"24\", which is not one release; set an exact version, such as NODE_VERSION=1.2.3", true]
   ],
   "tool-07-runtime-image": [
-    ["Dockerfile", "TOOL-07", "warning", "node:22.1.0-slim runs node 22.1.0 but mise pins 24.21.0; use the 24.21.0 tag of node", true]
+    ["docker/Dockerfile", "TOOL-07", "warning", "node:22.1.0-slim runs node 22.1.0 but mise pins 24.21.0; use the 24.21.0 tag of node", true]
   ],
   "tool-08-feature-version": [
     [".devcontainer/devcontainer.json", "TOOL-08", "warning", "Feature ghcr.io/devcontainers/features/node:1 installs node lts but mise pins 24.21.0; set its version to 24.21.0", true]
   ],
   "tool-09-package-manager": [
+    [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the node dependencies platform-api/package.json declares; add an update with package-ecosystem npm or bun and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true],
     ["platform-api/package.json", "TOOL-09", "warning", "packageManager is bun@1.3.9 but mise pins bun 1.3.14; set packageManager to bun@1.3.14", true]
   ],
   "tool-10-setup-action": [

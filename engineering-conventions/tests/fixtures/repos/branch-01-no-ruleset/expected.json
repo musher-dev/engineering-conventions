@@ -1,0 +1,12 @@
+[
+  {
+    "id": "BRANCH-01",
+    "path": ".github/rulesets/main-branch.json",
+    "severity": "warning"
+  },
+  {
+    "id": "GHA-12",
+    "path": ".github/workflows/validate-pull-request.yml",
+    "severity": "warning"
+  }
+]

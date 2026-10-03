@@ -18,6 +18,7 @@ import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.mise
 import data.conventions.lib.steps
+import data.conventions.lib.updates
 
 devcontainers := mise.devcontainers
 
@@ -406,22 +407,7 @@ devcontainer_updates if {
 	update["package-ecosystem"] == "devcontainers"
 }
 
-renovate_paths := {
-	"renovate.json",
-	"renovate.json5",
-	".renovaterc",
-	".renovaterc.json",
-	".renovaterc.json5",
-	".github/renovate.json",
-	".github/renovate.json5",
-	".gitlab/renovate.json",
-	".gitlab/renovate.json5",
-}
-
-renovate if {
-	some path in files.repository_files
-	path in renovate_paths
-}
+renovate if updates.renovate
 
 # A step that builds or starts the dev container: the Dev Container CLI, or
 # the devcontainers/ci action.

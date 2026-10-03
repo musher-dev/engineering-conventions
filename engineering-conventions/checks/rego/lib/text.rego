@@ -38,7 +38,7 @@ has_heading(text, level, title) if {
 	lower(heading.title) == lower(title)
 }
 
-# The files a CLAUDE.md imports: every @path to a file outside code, as
+# The files an AGENTS.md imports: every @path to a file outside code, as
 # written, less the punctuation that ends a sentence.
 imports(text) := [path |
 	some match in regex.find_all_string_submatch_n(import_pattern, without_code_spans(prose(text)), -1)

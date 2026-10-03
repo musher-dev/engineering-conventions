@@ -91,6 +91,14 @@ pre-commit:
       run: shellcheck -x -P SCRIPTDIR {staged_files}
       fail_text: "ShellCheck failed. Run 'task lint:shell'."
 
+    - name: dockerfile
+      glob: "**/{Dockerfile,*.Dockerfile}"
+      # Same exclusion, and reason, as DOCKERFILE_PATHSPEC in Taskfile.yml.
+      exclude:
+        - "engineering-conventions/tests/fixtures/**"
+      run: hadolint --config .config/docker/hadolint.yaml {staged_files}
+      fail_text: "hadolint found a problem in a staged Dockerfile. Run 'task lint:docker'."
+
     - name: actions
       # Whole-directory runs: actionlint and zizmor resolve composite actions
       # and reusable workflows across files, so a staged-file subset misses
@@ -186,7 +194,6 @@ pre-commit:
         - "README.md"
         - "CONTRIBUTING.md"
         - "SECURITY.md"
-        - "CLAUDE.md"
         - "AGENTS.md"
         - "docs/**/*.md"
         - "engineering-conventions/definitions/conventions/**/*.md"

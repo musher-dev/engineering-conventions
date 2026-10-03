@@ -30,4 +30,4 @@ check it replaces in `aliases`, so a waiver or a habit that names `CFG-03` still
 | mise's configuration and lockfile | `.config/mise/config.toml`, `.config/mise/mise.lock` |
 | The index of all of them | `.config/README.md`, one row per file |
 | Trivy's ignore file | `.config/security/trivyignore.yaml`, every entry with `statement` and `expired_at` |
-| A file its tool reads only from the root | The root: `Taskfile.yml`, `.gitignore`, `.gitattributes`, `.dockerignore` |
+| A file its tool reads only from the root | The root: `Taskfile.yml`, `.gitignore`, `.gitattributes`; a Docker ignore file stays beside its Dockerfile ([EC-0039](../container-images/image-layout.md)) |

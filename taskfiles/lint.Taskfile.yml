@@ -10,13 +10,14 @@ set: [errexit, nounset, pipefail]
 
 tasks:
   lint:
-    desc: Lint Markdown, YAML, TOML, spelling and shell scripts.
+    desc: Lint Markdown, YAML, TOML, spelling, shell scripts and Dockerfiles.
     cmds:
       - task: lint:md
       - task: lint:yaml
       - task: lint:toml
       - task: lint:spelling
       - task: lint:shell
+      - task: lint:docker
 
   lint:md:
     desc: Lint Markdown against .config/markdown/markdownlint.jsonc.
@@ -55,6 +56,11 @@ tasks:
       - >-
         {{.LIST_FILES}} '**/*.sh' 'engineering-conventions/bin/*' ':!:engineering-conventions/bin/*.jq'
         | xargs -0 -r shellcheck -x -P SCRIPTDIR
+
+  lint:docker:
+    desc: Lint every Dockerfile with hadolint and .config/docker/hadolint.yaml (IMAGE-06).
+    cmds:
+      - '{{.LIST_FILES}} {{.DOCKERFILE_PATHSPEC}} | xargs -0 -r hadolint --config {{.HADOLINT_CONFIG}}'
 
   lint:actions:
     desc: Lint the workflows with actionlint (.config/actions/actionlint.yaml).

@@ -1,3 +1,5 @@
-# AGENTS.md
+# Project
 
-Read [CLAUDE.md](CLAUDE.md).
+@README.md
+
+The contract for changes.

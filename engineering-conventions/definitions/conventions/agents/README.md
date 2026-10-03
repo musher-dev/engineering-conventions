@@ -1,13 +1,13 @@
 # Agents
 
-These conventions govern a repository's agent context: the files that give a coding agent its instructions. Claude
-Code reads `CLAUDE.md` and the rules under `.claude/rules/`; other agents read `AGENTS.md`. Skills under
-`.claude/skills/` and subagents under `.claude/agents/` are read from their frontmatter.
+These conventions govern a repository's agent context: the files that give a coding agent its instructions. Every
+agent reads `AGENTS.md`; Claude Code (2.1.277 or later) also loads the rules under `.claude/rules/`, and reads skills
+under `.claude/skills/` and subagents under `.claude/agents/` from their frontmatter.
 
 The governing rule, in one sentence:
 
-> **Keep one project memory file that imports the README, scope every rule to the files it governs, and give other
-> agents one `AGENTS.md` that points at both.**
+> **Keep one `AGENTS.md` at the root that imports the README, commit no `CLAUDE.md`, and scope every rule to the files
+> it governs.**
 
 A repository with no agent context meets every requirement; they apply once the files exist.
 
@@ -20,19 +20,19 @@ Both conventions are **drafts**, owned by this repository, and every requirement
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0013 Agent context](agent-context.md) | AGENT-01 – AGENT-08 | Project memory, imports, path-scoped rules, the launch budget, `AGENTS.md` and personal files |
+| [EC-0013 Agent context](agent-context.md) | AGENT-03, AGENT-04, AGENT-07, AGENT-15 – AGENT-18 | `AGENTS.md` as the project memory, no `CLAUDE.md`, imports, path-scoped rules, the launch budget and personal files |
 | [EC-0034 Skills and subagents](skills-and-subagents.md) | AGENT-09 – AGENT-14 | Skill and subagent frontmatter, skill names, and the skills a subagent preloads |
 
 ## Quick reference
 
 | File | Rule |
 | --- | --- |
-| `CLAUDE.md` or `.claude/CLAUDE.md` | One of the two (AGENT-01); imports the README (AGENT-02) |
-| Any nested `CLAUDE.md` | Imports the README beside it, if there is one (AGENT-02) |
+| `AGENTS.md` | One, at the root, and none in `.claude/` (AGENT-15); imports the README (AGENT-17) |
+| Any nested `AGENTS.md` | Imports the README beside it, if there is one (AGENT-17) |
+| `CLAUDE.md`, `.claude/CLAUDE.md`, at any depth | Never committed: it hides every `AGENTS.md` from Claude Code (AGENT-16) |
 | `.claude/rules/**/*.md` | A non-empty `paths:` list in its frontmatter (AGENT-03) |
 | Project memory, its imports, unscoped rules | 40 KiB in total (AGENT-04) |
-| `@path` in a `CLAUDE.md` | Names a file in the repository (AGENT-05) |
-| `AGENTS.md` | One, at the root (AGENT-06), made of pointers (AGENT-08) |
+| `@path` in an `AGENTS.md` | Names a file in the repository (AGENT-18) |
 | `CLAUDE.local.md`, `.claude/settings.local.json` | Never committed (AGENT-07) |
 | `.claude/skills/*/SKILL.md`, `.claude/agents/**/*.md` | Frontmatter that parses (AGENT-09) |
 | `.claude/skills/*/SKILL.md` | Valid against the skill schema (AGENT-10); `name` is the directory's (AGENT-11) |

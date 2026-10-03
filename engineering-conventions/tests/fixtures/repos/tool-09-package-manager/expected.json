@@ -1,5 +1,10 @@
 [
   {
+    "id": "DEPS-13",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  },
+  {
     "id": "TOOL-09",
     "path": "platform-api/package.json",
     "severity": "warning"

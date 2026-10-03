@@ -1,0 +1,3 @@
+# hadolint, for every Dockerfile (EC-0040): `task lint` and the Validate
+# workflow run it with this file.
+failure-threshold: warning

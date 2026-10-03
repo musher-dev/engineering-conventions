@@ -1,0 +1,7 @@
+[
+  {
+    "id": "DEPS-12",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  }
+]

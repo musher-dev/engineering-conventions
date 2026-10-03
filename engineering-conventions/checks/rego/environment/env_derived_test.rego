@@ -7,11 +7,7 @@ schema_path := "platform-api/env.schema.yaml"
 
 contract_path := "platform-api/contracts/env/platform-api.env.schema.json"
 
-example_path := "platform-api/.env.example"
-
 contract := {"title": "platform-api", "type": "object", "properties": {}}
-
-example := "# The environment platform-api reads.\n"
 
 identity := td.repository(object.union(td.identity, {"layout": {"product": "platform-api"}}))
 
@@ -29,7 +25,6 @@ inventory(paths, texts) := td.file("/tmp/inventory.json", {"conventions_inventor
 	"texts": texts,
 	"derived": {"platform-api/env.schema.yaml": {
 		"contract": {"title": "platform-api", "type": "object", "properties": {}},
-		"example": "# The environment platform-api reads.\n",
 	}},
 }})
 
@@ -38,8 +33,8 @@ repo(extra, paths, texts) := array.concat([identity, schema, inventory(paths, te
 test_conforming if {
 	docs := repo(
 		[outputs([contract_path]), td.file(contract_path, contract)],
-		[".repo/outputs.toml", schema_path, contract_path, example_path],
-		{example_path: example},
+		[".repo/outputs.toml", schema_path, contract_path],
+		{},
 	)
 	count(env_derived.findings) == 0 with input as docs
 }
@@ -95,23 +90,5 @@ test_envs_20_stale_contract_without_an_interface if {
 test_envs_20_needs_a_service_name_that_is_a_file_name if {
 	odd := td.file(schema_path, {"service": "platform api/x", "runtime": "go", "bindings": {}})
 	docs := [identity, odd, outputs([schema_path]), inventory([".repo/outputs.toml", schema_path], {})]
-	count(env_derived.findings) == 0 with input as docs
-}
-
-test_envs_21_stale_example if {
-	docs := repo([], [schema_path, example_path], {example_path: "API_PORT=8080\n"})
-	found := env_derived.findings with input as docs
-	td.pairs(found) == {["ENVS-21", example_path]}
-	concat(" ", [
-		"this is not the .env.example platform-api/env.schema.yaml derives; generate it again with",
-		"conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example",
-	]) in {f.message | some f in found}
-}
-
-test_envs_21_nothing_derived if {
-	docs := [identity, schema, td.file("/tmp/inventory.json", {"conventions_inventory": {
-		"files": [schema_path, example_path],
-		"texts": {example_path: "API_PORT=8080\n"},
-	}})]
 	count(env_derived.findings) == 0 with input as docs
 }

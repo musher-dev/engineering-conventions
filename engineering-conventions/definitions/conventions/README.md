@@ -48,6 +48,10 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0036](community-files/community-files.md) | Community files | community-files | draft |
 | [EC-0037](openapi/openapi-documents.md) | OpenAPI documents | openapi | draft |
 | [EC-0038](copy/public-copy.md) | Public copy | copy | draft |
+| [EC-0039](container-images/image-layout.md) | Container image layout | container-images | draft |
+| [EC-0040](container-images/dockerfile-linting.md) | Dockerfile linting | container-images | draft |
+| [EC-0041](branch-protection/default-branch-protection.md) | Default-branch protection | branch-protection | draft |
+| [EC-0042](dependencies/automated-updates.md) | Automated dependency updates | dependencies | draft |
 
 ## Requirements
 
@@ -64,20 +68,28 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
 | [ADOPT-10](adoption/conventions-declaration.md#adopt-10) | Every family a staged adoption enforces is one the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-11](adoption/conventions-declaration.md#adopt-11) | A staged adoption ends within 180 days, and then every family is enforced | EC-0001 | proposed | warning | conftest |
-| [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | proposed | warning | conftest |
-| [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
+| [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | retired | warning | conftest |
+| [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | retired | warning | conftest |
 | [AGENT-03](agents/agent-context.md#agent-03) | Every rule under .claude/rules/ is scoped by a non-empty paths list | EC-0013 | proposed | warning | conftest |
 | [AGENT-04](agents/agent-context.md#agent-04) | The context loaded at every launch is at most 40 KiB | EC-0013 | proposed | warning | conftest |
-| [AGENT-05](agents/agent-context.md#agent-05) | Every import in a CLAUDE.md names a file in the repository | EC-0013 | proposed | warning | conftest |
-| [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
+| [AGENT-05](agents/agent-context.md#agent-05) | Every import in a CLAUDE.md names a file in the repository | EC-0013 | retired | warning | conftest |
+| [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | retired | warning | conftest |
 | [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
-| [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
+| [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | retired | warning | review |
 | [AGENT-09](agents/skills-and-subagents.md#agent-09) | A skill or subagent file starts with YAML frontmatter that parses | EC-0034 | proposed | warning | conftest |
 | [AGENT-10](agents/skills-and-subagents.md#agent-10) | A skill's frontmatter is valid against the skill schema | EC-0034 | proposed | warning | conftest |
 | [AGENT-11](agents/skills-and-subagents.md#agent-11) | A skill's name, when set, is its directory's name | EC-0034 | proposed | warning | conftest |
 | [AGENT-12](agents/skills-and-subagents.md#agent-12) | A subagent's frontmatter is valid against the subagent schema | EC-0034 | proposed | warning | conftest |
 | [AGENT-13](agents/skills-and-subagents.md#agent-13) | Every skill a subagent preloads is a skill in the repository | EC-0034 | proposed | warning | conftest |
 | [AGENT-14](agents/skills-and-subagents.md#agent-14) | A subagent does not preload a skill that disables model invocation | EC-0034 | proposed | warning | conftest |
+| [AGENT-15](agents/agent-context.md#agent-15) | The project memory is one AGENTS.md, at the repository root | EC-0013 | proposed | warning | conftest |
+| [AGENT-16](agents/agent-context.md#agent-16) | No CLAUDE.md is committed | EC-0013 | proposed | warning | conftest |
+| [AGENT-17](agents/agent-context.md#agent-17) | An AGENTS.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
+| [AGENT-18](agents/agent-context.md#agent-18) | Every import in an AGENTS.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [BRANCH-01](branch-protection/default-branch-protection.md#branch-01) | An active branch ruleset committed under .github/rulesets/ covers the default branch | EC-0041 | proposed | warning | conftest |
+| [BRANCH-02](branch-protection/default-branch-protection.md#branch-02) | The default branch's rulesets block deletion and force pushes, and require a pull request and status checks | EC-0041 | proposed | warning | conftest |
+| [BRANCH-03](branch-protection/default-branch-protection.md#branch-03) | A pull request to the default branch needs an approval or a code owner's review | EC-0041 | proposed | warning | conftest |
+| [BRANCH-04](branch-protection/default-branch-protection.md#branch-04) | The default branch requires a check that a validate workflow reports | EC-0041 | proposed | warning | conftest |
 | [COMM-01](community-files/community-files.md#comm-01) | An issue form is a .yml file valid against GitHub's issue-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMM-02](community-files/community-files.md#comm-02) | Issue forms come with a template chooser that is valid and sets blank_issues_enabled | EC-0036 | proposed | warning | conftest |
 | [COMM-03](community-files/community-files.md#comm-03) | A repository with a CODEOWNERS has exactly one, at .github/CODEOWNERS | EC-0036 | proposed | warning | conftest |
@@ -85,6 +97,7 @@ ID is permanent: it is never renumbered or reused.
 | [COMM-05](community-files/community-files.md#comm-05) | A repository's own security policy has a heading on reporting a vulnerability | EC-0036 | proposed | warning | conftest |
 | [COMM-06](community-files/community-files.md#comm-06) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
 | [COMM-07](community-files/community-files.md#comm-07) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
+| [COMM-08](community-files/community-files.md#comm-08) | Every repository has a CODEOWNERS | EC-0036 | proposed | warning | conftest |
 | [COMMIT-01](commits/commit-messages.md#commit-01) | .config/commits/committed.toml states the repository's commit rules | EC-0035 | proposed | warning | conftest |
 | [COMMIT-02](commits/commit-messages.md#commit-02) | committed is pinned in mise | EC-0035 | proposed | warning | conftest |
 | [COMMIT-03](commits/commit-messages.md#commit-03) | Lefthook's commit-msg hook runs committed on the message being written | EC-0035 | proposed | warning | conftest |
@@ -124,6 +137,9 @@ ID is permanent: it is never renumbered or reused.
 | [DEPS-08](dependencies/keeping-dependencies-current.md#deps-08) | A repository that vendors dependencies defines deps:check and deps:sync | EC-0033 | proposed | warning | conftest |
 | [DEPS-09](dependencies/keeping-dependencies-current.md#deps-09) | A validate workflow runs deps:check | EC-0033 | proposed | warning | conftest |
 | [DEPS-10](dependencies/keeping-dependencies-current.md#deps-10) | A scheduled maintain-dependencies workflow runs deps:sync | EC-0033 | proposed | warning | conftest |
+| [DEPS-11](dependencies/automated-updates.md#deps-11) | An updater keeps the actions of every workflow and composite action current | EC-0042 | proposed | warning | conftest |
+| [DEPS-12](dependencies/automated-updates.md#deps-12) | An updater keeps the base images of every Dockerfile current | EC-0042 | proposed | warning | conftest |
+| [DEPS-13](dependencies/automated-updates.md#deps-13) | An updater keeps the product's dependencies current from the product directory | EC-0042 | proposed | warning | conftest |
 | [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
 | [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
 | [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |
@@ -162,11 +178,13 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-18](environment/env-schema.md#envs-18) | A binding's capability is a registered runtime capability | EC-0020 | proposed | warning | conftest |
 | [ENVS-19](environment/env-schema.md#envs-19) | A binding that reaches another service or an outside capability names it | EC-0020 | proposed | warning | review |
 | [ENVS-20](environment/env-contract.md#envs-20) | A service that offers its environment as an interface commits the contract derived from its schema | EC-0019 | proposed | warning | conftest |
-| [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | proposed | warning | conftest |
+| [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | retired | warning | conftest |
 | [ENVS-22](environment/env-schema.md#envs-22) | A binding that reaches a runtime capability names it through requires | EC-0020 | proposed | warning | conftest |
 | [ENVS-23](environment/env-schema.md#envs-23) | Every runtime instance is declared, reached by a binding, and a registered capability | EC-0020 | proposed | warning | conftest |
 | [ENVS-24](environment/env-schema.md#envs-24) | A consumer prefix is MUSHER_ and the repository's component | EC-0020 | proposed | warning | conftest |
 | [ENVS-25](environment/env-schema.md#envs-25) | Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy | EC-0020 | proposed | warning | conftest |
+| [ENVS-26](environment/env-contract.md#envs-26) | No environment file is committed beside an environment schema or at the root | EC-0019 | proposed | warning | conftest |
+| [ENVS-27](environment/env-contract.md#envs-27) | Git ignores the .env beside a product's environment schema | EC-0019 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -244,6 +262,16 @@ ID is permanent: it is never renumbered or reused.
 | [IFACE-12](interfaces/publishing-interfaces.md#iface-12) | A validate workflow runs contracts:check and contracts:breaking | EC-0031 | proposed | warning | conftest |
 | [IFACE-13](interfaces/publishing-interfaces.md#iface-13) | The workflow that publishes a bundle of interfaces runs contracts:bundle | EC-0031 | proposed | warning | conftest |
 | [IFACE-14](interfaces/publishing-interfaces.md#iface-14) | A bundle of interfaces carries a release record of every file it delivers | EC-0031 | proposed | warning | review |
+| [IMAGE-01](container-images/image-layout.md#image-01) | Every Dockerfile outside .devcontainer/ and test fixtures lives in a docker/ directory | EC-0039 | proposed | warning | conftest |
+| [IMAGE-02](container-images/image-layout.md#image-02) | A Dockerfile is named Dockerfile or \<name\>.Dockerfile, and one of several is named \<name\>.Dockerfile | EC-0039 | proposed | warning | conftest |
+| [IMAGE-03](container-images/image-layout.md#image-03) | Every Dockerfile outside .devcontainer/ has its ignore file beside it, named \<Dockerfile\>.dockerignore | EC-0039 | proposed | warning | conftest |
+| [IMAGE-04](container-images/image-layout.md#image-04) | No .dockerignore is committed outside .devcontainer/ | EC-0039 | proposed | warning | conftest |
+| [IMAGE-05](container-images/image-layout.md#image-05) | A compose file lives in a docker/ directory or in .devcontainer/ | EC-0039 | proposed | warning | conftest |
+| [IMAGE-06](container-images/dockerfile-linting.md#image-06) | Every Dockerfile passes hadolint with the repository's configuration | EC-0040 | proposed | warning | delegated |
+| [IMAGE-07](container-images/dockerfile-linting.md#image-07) | A repository with a Dockerfile configures hadolint at .config/docker/hadolint.yaml | EC-0040 | proposed | warning | conftest |
+| [IMAGE-08](container-images/dockerfile-linting.md#image-08) | A repository with a Dockerfile pins hadolint in mise | EC-0040 | proposed | warning | conftest |
+| [IMAGE-09](container-images/dockerfile-linting.md#image-09) | Lefthook's pre-commit hook runs hadolint with the repository's configuration on every staged Dockerfile | EC-0040 | proposed | warning | conftest |
+| [IMAGE-10](container-images/dockerfile-linting.md#image-10) | A validate workflow runs hadolint with the repository's configuration | EC-0040 | proposed | warning | conftest |
 | [OAS-01](openapi/openapi-documents.md#oas-01) | Every OpenAPI interface document passes the repository's Spectral ruleset | EC-0037 | proposed | warning | delegated |
 | [OAS-02](openapi/openapi-documents.md#oas-02) | The Spectral ruleset extends spectral:oas and the OWASP API security ruleset at an exact release | EC-0037 | proposed | warning | conftest |
 | [OAS-03](openapi/openapi-documents.md#oas-03) | A validate workflow lints the OpenAPI interfaces with the repository's ruleset | EC-0037 | proposed | warning | conftest |
@@ -363,3 +391,5 @@ ID is permanent: it is never renumbered or reused.
 | OAS | OpenAPI documents | openapi |
 | COMMIT | Commit messages | commits |
 | COPY | Public copy | copy |
+| IMAGE | Container images | container-images |
+| BRANCH | Branch protection | branch-protection |

@@ -1,17 +1,66 @@
-# AGENTS.md
+# Engineering conventions — agent-facing notes
 
-A router for coding agents that do not read `CLAUDE.md` (Codex, Gemini,
-Copilot). It restates no rules; it points at the files that hold them.
+@README.md
 
-- **[`CLAUDE.md`](CLAUDE.md)**: the contract for changes in this repository.
-  It opens by importing `@README.md`, which is Claude Code syntax for "inline
-  that file"; other tools should open [`README.md`](README.md) directly.
-- **[`.claude/rules/`](.claude/rules/)**: the policy for each part, as
-  MUST / MUST NOT. Read the one whose `paths:` covers the files you change.
-- **[`docs/repository.md`](docs/repository.md)**: where a file belongs.
-- **[`docs/authoring.md`](docs/authoring.md)**: how to add or change a
-  requirement, a term or a check.
-- **[`docs/decisions/`](docs/decisions/)**: why the repository is shaped the
-  way it is.
+Agent-facing contract for `musher-dev/engineering-conventions`, read by every
+coding agent. The `@README.md` line above is a Claude Code import; another
+agent opens [README.md](README.md) directly. The README carries the
+orientation: what a convention is, how a consumer pins a release, and the
+commands. This file carries only what constrains a change. Claude Code reads it
+from version 2.1.277; there is no `CLAUDE.md` (AGENT-16).
 
-Agents open pull requests. Humans merge them.
+- Where a file goes: [docs/repository.md](docs/repository.md).
+- The policy for each part: [`.claude/rules/`](.claude/rules/). Claude Code
+  loads a rule when you read a file it governs; another agent reads the one
+  whose `paths:` covers the files it changes.
+- How to add or change a requirement, a term or a check:
+  [docs/authoring.md](docs/authoring.md).
+- Why the repository is shaped the way it is: [docs/decisions/](docs/decisions/).
+
+## Hard lines
+
+- **Requirement and convention IDs are permanent.** A frontmatter ID (`GHA-07`,
+  `EC-0002`) is never renumbered, reused or deleted. A retired requirement stays
+  as a tombstone; a legacy name goes in `aliases`. Consumers' waivers and every
+  printed diagnostic resolve against these IDs.
+- **Generated files are never hand-edited.** The files `.gitattributes` marks
+  `linguist-generated` are written by `task generate`. Edit the source and
+  regenerate; `task generate:check` fails on drift.
+- **Every conftest requirement ships a fixture.** A fixture repo under
+  `engineering-conventions/tests/fixtures/repos/` whose `expected.json` names
+  the requirement. A check that no fixture proves is not done.
+- **The commit type is the release.** Pick it from the one change-classification
+  table in [decision 0005](docs/decisions/0005-status-severity-and-versioning.md#change-classification);
+  do not restate or improvise it. A `docs:` commit cuts no release, so anything
+  a consumer must be able to pin (what a requirement checks, a message, a term)
+  is never `docs`.
+- **This repository passes its own conventions.** `task conventions:self`
+  reports zero findings, warnings included.
+- **Everything published here is public.** No secrets, internal hostnames or
+  unreleased plans, in prose, fixtures or commit messages.
+
+## Things to avoid
+
+- **No restated upstream definitions.** A term or rule another repository
+  owns gets an `authority` pointer, not a copy
+  ([the charter](docs/decisions/0000-charter.md)).
+- **No inline lint suppressions.** A rule that is wrong here is turned off in
+  its `.config/` file with the reason beside it.
+- **No tool installed outside `.config/mise/config.toml`.** CI installs through
+  `.github/actions/setup-tools` from that same file.
+
+## Verification
+
+`task check` runs every gate CI runs except the dev container build.
+`task --list` enumerates the rest.
+
+## Commits
+
+Conventional Commits, enforced by committed at commit-msg and on the PR title.
+Types and scopes are in [`.config/commits/committed.toml`](.config/commits/committed.toml)
+and nowhere else; the header is at most 72 columns, imperative, with a listed
+scope.
+
+**Agents open PRs; humans merge.** Never run `gh pr merge`, enable auto-merge,
+approve a PR, or push to `main`. Enforced by `permissions.deny` plus the
+`.claude/hooks/no-merge-guard.sh` PreToolUse hook.

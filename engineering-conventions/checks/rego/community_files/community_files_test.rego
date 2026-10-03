@@ -137,9 +137,11 @@ test_comm_02_blank_issues_left_to_the_default if {
 	])}
 }
 
+# COMM-03 asks nothing of a repository without a CODEOWNERS; COMM-08 does.
 test_comm_03_no_codeowners_is_not_required if {
-	count(community.findings) == 0 with input as changed({}, {".github/CODEOWNERS": null}, [])
+	found := community.findings with input as changed({}, {".github/CODEOWNERS": null}, [])
 		with data.conventions.index as index
+	td.pairs(found) == {["COMM-08", ".github/CODEOWNERS"]}
 }
 
 test_comm_03_misplaced_and_ignored if {
@@ -282,5 +284,17 @@ test_comm_07_discussion_forms if {
 			"GitHub reads a discussion category form only as <category-slug>.yml; rename",
 			".github/DISCUSSION_TEMPLATE/q.yaml to .github/DISCUSSION_TEMPLATE/q.yml",
 		]),
+	}
+}
+
+test_comm_08_no_codeowners if {
+	found := community.findings with input as [td.inventory(["README.md"])] with data.conventions.index as index
+	{p | some p in td.pairs(found); p[0] == "COMM-08"} == {["COMM-08", ".github/CODEOWNERS"]}
+}
+
+test_comm_08_any_location_counts if {
+	every location in [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"] {
+		found := community.findings with input as [td.inventory([location])] with data.conventions.index as index
+		not "COMM-08" in {f.id | some f in found}
 	}
 }

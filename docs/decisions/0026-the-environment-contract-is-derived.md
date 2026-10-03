@@ -5,6 +5,7 @@ status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
 amends: ["0015", "0022"]
+amended_by: ["0029"]
 ---
 
 # 0026 — The environment contract is derived from env.schema.yaml, declares runtime ranges, and names bindings after their reader

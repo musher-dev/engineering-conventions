@@ -13,7 +13,7 @@ itself, which is what a consumer pins.
 engineering-conventions/               repository level: acts on the product
 ├── .devcontainer/  .github/           integration homes whose location the tool mandates
 ├── .config/                           tool configuration (linters, hooks, mise), indexed in its README
-├── .claude/  CLAUDE.md  AGENTS.md     agent contract and path-scoped rules
+├── .claude/  AGENTS.md              agent contract and path-scoped rules
 ├── .repo/                             this repository's own declarations (conventions, outputs, repository)
 ├── Taskfile.yml  taskfiles/           orchestration; reaches the product through PRODUCT_DIR
 ├── docs/                              contributor documentation and decisions

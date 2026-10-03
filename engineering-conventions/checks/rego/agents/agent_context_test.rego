@@ -7,12 +7,11 @@ rule := "---\npaths:\n  - \"src/**\"\n---\n\n# Source\n"
 
 memory := "# Project\n\n@README.md\n\nThe contract.\n"
 
-# A repository conforming to every requirement: a root CLAUDE.md that
-# imports its README, a path-scoped rule and a root AGENTS.md.
+# A repository conforming to every requirement: a root AGENTS.md that
+# imports its README, and a path-scoped rule.
 conforming := {
-	"CLAUDE.md": memory,
+	"AGENTS.md": memory,
 	"README.md": "# Project\n",
-	"AGENTS.md": "# AGENTS.md\n",
 	".claude/rules/source.md": rule,
 }
 
@@ -45,50 +44,68 @@ test_no_agent_context if {
 	count(agent_context.findings) == 0 with input as repo({"README.md": "# Project\n"})
 }
 
-test_agent_01_both_project_memory_files if {
-	found := agent_context.findings with input as repo(with_files({".claude/CLAUDE.md": "@../README.md\n"}))
-	td.pairs(found) == {["AGENT-01", ".claude/CLAUDE.md"]}
+test_agent_15_rule_without_agents_md if {
+	found := agent_context.findings with input as repo(object.remove(conforming, ["AGENTS.md"]))
+	td.pairs(found) == {["AGENT-15", "AGENTS.md"]}
 }
 
-test_agent_02_missing_readme_import if {
-	found := agent_context.findings with input as repo(with_files({"CLAUDE.md": "# Project\n\nSee README.md.\n"}))
-	td.pairs(found) == {["AGENT-02", "CLAUDE.md"]}
+test_agent_15_nested_without_root if {
+	texts := object.remove(with_files({"apps/api/AGENTS.md": "# API\n"}), ["AGENTS.md"])
+	found := agent_context.findings with input as repo(texts)
+	td.pairs(found) == {["AGENT-15", "AGENTS.md"]}
+}
+
+test_agent_15_dot_claude_agents_md if {
+	found := agent_context.findings with input as repo(with_files({".claude/AGENTS.md": "x\n"}))
+	td.pairs(found) == {["AGENT-15", ".claude/AGENTS.md"]}
+}
+
+test_agent_15_nested_agents_md_passes if {
+	texts := with_files({"apps/api/AGENTS.md": "# API\n"})
+	count(agent_context.findings) == 0 with input as repo(texts)
+}
+
+test_agent_16_claude_md_anywhere if {
+	texts := with_files({"CLAUDE.md": "@AGENTS.md\n", ".claude/CLAUDE.md": "x\n", "apps/api/CLAUDE.md": "# API\n"})
+	found := agent_context.findings with input as repo(texts)
+	{p | some p in td.pairs(found); p[0] == "AGENT-16"} == {
+		["AGENT-16", "CLAUDE.md"],
+		["AGENT-16", ".claude/CLAUDE.md"],
+		["AGENT-16", "apps/api/CLAUDE.md"],
+	}
+}
+
+test_agent_16_claude_md_alone_also_needs_agents_md if {
+	texts := object.remove(with_files({"CLAUDE.md": memory}), ["AGENTS.md"])
+	found := agent_context.findings with input as repo(texts)
+	td.pairs(found) == {["AGENT-15", "AGENTS.md"], ["AGENT-16", "CLAUDE.md"]}
+}
+
+test_agent_17_missing_readme_import if {
+	found := agent_context.findings with input as repo(with_files({"AGENTS.md": "# Project\n\nSee README.md.\n"}))
+	td.pairs(found) == {["AGENT-17", "AGENTS.md"]}
 	{f.message | some f in found} == {concat(" ", [
-		"CLAUDE.md does not import README.md; add the line @README.md so the orientation is",
+		"AGENTS.md does not import README.md; add the line @README.md so the orientation is",
 		"written once, in the README",
 	])}
 }
 
-test_agent_02_project_memory_under_dot_claude if {
-	texts := object.remove(with_files({".claude/CLAUDE.md": "@README.md\n"}), ["CLAUDE.md"])
+test_agent_17_nested_pair if {
+	texts := with_files({"apps/api/AGENTS.md": "# API\n", "apps/api/README.md": "# API\n"})
 	found := agent_context.findings with input as repo(texts)
-	some f in found
-	f.id == "AGENT-02"
-	f.path == ".claude/CLAUDE.md"
-	contains(f.message, "@../README.md")
-}
-
-test_agent_02_dot_claude_pairs_with_the_root_readme if {
-	texts := object.remove(with_files({".claude/CLAUDE.md": "@../README.md\n"}), ["CLAUDE.md"])
-	count(agent_context.findings) == 0 with input as repo(texts)
-}
-
-test_agent_02_nested_pair if {
-	texts := with_files({"apps/api/CLAUDE.md": "# API\n", "apps/api/README.md": "# API\n"})
-	found := agent_context.findings with input as repo(texts)
-	td.pairs(found) == {["AGENT-02", "apps/api/CLAUDE.md"]}
-	fixed := object.union(texts, {"apps/api/CLAUDE.md": "@./README.md\n"})
+	td.pairs(found) == {["AGENT-17", "apps/api/AGENTS.md"]}
+	fixed := object.union(texts, {"apps/api/AGENTS.md": "@./README.md\n"})
 	count(agent_context.findings) == 0 with input as repo(fixed)
 }
 
-test_agent_02_standalone_claude_md if {
-	count(agent_context.findings) == 0 with input as repo(with_files({"apps/api/CLAUDE.md": "# API\n"}))
+test_agent_17_standalone_agents_md if {
+	count(agent_context.findings) == 0 with input as repo(with_files({"apps/api/AGENTS.md": "# API\n"}))
 }
 
-test_agent_02_import_in_code_does_not_count if {
-	texts := with_files({"CLAUDE.md": "Write `@README.md` to import.\n"})
+test_agent_17_import_in_code_does_not_count if {
+	texts := with_files({"AGENTS.md": "Write `@README.md` to import.\n"})
 	found := agent_context.findings with input as repo(texts)
-	td.pairs(found) == {["AGENT-02", "CLAUDE.md"]}
+	td.pairs(found) == {["AGENT-17", "AGENTS.md"]}
 }
 
 test_agent_03_rule_without_paths if {
@@ -121,77 +138,79 @@ test_agent_03_comma_separated_string if {
 }
 
 test_agent_03_quiet_without_text if {
-	count(agent_context.findings) == 0 with input as [td.inventory([".claude/rules/huge.md"])]
+	found := agent_context.findings with input as [td.inventory([".claude/rules/huge.md", "AGENTS.md"])]
+	count(found) == 0
 }
 
 test_agent_04_over_budget_through_imports if {
 	texts := with_files({
-		"CLAUDE.md": "@README.md\n@docs/guide.md\n",
+		"AGENTS.md": "@README.md\n@docs/guide.md\n",
 		"docs/guide.md": "# Guide\n",
 		".claude/rules/everywhere.md": "# Everywhere\n",
 	})
-	sizes := {"CLAUDE.md": 1000, "README.md": 20000, "docs/guide.md": 20000, ".claude/rules/everywhere.md": 5000}
+	sizes := {"AGENTS.md": 1000, "README.md": 20000, "docs/guide.md": 20000, ".claude/rules/everywhere.md": 5000}
 	found := agent_context.findings with input as repo_with_sizes(texts, sizes)
-	td.pairs(found) == {["AGENT-03", ".claude/rules/everywhere.md"], ["AGENT-04", "CLAUDE.md"]}
+	td.pairs(found) == {["AGENT-03", ".claude/rules/everywhere.md"], ["AGENT-04", "AGENTS.md"]}
 	some f in found
 	f.id == "AGENT-04"
 	contains(f.message, "is 46000 bytes, over the 40960-byte budget")
 	contains(f.message, "docs/guide.md (20000 bytes)")
 }
 
+test_agent_04_counts_claude_md_when_committed if {
+	texts := with_files({"CLAUDE.md": "# Claude\n"})
+	loaded := agent_context.always_loaded with input as repo(texts)
+	loaded == {"CLAUDE.md"}
+}
+
 test_agent_04_follows_imports_four_hops if {
 	texts := with_files({
-		"CLAUDE.md": "@README.md\n@a/CLAUDE.md\n",
-		"a/CLAUDE.md": "@../b/CLAUDE.md\n",
-		"b/CLAUDE.md": "@../c/CLAUDE.md\n",
-		"c/CLAUDE.md": "@../d/CLAUDE.md\n",
-		"d/CLAUDE.md": "@../e/CLAUDE.md\n",
-		"e/CLAUDE.md": "# Five hops\n",
+		"AGENTS.md": "@README.md\n@a/AGENTS.md\n",
+		"a/AGENTS.md": "@../b/AGENTS.md\n",
+		"b/AGENTS.md": "@../c/AGENTS.md\n",
+		"c/AGENTS.md": "@../d/AGENTS.md\n",
+		"d/AGENTS.md": "@../e/AGENTS.md\n",
+		"e/AGENTS.md": "# Five hops\n",
 	})
-	sizes := {"d/CLAUDE.md": 30000, "e/CLAUDE.md": 30000}
+	sizes := {"d/AGENTS.md": 30000, "e/AGENTS.md": 30000}
 	loaded := agent_context.always_loaded with input as repo_with_sizes(texts, sizes)
-	"d/CLAUDE.md" in loaded
-	not "e/CLAUDE.md" in loaded
+	"d/AGENTS.md" in loaded
+	not "e/AGENTS.md" in loaded
 	count(agent_context.findings) == 0 with input as repo_with_sizes(texts, sizes)
 }
 
 test_agent_04_home_and_outside_imports_do_not_count if {
-	texts := with_files({"CLAUDE.md": "@README.md\n@~/.claude/mine.md\n"})
+	texts := with_files({"AGENTS.md": "@README.md\n@~/.claude/mine.md\n"})
 	loaded := agent_context.always_loaded with input as repo(texts)
-	loaded == {"CLAUDE.md", "README.md"}
+	loaded == {"AGENTS.md", "README.md"}
 }
 
 test_agent_04_unconditional_rules_alone if {
-	texts := {".claude/rules/a.md": "# A\n"}
-	found := agent_context.findings with input as repo_with_sizes(texts, {".claude/rules/a.md": 50000})
-	td.pairs(found) == {["AGENT-03", ".claude/rules/a.md"], ["AGENT-04", ".claude/rules/a.md"]}
+	texts := {".claude/rules/a.md": "# A\n", "AGENTS.md": "# Project\n"}
+	sizes := {".claude/rules/a.md": 50000}
+	found := agent_context.findings with input as repo_with_sizes(texts, sizes)
+	td.pairs(found) == {["AGENT-03", ".claude/rules/a.md"], ["AGENT-04", "AGENTS.md"]}
 }
 
-test_agent_05_unresolved_import if {
-	texts := with_files({"CLAUDE.md": "@README.md\nAsk @octocat, use @testing-library, or read @docs/gone.md.\n"})
+test_agent_18_unresolved_import if {
+	texts := with_files({"AGENTS.md": "@README.md\nAsk @octocat, use @testing-library, or read @docs/gone.md.\n"})
 	found := agent_context.findings with input as repo(texts)
-	td.pairs(found) == {["AGENT-05", "CLAUDE.md"]}
+	td.pairs(found) == {["AGENT-18", "AGENTS.md"]}
 	{f.message | some f in found} == {concat(" ", [
 		"@docs/gone.md does not name a file in the repository; correct the path, or put the text",
 		"in backticks if it is not meant as an import",
 	])}
 }
 
-test_agent_05_outside_the_repository if {
-	texts := with_files({"CLAUDE.md": "@README.md\n@../README.md\n@~/.claude/mine.md\n"})
+test_agent_18_outside_the_repository if {
+	texts := with_files({"AGENTS.md": "@README.md\n@../README.md\n@~/.claude/mine.md\n"})
 	found := agent_context.findings with input as repo(texts)
-	td.pairs(found) == {["AGENT-05", "CLAUDE.md"]}
+	td.pairs(found) == {["AGENT-18", "AGENTS.md"]}
 }
 
-test_agent_06_nested_agents_md if {
-	texts := with_files({"apps/api/AGENTS.md": "# API\n", ".claude/AGENTS.md": "x\n"})
-	found := agent_context.findings with input as repo(texts)
-	td.pairs(found) == {["AGENT-06", "apps/api/AGENTS.md"], ["AGENT-06", ".claude/AGENTS.md"]}
-}
-
-test_agent_06_project_memory_without_agents_md if {
-	found := agent_context.findings with input as repo(object.remove(conforming, ["AGENTS.md"]))
-	td.pairs(found) == {["AGENT-06", "AGENTS.md"]}
+test_agent_18_nested_resolves_from_its_directory if {
+	texts := with_files({"apps/api/AGENTS.md": "@docs/api.md\n", "apps/api/docs/api.md": "# API\n"})
+	count(agent_context.findings) == 0 with input as repo(texts)
 }
 
 test_agent_07_personal_files if {

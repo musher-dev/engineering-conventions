@@ -61,7 +61,7 @@ digests[normalise(path)] := digest if {
 }
 
 # What the runner derived from each environment schema with
-# bin/env-contract.jq: {contract, example} (ENVS-20, ENVS-21, decision 0026).
+# bin/env-contract.jq: {contract} (ENVS-20, decision 0026).
 derived[normalise(path)] := entry if {
 	some doc in inventory_documents
 	some path, entry in doc.contents.conventions_inventory.derived

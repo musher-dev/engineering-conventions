@@ -40,26 +40,11 @@
   "adoption-enforce-subset": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", false]
   ],
-  "agent-01-two-project-memories": [
-    [".claude/CLAUDE.md", "AGENT-01", "warning", "the repository has both CLAUDE.md and .claude/CLAUDE.md, and Claude Code loads both as project memory; merge them into one of the two", true]
-  ],
-  "agent-02-readme-not-imported": [
-    ["CLAUDE.md", "AGENT-02", "warning", "CLAUDE.md does not import README.md; add the line @README.md so the orientation is written once, in the README", true]
-  ],
   "agent-03-unscoped-rule": [
     [".claude/rules/everywhere.md", "AGENT-03", "warning", "the rule has no paths: frontmatter, so Claude Code loads it in every session; add a paths: list naming the files the rule governs", true]
   ],
   "agent-04-over-budget": [
-    ["CLAUDE.md", "AGENT-04", "warning", "the context Claude Code loads at every launch is 49760 bytes, over the 40960-byte budget: CLAUDE.md (49 bytes), README.md (49711 bytes); move content into path-scoped rules, or trim the project memory and what it imports", true]
-  ],
-  "agent-05-unresolved-import": [
-    ["CLAUDE.md", "AGENT-05", "warning", "@docs/testing.md does not name a file in the repository; correct the path, or put the text in backticks if it is not meant as an import", true]
-  ],
-  "agent-06-missing-root-agents-md": [
-    ["AGENTS.md", "AGENT-06", "warning", "the repository has project memory but no AGENTS.md; add a root AGENTS.md that points coding agents other than Claude Code at it", true]
-  ],
-  "agent-06-nested-agents-md": [
-    ["docs/api/AGENTS.md", "AGENT-06", "warning", "an AGENTS.md below the root is a second set of agent instructions; move what it says into a CLAUDE.md or a path-scoped rule, and keep one AGENTS.md at the root", true]
+    ["AGENTS.md", "AGENT-04", "warning", "the context Claude Code loads at every launch is 49760 bytes, over the 40960-byte budget: AGENTS.md (49 bytes), README.md (49711 bytes); move content into path-scoped rules, or trim the project memory and what it imports", true]
   ],
   "agent-07-personal-settings": [
     [".claude/settings.local.json", "AGENT-07", "warning", "settings.local.json is one person's local agent configuration; remove it from git and add it to .gitignore", true]
@@ -91,6 +76,25 @@
   "agent-14-passes-manual-skill-not-preloaded": [],
   "agent-14-preloads-manual-skill": [
     [".claude/agents/reviewer.md", "AGENT-14", "warning", "skills: lists deploy, but .claude/skills/deploy/SKILL.md sets disable-model-invocation: true, so Claude Code cannot preload it; remove the entry, or let the model invoke the skill", true]
+  ],
+  "agent-15-dot-claude-agents-md": [
+    [".claude/AGENTS.md", "AGENT-15", "warning", "Claude Code loads .claude/AGENTS.md beside the root AGENTS.md, which splits the project memory in two; move what it says into the root AGENTS.md", true]
+  ],
+  "agent-15-missing-root-agents-md": [
+    ["AGENTS.md", "AGENT-15", "warning", "the repository has agent context but no AGENTS.md at its root; add one as the project memory every coding agent reads, and import the README from it", true]
+  ],
+  "agent-15-passes-nested-agents-md": [],
+  "agent-16-claude-md": [
+    ["CLAUDE.md", "AGENT-16", "warning", "Claude Code reads CLAUDE.md and ignores every AGENTS.md while it exists; move what it says into the AGENTS.md beside it and delete it", true]
+  ],
+  "agent-16-passes-agents-md-only": [],
+  "agent-17-passes-standalone-nested": [],
+  "agent-17-readme-not-imported": [
+    ["AGENTS.md", "AGENT-17", "warning", "AGENTS.md does not import README.md; add the line @README.md so the orientation is written once, in the README", true]
+  ],
+  "agent-18-passes-handles-and-code": [],
+  "agent-18-unresolved-import": [
+    ["AGENTS.md", "AGENT-18", "warning", "@docs/testing.md does not name a file in the repository; correct the path, or put the text in backticks if it is not meant as an import", true]
   ],
   "clean": [],
   "comm-01-invalid-and-yaml-forms": [
@@ -434,10 +438,6 @@
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true],
     ["platform-api/contracts/env/platform-api.env.schema.json", "ENVS-20", "warning", "this is not the contract platform-api/env.schema.yaml derives; generate it again with conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json", true]
   ],
-  "envs-21-passes-derived-example": [],
-  "envs-21-stale-example": [
-    ["platform-api/.env.example", "ENVS-21", "warning", "this is not the .env.example platform-api/env.schema.yaml derives; generate it again with conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example", true]
-  ],
   "envs-22-inline-capability": [
     ["platform-api/env.schema.yaml", "ENVS-22", "warning", "binding DATABASE_URL names capability \"postgresql\" inline; declare the instance under requires, with the versions the code works with, and write requires: <instance> on the binding", true]
   ],
@@ -455,6 +455,18 @@
   "envs-25-unprefixed-binding": [
     ["platform-api/env.schema.yaml", "ENVS-25", "warning", "binding CACHE_URL does not start with the consumer prefix MUSHER_API; rename it MUSHER_API_CACHE_URL and retire the old name with it as the replacement, or list it in naming.legacy if it was unprefixed when the schema adopted the prefix", true]
   ],
+  "envs-26-committed-example": [
+    ["platform-api/.env.example", "ENVS-26", "warning", ".env.example is an environment file in the repository; delete it from git, keep the variables in env.schema.yaml, and write a local .env with conventions env-file platform-api/env.schema.yaml", true]
+  ],
+  "envs-26-passes-example-app": [],
+  "envs-27-negated": [
+    ["platform-api/env.schema.yaml", "ENVS-27", "warning", "git does not ignore platform-api/.env, where conventions env-file writes this schema's local values and secrets; add /platform-api/.env to the root .gitignore", true]
+  ],
+  "envs-27-not-ignored": [
+    ["platform-api/env.schema.yaml", "ENVS-27", "warning", "git does not ignore platform-api/.env, where conventions env-file writes this schema's local values and secrets; add /platform-api/.env to the root .gitignore", true]
+  ],
+  "envs-27-passes-glob": [],
+  "envs-27-passes-product-gitignore": [],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],

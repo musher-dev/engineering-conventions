@@ -1,12 +1,14 @@
-# The documents derived from an env.schema.yaml (EC-0019, ENVS-20 and
-# ENVS-21, decision 0026): the environment contract, a JSON Schema 2020-12
-# document, and the .env.example a developer copies. This file is the one
-# implementation of the mapping: `conventions env-contract` prints what it
-# derives, and both runners (bin/conventions, src/conventions_tools/run.py)
-# give it to the checks, which only compare.
+# The documents derived from an env.schema.yaml (EC-0019, decisions 0026 and
+# 0029): the environment contract, a JSON Schema 2020-12 document (ENVS-20),
+# and a developer's local .env, which is generated and never committed. This
+# file is the one implementation of the mapping: `conventions env-contract`
+# prints the contract and `conventions env-file` writes the .env, and both
+# runners (bin/conventions, src/conventions_tools/run.py) give the contract
+# to the checks, which only compare.
 #
 #   input         the schema as conftest parse reads it
-#   --arg part    contract, example, or both ({contract, example})
+#   --arg part    contract, env-file, or derived ({contract}, what the
+#                 checks compare)
 #
 # Run with -S, so the contract's keys are sorted wherever it is printed.
 
@@ -124,26 +126,29 @@ def facts:
   ]
   | join(", ");
 
-# A binding's line: its local value; empty when it must be filled in;
+# A binding's line: its local value; a placeholder `conventions env-file`
+# replaces with freshly minted material; empty when it must be filled in;
 # commented out, with its default, when the code's default applies.
 def assignment($name):
   if present("local_default") then "\($name)=\(.local_default | dotenv_value)"
-  elif .required == true or present("local_generate") then "\($name)="
+  elif present("local_generate") then "\($name)=@@generate:\(.local_generate | text)@@"
+  elif .required == true then "\($name)="
   else "# \($name)=\(if present("default") then .default | dotenv_value else "" end)"
   end;
 
-def example:
+def env_file:
   (.service // "the service" | text) as $service
   | [
-      "# The environment \($service) reads, generated from its env.schema.yaml by",
-      "# conventions env-contract --example. Do not edit: change env.schema.yaml and",
-      "# generate this file again. Copy it to .env and fill in the empty values.",
+      "# The local environment \($service) reads, generated from its env.schema.yaml by",
+      "# conventions env-file. It holds this machine's values and secrets: git ignores",
+      "# it (ENVS-27), and it is never committed. Fill in the empty values. After the",
+      "# schema changes, run conventions env-file again to list what is missing.",
       (bindings[] | .key as $name | .value | "", "# \(.description // "" | line)", "# \(facts)", assignment($name))
     ]
   | join("\n") + "\n";
 
 if type != "object" then error("an environment schema is a mapping")
-elif $part == "contract" then contract
-elif $part == "example" then example
-else {contract: contract, example: example}
+elif $part == "env-file" then env_file
+elif $part == "derived" then {contract: contract}
+else contract
 end

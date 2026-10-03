@@ -64,20 +64,24 @@ ID is permanent: it is never renumbered or reused.
 | [ADOPT-09](adoption/conventions-declaration.md#adopt-09) | A repository pins the conventions release it is checked against | EC-0001 | proposed | warning | conftest |
 | [ADOPT-10](adoption/conventions-declaration.md#adopt-10) | Every family a staged adoption enforces is one the release defines | EC-0001 | proposed | warning | conftest |
 | [ADOPT-11](adoption/conventions-declaration.md#adopt-11) | A staged adoption ends within 180 days, and then every family is enforced | EC-0001 | proposed | warning | conftest |
-| [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | proposed | warning | conftest |
-| [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
+| [AGENT-01](agents/agent-context.md#agent-01) | Project memory is one file, CLAUDE.md or .claude/CLAUDE.md | EC-0013 | retired | warning | conftest |
+| [AGENT-02](agents/agent-context.md#agent-02) | A CLAUDE.md with a README beside it imports that README | EC-0013 | retired | warning | conftest |
 | [AGENT-03](agents/agent-context.md#agent-03) | Every rule under .claude/rules/ is scoped by a non-empty paths list | EC-0013 | proposed | warning | conftest |
 | [AGENT-04](agents/agent-context.md#agent-04) | The context loaded at every launch is at most 40 KiB | EC-0013 | proposed | warning | conftest |
-| [AGENT-05](agents/agent-context.md#agent-05) | Every import in a CLAUDE.md names a file in the repository | EC-0013 | proposed | warning | conftest |
-| [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | proposed | warning | conftest |
+| [AGENT-05](agents/agent-context.md#agent-05) | Every import in a CLAUDE.md names a file in the repository | EC-0013 | retired | warning | conftest |
+| [AGENT-06](agents/agent-context.md#agent-06) | A repository with agent context has one AGENTS.md, at its root | EC-0013 | retired | warning | conftest |
 | [AGENT-07](agents/agent-context.md#agent-07) | Personal agent files are never committed | EC-0013 | proposed | warning | conftest |
-| [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | proposed | warning | review |
+| [AGENT-08](agents/agent-context.md#agent-08) | AGENTS.md points at the agent context and restates none of it | EC-0013 | retired | warning | review |
 | [AGENT-09](agents/skills-and-subagents.md#agent-09) | A skill or subagent file starts with YAML frontmatter that parses | EC-0034 | proposed | warning | conftest |
 | [AGENT-10](agents/skills-and-subagents.md#agent-10) | A skill's frontmatter is valid against the skill schema | EC-0034 | proposed | warning | conftest |
 | [AGENT-11](agents/skills-and-subagents.md#agent-11) | A skill's name, when set, is its directory's name | EC-0034 | proposed | warning | conftest |
 | [AGENT-12](agents/skills-and-subagents.md#agent-12) | A subagent's frontmatter is valid against the subagent schema | EC-0034 | proposed | warning | conftest |
 | [AGENT-13](agents/skills-and-subagents.md#agent-13) | Every skill a subagent preloads is a skill in the repository | EC-0034 | proposed | warning | conftest |
 | [AGENT-14](agents/skills-and-subagents.md#agent-14) | A subagent does not preload a skill that disables model invocation | EC-0034 | proposed | warning | conftest |
+| [AGENT-15](agents/agent-context.md#agent-15) | The project memory is one AGENTS.md, at the repository root | EC-0013 | proposed | warning | conftest |
+| [AGENT-16](agents/agent-context.md#agent-16) | No CLAUDE.md is committed | EC-0013 | proposed | warning | conftest |
+| [AGENT-17](agents/agent-context.md#agent-17) | An AGENTS.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
+| [AGENT-18](agents/agent-context.md#agent-18) | Every import in an AGENTS.md names a file in the repository | EC-0013 | proposed | warning | conftest |
 | [COMM-01](community-files/community-files.md#comm-01) | An issue form is a .yml file valid against GitHub's issue-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMM-02](community-files/community-files.md#comm-02) | Issue forms come with a template chooser that is valid and sets blank_issues_enabled | EC-0036 | proposed | warning | conftest |
 | [COMM-03](community-files/community-files.md#comm-03) | A repository with a CODEOWNERS has exactly one, at .github/CODEOWNERS | EC-0036 | proposed | warning | conftest |
@@ -162,11 +166,13 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-18](environment/env-schema.md#envs-18) | A binding's capability is a registered runtime capability | EC-0020 | proposed | warning | conftest |
 | [ENVS-19](environment/env-schema.md#envs-19) | A binding that reaches another service or an outside capability names it | EC-0020 | proposed | warning | review |
 | [ENVS-20](environment/env-contract.md#envs-20) | A service that offers its environment as an interface commits the contract derived from its schema | EC-0019 | proposed | warning | conftest |
-| [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | proposed | warning | conftest |
+| [ENVS-21](environment/env-contract.md#envs-21) | A product's .env.example is the one derived from its environment schema | EC-0019 | retired | warning | conftest |
 | [ENVS-22](environment/env-schema.md#envs-22) | A binding that reaches a runtime capability names it through requires | EC-0020 | proposed | warning | conftest |
 | [ENVS-23](environment/env-schema.md#envs-23) | Every runtime instance is declared, reached by a binding, and a registered capability | EC-0020 | proposed | warning | conftest |
 | [ENVS-24](environment/env-schema.md#envs-24) | A consumer prefix is MUSHER_ and the repository's component | EC-0020 | proposed | warning | conftest |
 | [ENVS-25](environment/env-schema.md#envs-25) | Under a consumer prefix, every binding name starts with it, or is reserved, a vendor's or legacy | EC-0020 | proposed | warning | conftest |
+| [ENVS-26](environment/env-contract.md#envs-26) | No environment file is committed beside an environment schema or at the root | EC-0019 | proposed | warning | conftest |
+| [ENVS-27](environment/env-contract.md#envs-27) | Git ignores the .env beside a product's environment schema | EC-0019 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |

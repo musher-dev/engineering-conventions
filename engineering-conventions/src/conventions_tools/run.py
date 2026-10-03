@@ -308,7 +308,7 @@ def derive(repo: Path, relative: str, program: Path) -> object | None:
     if parsed.returncode != 0:
         return None
     derived = subprocess.run(
-        [_jq(), "-S", "--arg", "part", "both", "-f", str(program)],
+        [_jq(), "-S", "--arg", "part", "derived", "-f", str(program)],
         input=parsed.stdout,
         capture_output=True,
         text=True,

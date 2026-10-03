@@ -39,7 +39,7 @@ include:
   conventions: [EC-0015, EC-0020, EC-0031]
   requirements:
     [
-      TASK-10, TASK-13, ENVS-02, ENVS-15, ENVS-20, ENVS-21,
+      TASK-10, TASK-13, ENVS-02, ENVS-15, ENVS-20, ENVS-26, ENVS-27,
       IFACE-01, IFACE-02, IFACE-03, IFACE-04, IFACE-05, IFACE-06, IFACE-07,
     ]
 # Every requirement is proposed until the platform hands workflow naming over

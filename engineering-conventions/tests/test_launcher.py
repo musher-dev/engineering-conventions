@@ -41,11 +41,11 @@ CASES = [
     # The launcher hashes vendored copies itself (DEPS-06, decision 0022).
     "deps-06-edited-file",
     "deps-06-passes-every-interface-when-none-named",
-    # The launcher derives the contract and .env.example with
-    # bin/env-contract.jq, as the runner does (decision 0026).
+    # The launcher derives the contract with bin/env-contract.jq, as the
+    # runner does (decision 0026), and reads each .gitignore (ENVS-27).
     "envs-20-stale-contract",
     "envs-20-passes-derived-contract",
-    "envs-21-stale-example",
+    "envs-27-negated",
 ]
 
 
@@ -120,7 +120,8 @@ def test_a_git_work_tree_is_listed_by_git(tmp_path: Path) -> None:
     assert git
     subprocess.run([git, "init", "-q", str(repo)], check=True)
     # An ignored workflow is not the repository's, so it is not checked.
-    (repo / ".gitignore").write_text(".github/workflows/ci.yml\n")
+    with (repo / ".gitignore").open("a", encoding="utf-8") as ignore:
+        ignore.write(".github/workflows/ci.yml\n")
     (repo / ".github" / "workflows" / "ci.yml").write_text("name: CI\n")
     completed = _launch("check", "--output", "json", cwd=repo / ".github")
     assert completed.returncode == 0, completed.stderr
@@ -444,8 +445,8 @@ def test_sha256_falls_back_to_whichever_tool_exists(tool: str, tmp_path: Path) -
 
 
 def test_env_contract_prints_what_the_check_compares(tmp_path: Path) -> None:
-    # The committed contract and .env.example of the passing cases are what
-    # the command prints today, so a change to the mapping shows up here.
+    # The committed contract of the passing case is what the command prints
+    # today, so a change to the mapping shows up here.
     schema = fixture_repos_dir(PRODUCT) / "clean" / "platform-api" / "env.schema.yaml"
     contract = _launch("env-contract", str(schema), cwd=tmp_path)
     assert contract.returncode == 0, contract.stderr
@@ -458,11 +459,8 @@ def test_env_contract_prints_what_the_check_compares(tmp_path: Path) -> None:
         / "platform-api.env.schema.json"
     )
     assert contract.stdout == committed.read_text(encoding="utf-8")
-    example = _launch("env-contract", "--example", str(schema), cwd=tmp_path)
-    assert example.returncode == 0, example.stderr
-    case = fixture_repos_dir(PRODUCT) / "envs-21-passes-derived-example"
-    committed = case / "platform-api" / ".env.example"
-    assert example.stdout == committed.read_text(encoding="utf-8")
+    # The .env.example it once printed is retired (ENVS-21, decision 0029).
+    assert _launch("env-contract", "--example", str(schema), cwd=tmp_path).returncode == 2
 
 
 def test_env_contract_needs_a_schema_that_parses(tmp_path: Path) -> None:
@@ -474,6 +472,83 @@ def test_env_contract_needs_a_schema_that_parses(tmp_path: Path) -> None:
     assert missing.returncode == 2
     assert "absent.yaml does not exist" in missing.stderr
     assert _launch("env-contract", cwd=tmp_path).returncode == 2
+
+
+ENV_SCHEMA = """\
+service: api
+runtime: go
+bindings:
+  API_PORT: {type: integer, default: 8080, sensitivity: internal, description: TCP port.}
+  DATABASE_URL:
+    type: string
+    required: true
+    sensitivity: secret
+    local_default: postgres://postgres@localhost:5432/app
+    description: The database.
+  API_TOKEN: {type: string, required: true, sensitivity: secret, description: A token.}
+  SESSION_KEY:
+    type: string
+    sensitivity: secret
+    local_generate: "base64url:32"
+    description: Signs cookies.
+  NONCE_SALT: {type: string, sensitivity: secret, local_generate: "hex:16", description: Salts.}
+"""
+
+
+def _env_lines(path: Path) -> dict[str, str]:
+    return {
+        line.split("=", 1)[0]: line.split("=", 1)[1]
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#")
+    }
+
+
+def test_env_file_writes_a_ready_to_run_env(tmp_path: Path) -> None:
+    (tmp_path / "api").mkdir()
+    (tmp_path / "api" / "env.schema.yaml").write_text(ENV_SCHEMA)
+    completed = _launch("env-file", "-C", str(tmp_path), "api/env.schema.yaml", cwd=tmp_path)
+    assert completed.returncode == 0, completed.stderr
+    written = tmp_path / "api" / ".env"
+    assert written.stat().st_mode & 0o777 == 0o600
+    text = written.read_text(encoding="utf-8")
+    assert text.startswith("# The local environment api reads, generated from its env.schema.yaml")
+    assert "\n# API_PORT=8080\n" in text
+    values = _env_lines(written)
+    assert values["DATABASE_URL"] == "postgres://postgres@localhost:5432/app"
+    assert values["API_TOKEN"] == ""
+    assert len(values["NONCE_SALT"]) == 32
+    assert all(character in "0123456789abcdef" for character in values["NONCE_SALT"])
+    assert len(values["SESSION_KEY"]) == 43
+    assert not set(values["SESSION_KEY"]) & set("+/=")
+
+
+def test_env_file_never_replaces_an_env_without_force(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text(ENV_SCHEMA)
+    (tmp_path / ".env").write_text("API_TOKEN=mine\n# API_PORT=9090\nDATABASE_URL=x\n")
+    missing = _launch("env-file", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert missing.returncode == 1
+    assert missing.stderr.splitlines()[1:] == ["NONCE_SALT", "SESSION_KEY"]
+    assert (tmp_path / ".env").read_text(encoding="utf-8").startswith("API_TOKEN=mine\n")
+    (tmp_path / ".env").write_text(
+        "API_TOKEN=mine\n# API_PORT=9090\nDATABASE_URL=x\nexport NONCE_SALT=a\nSESSION_KEY=b\n"
+    )
+    complete = _launch("env-file", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert complete.returncode == 0, complete.stderr
+    assert "already has every variable" in complete.stderr
+    first = _env_lines(tmp_path / ".env")
+    forced = _launch("env-file", "--force", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert forced.returncode == 0, forced.stderr
+    assert "every secret in it is minted again" in forced.stderr
+    assert _env_lines(tmp_path / ".env")["SESSION_KEY"] != first["SESSION_KEY"]
+
+
+def test_env_file_needs_a_schema_that_parses(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text("- a list\n")
+    completed = _launch("env-file", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert completed.returncode == 2
+    assert "cannot derive the local environment from env.schema.yaml" in completed.stderr
+    assert not (tmp_path / ".env").exists()
+    assert _launch("env-file", "absent.yaml", cwd=tmp_path).returncode == 2
 
 
 OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"

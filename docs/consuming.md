@@ -40,6 +40,7 @@ conventions check --fail-on warning    # fail on every finding, as CI should in 
 conventions prose                      # lint Markdown with MusherConventions, and copy with MusherCopy
 conventions openapi                    # lint OpenAPI interfaces with the repository's Spectral ruleset
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
+conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -185,16 +186,25 @@ names, committed secrets and shared variables. The format is
 [EC-0019](../engineering-conventions/definitions/conventions/environment/env-contract.md).
 
 The schema is the only copy anyone writes. What other repositories and developers read is generated from it by the
-release, and `conventions check` compares the committed copies with what the schema derives:
+release. `conventions check` compares the committed contract with what the schema derives, and reports any
+environment file committed beside the schema (ENVS-26):
 
 ```sh
 # The environment contract, JSON Schema 2020-12, when the service offers an env-schema interface (ENVS-20)
 conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json
-# The file a developer copies to .env, when the product keeps one (ENVS-21)
-conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example
+# A developer's local .env, ready to run, with secrets minted on this machine; never committed
+conventions env-file platform-api/env.schema.yaml
 ```
 
-Run both in the task that writes your generated files. The interface names the contract, not the schema:
+Run the first in the task that writes your generated files, and, if you like, the second in `setup`. `env-file` never
+replaces an existing `.env`: it lists the variables the schema has gained, and `--force` writes the file again. Ignore
+the file in `.gitignore` (ENVS-27):
+
+```gitignore
+/platform-api/.env
+```
+
+The interface names the contract, not the schema:
 
 ```toml
 [[interfaces]]

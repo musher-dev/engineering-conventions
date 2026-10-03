@@ -3,10 +3,9 @@
 # description: >-
 #   A service that offers its environment as an env-schema interface commits
 #   the contract derived from <product>/env.schema.yaml under
-#   contracts/env/ and names it in the interface (ENVS-20), and a product's
-#   .env.example is the one its schema derives (ENVS-21). The runner derives
-#   both with bin/env-contract.jq (decision 0026), so these rules only
-#   compare.
+#   contracts/env/ and names it in the interface (ENVS-20). The runner
+#   derives it with bin/env-contract.jq (decision 0026), so these rules only
+#   compare. ENVS-21, the derived .env.example, is retired (decision 0029).
 # scope: package
 # custom:
 #   convention: EC-0019
@@ -51,17 +50,6 @@ findings contains lib.finding("ENVS-20", contract_path, message) if {
 	)
 }
 
-# ENVS-21
-findings contains lib.finding("ENVS-21", example_path, message) if {
-	derived := files.derived[schema_path].example
-	text := files.texts[example_path]
-	text != derived
-	message := sprintf(
-		"this is not the .env.example %s derives; generate it again with conventions env-contract --example %s > %s",
-		[schema_path, schema_path, example_path],
-	)
-}
-
 # The product's schema, when the repository has one the checks read.
 schema_path := path if {
 	path := sprintf("%s/env.schema.yaml", [layout.product_dir])
@@ -81,8 +69,6 @@ committed_contract := doc.contents if {
 	some doc in files.own_documents
 	doc.path == contract_path
 }
-
-example_path := sprintf("%s/.env.example", [layout.product_dir])
 
 env_interfaces contains entry if {
 	schema_path

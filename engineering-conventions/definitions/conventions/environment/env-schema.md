@@ -226,9 +226,9 @@ requirements:
 An `env.schema.yaml` declares every variable a product, or a dev environment, reads from its environment. It is
 written by hand and is the source everything else is derived from: the environment contract an `env-schema` interface
 delivers, a local environment file, a generated settings module, a deploy preflight, a reference page. What is checked
-here is that the source is well-formed, named consistently and safe to commit. The contract and `.env.example` are
-derived by a mapping the release ships, and [EC-0019](env-contract.md#what-is-derived-from-the-schema) checks them
-(ENVS-20, ENVS-21).
+here is that the source is well-formed, named consistently and safe to commit. The contract and the local `.env` are
+derived by a mapping the release ships, and [EC-0019](env-contract.md#what-is-derived-from-the-schema) checks that the
+contract is committed and the `.env` is not (ENVS-20, ENVS-26, ENVS-27).
 
 ## Scope
 

@@ -186,7 +186,6 @@ pre-commit:
         - "README.md"
         - "CONTRIBUTING.md"
         - "SECURITY.md"
-        - "CLAUDE.md"
         - "AGENTS.md"
         - "docs/**/*.md"
         - "engineering-conventions/definitions/conventions/**/*.md"

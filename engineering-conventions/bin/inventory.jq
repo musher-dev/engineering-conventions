@@ -9,7 +9,7 @@
 #                     "parsed:PATH" (--slurpfile, conftest parse --combine output),
 #                     "unparsed:PATH" (--rawfile, conftest parse's error),
 #                     "derived:PATH" (--slurpfile, what bin/env-contract.jq derives
-#                     from an environment schema: {contract, example})
+#                     from an environment schema: {contract})
 #
 # src/conventions_tools/run.py writes the same document; tests/test_launcher.py
 # holds the two to the same findings.

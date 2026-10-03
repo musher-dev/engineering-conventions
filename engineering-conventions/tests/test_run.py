@@ -389,7 +389,7 @@ def test_inventory_document_derives_from_each_environment_schema(
         "type": "integer",
         "x-musher-sensitivity": "internal",
     }
-    assert "# API_PORT=8080\n" in get_str(as_map(derived["api/env.schema.yaml"]), "example")
+    assert list(as_map(derived["api/env.schema.yaml"])) == ["contract"]
 
 
 def test_the_contract_carries_runtime_requirements(product: Path) -> None:

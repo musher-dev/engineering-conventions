@@ -26,7 +26,8 @@
 #   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [--repository NAME] [-C DIR]
 #   conventions prose [-C DIR] [PATH...]
 #   conventions openapi [-C DIR] [--ruleset FILE] [FILE...]
-#   conventions env-contract [-C DIR] [--example] SCHEMA
+#   conventions env-contract [-C DIR] SCHEMA
+#   conventions env-file [-C DIR] [--force] SCHEMA
 #   conventions version
 set -eu
 
@@ -168,7 +169,7 @@ NOT_DOCKERFILES='\.dockerignore$'
 # including an ignore file kept in .config/ without its dot (EC-0012). Only
 # files up to TEXT_LIMIT bytes are embedded.
 TEXTS='(^|/)CLAUDE\.md$'
-TEXTS="${TEXTS}|"'^AGENTS\.md$'
+TEXTS="${TEXTS}|"'(^|/)AGENTS\.md$'
 TEXTS="${TEXTS}|"'^\.claude/rules/.+\.md$'
 TEXTS="${TEXTS}|"'(^|/)\.claude/skills/[^/]+/SKILL\.md$'
 TEXTS="${TEXTS}|"'(^|/)\.claude/agents/.+\.md$'
@@ -188,8 +189,8 @@ TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.Taskfile\.ya?ml$'
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'
-# The local environment file a product derives from its schema (ENVS-21).
-TEXTS="${TEXTS}|"'^([^/]+/)?\.env\.example$'
+# A .gitignore, for whether it ignores a product's local .env (ENVS-27).
+TEXTS="${TEXTS}|"'(^|/)\.gitignore$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.
@@ -200,8 +201,8 @@ SIZES='\.md$'
 DIGESTS='^([^/]+/)?contracts/vendor/[^/]+/[^/]+/.+'
 
 # Environment schemas whose derived documents the checks compare with the
-# committed ones: bin/env-contract.jq derives the contract and .env.example
-# from each, so the checks only compare (ENVS-20, ENVS-21, decision 0026).
+# committed ones: bin/env-contract.jq derives the contract from each, so the
+# checks only compare (ENVS-20, decision 0026).
 ENV_SCHEMAS='^([^/]+/)?env\.schema\.ya?ml$'
 
 # sha256 FILE: the file's SHA-256 in lower-case hex, with whichever tool the
@@ -244,10 +245,10 @@ EOF
 }
 
 # derive SCHEMA: write what bin/env-contract.jq derives from SCHEMA, as
-# {contract, example}, to stdout. Fails when the schema does not parse.
+# {contract}, to stdout. Fails when the schema does not parse.
 derive() {
   tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse "$1" > "${scratch}/schema.json" 2> /dev/null &&
-    tool jq aqua:jqlang/jq "${JQ_VERSION}" -S --arg part both -f "${bundle}/bin/env-contract.jq" \
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -S --arg part derived -f "${bundle}/bin/env-contract.jq" \
       "${scratch}/schema.json" 2> /dev/null
 }
 
@@ -522,16 +523,14 @@ EOF
   tool spectral aqua:stoplightio/spectral "${SPECTRAL_VERSION}" lint --ruleset "${ruleset}" "$@"
 }
 
-# Print what a repository commits beside its environment schema, derived
-# from it by bin/env-contract.jq (EC-0019, decision 0026): the environment
-# contract, a JSON Schema 2020-12 document (ENVS-20), or with --example the
-# .env.example (ENVS-21). Redirect it into the file the check names.
+# Print the environment contract a repository commits beside its
+# environment schema, a JSON Schema 2020-12 document derived from it by
+# bin/env-contract.jq (EC-0019, ENVS-20, decision 0026). Redirect it into the
+# file the check names.
 env_contract() {
-  part=contract
   while [ $# -gt 0 ]; do
     case $1 in
       -C) cd -- "${2:?-C needs a directory}"; shift 2 ;;
-      --example) part=example; shift ;;
       --) shift; break ;;
       -*) usage ;;
       *) break ;;
@@ -543,11 +542,81 @@ env_contract() {
   trap 'rm -rf "${scratch}"' EXIT
   tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse "$1" > "${scratch}/schema.json" ||
     die "cannot read $1"
-  if [ "${part}" = example ]; then
-    tool jq aqua:jqlang/jq "${JQ_VERSION}" -j --arg part example -f "${bundle}/bin/env-contract.jq" "${scratch}/schema.json"
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -S --arg part contract -f "${bundle}/bin/env-contract.jq" \
+    "${scratch}/schema.json" || die "cannot derive the environment contract from $1"
+}
+
+# mint KIND BYTES: BYTES of fresh random material, encoded as KIND (hex,
+# base64 or base64url, unpadded), from openssl, else /dev/urandom.
+mint() {
+  if command -v openssl > /dev/null 2>&1; then
+    case $1 in
+      hex) openssl rand -hex "$2" ;;
+      *) openssl rand -base64 "$2" | tr -d '\n' ;;
+    esac
   else
-    tool jq aqua:jqlang/jq "${JQ_VERSION}" -S --arg part contract -f "${bundle}/bin/env-contract.jq" "${scratch}/schema.json"
-  fi || die "cannot derive the environment contract from $1"
+    case $1 in
+      hex) head -c "$2" /dev/urandom | od -An -v -tx1 | tr -d ' \n' ;;
+      *) head -c "$2" /dev/urandom | base64 | tr -d '\n' ;;
+    esac
+  fi | if [ "$1" = base64url ]; then tr '+/' '-_' | tr -d '='; else cat; fi
+}
+
+# Write the local .env beside an environment schema, derived from it by
+# bin/env-contract.jq (EC-0019, ENVS-27, decision 0029): each binding's local
+# value, freshly minted secret material for each local_generate, the
+# required values left empty to fill in, and the rest commented out with
+# their defaults. An existing .env is never replaced without --force; the
+# command lists the variables the schema declares that it lacks instead, and
+# fails when there are any.
+env_file() {
+  force=''
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -C) cd -- "${2:?-C needs a directory}"; shift 2 ;;
+      --force) force=1; shift ;;
+      --) shift; break ;;
+      -*) usage ;;
+      *) break ;;
+    esac
+  done
+  [ $# -eq 1 ] || usage
+  [ -f "$1" ] || die "$1 does not exist"
+  target="$(dirname -- "$1")/.env"
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+  tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse "$1" > "${scratch}/schema.json" ||
+    die "cannot read $1"
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -j --arg part env-file -f "${bundle}/bin/env-contract.jq" \
+    "${scratch}/schema.json" > "${scratch}/env" || die "cannot derive the local environment from $1"
+  if [ -e "${target}" ] && [ -z "${force}" ]; then
+    missing=$(sed -n 's/^\(# \)\{0,1\}\([A-Za-z_][A-Za-z0-9_]*\)=.*/\2/p' "${scratch}/env" | while IFS= read -r name; do
+      grep -Eq "^[[:space:]]*(export[[:space:]]+)?(#[[:space:]]*)?${name}=" "${target}" || printf '%s\n' "${name}"
+    done)
+    if [ -n "${missing}" ]; then
+      printf 'conventions: %s lacks variables %s declares; add them, or run again with --force to replace it (its values and secrets are lost):\n%s\n' \
+        "${target}" "$1" "${missing}" >&2
+      exit 1
+    fi
+    printf '%s already has every variable %s declares\n' "${target}" "$1" >&2
+    return 0
+  fi
+  [ -z "${force}" ] || [ ! -e "${target}" ] ||
+    printf 'conventions: replacing %s; every secret in it is minted again\n' "${target}" >&2
+  umask 077
+  while IFS= read -r line; do
+    case ${line} in
+      *=@@generate:*@@)
+        spec=${line#*=@@generate:}
+        spec=${spec%@@}
+        printf '%s=%s\n' "${line%%=*}" "$(mint "${spec%%:*}" "${spec#*:}")"
+        ;;
+      *) printf '%s\n' "${line}" ;;
+    esac
+  done < "${scratch}/env" > "${scratch}/written"
+  cp -- "${scratch}/written" "${target}"
+  chmod 600 "${target}"
+  printf 'wrote %s\n' "${target}" >&2
 }
 
 version() {
@@ -566,6 +635,7 @@ case ${command} in
   prose) prose "$@" ;;
   openapi) openapi "$@" ;;
   env-contract) env_contract "$@" ;;
+  env-file) env_file "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

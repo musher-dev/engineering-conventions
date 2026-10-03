@@ -6,9 +6,9 @@ summary: >-
   it is declared beside the product's build manifest, at
   <product>/env.schema.yaml. The only other environment schema a
   repository holds is its dev environment's, at
-  .devcontainer/env.schema.yaml. What is derived from the schema, the JSON
-  Schema contract an env-schema interface delivers and the .env.example a
-  developer copies, is generated, committed and kept equal to it.
+  .devcontainer/env.schema.yaml. The JSON Schema contract an env-schema
+  interface delivers is derived from the schema, committed and kept equal
+  to it; a developer's local .env is generated from it and never committed.
 status: draft
 topic: environment
 applies_to:
@@ -18,7 +18,9 @@ applies_to:
     - "**/env.schema.yml"
     - .devcontainer/**/devcontainer.json
     - "*/contracts/env/*.env.schema.json"
-    - "*/.env.example"
+    - "**/.env"
+    - "**/.env.*"
+    - "**/.gitignore"
 created: 2026-09-28
 owners:
   - "@justinmerrell"
@@ -77,12 +79,29 @@ requirements:
       package: conventions.checks.environment.env_derived
   - id: ENVS-21
     title: A product's .env.example is the one derived from its environment schema
-    status: proposed
+    status: retired
     severity: warning
     since: 0.7.1
+    replaced_by: [ENVS-26, ENVS-27]
     validation:
       engine: conftest
       package: conventions.checks.environment.env_derived
+  - id: ENVS-26
+    title: No environment file is committed beside an environment schema or at the root
+    status: proposed
+    severity: warning
+    since: 0.8.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_files
+  - id: ENVS-27
+    title: Git ignores the .env beside a product's environment schema
+    status: proposed
+    severity: warning
+    since: 0.8.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_files
 ---
 
 # Environment contract
@@ -106,8 +125,8 @@ Both use the same format, so one check reads both.
 
 ## Scope
 
-This convention covers where environment schemas live, that a service has one, and the two documents derived from
-it that a repository commits: the environment contract and `.env.example`. What a schema says is
+This convention covers where environment schemas live, that a service has one, the environment contract derived from
+it that a repository commits, and the local `.env` derived from it that a repository never commits. What a schema says is
 [EC-0020](env-schema.md). How a product generates its settings module from the schema, or checks that its code reads
 only declared variables, belongs to that product's own tooling: those checks need the code, not the schema.
 
@@ -116,22 +135,23 @@ only declared variables, belongs to that product's own tooling: those checks nee
 `env.schema.yaml` is the only copy anyone writes. It holds facts no standard format has a keyword for
 (`local_default`, `local_generate`, `consumer`, `nested`, `retired`), so it stays the source, and every other
 document is generated from it by one published mapping, `bin/env-contract.jq`, which the release ships
-([decision 0026](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0026-the-environment-contract-is-derived.md)):
+([decision 0026](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0026-the-environment-contract-is-derived.md),
+[decision 0029](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0029-the-local-environment-file-is-generated.md)):
 
 ```sh
 conventions env-contract platform-api/env.schema.yaml > platform-api/contracts/env/platform-api.env.schema.json
-conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example
+conventions env-file platform-api/env.schema.yaml        # writes platform-api/.env
 ```
 
-| Document | Where | Checked by |
-| --- | --- | --- |
-| The environment contract, JSON Schema 2020-12 | `<product>/contracts/env/<service>.env.schema.json`, when the service offers an `env-schema` interface | ENVS-20 |
-| The local environment file a developer copies to `.env` | `<product>/.env.example`, when the product keeps one | ENVS-21 |
-| A settings module, a deploy preflight, a reference page | Wherever the product's tooling writes them | That tooling |
+| Document | Where | Committed | Checked by |
+| --- | --- | --- | --- |
+| The environment contract, JSON Schema 2020-12 | `<product>/contracts/env/<service>.env.schema.json`, when the service offers an `env-schema` interface | yes | ENVS-20 |
+| A developer's local environment | `.env` beside the schema | never | ENVS-26, ENVS-27 |
+| A settings module, a deploy preflight, a reference page | Wherever the product's tooling writes them | | That tooling |
 
-`conventions check` derives both documents from the schema itself and compares them with the committed files, so a
-repository needs no extra task for the check. A repository regenerates them with the commands above in the task
-that writes its generated files.
+`conventions check` derives the contract from the schema itself and compares it with the committed file, so a
+repository needs no extra task for the check. A repository regenerates the contract with the command above in the
+task that writes its generated files, and may run `conventions env-file` from its `setup` task.
 
 ### The contract
 
@@ -164,12 +184,15 @@ that only the product's own tooling reads (`consumer`, `nested`, `generated`, `i
 is printed with its keys sorted and two-space indentation; the check compares it as JSON, so only its content
 matters.
 
-### `.env.example`
+### The local `.env`
+
+`conventions env-file` writes `.env` beside the schema, for one developer's machine:
 
 ```sh
-# The environment platform-api reads, generated from its env.schema.yaml by
-# conventions env-contract --example. Do not edit: change env.schema.yaml and
-# generate this file again. Copy it to .env and fill in the empty values.
+# The local environment platform-api reads, generated from its env.schema.yaml by
+# conventions env-file. It holds this machine's values and secrets: git ignores
+# it (ENVS-27), and it is never committed. Fill in the empty values. After the
+# schema changes, run conventions env-file again to list what is missing.
 
 # TCP port the HTTP server listens on inside the container.
 # integer, internal
@@ -178,20 +201,27 @@ matters.
 # Connection string of the primary Postgres database, credentials included.
 # string, url, required, secret
 DATABASE_URL=postgres://postgres@localhost:5432/app
+
+# Signs session cookies.
+# string, secret, generate locally: base64url:32
+SESSION_KEY=<32 random bytes, base64url, minted on this machine>
 ```
 
-After the three header lines, each binding, sorted by name, is a blank line, its description on one line, a line of
-facts, and its assignment:
+After the header, each binding, sorted by name, is a blank line, its description on one line, a line of facts, and
+its assignment:
 
 - The facts are its type (`enum: a|b` or `list: a|b` with values), its `format`, `required`, its sensitivity, and
   `generate locally: <kind>` for a `local_generate` binding, joined by a comma and a space.
-- A binding with a `local_default` is assigned it. A required binding, or one whose secret each developer mints with
-  `local_generate`, is assigned nothing, to be filled in. Any other binding is commented out with its `default`, so the
-  code's default applies until someone uncomments it.
+- A binding with a `local_default` is assigned it. A binding with `local_generate` is assigned secret material minted
+  on this machine, `hex`, `base64` or unpadded `base64url` of the bytes it names. A required binding is assigned
+  nothing, to be filled in. Any other binding is commented out with its `default`, so the code's default applies until
+  someone uncomments it.
 - A value is written bare when it holds only letters, digits and `_@%+=:,./-`; otherwise in single quotes, or, when it
   holds a single quote, in double quotes with `\` and `"` escaped.
 
-The file ends with a newline, and the check compares it byte for byte.
+The file is written readable by its owner only. An existing `.env` is never replaced: the command lists the variables
+the schema declares that the file lacks, and fails when there are any, so a developer adds them by hand and keeps
+their own values. `--force` writes the file again and mints every secret afresh.
 
 ## Status and authority
 
@@ -199,8 +229,8 @@ This convention is a **draft** owned by this repository (`authority: self`). It 
 `musher-dev/development-container`, which keep their IDs as aliases
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
 Its requirements are `proposed` at severity `warning`. ENVS-01 applies to repositories whose kind is `service`; the
-`service` profile selects it. ENVS-02 and ENVS-15 apply to every repository. ENVS-15 adopts ENV-06 from the same
-repository.
+`service` profile selects it. ENVS-02, ENVS-15, ENVS-20, ENVS-26 and ENVS-27 apply to every repository. ENVS-15
+adopts ENV-06 from the same repository.
 
 ## Requirements
 
@@ -227,7 +257,7 @@ platform-api/env.schema.yaml
 ```text
 .repo/repository.toml         # kind = "service", [layout] product = "platform-api"
 platform-api/go.mod
-platform-api/.env.example     # the variables, undeclared
+platform-api/.env.example     # the variables, undeclared; ENVS-26 reports it too
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container LAYOUT-10
@@ -335,27 +365,65 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 **A product's `.env.example` is the one derived from its environment schema.**
 
-A hand-written `.env.example` is the first file to fall behind the schema: a variable is added to the code and the
-schema, and the next developer's local environment starts without it. Generated, it lists every binding with its
-description and its local value, and nobody has to remember it. A product that keeps a `.env.example` keeps it beside
-its schema, at `<product>/.env.example`, exactly as `conventions env-contract --example` prints it. A product without
-one is not reported.
+Retired in 0.8.0 and replaced by [ENVS-26](#envs-26) and [ENVS-27](#envs-27). A committed example duplicated the
+schema in a second format; a developer now generates a ready-to-run `.env` from the schema with
+`conventions env-file`, and nothing derived for one machine is committed.
+
+Checked by: nothing (retired) · Severity: warning · Since: 0.7.1
+
+### ENVS-26
+
+**No environment file is committed beside an environment schema or at the root.**
+
+`env.schema.yaml` already says every variable, its type, its default and its local value, so a committed `.env.example`
+is a second copy that falls behind the first, and a committed `.env` puts one machine's values, often its secrets,
+in every clone. The check reports `.env` and every `.env.<suffix>` (`.env.example`, `.env.local`, `.env.sample`) in the
+repository's root and in each directory that holds an environment schema: the product directory and `.devcontainer/`.
+An environment file elsewhere, such as a fixture or an example application, is not this repository's environment and
+is not reported.
 
 **Correct:**
 
-```sh
-conventions env-contract --example platform-api/env.schema.yaml > platform-api/.env.example
+```text
+platform-api/env.schema.yaml
+.gitignore                     # /platform-api/.env
 ```
 
 **Incorrect:**
 
-```sh
-# platform-api/.env.example, edited by hand
-DATABASE_URL=postgres://localhost/app
-API_PORT=8080
+```text
+platform-api/env.schema.yaml
+platform-api/.env.example
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.7.1
+Checked by: conftest · Severity: warning · Since: 0.8.0
+
+### ENVS-27
+
+**Git ignores the `.env` beside a product's environment schema.**
+
+`conventions env-file` writes a developer's values and freshly minted secrets to `.env` beside the schema. If git does
+not ignore that path, the next `git add .` commits them. The check reads the `.gitignore` at the root and in each
+directory above the schema, and takes the last pattern that matches, as git does: `.env`, `/platform-api/.env`,
+`**/.env`, `.env*` and `*.env` all ignore it, and a later `!.env` un-ignores it. The finding sits on the schema. The
+dev environment's schema, `.devcontainer/env.schema.yaml`, describes what a developer's host passes in rather than a
+file the product reads, so it is not checked.
+
+**Correct:**
+
+```gitignore
+# A developer's local environment (conventions env-file)
+/platform-api/.env
+```
+
+**Incorrect:**
+
+```gitignore
+.env*
+!.env
+```
+
+Checked by: conftest · Severity: warning · Since: 0.8.0
 
 ## References
 

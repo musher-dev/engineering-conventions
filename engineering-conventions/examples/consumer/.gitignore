@@ -1,0 +1,3 @@
+# A developer's local environment, written by conventions env-file from
+# platform-api/env.schema.yaml; never committed (ENVS-27)
+/platform-api/.env

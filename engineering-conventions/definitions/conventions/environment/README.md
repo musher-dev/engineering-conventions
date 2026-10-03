@@ -19,7 +19,7 @@ They adopt the environment rules of `musher-dev/platform` (the format and its na
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0019 Environment contract](env-contract.md) | ENVS-01, ENVS-02, ENVS-15, ENVS-20, ENVS-21 | That a service declares its environment, the two places a schema may live, that a dev container asks for the variables its schema takes from the host, and the contract and `.env.example` derived from the schema |
+| [EC-0019 Environment contract](env-contract.md) | ENVS-01, ENVS-02, ENVS-15, ENVS-20, ENVS-26, ENVS-27 | That a service declares its environment, the two places a schema may live, that a dev container asks for the variables its schema takes from the host, the contract derived from the schema, and the local `.env` that is generated from it and never committed |
 | [EC-0020 Environment schema](env-schema.md) | ENVS-03 – ENVS-14, ENVS-16 – ENVS-19, ENVS-22 – ENVS-25 | The format, the naming grammar and the consumer prefix, retired names, secrets, shared variables, what each binding reaches, and the runtime instances a service requires |
 
 ## Who is checked
@@ -27,7 +27,7 @@ They adopt the environment rules of `musher-dev/platform` (the format and its na
 | Requirement | Profile |
 | --- | --- |
 | ENVS-01 | `service` only |
-| ENVS-02 – ENVS-25 | Every repository (`base-repo`); a repository without an environment schema has nothing to report |
+| ENVS-02 – ENVS-27 | Every repository (`base-repo`); a repository without an environment schema has nothing to report |
 
 ## Quick reference
 

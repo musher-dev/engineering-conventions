@@ -193,8 +193,9 @@ Checked by: conftest · Severity: warning · Since: 0.8.0
 
 A finding is cheapest on the commit that adds it. A repository that runs lefthook has a pre-commit job that runs
 hadolint with `--config .config/docker/hadolint.yaml`, or `conventions hadolint`, or a task that runs either. If the
-job has a `glob`, it matches both `Dockerfile` and `<name>.Dockerfile` at any depth: `**/{Dockerfile,*.Dockerfile}`
-does, and matches a file in every repository that has a Dockerfile ([HOOKS-11](../git-hooks/lefthook.md#hooks-11)).
+job has a `glob`, it matches every Dockerfile the repository holds. `**/{Dockerfile,*.Dockerfile}` always does, and
+matches a file in every repository that has a Dockerfile ([HOOKS-11](../git-hooks/lefthook.md#hooks-11)); a glob
+that names the repository's own directories passes as long as it reaches each Dockerfile.
 
 **Correct:**
 
@@ -211,7 +212,7 @@ pre-commit:
 **Incorrect:**
 
 ```yaml
-      glob: "**/Dockerfile"          # misses build.Dockerfile
+      glob: "**/Dockerfile"          # misses apps/web/docker/build.Dockerfile
       run: hadolint {staged_files}   # and whatever configuration it finds
 ```
 

@@ -70,7 +70,8 @@ test_image_08_without_mise if {
 
 test_image_09_glob_misses_named if {
 	job := object.union(good_job, {"glob": "**/Dockerfile"})
-	docs := repo([mise_pinned, lefthook(job), validate("conventions hadolint")], paths)
+	listed := array.concat(paths, ["apps/web/docker/build.Dockerfile"])
+	docs := repo([mise_pinned, lefthook(job), validate("conventions hadolint")], listed)
 	found := hadolint.findings with input as docs
 	td.pairs(found) == {["IMAGE-09", ".config/lefthook.yml"]}
 }
@@ -130,4 +131,17 @@ test_image_10_without_a_configuration if {
 	docs := repo([mise_pinned, lefthook(good_job), validate("hadolint .devcontainer/Dockerfile")], paths)
 	found := hadolint.findings with input as docs
 	td.pairs(found) == {["IMAGE-10", ".devcontainer/Dockerfile"]}
+}
+
+test_image_09_glob_covering_the_repository_dockerfiles if {
+	job := object.union(good_job, {"glob": "{.devcontainer/Dockerfile,apps/**/*.Dockerfile}"})
+	listed := array.concat(paths, ["apps/web/docker/build.Dockerfile"])
+	docs := repo([mise_pinned, lefthook(job), validate("conventions hadolint")], listed)
+	count(hadolint.findings) == 0 with input as docs
+}
+
+test_image_09_bare_glob_passes_without_named_dockerfiles if {
+	job := object.union(good_job, {"glob": "**/Dockerfile"})
+	docs := repo([mise_pinned, lefthook(job), validate("conventions hadolint")], paths)
+	count(hadolint.findings) == 0 with input as docs
 }

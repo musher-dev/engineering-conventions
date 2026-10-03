@@ -104,14 +104,14 @@ hook_lints(config) if {
 	covers_dockerfiles(job)
 }
 
-# A job without a glob runs on every commit; one with a glob must match both
-# a Dockerfile and a <name>.Dockerfile at any depth.
+# A job without a glob runs on every commit; one with a glob must match
+# every Dockerfile the repository holds.
 covers_dockerfiles(job) if not job.glob
 
 covers_dockerfiles(job) if {
-	every sample in ["api/docker/Dockerfile", "apps/web/docker/build.Dockerfile"] {
+	every path in images.dockerfiles {
 		some pattern in globs(job)
-		doublestar.match(pattern, sample)
+		doublestar.match(pattern, path)
 	}
 }
 

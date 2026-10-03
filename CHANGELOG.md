@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/musher-dev/engineering-conventions/compare/v0.8.0...v0.8.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **conventions:** judge an IMAGE-09 glob by the Dockerfiles it misses ([#88](https://github.com/musher-dev/engineering-conventions/issues/88)) ([ad4965c](https://github.com/musher-dev/engineering-conventions/commit/ad4965c9376667b4b49081cde9636632b6e180f4))
+
 ## [0.8.0](https://github.com/musher-dev/engineering-conventions/compare/v0.7.1...v0.8.0) (2026-10-03)
 
 

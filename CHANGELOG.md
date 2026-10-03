@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/musher-dev/engineering-conventions/compare/v0.7.1...v0.8.0) (2026-10-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **conventions:** make AGENTS.md the memory and generate the .env
+
+### Features
+
+* **conventions:** keep images in docker/ and lint them with hadolint ([6289e62](https://github.com/musher-dev/engineering-conventions/commit/6289e62abd8869db8913cc0ca0fc31fa7d6f9de1))
+* **conventions:** make AGENTS.md the memory and generate the .env ([6289e62](https://github.com/musher-dev/engineering-conventions/commit/6289e62abd8869db8913cc0ca0fc31fa7d6f9de1))
+* **conventions:** protect the default branch and update every pin ([6289e62](https://github.com/musher-dev/engineering-conventions/commit/6289e62abd8869db8913cc0ca0fc31fa7d6f9de1))
+
 ## [0.7.1](https://github.com/musher-dev/engineering-conventions/compare/v0.7.0...v0.7.1) (2026-10-01)
 
 

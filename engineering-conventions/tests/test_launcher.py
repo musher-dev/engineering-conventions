@@ -158,8 +158,9 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
     completed = _launch("check", "--output", "json", "-C", str(case), cwd=PRODUCT)
     assert completed.returncode == 0, completed.stderr
     found = {finding_id for _, finding_id, _, _ in _found(completed.stdout)}
-    # The case holds no .repo/ declarations, Taskfile or commit rules, so they
-    # are reported missing: this repository's own were not read.
+    # The case holds no .repo/ declarations, Taskfile, commit rules, ruleset,
+    # CODEOWNERS or Dependabot configuration, so they are reported missing:
+    # this repository's own were not read.
     assert found == {
         "GHA-07",
         "ADOPT-09",
@@ -167,6 +168,9 @@ def test_dash_c_checks_that_directory_not_its_work_tree() -> None:
         "TASK-10",
         "COMMIT-01",
         "COMMIT-04",
+        "BRANCH-01",
+        "COMM-08",
+        "DEPS-11",
     }
 
 

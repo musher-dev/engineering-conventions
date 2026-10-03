@@ -50,6 +50,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0038](copy/public-copy.md) | Public copy | copy | draft |
 | [EC-0039](container-images/image-layout.md) | Container image layout | container-images | draft |
 | [EC-0040](container-images/dockerfile-linting.md) | Dockerfile linting | container-images | draft |
+| [EC-0041](branch-protection/default-branch-protection.md) | Default-branch protection | branch-protection | draft |
+| [EC-0042](dependencies/automated-updates.md) | Automated dependency updates | dependencies | draft |
 
 ## Requirements
 
@@ -84,6 +86,10 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-16](agents/agent-context.md#agent-16) | No CLAUDE.md is committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-17](agents/agent-context.md#agent-17) | An AGENTS.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
 | [AGENT-18](agents/agent-context.md#agent-18) | Every import in an AGENTS.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [BRANCH-01](branch-protection/default-branch-protection.md#branch-01) | An active branch ruleset committed under .github/rulesets/ covers the default branch | EC-0041 | proposed | warning | conftest |
+| [BRANCH-02](branch-protection/default-branch-protection.md#branch-02) | The default branch's rulesets block deletion and force pushes, and require a pull request and status checks | EC-0041 | proposed | warning | conftest |
+| [BRANCH-03](branch-protection/default-branch-protection.md#branch-03) | A pull request to the default branch needs an approval or a code owner's review | EC-0041 | proposed | warning | conftest |
+| [BRANCH-04](branch-protection/default-branch-protection.md#branch-04) | The default branch requires a check that a validate workflow reports | EC-0041 | proposed | warning | conftest |
 | [COMM-01](community-files/community-files.md#comm-01) | An issue form is a .yml file valid against GitHub's issue-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMM-02](community-files/community-files.md#comm-02) | Issue forms come with a template chooser that is valid and sets blank_issues_enabled | EC-0036 | proposed | warning | conftest |
 | [COMM-03](community-files/community-files.md#comm-03) | A repository with a CODEOWNERS has exactly one, at .github/CODEOWNERS | EC-0036 | proposed | warning | conftest |
@@ -91,6 +97,7 @@ ID is permanent: it is never renumbered or reused.
 | [COMM-05](community-files/community-files.md#comm-05) | A repository's own security policy has a heading on reporting a vulnerability | EC-0036 | proposed | warning | conftest |
 | [COMM-06](community-files/community-files.md#comm-06) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
 | [COMM-07](community-files/community-files.md#comm-07) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
+| [COMM-08](community-files/community-files.md#comm-08) | Every repository has a CODEOWNERS | EC-0036 | proposed | warning | conftest |
 | [COMMIT-01](commits/commit-messages.md#commit-01) | .config/commits/committed.toml states the repository's commit rules | EC-0035 | proposed | warning | conftest |
 | [COMMIT-02](commits/commit-messages.md#commit-02) | committed is pinned in mise | EC-0035 | proposed | warning | conftest |
 | [COMMIT-03](commits/commit-messages.md#commit-03) | Lefthook's commit-msg hook runs committed on the message being written | EC-0035 | proposed | warning | conftest |
@@ -130,6 +137,9 @@ ID is permanent: it is never renumbered or reused.
 | [DEPS-08](dependencies/keeping-dependencies-current.md#deps-08) | A repository that vendors dependencies defines deps:check and deps:sync | EC-0033 | proposed | warning | conftest |
 | [DEPS-09](dependencies/keeping-dependencies-current.md#deps-09) | A validate workflow runs deps:check | EC-0033 | proposed | warning | conftest |
 | [DEPS-10](dependencies/keeping-dependencies-current.md#deps-10) | A scheduled maintain-dependencies workflow runs deps:sync | EC-0033 | proposed | warning | conftest |
+| [DEPS-11](dependencies/automated-updates.md#deps-11) | An updater keeps the actions of every workflow and composite action current | EC-0042 | proposed | warning | conftest |
+| [DEPS-12](dependencies/automated-updates.md#deps-12) | An updater keeps the base images of every Dockerfile current | EC-0042 | proposed | warning | conftest |
+| [DEPS-13](dependencies/automated-updates.md#deps-13) | An updater keeps the product's dependencies current from the product directory | EC-0042 | proposed | warning | conftest |
 | [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
 | [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
 | [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |
@@ -382,3 +392,4 @@ ID is permanent: it is never renumbered or reused.
 | COMMIT | Commit messages | commits |
 | COPY | Public copy | copy |
 | IMAGE | Container images | container-images |
+| BRANCH | Branch protection | branch-protection |

@@ -19,8 +19,10 @@ description: >-
   environment schema it holds, the contract derived from it and the
   local .env that is never committed, the dev container of any
   repository that has one, where the files that build a container image
-  live and the hadolint that lints each Dockerfile, the community files
-  GitHub reads: issue and discussion forms, CODEOWNERS where it has one, and a security policy,
+  live and the hadolint that lints each Dockerfile, the updater that
+  keeps its actions, images and packages current, the ruleset that
+  protects its default branch, the community files GitHub reads: issue
+  and discussion forms, a CODEOWNERS, and a security policy,
   the OpenAPI documents of any OpenAPI interface it offers, the
   commit messages and pull request titles of every repository, checked
   by committed, and the Vale config that lints the copy of any site it
@@ -31,7 +33,11 @@ include:
   # every kind selects it. COPY likewise applies only to a repository that
   # publishes a site, and IMAGE only to one with a Dockerfile or a compose
   # file.
-  families: [ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS, COMM, OAS, COMMIT, COPY, IMAGE]
+  families:
+    [
+      ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS, COMM, OAS, COMMIT, COPY,
+      IMAGE, BRANCH,
+    ]
   # EC-0015 applies to any Taskfile, and EC-0020 to any environment
   # schema. Of EC-0016 and EC-0019, only what every repository shares
   # (for EC-0019, where schemas live and what is derived from them) is

@@ -91,6 +91,18 @@ tasks:
 configuration and its lockfile, a `Validate` workflow that runs the step above as its `Conventions` job, a
 pull-request-title workflow, and a ruleset that requires only the aggregate.
 
+## Protect the default branch and keep dependencies current
+
+Commit the default branch's ruleset under `.github/rulesets/`, as GitHub exports it: active, covering
+`~DEFAULT_BRANCH`, with `deletion`, `non_fast_forward`, a `pull_request` rule that needs an approval or a code owner's
+review, and `required_status_checks` naming the validate workflow's aggregate (BRANCH-01 to BRANCH-04,
+[EC-0041](../engineering-conventions/definitions/conventions/branch-protection/default-branch-protection.md)). Keep a
+`.github/CODEOWNERS` (COMM-08).
+
+Let Renovate, or a Dependabot update per ecosystem, propose every update: the actions in the workflows and each
+composite action, the base image of every Dockerfile, and the product's manifest in the product directory (DEPS-11 to
+DEPS-13, [EC-0042](../engineering-conventions/definitions/conventions/dependencies/automated-updates.md)).
+
 ## Declare the repository's identity
 
 Every repository says what it is in `.repo/repository.toml`:

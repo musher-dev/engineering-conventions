@@ -43,6 +43,8 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0028](0028-agents-md-is-the-project-memory.md) | AGENTS.md is the project memory, and no CLAUDE.md is committed | accepted |
 | [0029](0029-the-local-environment-file-is-generated.md) | A developer's local .env is generated from the environment schema and never committed | accepted |
 | [0030](0030-container-images-live-in-docker-directories.md) | Container images live in docker/ directories with their own ignore files, and hadolint lints every Dockerfile | accepted |
+| [0031](0031-the-default-branch-is-protected.md) | The default branch is protected by a committed ruleset with a review gate, and every repository has a CODEOWNERS | accepted |
+| [0032](0032-every-dependency-ecosystem-has-an-updater.md) | Every dependency ecosystem a repository pins has Renovate or Dependabot proposing its updates | accepted |
 
 ## Writing a decision
 

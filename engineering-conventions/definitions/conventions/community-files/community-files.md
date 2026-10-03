@@ -98,6 +98,14 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.community_files.community_files
+  - id: COMM-08
+    title: Every repository has a CODEOWNERS
+    status: proposed
+    severity: warning
+    since: 0.8.0
+    validation:
+      engine: conftest
+      package: conventions.checks.community_files.community_files
 ---
 
 # Community files
@@ -118,7 +126,8 @@ This convention covers, in any repository checked against a release of `musher-d
 - the security policy, `SECURITY.md` (or `.markdown`, `.adoc`, `.rst`) at the root, in `.github/` or in `docs/`.
 
 What the files say is the repository's business: which forms it offers, who owns which paths, how it handles a
-report. Each file is checked only where the repository has one. A repository without its own security policy relies
+report. Each file is checked only where the repository has one, except CODEOWNERS, which every repository has
+(COMM-08). A repository without its own security policy relies
 on the one its organization publishes, which GitHub shows in its place, and Scorecard judges that one (COMM-06).
 
 The pull request template, the README, CONTRIBUTING and the changelog are not covered. GitHub gives them no syntax to
@@ -221,8 +230,8 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 CODEOWNERS decides who is asked to review a change, and with a ruleset that requires code-owner review, who can
 approve it. GitHub looks for it in `.github/`, then the root, then `docs/`, and reads only the first it finds, so a
 second CODEOWNERS is silently ignored and its rules apply nowhere. One file in one place, beside the rest of GitHub's
-configuration, is the one a reviewer edits. Whether a repository has a CODEOWNERS at all is its own choice, and a
-catch-all `*` rule is not required; a repository that wants review only on some paths lists only those.
+configuration, is the one a reviewer edits. Every repository has one ([COMM-08](#comm-08)); a catch-all `*` rule is not
+required, and a repository that wants review only on some paths lists only those.
 
 **Correct:**
 
@@ -365,6 +374,27 @@ labels: [idea]
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### COMM-08
+
+**Every repository has a CODEOWNERS.**
+
+A repository without a CODEOWNERS asks no one in particular to review a change: a pull request waits until someone
+happens to look, and a ruleset cannot require a code owner's approval ([BRANCH-03](../branch-protection/default-branch-protection.md#branch-03)).
+CODEOWNERS is also where a reader finds who owns the repository's paths, which the identity declaration's `owner`
+names only for the whole ([EC-0009](../repository/identity-declaration.md)). The check reports a repository with
+no CODEOWNERS in any place GitHub reads one; [COMM-03](#comm-03) says which place.
+
+**Correct:**
+
+```text
+# .github/CODEOWNERS
+* @musher-dev/platform
+```
+
+**Incorrect:** no CODEOWNERS in `.github/`, at the root or in `docs/`.
+
+Checked by: conftest · Severity: warning · Since: 0.8.0
 
 ## References
 

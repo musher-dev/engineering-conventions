@@ -211,6 +211,12 @@ raw_findings contains finding if {
 
 raw_findings contains finding if {
 	some convention
+	package_findings := data.conventions.checks.branch_protection[convention].findings
+	some finding in package_findings
+}
+
+raw_findings contains finding if {
+	some convention
 	package_findings := data.conventions.checks.container_images[convention].findings
 	some finding in package_findings
 }

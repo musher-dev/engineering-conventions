@@ -1,5 +1,10 @@
 [
   {
+    "id": "DEPS-13",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  },
+  {
     "id": "REPO-16",
     "path": ".repo/repository.toml",
     "severity": "warning"

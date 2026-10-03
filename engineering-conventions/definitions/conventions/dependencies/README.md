@@ -2,12 +2,13 @@
 
 These conventions govern how a repository depends on another Musher repository's release: where it pins the version,
 how it keeps a copy of the interfaces it builds against, how that copy proves it is exactly what was released, and
-how it is kept current.
+how it is kept current; and what keeps every other dependency current: the updater that watches its actions, images
+and packages.
 
 The governing rule, in one sentence:
 
 > **Pin every release in one place and one form, vendor only released bytes with their release record, and let a
-> scheduled workflow propose each update.**
+> scheduled workflow, Renovate or Dependabot propose each update.**
 
 Every dependency has exactly one written pin:
 
@@ -20,7 +21,7 @@ Every dependency has exactly one written pin:
 
 ## Status
 
-Both conventions are **drafts**, owned by this repository, and every requirement is `proposed` at severity `warning`.
+The conventions are **drafts**, owned by this repository, and every requirement is `proposed` at severity `warning`.
 
 ## Reading order
 
@@ -28,6 +29,7 @@ Both conventions are **drafts**, owned by this repository, and every requirement
 | --- | --- | --- |
 | [EC-0032 Dependencies declaration](dependencies-declaration.md) | DEPS-01 – DEPS-07 | The file, exact pins, the vendored copy and its release record |
 | [EC-0033 Keeping dependencies current](keeping-dependencies-current.md) | DEPS-08 – DEPS-10 | The `deps:*` tasks, validation, the scheduled update |
+| [EC-0042 Automated dependency updates](automated-updates.md) | DEPS-11 – DEPS-13 | Renovate or Dependabot for the actions, the Dockerfiles and the product's manifest |
 
 What a producer declares and ships is the [interfaces](../interfaces/README.md) topic. Runtime edges and capabilities
 are fields of an environment binding ([EC-0020](../environment/env-schema.md)). The reasoning is recorded in

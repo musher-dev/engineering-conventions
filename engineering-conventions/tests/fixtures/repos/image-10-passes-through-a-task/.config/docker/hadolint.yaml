@@ -1,0 +1,2 @@
+# hadolint, for every Dockerfile (EC-0040)
+failure-threshold: warning

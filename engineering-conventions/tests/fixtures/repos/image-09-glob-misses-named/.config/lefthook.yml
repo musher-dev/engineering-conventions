@@ -1,0 +1,14 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config=".config/commits/committed.toml" --commit-file={1}
+      fail_text: "The message must pass .config/commits/committed.toml."
+pre-commit:
+  jobs:
+    - name: dockerfile
+      glob: "**/Dockerfile"
+      run: hadolint --config .config/docker/hadolint.yaml {staged_files}
+      fail_text: "hadolint found a problem in a staged Dockerfile."

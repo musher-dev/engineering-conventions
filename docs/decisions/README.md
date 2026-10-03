@@ -42,6 +42,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0027](0027-data-units-and-fetched-dependencies.md) | Data documents and systemd units are interface formats, a dependency may be fetched, and a gated break is marked, not numbered | accepted |
 | [0028](0028-agents-md-is-the-project-memory.md) | AGENTS.md is the project memory, and no CLAUDE.md is committed | accepted |
 | [0029](0029-the-local-environment-file-is-generated.md) | A developer's local .env is generated from the environment schema and never committed | accepted |
+| [0030](0030-container-images-live-in-docker-directories.md) | Container images live in docker/ directories with their own ignore files, and hadolint lints every Dockerfile | accepted |
 
 ## Writing a decision
 

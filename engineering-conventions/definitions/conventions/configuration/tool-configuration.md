@@ -223,7 +223,7 @@ itself. None of them is reported:
 | --- | --- |
 | `Taskfile.yml` | Task's entry point; `task` finds it from any subdirectory |
 | `.gitignore`, `.gitattributes` | git reads them from the directories they govern, with no flag |
-| `.dockerignore` | Docker reads it from the root of the build context |
+| `<Dockerfile>.dockerignore` | BuildKit reads it beside its Dockerfile, in the image's `docker/` directory ([EC-0039](../container-images/image-layout.md)), not at the root and not in `.config/` |
 | `.editorconfig` | Editors search for it upward from the file being edited |
 | `package.json` and lockfiles | The package manager's project root |
 | `.nvmrc`, `.node-version`, `.python-version` | Version managers read them from the working directory |

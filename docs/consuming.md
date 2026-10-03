@@ -39,6 +39,7 @@ conventions check                      # report findings; fail only on errors
 conventions check --fail-on warning    # fail on every finding, as CI should in the 0.x series
 conventions prose                      # lint Markdown with MusherConventions, and copy with MusherCopy
 conventions openapi                    # lint OpenAPI interfaces with the repository's Spectral ruleset
+conventions hadolint                   # lint every Dockerfile with .config/docker/hadolint.yaml
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
 ```
@@ -48,7 +49,8 @@ With the identity declaration below, that is the whole adoption. What mise does 
 - It downloads the release's tarball and verifies its checksum and its GitHub build-provenance attestation, which
   proves this repository's release workflow built it. `mise lock` records both in
   `.config/mise/mise.lock`.
-- It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`, Spectral for `openapi`)
+- It puts `conventions` on PATH. The command runs conftest and jq (and Vale for `prose`, Spectral for `openapi`,
+  hadolint for `hadolint`)
   through `mise exec` at the versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
 
@@ -404,6 +406,18 @@ actionlint
 zizmor --min-severity medium --persona regular .github/
 scorecard --local . --checks Security-Policy --format json   # COMM-06 passes at a score of 10
 ```
+
+IMAGE-06 is delegated to hadolint. A repository with a Dockerfile, a dev container's included, pins
+`aqua:hadolint/hadolint`, keeps its configuration in `.config/docker/hadolint.yaml`, and lints every Dockerfile with it
+in its pre-commit hook and in validation (IMAGE-07 to IMAGE-10):
+
+```sh
+conventions hadolint      # every Dockerfile, with .config/docker/hadolint.yaml
+```
+
+Each image's files live in a `docker/` directory beside what it builds, with BuildKit's `<Dockerfile>.dockerignore`
+beside the Dockerfile ([EC-0039](../engineering-conventions/definitions/conventions/container-images/image-layout.md)),
+so the build names the Dockerfile: `docker build -f platform-api/docker/Dockerfile platform-api`.
 
 OAS-01 is delegated to Spectral. A repository that declares an `openapi` interface keeps its own ruleset in
 `.config/openapi/spectral.yaml`, extending Spectral's `spectral:oas` and the OWASP API security ruleset at an exact

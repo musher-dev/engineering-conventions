@@ -1,0 +1,7 @@
+[
+  {
+    "id": "IMAGE-04",
+    "path": "api/.dockerignore",
+    "severity": "warning"
+  }
+]

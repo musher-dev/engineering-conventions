@@ -48,6 +48,8 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0036](community-files/community-files.md) | Community files | community-files | draft |
 | [EC-0037](openapi/openapi-documents.md) | OpenAPI documents | openapi | draft |
 | [EC-0038](copy/public-copy.md) | Public copy | copy | draft |
+| [EC-0039](container-images/image-layout.md) | Container image layout | container-images | draft |
+| [EC-0040](container-images/dockerfile-linting.md) | Dockerfile linting | container-images | draft |
 
 ## Requirements
 
@@ -250,6 +252,16 @@ ID is permanent: it is never renumbered or reused.
 | [IFACE-12](interfaces/publishing-interfaces.md#iface-12) | A validate workflow runs contracts:check and contracts:breaking | EC-0031 | proposed | warning | conftest |
 | [IFACE-13](interfaces/publishing-interfaces.md#iface-13) | The workflow that publishes a bundle of interfaces runs contracts:bundle | EC-0031 | proposed | warning | conftest |
 | [IFACE-14](interfaces/publishing-interfaces.md#iface-14) | A bundle of interfaces carries a release record of every file it delivers | EC-0031 | proposed | warning | review |
+| [IMAGE-01](container-images/image-layout.md#image-01) | Every Dockerfile outside .devcontainer/ and test fixtures lives in a docker/ directory | EC-0039 | proposed | warning | conftest |
+| [IMAGE-02](container-images/image-layout.md#image-02) | A Dockerfile is named Dockerfile or \<name\>.Dockerfile, and one of several is named \<name\>.Dockerfile | EC-0039 | proposed | warning | conftest |
+| [IMAGE-03](container-images/image-layout.md#image-03) | Every Dockerfile outside .devcontainer/ has its ignore file beside it, named \<Dockerfile\>.dockerignore | EC-0039 | proposed | warning | conftest |
+| [IMAGE-04](container-images/image-layout.md#image-04) | No .dockerignore is committed outside .devcontainer/ | EC-0039 | proposed | warning | conftest |
+| [IMAGE-05](container-images/image-layout.md#image-05) | A compose file lives in a docker/ directory or in .devcontainer/ | EC-0039 | proposed | warning | conftest |
+| [IMAGE-06](container-images/dockerfile-linting.md#image-06) | Every Dockerfile passes hadolint with the repository's configuration | EC-0040 | proposed | warning | delegated |
+| [IMAGE-07](container-images/dockerfile-linting.md#image-07) | A repository with a Dockerfile configures hadolint at .config/docker/hadolint.yaml | EC-0040 | proposed | warning | conftest |
+| [IMAGE-08](container-images/dockerfile-linting.md#image-08) | A repository with a Dockerfile pins hadolint in mise | EC-0040 | proposed | warning | conftest |
+| [IMAGE-09](container-images/dockerfile-linting.md#image-09) | Lefthook's pre-commit hook runs hadolint with the repository's configuration on every staged Dockerfile | EC-0040 | proposed | warning | conftest |
+| [IMAGE-10](container-images/dockerfile-linting.md#image-10) | A validate workflow runs hadolint with the repository's configuration | EC-0040 | proposed | warning | conftest |
 | [OAS-01](openapi/openapi-documents.md#oas-01) | Every OpenAPI interface document passes the repository's Spectral ruleset | EC-0037 | proposed | warning | delegated |
 | [OAS-02](openapi/openapi-documents.md#oas-02) | The Spectral ruleset extends spectral:oas and the OWASP API security ruleset at an exact release | EC-0037 | proposed | warning | conftest |
 | [OAS-03](openapi/openapi-documents.md#oas-03) | A validate workflow lints the OpenAPI interfaces with the repository's ruleset | EC-0037 | proposed | warning | conftest |
@@ -369,3 +381,4 @@ ID is permanent: it is never renumbered or reused.
 | OAS | OpenAPI documents | openapi |
 | COMMIT | Commit messages | commits |
 | COPY | Public copy | copy |
+| IMAGE | Container images | container-images |

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "IMAGE-03",
+    "path": "api/docker/Dockerfile",
+    "severity": "warning"
+  }
+]

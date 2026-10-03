@@ -1,0 +1,7 @@
+[
+  {
+    "id": "IMAGE-05",
+    "path": "docker-compose.yml",
+    "severity": "warning"
+  }
+]

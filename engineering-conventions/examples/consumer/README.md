@@ -13,7 +13,8 @@ are not obvious.
 | [`.gitignore`](.gitignore) | Ignores `platform-api/.env`, which `conventions env-file platform-api/env.schema.yaml` writes with each developer's local values and minted secrets; no environment file is committed (ENVS-26, ENVS-27) |
 | [`.repo/outputs.toml`](.repo/outputs.toml) | The one output the repository publishes, an `image`, and the workflow that publishes it ([EC-0007](../../definitions/conventions/outputs/outputs-declaration.md)) |
 | [`platform-api/go.mod`](platform-api/go.mod) | The product directory, named after the repository and holding the build manifest, so the root keeps only what acts on the product |
-| [`platform-api/Dockerfile`](platform-api/Dockerfile), [`platform-api/README.md`](platform-api/README.md) | The image, built from the product directory alone, and the document the output declaration points at: how to run it, pin it and verify it ([EC-0008](../../definitions/conventions/outputs/publishing-and-consuming.md)) |
+| [`platform-api/docker/Dockerfile`](platform-api/docker/Dockerfile), [`platform-api/README.md`](platform-api/README.md) | The image, in the product's `docker/` directory with the ignore file BuildKit reads beside it ([EC-0039](../../definitions/conventions/container-images/image-layout.md)), built with the product directory as its context, and the document the output declaration points at: how to run it, pin it and verify it ([EC-0008](../../definitions/conventions/outputs/publishing-and-consuming.md)) |
+| [`.config/docker/hadolint.yaml`](.config/docker/hadolint.yaml) | hadolint's configuration; `task lint` and the Validate workflow lint every Dockerfile with it through `conventions hadolint`, at the version mise pins ([EC-0040](../../definitions/conventions/container-images/dockerfile-linting.md)) |
 | [`.github/release-please/`](.github/release-please/config.json) | The release-please config and release-please manifest ([EC-0024](../../definitions/conventions/releases/release-configuration.md)): one package tagged `vX.Y.Z`, drafted with its tag, both pre-1.0 bump settings, and a changelog that shows only the commit types that cut a release. [`version.txt`](version.txt) is the file release-please owns |
 | [`.github/workflows/release.yml`](.github/workflows/release.yml) | The release workflow ([EC-0026](../../definitions/conventions/releases/release-workflows.md)): release-please with the release App's token, the image built from the tag with its OCI annotations and provenance, then the draft published last and checked immutable. The image goes to a registry, so the release carries no assets |
 | [`.github/rulesets/release-tags.json`](.github/rulesets/release-tags.json) | The tag ruleset ([EC-0025](../../definitions/conventions/releases/release-tags.md)): no release tag is created, moved or deleted except by the release App. Its `actor_id` is a placeholder for your App's ID |
@@ -31,7 +32,7 @@ are not obvious.
 | Job | Does |
 | --- | --- |
 | `Workflows` | actionlint and zizmor at medium severity (GHA-33), at the versions in `.config/mise/config.toml` |
-| `Conventions` | `conventions check --fail-on warning`, the command a developer runs locally |
+| `Conventions` | `conventions check --fail-on warning`, the command a developer runs locally, and `conventions hadolint` on every Dockerfile (IMAGE-10) |
 | `Dev Container` | builds the dev container with `--frozen-lockfile` (DEVC-10) |
 | `Validate / Required` | fails unless every job above succeeded |
 

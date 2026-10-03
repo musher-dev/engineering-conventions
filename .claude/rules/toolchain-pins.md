@@ -31,7 +31,7 @@ pairs below, which mise cannot express.
 | `ARG MISE_VERSION` in `.devcontainer/Dockerfile` (without its `v`) | `version:` of `jdx/mise-action` in `.github/actions/setup-tools/action.yml`, and `min_version` in `.config/mise/config.toml` | The container and CI must resolve pins with the same mise, and an older mise must refuse the config |
 | `aqua:open-policy-agent/opa` | The OPA version the pinned conftest embeds (`conftest --version`) | `opa test` locally and `conftest` for consumers must evaluate the same language |
 | `aqua:evilmartians/lefthook` | `min_version` in `.config/lefthook.yml` | The hook config uses what that version supports |
-| `aqua:open-policy-agent/conftest`, `aqua:vale-cli/vale`, `aqua:jqlang/jq`, `aqua:stoplightio/spectral` | `CONFTEST_VERSION`, `VALE_VERSION`, `JQ_VERSION`, `SPECTRAL_VERSION` in `engineering-conventions/bin/conventions` | Consumers run the checks with the versions this repository tested them with (`tests/test_launcher.py` fails otherwise) |
+| `aqua:open-policy-agent/conftest`, `aqua:vale-cli/vale`, `aqua:jqlang/jq`, `aqua:stoplightio/spectral`, `aqua:hadolint/hadolint` | `CONFTEST_VERSION`, `VALE_VERSION`, `JQ_VERSION`, `SPECTRAL_VERSION`, `HADOLINT_VERSION` in `engineering-conventions/bin/conventions` | Consumers run the checks with the versions this repository tested them with (`tests/test_launcher.py` fails otherwise) |
 
 - **MUST** run `task tools:lock`, `task tools:install`, then
   `task tools:doctor`, after changing a pin.

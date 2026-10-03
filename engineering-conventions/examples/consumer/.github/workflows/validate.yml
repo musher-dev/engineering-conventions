@@ -64,6 +64,10 @@ jobs:
       - name: Check the repository against its conventions
         run: conventions check --fail-on warning
 
+      # IMAGE-06 and IMAGE-10: every Dockerfile passes hadolint.
+      - name: Lint the Dockerfiles
+        run: conventions hadolint --config .config/docker/hadolint.yaml
+
   dev_container:
     name: Dev Container
     runs-on: ubuntu-24.04

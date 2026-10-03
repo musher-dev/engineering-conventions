@@ -1,0 +1,5 @@
+min_version = "2026.9.12"
+
+[tools]
+"github:crate-ci/committed" = "1.1.11"
+"aqua:hadolint/hadolint" = "2.15.1"

@@ -31,7 +31,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"IMAGE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -782,6 +782,42 @@
     [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],
+  "image-01-passes-dev-container-and-tests": [],
+  "image-01-root-dockerfile": [
+    ["Dockerfile", "IMAGE-01", "warning", "Dockerfile is not in a docker/ directory; move it to docker/, with its ignore file and compose files, and point the build at it with -f", true]
+  ],
+  "image-02-passes-named-alone": [],
+  "image-02-suffix-name": [
+    ["api/docker/Dockerfile.dev", "IMAGE-02", "warning", "Dockerfile.dev is not a Dockerfile name editors and linters recognise; rename it to dev.Dockerfile", true]
+  ],
+  "image-03-missing-ignore": [
+    ["api/docker/Dockerfile", "IMAGE-03", "warning", "api/docker/Dockerfile has no Dockerfile.dockerignore beside it, so the build sends its whole context; add one that starts from * and lists what the image needs", true]
+  ],
+  "image-03-passes-one-per-image": [],
+  "image-04-context-root-ignore": [
+    ["api/.dockerignore", "IMAGE-04", "warning", "a .dockerignore belongs to no image, and BuildKit skips it for a Dockerfile with its own ignore file; move its patterns into <Dockerfile>.dockerignore beside each Dockerfile", true]
+  ],
+  "image-04-passes-dev-container": [],
+  "image-05-passes-variants": [],
+  "image-05-root-compose": [
+    ["docker-compose.yml", "IMAGE-05", "warning", "docker-compose.yml runs an image, so it belongs beside the Dockerfile; move it to docker/", true]
+  ],
+  "image-07-no-configuration": [
+    [".config/docker/hadolint.yaml", "IMAGE-07", "warning", "the repository has Dockerfiles, such as api/docker/Dockerfile, but no hadolint configuration; add .config/docker/hadolint.yaml (failure-threshold: warning, and each rule turned off with its reason), so every run judges a Dockerfile the same way", true]
+  ],
+  "image-07-passes-yml": [],
+  "image-08-passes-pinned": [],
+  "image-08-unpinned": [
+    [".config/mise/config.toml", "IMAGE-08", "warning", "the mise configuration does not pin hadolint, so the hook and CI can lint a Dockerfile with different releases; add \"aqua:hadolint/hadolint\" = \"<version>\" under [tools]", true]
+  ],
+  "image-09-glob-misses-named": [
+    [".config/lefthook.yml", "IMAGE-09", "warning", "the pre-commit hook does not run hadolint with --config .config/docker/hadolint.yaml on every staged Dockerfile; add a job with glob \"**/{Dockerfile,*.Dockerfile}\" that runs hadolint --config .config/docker/hadolint.yaml {staged_files}", true]
+  ],
+  "image-09-passes-brace-glob": [],
+  "image-10-not-validated": [
+    ["api/docker/Dockerfile", "IMAGE-10", "warning", "no validate workflow lints the Dockerfiles; run `conventions hadolint`, or `hadolint --config .config/docker/hadolint.yaml` on every Dockerfile, in a validate workflow, directly or through a task, so a Dockerfile that breaks a rule cannot merge", true]
+  ],
+  "image-10-passes-through-a-task": [],
   "mise-pin-without-declaration": [],
   "oas-02-floating-owasp-version": [
     [".config/openapi/spectral.yaml", "OAS-02", "warning", ".config/openapi/spectral.yaml extends the OWASP API security ruleset as https://unpkg.com/@stoplight/spectral-owasp-ruleset/dist/ruleset.mjs, which names no exact release; extend https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which names one exact release", true],
@@ -1087,10 +1123,10 @@
     [".config/mise/config.toml", "TOOL-05", "warning", "no .config/mise/mise.lock beside the mise configuration, so each install resolves download URLs and checksums afresh; run `mise lock` and commit it", true]
   ],
   "tool-06-floating-argument": [
-    ["Dockerfile", "TOOL-06", "warning", "ARG NODE_VERSION defaults to \"24\", which is not one release; set an exact version, such as NODE_VERSION=1.2.3", true]
+    ["docker/Dockerfile", "TOOL-06", "warning", "ARG NODE_VERSION defaults to \"24\", which is not one release; set an exact version, such as NODE_VERSION=1.2.3", true]
   ],
   "tool-07-runtime-image": [
-    ["Dockerfile", "TOOL-07", "warning", "node:22.1.0-slim runs node 22.1.0 but mise pins 24.21.0; use the 24.21.0 tag of node", true]
+    ["docker/Dockerfile", "TOOL-07", "warning", "node:22.1.0-slim runs node 22.1.0 but mise pins 24.21.0; use the 24.21.0 tag of node", true]
   ],
   "tool-08-feature-version": [
     [".devcontainer/devcontainer.json", "TOOL-08", "warning", "Feature ghcr.io/devcontainers/features/node:1 installs node lts but mise pins 24.21.0; set its version to 24.21.0", true]

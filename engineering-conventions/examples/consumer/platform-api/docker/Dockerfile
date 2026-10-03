@@ -1,5 +1,6 @@
-# The service image. It is built from the product directory, so the build
-# context holds only what the service needs. The Release workflow adds the OCI
+# The service image, in the product's docker/ directory (EC-0039). The build
+# context is the product directory, trimmed by Dockerfile.dockerignore beside
+# this file, so it holds only what the service needs. The Release workflow adds the OCI
 # source, revision and version annotations when it pushes the image (OUT-10).
 # The Go image's tag is an exact version (TOOL-07 checks it against the pin
 # whenever .config/mise/config.toml pins go).

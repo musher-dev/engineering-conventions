@@ -1,0 +1,4 @@
+# hadolint, for every Dockerfile in the repository (EC-0040): run by
+# `task lint:docker`, the pre-commit hook and the Validate workflow.
+# Docs: https://github.com/hadolint/hadolint#configure
+failure-threshold: warning

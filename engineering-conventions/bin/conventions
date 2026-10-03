@@ -9,7 +9,7 @@
 #   then                       conventions check
 #
 # It needs only POSIX sh, git, and sha256sum, shasum or openssl to hash
-# vendored copies. conftest, jq, Vale and Spectral come through
+# vendored copies. conftest, jq, Vale, Spectral and hadolint come through
 # `mise exec` at the versions below, which move with this release, so the
 # bundle pin is the only pin. Without mise it uses them from PATH.
 #
@@ -26,6 +26,7 @@
 #   conventions check [--fail-on error|warning] [--output text|json|FORMAT] [--repository NAME] [-C DIR]
 #   conventions prose [-C DIR] [PATH...]
 #   conventions openapi [-C DIR] [--ruleset FILE] [FILE...]
+#   conventions hadolint [-C DIR] [--config FILE] [FILE...]
 #   conventions env-contract [-C DIR] SCHEMA
 #   conventions env-file [-C DIR] [--force] SCHEMA
 #   conventions version
@@ -36,6 +37,7 @@ CONFTEST_VERSION=0.70.1
 VALE_VERSION=3.22.0
 JQ_VERSION=1.8.2
 SPECTRAL_VERSION=6.16.3
+HADOLINT_VERSION=2.15.1
 
 bundle=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 
@@ -162,6 +164,10 @@ DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0
 # BuildKit's per-Dockerfile ignore file (build.Dockerfile.dockerignore) is
 # named like a Dockerfile but is not one.
 NOT_DOCKERFILES='\.dockerignore$'
+# The Dockerfiles `conventions hadolint` lints by default: any depth, less
+# the ignore files and test input the IMAGE checks skip (lib/images.rego).
+IMAGE_DOCKERFILES='(^|/)([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$'
+NOT_IMAGE_DOCKERFILES='\.dockerignore$|(^|/)(tests|fixtures)/'
 
 # Files the checks read as text: agent context, skills and subagents, decision
 # records, the .config/ index, CODEOWNERS, the security policy, and the one-line
@@ -523,6 +529,40 @@ EOF
   tool spectral aqua:stoplightio/spectral "${SPECTRAL_VERSION}" lint --ruleset "${ruleset}" "$@"
 }
 
+# Lint Dockerfiles with hadolint and the repository's configuration
+# (EC-0040, IMAGE-06): the files given, or every Dockerfile the repository
+# holds, by any name Docker reads, except test input under a tests/ or
+# fixtures/ directory.
+lint_dockerfiles() {
+  given='' config=.config/docker/hadolint.yaml
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      --config) config=${2:?--config needs a file}; shift 2 ;;
+      --) shift; break ;;
+      -*) usage ;;
+      *) break ;;
+    esac
+  done
+  find_root
+  cd "${root}"
+  if [ $# -eq 0 ]; then
+    files=$(list_files)
+    while IFS= read -r file; do
+      if [ -n "${file}" ]; then set -- "$@" "${file}"; fi
+    done << EOF
+$(matching "${IMAGE_DOCKERFILES}" "${NOT_IMAGE_DOCKERFILES}")
+EOF
+  fi
+  if [ $# -eq 0 ]; then
+    echo "conventions: no Dockerfiles to check" >&2
+    return 0
+  fi
+  [ -f "${config}" ] ||
+    die "${config} does not exist: add a hadolint configuration with failure-threshold: warning (IMAGE-07)"
+  tool hadolint aqua:hadolint/hadolint "${HADOLINT_VERSION}" --config "${config}" "$@"
+}
+
 # Print the environment contract a repository commits beside its
 # environment schema, a JSON Schema 2020-12 document derived from it by
 # bin/env-contract.jq (EC-0019, ENVS-20, decision 0026). Redirect it into the
@@ -634,6 +674,7 @@ case ${command} in
   check) check "$@" ;;
   prose) prose "$@" ;;
   openapi) openapi "$@" ;;
+  hadolint) lint_dockerfiles "$@" ;;
   env-contract) env_contract "$@" ;;
   env-file) env_file "$@" ;;
   version | --version) version ;;

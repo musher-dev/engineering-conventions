@@ -102,6 +102,7 @@ Start from the part of your repository you are working on:
 | [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-06 |
 | [Community files](engineering-conventions/definitions/conventions/community-files/README.md) | `.github/ISSUE_TEMPLATE/`, `.github/DISCUSSION_TEMPLATE/`, `CODEOWNERS`, `SECURITY.md` | EC-0036 | COMM-01 – COMM-07 |
 | [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-12 |
+| [Container images](engineering-conventions/definitions/conventions/container-images/README.md) | Dockerfiles, their ignore files and compose files in `docker/` directories, `.config/docker/hadolint.yaml` | EC-0039, EC-0040 | IMAGE-01 – IMAGE-10 |
 | [Copy](engineering-conventions/definitions/conventions/copy/README.md) | A site's copy and the Vale config that lints it: `.config/**/vale.ini` | EC-0038 | COPY-01 – COPY-04 |
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
 | [Dependencies](engineering-conventions/definitions/conventions/dependencies/README.md) | `.repo/dependencies.toml`, vendored copies under `<product>/contracts/vendor/` | EC-0032, EC-0033 | DEPS-01 – DEPS-10 |

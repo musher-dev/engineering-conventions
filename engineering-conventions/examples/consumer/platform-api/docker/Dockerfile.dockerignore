@@ -1,0 +1,5 @@
+# What `docker build -f platform-api/docker/Dockerfile platform-api` sends:
+# nothing but the module and its sources (IMAGE-03).
+*
+!go.mod
+!*.go

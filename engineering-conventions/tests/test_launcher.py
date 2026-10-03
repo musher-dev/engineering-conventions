@@ -145,6 +145,7 @@ def test_tool_versions_move_with_the_repository_pins() -> None:
         ("VALE_VERSION", "aqua:vale-cli/vale"),
         ("JQ_VERSION", "aqua:jqlang/jq"),
         ("SPECTRAL_VERSION", "aqua:stoplightio/spectral"),
+        ("HADOLINT_VERSION", "aqua:hadolint/hadolint"),
     ):
         declared = re.search(rf"^{variable}=(\S+)$", text, re.MULTILINE)
         assert declared, f"{variable} is not set in bin/conventions"
@@ -220,7 +221,10 @@ def test_a_file_parsed_first_is_reported_alike(tmp_path: Path) -> None:
     (repo / "docker" / "build.Dockerfile.dockerignore").write_text("**/node_modules\n")
     completed = _launch("check", "--output", "json", cwd=repo)
     assert completed.returncode == 1, completed.stderr
-    assert _found(completed.stdout) == [("docker/build.Dockerfile", "PARSE", "error", True)]
+    # The IMAGE checks judge the files too; only the parse error is the point here.
+    assert [f for f in _found(completed.stdout) if f[1] == "PARSE"] == [
+        ("docker/build.Dockerfile", "PARSE", "error", True)
+    ]
     assert completed.stdout == render_json(check(PRODUCT, repo, utc_now()))
     text = _launch("check", cwd=repo).stdout
     assert text == render_text(check(PRODUCT, repo, utc_now()), requirement_titles(PRODUCT))

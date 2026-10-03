@@ -26,10 +26,11 @@ tasks:
       - task: conventions
 
   lint:
-    desc: Lint the workflows with actionlint and zizmor.
+    desc: Lint the workflows with actionlint and zizmor, and the Dockerfiles with hadolint.
     cmds:
       - actionlint
       - zizmor --min-severity medium .github
+      - conventions hadolint --config .config/docker/hadolint.yaml
 
   conventions:
     desc: Check the repository against its pinned conventions release.
@@ -39,7 +40,7 @@ tasks:
   build:
     desc: Build the service image.
     cmds:
-      - docker build --tag {{.IMAGE}} {{.PRODUCT_DIR}}
+      - docker build --file {{.PRODUCT_DIR}}/docker/Dockerfile --tag {{.IMAGE}} {{.PRODUCT_DIR}}
 
   test:
     desc: Run the tests.

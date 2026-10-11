@@ -8,7 +8,8 @@ frontmatter validated by [`decision.schema.json`](../../engineering-conventions/
 
 These records govern this repository. The conventions it publishes are in
 [`engineering-conventions/definitions/conventions/`](../../engineering-conventions/definitions/conventions/);
-decisions about how the company operates are in `musher-dev/company`.
+how the company operates is not kept in a repository. The [README](../../README.md#what-this-repository-owns-and-what-it-doesnt)
+names the current owner of everything this repository does not own.
 
 | ID | Decision | Status |
 | --- | --- | --- |

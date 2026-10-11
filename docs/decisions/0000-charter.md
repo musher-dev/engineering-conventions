@@ -54,6 +54,12 @@ It does not own:
 | Rules local to one repository | That repository |
 | The development-container scaffold: the container, its toolchain setup, its stacks | `musher-dev/development-container` |
 
+> **Note, 2026-10-11.** `musher-dev/company` has been retired, and this record is kept as it was accepted. The boundary
+> is unchanged; two of the owners it names have moved. Positioning, product vocabulary and the customer glossary are
+> owned by `musher-dev/pelorus`. How the company operates is no longer kept in a repository. The company decisions this
+> record cites were in that repository; the paraphrase of decision 0012 above is this record's account of it. The
+> [README](../../README.md#what-this-repository-owns-and-what-it-doesnt) names the current owners.
+
 A repository-local rule may be **stricter** than a convention here. It may never **contradict** one: a repository that
 needs to deviate records a waiver, which is visible, dated and tracked. When a local rule turns out to be useful to more
 than one repository, it is proposed here and the local copy is retired.
@@ -106,6 +112,7 @@ rules live here once and are read, not copied.
 
 - Company decision 0012, on how the company's work is divided across repositories (`musher-dev/company`, private)
 - Company decision 0022, on publishing `purpose/` as a versioned bundle with a contract (`musher-dev/company`, private)
+- Both company decisions were in `musher-dev/company`, since retired; see the note under the table above
 - [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
 - [Decision 0002: Authority and migration](0002-authority-and-migration.md)
 - [Decision 0008: Repository layout](0008-repository-layout.md)

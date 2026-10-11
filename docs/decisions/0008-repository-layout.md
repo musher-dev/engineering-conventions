@@ -81,6 +81,6 @@ same relative path works inside the bundle and on GitHub.
 ## References
 
 - Company decision 0013, on how a repository lays out its editor settings, tool configuration and product
-  (`musher-dev/company`, private)
+  (`musher-dev/company`, private; that repository has since been retired, see the note in the [charter](0000-charter.md))
 - [How this repository is organized](../repository.md)
 - [Decision 0003: Public visibility and consumption](0003-public-visibility-and-consumption.md)

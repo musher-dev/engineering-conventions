@@ -147,12 +147,13 @@ Where the rest lives:
 
 | Not owned here | Owned by |
 | --- | --- |
-| How the company operates: rituals, planning, the operating model | `musher-dev/company` |
+| How the company operates: rituals, planning, the operating model | No repository: kept as internal reference documents |
 | Telemetry names: spans, metrics, attributes, events | `musher-dev/observability-schema-registry` |
 | Document specifications: the component, blueprint and catalog formats | `musher-dev/specifications` |
-| Positioning, product vocabulary, the customer glossary, platform domain nouns | `musher-dev/platform` and `musher-dev/company` |
+| Positioning, product vocabulary, the customer glossary | `musher-dev/pelorus` |
+| Platform domain nouns and engineering terminology | `musher-dev/platform` (`.claude/rules/terminology.md`) and `musher-dev/pelorus` |
 | The development-container scaffold: the container, its toolchain setup, its stacks | `musher-dev/development-container` |
-| Teams and their membership | `musher-dev/company`, applied by `musher-dev/infra-github` |
+| Teams and their membership | `musher-dev/infra-github` |
 | Applying repository names, custom properties and rulesets to the organization | `musher-dev/infra-github` |
 | Rules local to one repository | That repository |
 

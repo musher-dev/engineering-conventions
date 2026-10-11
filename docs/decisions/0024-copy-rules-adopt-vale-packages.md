@@ -113,7 +113,8 @@ We will check that public copy is linted with Vale through a new convention,
 
 ## References
 
-- [Decision 0000: Charter](0000-charter.md)
+- [Decision 0000: Charter](0000-charter.md). Note, 2026-10-11: `musher-dev/company` has been retired, and positioning and
+  product vocabulary are now owned by `musher-dev/pelorus`; the Context above is kept as it was accepted
 - [EC-0038 Public copy](../../engineering-conventions/definitions/conventions/copy/public-copy.md)
 - [Vale: Packages](https://vale.sh/docs/topics/packages)
 - [Vale: Configuration](https://vale.sh/docs/topics/config)

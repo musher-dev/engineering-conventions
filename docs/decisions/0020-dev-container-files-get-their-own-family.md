@@ -87,7 +87,8 @@ and the thing they describe live together.
 
 ## References
 
-- [Decision 0000: Charter](0000-charter.md)
+- [Decision 0000: Charter](0000-charter.md), which paraphrases company decision 0012; `musher-dev/company`, where that
+  decision was recorded, has since been retired
 - [Decision 0010: Outputs declaration](0010-outputs-declaration.md)
 - [Decision 0015: The runner reads what conftest cannot select](0015-the-runner-reads-what-conftest-cannot-select.md)
 - [Decision 0016: Rules adopted from other repositories get new families](0016-adopted-rules-get-new-families.md)

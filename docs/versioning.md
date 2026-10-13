@@ -37,8 +37,8 @@ Until 1.0.0:
   ([decision 0017](decisions/0017-releases-from-drafts.md)). A 0.x patch release can bring new warnings; it cannot
   bring new failures.
 - A `provisional` term may still change in a minor release. From 1.0.0, removing any term is a major change.
-- The GitHub Actions conventions remain owned by `musher-dev/platform` until the handoff in
-  [decision 0002](decisions/0002-authority-and-migration.md).
+- Five of the GitHub Actions conventions, EC-0002 to EC-0006, remain owned by `musher-dev/platform` until the
+  handoff in [decision 0002](decisions/0002-authority-and-migration.md); EC-0022 and EC-0023 are owned here.
 
 The first release is 0.1.0. The first release that makes any requirement `error` is a major-class change.
 

@@ -128,7 +128,7 @@ point", "callable" and "reusable" are used as [EC-0002](workflow-files.md#scope)
 ## Status and authority
 
 This convention is a **draft** owned by `musher-dev/platform` through issue
-[#2892](https://github.com/musher-dev/platform/issues/2892), published here as proposed requirements until the single
+musher-dev/platform#2892, published here as proposed requirements until the single
 handoff described in [decision 0002](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0002-authority-and-migration.md).
 
 Every requirement here is `proposed` at severity `warning`.

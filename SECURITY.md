@@ -21,7 +21,8 @@ In scope:
   `engineering-conventions/checks/`, where a flaw would let a consumer's
   repository pass a check it should fail, or make the checks unsafe to run on
   untrusted input (a pull request's workflow files, for example).
-- **The release bundle**: the tarball, the Vale package, `manifest.json` and
+- **The release bundle**: the tarball, the two Vale packages
+  (`MusherConventions.zip`, `MusherProse.zip`), `manifest.json` and
   `SHA256SUMS` attached to each GitHub Release, and the workflows that build
   and publish them.
 
@@ -48,7 +49,7 @@ run on (conftest, OPA, Vale), which have their own security policies.
   the same bytes from the same commit with the same GNU tar, gzip and zip, which
   come from the runner image and are not pinned.
 - Each release publishes `SHA256SUMS` and a GitHub build-provenance attestation
-  for the bundle and the Vale package. Verify a download with:
+  for the bundle and both Vale packages. Verify a download with:
 
   ```bash
   sha256sum -c SHA256SUMS

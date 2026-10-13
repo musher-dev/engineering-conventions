@@ -11,7 +11,9 @@ paths:
 
 `.config/mise/config.toml` pins every CLI this repository runs
 (docs/repository.md → "Toolchain"). The only exceptions are the lockstep
-pairs below, which mise cannot express.
+pairs below, which mise cannot express, and the two tools installed outside
+mise that docs/repository.md lists: the Dev Containers CLI (`npx` in the
+`Dev Container` job) and Claude Code (`.devcontainer/scripts/lib/base-setup.sh`).
 
 ## Rules
 
@@ -32,6 +34,20 @@ pairs below, which mise cannot express.
 | `aqua:open-policy-agent/opa` | The OPA version the pinned conftest embeds (`conftest --version`) | `opa test` locally and `conftest` for consumers must evaluate the same language |
 | `aqua:evilmartians/lefthook` | `min_version` in `.config/lefthook.yml` | The hook config uses what that version supports |
 | `aqua:open-policy-agent/conftest`, `aqua:vale-cli/vale`, `aqua:jqlang/jq`, `aqua:stoplightio/spectral`, `aqua:hadolint/hadolint` | `CONFTEST_VERSION`, `VALE_VERSION`, `JQ_VERSION`, `SPECTRAL_VERSION`, `HADOLINT_VERSION` in `engineering-conventions/bin/conventions` | Consumers run the checks with the versions this repository tested them with (`tests/test_launcher.py` fails otherwise) |
+
+- **MUST** move, in the same commit, the copies of a pin in documentation and
+  examples, which no check compares:
+
+| Pin | Copied into |
+| --- | --- |
+| `min_version` in `.config/mise/config.toml` | `min_version` in `README.md` and `docs/consuming.md` ("Adopt it"), the `version:` of mise-action in `docs/consuming.md` ("In CI"), and `min_version` and mise-action's `version:` in `engineering-conventions/examples/*/` |
+| The `jdx/mise-action` SHA and version comment in `.github/actions/setup-tools/action.yml` | `docs/consuming.md` ("In CI") and the workflows in `engineering-conventions/examples/*/.github/workflows/` |
+| `sha256:` in `.github/actions/setup-tools/action.yml` | `ARG MISE_SHA256_AMD64` in `.devcontainer/Dockerfile` (both are the linux-x64 binary of the same mise) |
+| `"github:crate-ci/committed"` in `.config/mise/config.toml` | The quick reference in `engineering-conventions/definitions/conventions/commits/README.md` |
+
+The release version in `README.md`, `docs/consuming.md` and the examples is
+not one of these: release-please moves every line marked
+`x-release-please-version`.
 
 - **MUST** run `task tools:lock`, `task tools:install`, then
   `task tools:doctor`, after changing a pin.

@@ -17,7 +17,7 @@ GitHub-specific integration such as runner setup and authentication.
 
 All seven conventions are **drafts**, and every requirement is `proposed` at severity `warning`. The first five, EC-0002
 to EC-0006, are owned
-by `musher-dev/platform` (issue [#2892](https://github.com/musher-dev/platform/issues/2892)) until the single handoff
+by `musher-dev/platform` (issue musher-dev/platform#2892) until the single handoff
 described in [decision 0002](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0002-authority-and-migration.md).
 Their requirements are derived from the platform's checks CI-14 to CI-19; where they differ, each convention lists the
 difference in its Status section as a proposal the platform adopts at the handoff. EC-0022 and EC-0023 are owned here

@@ -55,8 +55,8 @@ With the identity declaration below, that is the whole adoption. What mise does 
   through `mise exec` at the versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
 
-`conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. It needs only
-POSIX `sh` and `git`.
+`conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. Besides the
+tools mise installs, it needs only POSIX `sh`, `git`, and `sha256sum`, `shasum` or `openssl`.
 
 | `--output` | For | Prints |
 | --- | --- | --- |
@@ -421,7 +421,8 @@ length are the site owner's to decide: write them as a Vale style in the site's 
 
 ## Without mise
 
-Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:
+Download the release tarball, verify it, and run its launcher with conftest and jq on PATH (and Vale for `prose`,
+Spectral for `openapi`, hadolint for `hadolint`):
 
 ```sh
 version=0.8.1  # x-release-please-version
@@ -493,8 +494,8 @@ The report has one block per requirement, errors first, then a summary:
 GHA-07  warning  1 finding
 A workflow's name is its filename stem in Title Case
 https://github.com/musher-dev/engineering-conventions/blob/vX.Y.Z/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
-  .github/workflows/ci.yml
-    name "CI" should be "Validate Code": a workflow's name is its filename stem in Title Case
+  .github/workflows/validate.yml
+    name "CI" should be "Validate": a workflow's name is its filename stem in Title Case
 
 1 warning, 0 errors in 1 requirement.
 Warnings do not fail the check; --fail-on warning makes them fail.

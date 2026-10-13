@@ -13,7 +13,7 @@ itself, which is what a consumer pins.
 engineering-conventions/               repository level: acts on the product
 ├── .devcontainer/  .github/           integration homes whose location the tool mandates
 ├── .config/                           tool configuration (linters, hooks, mise), indexed in its README
-├── .claude/  AGENTS.md              agent contract and path-scoped rules
+├── .claude/  AGENTS.md                agent contract and path-scoped rules
 ├── .repo/                             this repository's own declarations (conventions, outputs, repository)
 ├── Taskfile.yml  taskfiles/           orchestration; reaches the product through PRODUCT_DIR
 ├── docs/                              contributor documentation and decisions
@@ -83,7 +83,7 @@ Within the repository level:
 | GitHub's own configuration | `.github/`: workflows, rulesets, Dependabot, release-please |
 | Agent permissions and path-scoped policy | `.claude/` |
 
-Four rules keep `.config/` predictable:
+Five rules keep `.config/` predictable:
 
 - **Bucket by concern.** Use `.config/<concern>/<tool>.<ext>`, with no leading dot on the filename. Two files sit
   where their tool's own search looks instead: `lefthook.yml` at the top level, because lefthook's search stops at
@@ -120,6 +120,13 @@ the few pins mise cannot express move in lockstep; they are listed in
 
 To add a tool, add one line under `[tools]` with a fully qualified backend (`aqua:owner/repo`, `pipx:`, `npm:`), then
 run `task tools:lock`, `task tools:install` and `task tools:doctor`.
+
+Two tools are installed outside mise, and only these two:
+
+| Tool | Where | Why not mise |
+| --- | --- | --- |
+| The Dev Containers CLI, `@devcontainers/cli` | `npx -y @devcontainers/cli@<version>` in the `Dev Container` job of `.github/workflows/validate.yml` | It builds the container from outside; pinned in mise, every container and every CI job would install a tool only that job runs. The version is exact, and its three uses move together. |
+| Claude Code | `base_install_claude` in `.devcontainer/scripts/lib/base-setup.sh` | A developer convenience no gate runs, from its own native installer. It is best-effort and skipped in CI. |
 
 ## Generated files and the bundle
 

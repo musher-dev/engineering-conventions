@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from conventions_tools import classify, invariants
+from conventions_tools import baseline, classify
 from conventions_tools.classify import Rank
 from conventions_tools.cli import main
 from conventions_tools.loading import ContentError, as_map, get_str_list
@@ -235,7 +235,7 @@ def unchanged(monkeypatch: pytest.MonkeyPatch) -> None:
     """The working tree's index is HEAD's, whatever a local checkout has regenerated."""
 
     def at_head(product: Path) -> dict[str, object]:
-        return as_map(invariants.baseline_index(product, "HEAD"))
+        return as_map(baseline.baseline_index(product, "HEAD"))
 
     monkeypatch.setattr(classify, "current_index", at_head)
 

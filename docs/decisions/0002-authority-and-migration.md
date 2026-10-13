@@ -11,7 +11,7 @@ supersedes: []
 ## Context
 
 The first conventions in this repository are not new. GitHub Actions naming was designed in `musher-dev/platform`
-(issue [#2892](https://github.com/musher-dev/platform/issues/2892)), where checks CI-14 to CI-19 already block merges.
+(issue musher-dev/platform#2892), where checks CI-14 to CI-19 already block merges.
 Moving such a rule here raises a question the rule itself cannot answer: while it exists in both places, which one is
 right?
 
@@ -92,6 +92,6 @@ period with two live authorities.
 
 ## References
 
-- [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
+- musher-dev/platform#2892: Organize GitHub Actions workflows by responsibility
 - [Decision 0004: Identifiers and diagnostic URLs](0004-identifiers-and-diagnostic-urls.md)
 - [Decision 0005: Status, severity and versioning](0005-status-severity-and-versioning.md)

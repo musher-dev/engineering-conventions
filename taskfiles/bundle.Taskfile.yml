@@ -23,7 +23,7 @@ set: [errexit, nounset, pipefail]
 
 tasks:
   bundle:build:
-    desc: Build the reproducible release bundle, Vale package, manifest and SHA256SUMS into dist/.
+    desc: Build the reproducible release bundle, both Vale packages, manifest and SHA256SUMS into dist/.
     vars:
       COMMIT:
         sh: git rev-parse HEAD
@@ -131,11 +131,12 @@ tasks:
         tar -tvzf "{{.TARBALL}}" engineering-conventions/bin/conventions | grep -q '^-rwxr-xr-x ' \
           || fail "engineering-conventions/bin/conventions is missing or not executable"
 
-        # `conventions openapi` finds consumers' documents with openapi.jq
-        # (decision 0023); `conventions check` and `conventions env-contract`
-        # derive with env-contract.jq (decision 0026); `conventions waivers`
-        # lists the declaration's waivers with waivers.jq.
-        for shipped in bin/openapi.jq bin/env-contract.jq bin/waivers.jq; do
+        # `conventions check` writes its inventory with inventory.jq and its
+        # report with report.jq; `conventions openapi` finds consumers'
+        # documents with openapi.jq (decision 0023); `conventions check` and
+        # `conventions env-contract` derive with env-contract.jq (decision 0026);
+        # `conventions waivers` lists the declaration's waivers with waivers.jq.
+        for shipped in bin/inventory.jq bin/report.jq bin/openapi.jq bin/env-contract.jq bin/waivers.jq; do
           tar -tzf "{{.TARBALL}}" "engineering-conventions/${shipped}" > /dev/null 2>&1 \
             || fail "engineering-conventions/${shipped} is missing"
         done

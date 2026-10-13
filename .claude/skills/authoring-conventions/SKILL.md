@@ -1,17 +1,16 @@
 ---
 name: authoring-conventions
 description: >-
-  Add, change or retire a convention, requirement or term in this repository, with its ID, frontmatter,
-  `### <ID>` section, Rego check, fixture repositories, regenerated artifacts and the right Conventional Commit type.
-  Use when writing or editing anything under engineering-conventions/definitions/ (conventions/, terminology/,
-  profiles/) or checks/rego/. Triggered by: new requirement, add requirement, GHA-, ADOPT-, OUT-, EC-, convention,
-  requirement ID, retire requirement, tombstone, waiver, terminology, display form, banned alias, profile, fixture,
-  expected.json, outputs declaration, identity declaration, repository name, system, kind, REPO-, layout,
-  product directory, root exception, ENVS-, env.schema.yaml, environment schema, binding, AGENT-, agent context,
-  TASK-, Taskfile, HOOKS-, lefthook, DEC-, decision record, ADR, CONF-, tool configuration, .config/, suppression,
-  TOOL-, tool pins, COMMIT-, committed, commit message,
-  COPY-, public copy, Vale style, MusherCopy,
-  task generate, change class, feat!.
+  Add, change or retire a convention, requirement or term in this repository, with its ID, frontmatter, `### <ID>`
+  section, Rego check, fixture repositories, regenerated artifacts and the right Conventional Commit type. Use when
+  writing or editing anything under engineering-conventions/definitions/ (conventions/, terminology/, profiles/) or
+  checks/rego/. Triggered by: a requirement or convention ID (ADOPT-, AGENT-, BRANCH-, COMM-, COMMIT-, CONF-, COPY-,
+  DEC-, DEPS-, DEVC-, ENVS-, GHA-, HOOKS-, IFACE-, IMAGE-, OAS-, OUT-, REL-, REPO-, TASK-, TOFU-, TOOL-, EC-),
+  tombstone, waiver, display form, banned alias, profile, fixture, near-miss, expected.json, outputs, interfaces,
+  dependencies or identity declaration, repository name, system, kind, layout, env.schema.yaml, binding, linked
+  artifacts, deployment environment, storage record, agent context, Taskfile, lefthook, decision record, ADR,
+  .config/, suppression, tool pins, committed, commit message, Vale style, MusherCopy, task generate, change class,
+  feat!.
 ---
 
 # Authoring conventions

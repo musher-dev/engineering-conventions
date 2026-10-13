@@ -192,7 +192,8 @@ matters.
 # The local environment platform-api reads, generated from its env.schema.yaml by
 # conventions env-file. It holds this machine's values and secrets: git ignores
 # it (ENVS-27), and it is never committed. Fill in the empty values. After the
-# schema changes, run conventions env-file again to list what is missing.
+# schema changes, run conventions env-file --update: it adds what is missing and
+# keeps every value and secret already here.
 
 # TCP port the HTTP server listens on inside the container.
 # integer, internal
@@ -213,7 +214,9 @@ its assignment:
 - The facts are its type (`enum: a|b` or `list: a|b` with values), its `format`, `required`, its sensitivity, and
   `generate locally: <kind>` for a `local_generate` binding, joined by a comma and a space.
 - A binding with a `local_default` is assigned it. A binding with `local_generate` is assigned secret material minted
-  on this machine, `hex`, `base64` or unpadded `base64url` of the bytes it names. A required binding is assigned
+  on this machine, `hex`, `base64` or unpadded `base64url` of the bytes it names. A reader that needs `base64url`
+  padded, such as a Fernet key (44 characters for 32 bytes), adds the `=` padding when it reads the value. A required
+  binding is assigned
   nothing, to be filled in. Any other binding is commented out with its `default`, so the code's default applies until
   someone uncomments it.
 - A value is written bare when it holds only letters, digits and `_@%+=:,./-`; otherwise in single quotes, or, when it
@@ -221,7 +224,11 @@ its assignment:
 
 The file is written readable by its owner only. An existing `.env` is never replaced: the command lists the variables
 the schema declares that the file lacks, and fails when there are any, so a developer adds them by hand and keeps
-their own values. `--force` writes the file again and mints every secret afresh.
+their own values. `--update` brings the file up to date instead: it writes a fresh render, keeps the value the file
+sets for every variable it already sets, minted secrets included, mints only for a `local_generate` binding the file
+does not set yet, and keeps the variables the schema no longer declares in a marked block at the end rather than
+dropping them. `--force` writes the file again and mints every secret afresh. With either, `--backup` keeps the file
+it replaces as `.env.bak`.
 
 ## Status and authority
 

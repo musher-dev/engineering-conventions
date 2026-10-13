@@ -28,7 +28,7 @@
 #   conventions openapi [-C DIR] [--ruleset FILE] [FILE...]
 #   conventions hadolint [-C DIR] [--config FILE] [FILE...]
 #   conventions env-contract [-C DIR] SCHEMA
-#   conventions env-file [-C DIR] [--force] SCHEMA
+#   conventions env-file [-C DIR] [--force | --update] [--backup] SCHEMA
 #   conventions version
 set -eu
 
@@ -606,21 +606,28 @@ mint() {
 # bin/env-contract.jq (EC-0019, ENVS-27, decision 0029): each binding's local
 # value, freshly minted secret material for each local_generate, the
 # required values left empty to fill in, and the rest commented out with
-# their defaults. An existing .env is never replaced without --force; the
-# command lists the variables the schema declares that it lacks instead, and
-# fails when there are any.
+# their defaults. An existing .env is never replaced without --force or
+# --update; the command lists the variables the schema declares that it
+# lacks instead, and fails when there are any. --update merges: each line of
+# a fresh render, with the value the existing file sets for every variable it
+# already sets, minted secrets included, and the variables the schema no
+# longer declares kept in a marked block at the end. --backup keeps the
+# replaced file as .env.bak.
 env_file() {
-  force=''
+  force='' update='' backup=''
   while [ $# -gt 0 ]; do
     case $1 in
       -C) cd -- "${2:?-C needs a directory}"; shift 2 ;;
       --force) force=1; shift ;;
+      --update) update=1; shift ;;
+      --backup) backup=1; shift ;;
       --) shift; break ;;
       -*) usage ;;
       *) break ;;
     esac
   done
   [ $# -eq 1 ] || usage
+  [ -z "${force}" ] || [ -z "${update}" ] || die "--force and --update are alternatives: --update keeps the file's values"
   [ -f "$1" ] || die "$1 does not exist"
   target="$(dirname -- "$1")/.env"
   scratch=$(mktemp -d)
@@ -629,7 +636,7 @@ env_file() {
     die "cannot read $1"
   tool jq aqua:jqlang/jq "${JQ_VERSION}" -j --arg part env-file -f "${bundle}/bin/env-contract.jq" \
     "${scratch}/schema.json" > "${scratch}/env" || die "cannot derive the local environment from $1"
-  if [ -e "${target}" ] && [ -z "${force}" ]; then
+  if [ -e "${target}" ] && [ -z "${force}" ] && [ -z "${update}" ]; then
     missing=$(sed -n 's/^\(# \)\{0,1\}\([A-Za-z_][A-Za-z0-9_]*\)=.*/\2/p' "${scratch}/env" | while IFS= read -r name; do
       grep -Eq "^[[:space:]]*(export[[:space:]]+)?(#[[:space:]]*)?${name}=" "${target}" || printf '%s\n' "${name}"
     done)
@@ -644,7 +651,18 @@ env_file() {
   [ -z "${force}" ] || [ ! -e "${target}" ] ||
     printf 'conventions: replacing %s; every secret in it is minted again\n' "${target}" >&2
   umask 077
+  # The variables the existing file sets, uncommented, as NAME=VALUE; with
+  # --update each keeps its value, and only what it does not set is minted.
+  : > "${scratch}/kept"
+  if [ -n "${update}" ] && [ -e "${target}" ]; then
+    sed -n 's/^[[:space:]]*\(export[[:space:]]\{1,\}\)\{0,1\}\([A-Za-z_][A-Za-z0-9_]*=\)/\2/p' "${target}" > "${scratch}/kept"
+  fi
   while IFS= read -r line; do
+    name=$(printf '%s\n' "${line}" | sed -n 's/^\(# \)\{0,1\}\([A-Za-z_][A-Za-z0-9_]*\)=.*/\2/p')
+    if [ -n "${name}" ] && grep -q "^${name}=" "${scratch}/kept"; then
+      printf '%s=%s\n' "${name}" "$(sed -n "s/^${name}=//p" "${scratch}/kept" | tail -n 1)"
+      continue
+    fi
     case ${line} in
       *=@@generate:*@@)
         spec=${line#*=@@generate:}
@@ -654,9 +672,29 @@ env_file() {
       *) printf '%s\n' "${line}" ;;
     esac
   done < "${scratch}/env" > "${scratch}/written"
+  # What the existing file sets that the schema no longer declares: kept, in
+  # a block of its own, rather than dropped.
+  sed -n 's/^\(# \)\{0,1\}\([A-Za-z_][A-Za-z0-9_]*\)=.*/\2/p' "${scratch}/env" > "${scratch}/declared"
+  undeclared=$(sed 's/=.*//' "${scratch}/kept" | awk '!seen[$0]++' | grep -vxF -f "${scratch}/declared" || true)
+  if [ -n "${undeclared}" ]; then
+    printf '\n# Kept by conventions env-file --update: set in the previous file, but %s does\n# not declare them. Remove each once nothing reads it.\n' "$1" >> "${scratch}/written"
+    printf '%s\n' "${undeclared}" | while IFS= read -r name; do
+      printf '%s=%s\n' "${name}" "$(sed -n "s/^${name}=//p" "${scratch}/kept" | tail -n 1)"
+    done >> "${scratch}/written"
+  fi
+  if [ -n "${backup}" ] && [ -e "${target}" ]; then
+    cp -p -- "${target}" "${target}.bak"
+    chmod 600 "${target}.bak"
+  fi
   cp -- "${scratch}/written" "${target}"
   chmod 600 "${target}"
-  printf 'wrote %s\n' "${target}" >&2
+  if [ -n "${update}" ] && [ -n "${undeclared}" ]; then
+    printf 'updated %s; kept at its end the variables %s no longer declares:\n%s\n' "${target}" "$1" "${undeclared}" >&2
+  elif [ -n "${update}" ]; then
+    printf 'updated %s\n' "${target}" >&2
+  else
+    printf 'wrote %s\n' "${target}" >&2
+  fi
 }
 
 version() {

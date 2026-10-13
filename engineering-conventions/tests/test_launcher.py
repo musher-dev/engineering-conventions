@@ -550,6 +550,51 @@ def test_env_file_never_replaces_an_env_without_force(tmp_path: Path) -> None:
     assert _env_lines(tmp_path / ".env")["SESSION_KEY"] != first["SESSION_KEY"]
 
 
+def test_env_file_update_keeps_values_and_secrets(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text(ENV_SCHEMA)
+    previous = (
+        "API_TOKEN=mine\nexport SESSION_KEY=kept-key\n# NONCE_SALT=commented\nAPI_PORT=9090\n"
+        "OLD_FLAG=1\nOLD_FLAG=2\n  LEGACY_URL=http://localhost\n"
+    )
+    (tmp_path / ".env").write_text(previous)
+    updated = _launch(
+        "env-file", "--update", "--backup", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path
+    )
+    assert updated.returncode == 0, updated.stderr
+    assert updated.stderr.splitlines()[1:] == ["OLD_FLAG", "LEGACY_URL"]
+    written = tmp_path / ".env"
+    assert written.stat().st_mode & 0o777 == 0o600
+    values = _env_lines(written)
+    assert values["API_TOKEN"] == "mine"
+    assert values["SESSION_KEY"] == "kept-key"
+    assert values["API_PORT"] == "9090"
+    assert values["DATABASE_URL"] == "postgres://postgres@localhost:5432/app"
+    assert len(values["NONCE_SALT"]) == 32
+    text = written.read_text(encoding="utf-8")
+    kept = text.split("# Kept by conventions env-file --update:", 1)[1]
+    assert kept.splitlines()[2:] == ["OLD_FLAG=2", "LEGACY_URL=http://localhost"]
+    backup = tmp_path / ".env.bak"
+    assert backup.read_text(encoding="utf-8") == previous
+    assert backup.stat().st_mode & 0o777 == 0o600
+    again = _launch("env-file", "--update", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert again.returncode == 0, again.stderr
+    assert written.read_text(encoding="utf-8") == text
+
+
+def test_env_file_update_without_a_file_writes_one(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text(ENV_SCHEMA)
+    arguments = ("env-file", "--update", "-C", str(tmp_path), "env.schema.yaml")
+    completed = _launch(*arguments, cwd=tmp_path)
+    assert completed.returncode == 0, completed.stderr
+    assert len(_env_lines(tmp_path / ".env")["SESSION_KEY"]) == 43
+    assert "# Kept by" not in (tmp_path / ".env").read_text(encoding="utf-8")
+    assert not (tmp_path / ".env.bak").exists()
+    both = _launch(
+        "env-file", "--update", "--force", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path
+    )
+    assert both.returncode == 2
+
+
 def test_env_file_needs_a_schema_that_parses(tmp_path: Path) -> None:
     (tmp_path / "env.schema.yaml").write_text("- a list\n")
     completed = _launch("env-file", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)

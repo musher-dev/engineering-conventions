@@ -211,11 +211,14 @@ conventions env-file platform-api/env.schema.yaml
 ```
 
 Run the first in the task that writes your generated files, and, if you like, the second in `setup`. `env-file` never
-replaces an existing `.env`: it lists the variables the schema has gained, and `--force` writes the file again. Ignore
-the file in `.gitignore` (ENVS-27):
+replaces an existing `.env` on its own: it lists the variables the schema has gained. `--update` merges them in,
+keeping every value and minted secret the file already holds and any variable the schema no longer declares;
+`--force` writes the file again and mints every secret afresh; `--backup` keeps the replaced file as `.env.bak`. Ignore
+both files in `.gitignore` (ENVS-27):
 
 ```gitignore
 /platform-api/.env
+/platform-api/.env.bak
 ```
 
 The interface names the contract, not the schema:

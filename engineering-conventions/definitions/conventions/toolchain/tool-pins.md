@@ -319,7 +319,7 @@ min_version = "2026.9.12"
 ```
 
 ```yaml
-- uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+- uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
   with:
     version: 2026.9.12
 ```
@@ -331,7 +331,7 @@ ARG MISE_VERSION=v2026.9.12
 **Incorrect:**
 
 ```yaml
-- uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+- uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
                               # no version: the latest mise
 ```
 
@@ -480,7 +480,7 @@ is not checked. The simpler fix is to replace the step with `jdx/mise-action`, w
 **Correct:**
 
 ```yaml
-- uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+- uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
   with:
     version: 2026.9.12
 ```

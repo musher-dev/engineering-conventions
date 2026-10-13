@@ -81,7 +81,7 @@ tasks:
 ## In CI
 
 ```yaml
-- uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c  # v4.3.0
+- uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
   with:
     version: 2026.9.12   # the min_version in .config/mise/config.toml (TOOL-04)
 - name: Check the repository against its conventions

@@ -18,7 +18,7 @@ import data.conventions.lib.steps
 
 # The output kinds a release versions; images and sites are addressed by
 # digest or served continuously, not cut as releases.
-versioned_kinds := {"bundle", "cli", "contract", "library"}
+versioned_kinds := {"bundle", "cli", "library"}
 
 title_pattern := "chore(release): release${component} ${version}"
 

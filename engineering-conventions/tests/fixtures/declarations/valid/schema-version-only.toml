@@ -1,1 +1,3 @@
+# schema_version is deprecated and ignored; a declaration that still carries
+# it as 1 stays valid until a breaking release rejects it.
 schema_version = 1

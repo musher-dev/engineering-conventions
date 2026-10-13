@@ -1,0 +1,8 @@
+# schema_version is deprecated and ignored, but still accepted as 1 until a
+# breaking release rejects it.
+schema_version = 1
+profile = "base-repo"
+waivers = []
+
+[conventions]
+version = "0.1.0"

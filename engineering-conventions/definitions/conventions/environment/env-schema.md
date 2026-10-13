@@ -11,7 +11,10 @@ summary: >-
   binding that reaches another service or an outside capability names it,
   the runtime instances a service needs are declared once, with the
   range of versions its code works with, and a schema can name every
-  binding after the program that reads it.
+  binding after the program that reads it. The deployment environment
+  reaches a process only as MUSHER_ENVIRONMENT and never appears in a
+  name, a vendor's prefix holds only that vendor's names, and a shared stem
+  such as _LOG_LEVEL keeps its registered values.
 status: draft
 topic: environment
 applies_to:
@@ -24,12 +27,6 @@ owners:
 authority: self
 migration: authoritative
 implementations:
-  - repo: musher-dev/development-container
-    check: ENV-01
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: ENV-07
-    mode: blocking
   - repo: musher-dev/platform
     check: G-01
     mode: blocking
@@ -50,6 +47,10 @@ references:
     url: https://12factor.net/config
   - title: "JSON Schema draft-07"
     url: https://json-schema.org/draft-07
+  - title: "OpenTelemetry: Environment Variable Specification"
+    url: https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/
+  - title: "OpenTelemetry: Deployment attributes"
+    url: https://opentelemetry.io/docs/specs/semconv/registry/attributes/deployment/
 requirements:
   - id: ENVS-03
     title: An environment schema is valid against the published format
@@ -219,6 +220,38 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.environment.env_grammar
+  - id: ENVS-28
+    title: The deployment environment reaches a process only as MUSHER_ENVIRONMENT
+    status: proposed
+    severity: warning
+    since: 0.9.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_shared
+  - id: ENVS-29
+    title: A name under a reserved vendor prefix is one that vendor defines
+    status: proposed
+    severity: warning
+    since: 0.9.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_shared
+  - id: ENVS-30
+    title: No deployment environment appears in a variable's name
+    status: proposed
+    severity: warning
+    since: 0.9.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_shared
+  - id: ENVS-31
+    title: A shared variable stem keeps its registered values
+    status: proposed
+    severity: warning
+    since: 0.9.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_shared
 ---
 
 # Environment schema
@@ -458,6 +491,7 @@ A binding's name says what it configures before its value does. The grammar is:
 ```text
 [<client prefix>]<COMPONENT>_<WHAT>[_<UNIT>]      API_REQUEST_TIMEOUT_SEC, VITE_API_BASE_URL
 [<client prefix>]ENABLE_|IS_|HAS_|SHOULD_<WHAT>    ENABLE_AUDIT_LOG, VITE_ENABLE_BILLING
+[<client prefix>]<COMPONENT>_<WHAT>_<SHARED STEM>  API_LOG_LEVEL, WORKERS_LOG_FORMAT
 <GROUP>__<SUB>__<FIELD>                            WORKERS__EXPORT__BATCH_SIZE
 ```
 
@@ -506,6 +540,10 @@ and ENVS-09 to ENVS-14) applies to the part after it, and ENVS-25 asks every bin
   binding with `grammar_exempt: true`;
 - a **legacy name** in `naming.legacy`: a binding that was unprefixed when the schema adopted the prefix.
 
+`MUSHER_API_URL` is reserved as well: the address of the Musher API that a client program reads. Under the consumer
+prefix `MUSHER_API` it would also read as the API component's own `URL`, so the program that serves the API names
+its own addresses otherwise, such as `MUSHER_API_PUBLIC_URL`.
+
 Infrastructure maps a supplier's name to the consumer's at the seam: a secret-store reference, a platform's variable
 reference or a Kubernetes `valueFrom` sets `MUSHER_API_CACHE_URL` from the cache's own output. The code never reads the
 supplier's name, and never maps one name to another.
@@ -514,6 +552,55 @@ Moving to the prefix is a rename, and a rename is recorded. A binding that gains
 and its old name moves to `retired` with the new name as its `replacement`, so ENVS-05 refuses the old name from then
 on. A product that must accept both for a release reads both in its settings module, not in the schema.
 `naming.legacy` only shrinks; a reviewer rejects a name added to it.
+
+### Names every program shares
+
+Some variables mean the same thing in every Musher program, and a program that spells one its own way is a program
+that a shared secret store, a deploy template or a dashboard cannot reach. Three kinds are fixed here.
+
+**The deployment environment.** Which environment a process runs in, `production`, `staging`, `development` or
+`test`, reaches it as `MUSHER_ENVIRONMENT` and no other variable, holding the name and never the slug
+([decision 0034](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0034-deployment-environments-have-one-name.md)).
+The names are the terms tagged `deployment.environment`; a developer's own environment is `development` with
+`MUSHER_DEVELOPER_SLUG` set. Telemetry takes `deployment.environment.name` from `MUSHER_ENVIRONMENT`, so a program
+never sets a second variable for its exporter (ENVS-28). Because the environment selects each value, no other name
+says which environment it is for (ENVS-30).
+
+A framework's own mode, such as `NODE_ENV` or `RAILS_ENV`, is out of scope: a library reads it by that name, and it
+says how the framework behaves (a production build, a development server), not where the process is deployed. Where
+one is set from the deployment environment, the deploy sets it from `MUSHER_ENVIRONMENT`.
+
+**A vendor's reserved prefix.** Some prefixes belong to a vendor: `OTEL_` to OpenTelemetry, whose SDKs read every
+variable under it, and `GITHUB_`, `RUNNER_` and `ACTIONS_` to GitHub Actions, which sets them inside a workflow run
+and refuses a secret or variable named `GITHUB_…`. A name made up under one of them looks like the vendor's and is
+read by nothing: `OTEL_ENABLED` turns nothing off, because OpenTelemetry's switch is `OTEL_SDK_DISABLED`. The vendors'
+names are vendored into `checks/data/vendor/` with the pages they came from (ENVS-29).
+
+**A shared stem.** A name's last words can say what kind of value it holds whatever comes before them. A stem is a
+term tagged `env.shared-stem`, and its term lists the values every variable ending in it may hold (ENVS-31):
+
+| Stem | Values |
+| --- | --- |
+| `_LOG_LEVEL` | `trace`, `debug`, `info`, `warn`, `error` |
+| `_LOG_FORMAT` | `json`, `text` |
+
+### The grammar as data
+
+A repository that generates settings, renders an environment file or checks names itself reads the grammar from
+`checks/data/index.json` in the release it pins, not from a copy:
+
+| Key | Holds |
+| --- | --- |
+| `env_grammar.units` | Each unit suffix, without its underscore, mapped to the long forms ENVS-10 reports |
+| `env_grammar.boolean_prefixes`, `env_grammar.boolean_suffixes` | The prefixes a boolean starts with (ENVS-09), and the suffixes it is given instead |
+| `env_grammar.client_prefixes` | The client prefixes a schema has when it declares none (ENVS-14) |
+| `env_grammar.deployment_environment` | `variable` (`MUSHER_ENVIRONMENT`), the names and endings that carry the tier, the frameworks' own modes, and the words ENVS-30 allows |
+| `env_grammar.reserved_prefixes` | Each vendor, its prefixes, every name it defines with the `sources` and `retrieved` date, and the names to suggest for common mistakes |
+| `vocabulary.deployment_environments` | Each deployment environment's name, mapped to its slug |
+| `vocabulary.org_scoped_variables` | The reserved organization-wide names |
+| `vocabulary.env_shared_stems` | Each shared stem, mapped to its values |
+
+The source of `env_grammar` is `definitions/environment/grammar.yml`; the vocabulary comes from the terminology.
 
 ## Requirements
 
@@ -711,6 +798,10 @@ The boolean prefixes are `ENABLE_`, `IS_`, `HAS_` and `SHOULD_`. A flag read as 
 time: `ENABLE_AUDIT_LOG=true` cannot be misread, `AUDIT_LOG=true` can be a path. A browser flag keeps its client
 prefix first (`VITE_ENABLE_BILLING`), and a nested flag puts the prefix on its field (`WORKERS__EXPORT__IS_ENABLED`).
 
+The question goes first, so a flag named `AUDIT_LOG_ENABLED` is reported too, as `ENABLE_AUDIT_LOG`. A flag named
+`AUDIT_LOG_DISABLED` asks its question backwards as well, so `true` turns the feature off; it becomes
+`ENABLE_AUDIT_LOG`, with its values inverted.
+
 **Correct:**
 
 ```yaml
@@ -723,6 +814,7 @@ VITE_ENABLE_BILLING: {type: boolean, ...}
 ```yaml
 AUDIT_LOG: {type: boolean, ...}
 VITE_BILLING: {type: boolean, ...}
+API_TRACING_ENABLED: {type: boolean, ...}     # ENABLE_API_TRACING
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform G-02, G-11
@@ -731,20 +823,22 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform 
 
 **A unit suffix is abbreviated.**
 
-One spelling per unit keeps related variables sorted together and searchable: `_SEC`, `_MIN`, `_HR`, `_MS`, `_PCT`,
-`_BYTES`, `_KB`, `_MB`, `_GB`, `_COUNT`. The check reports the long forms `_SECONDS`, `_MINUTES`, `_MILLISECONDS` and
-`_PERCENT`.
+One spelling per unit keeps related variables sorted together and searchable: `_MS`, `_SEC`, `_MIN`, `_HR`, `_DAY`,
+`_PCT`, `_BYTES`, `_KB`, `_MB`, `_GB`, `_COUNT`. Each is singular, as `_SEC` is: a day is `_DAY`, never `_DAYS`. The
+check reports the long forms `_MILLISECONDS`, `_SECONDS`, `_MINUTES`, `_HOURS`, `_DAYS` and `_PERCENT`.
 
 **Correct:**
 
 ```yaml
 API_REQUEST_TIMEOUT_SEC: {...}
+API_EXPORT_RETENTION_DAY: {...}
 ```
 
 **Incorrect:**
 
 ```yaml
 API_REQUEST_TIMEOUT_SECONDS: {...}
+API_EXPORT_RETENTION_DAYS: {...}
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform G-04
@@ -1049,8 +1143,138 @@ bindings:
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
 
+### ENVS-28
+
+**The deployment environment reaches a process only as `MUSHER_ENVIRONMENT`.**
+
+A second variable for the same fact drifts from the first: a service that reads `DEPLOYMENT_ENVIRONMENT` while its
+exporter reads `OTEL_DEPLOYMENT_ENVIRONMENT` reports production telemetry as staging the day one of them is missed.
+One variable, holding one of the registered names, is set once by whatever deploys the process, and everything else
+is derived from it ([Names every program shares](#names-every-program-shares)). The check reports:
+
+- a binding that carries the tier under another name: `DEPLOYMENT_ENVIRONMENT` or a name ending in it,
+  `OTEL_ENVIRONMENT`, `OTEL_DEPLOYMENT_ENVIRONMENT`, `ENVIRONMENT`, `ENV`, `APP_ENV`, `APP_ENVIRONMENT`, the schema's
+  own `<COMPONENT>_ENVIRONMENT` or `<COMPONENT>_ENV` (a declared component, the consumer prefix, or `MUSHER`), or any
+  binding whose `values` include two or more deployment environments' names or slugs;
+- a `MUSHER_ENVIRONMENT` whose `values`, `default` or `local_default` is anything but a registered name, naming the
+  name when the value is a slug, and one whose `constraints.pattern` admits a slug.
+
+A framework's own mode (`NODE_ENV`, `RAILS_ENV`, `RACK_ENV`, `FLASK_ENV`, `MIX_ENV`, `ASPNETCORE_ENVIRONMENT`,
+`DOTNET_ENVIRONMENT`) is not reported, and a binding with values under a vendor's name is not either: a library reads
+it by that name. A browser binding keeps its client prefix: `VITE_MUSHER_ENVIRONMENT`.
+
+**Correct:**
+
+```yaml
+MUSHER_ENVIRONMENT:
+  type: enum
+  values: [development, production, staging, test]
+  required: true
+  sensitivity: internal
+  description: The deployment environment the API runs in; selects its log level and its default origins.
+```
+
+**Incorrect:**
+
+```yaml
+DEPLOYMENT_ENVIRONMENT: {type: string, ...}         # read MUSHER_ENVIRONMENT
+OTEL_DEPLOYMENT_ENVIRONMENT: {type: string, ...}    # telemetry derives it from MUSHER_ENVIRONMENT
+MUSHER_ENVIRONMENT:
+  type: enum
+  values: [dev, staging, prod]                      # slugs; write development and production
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.0
+
+### ENVS-29
+
+**A name under a reserved vendor prefix is one that vendor defines.**
+
+A vendor that reserves a prefix reads the names it defines and nothing else, so a name made up under it is a
+setting nothing applies, and it reads as the vendor's to everyone who sees it. `OTEL_` is OpenTelemetry's, and a name
+under it must be in OpenTelemetry's SDK or OTLP exporter variables. `GITHUB_`, `RUNNER_` and `ACTIONS_` are GitHub
+Actions', which sets its names only inside a workflow run: a name under them must be one GitHub defines, and a
+repository whose `kind` is `service` declares none of them, unless only the build reads it (`lifecycle: build-time`).
+The message names the vendor's variable for common mistakes. A name ENVS-28 reports, such as
+`OTEL_DEPLOYMENT_ENVIRONMENT`, is left to it.
+
+**Correct:**
+
+```yaml
+OTEL_SDK_DISABLED: {type: boolean, default: false, ...}
+OTEL_EXPORTER_OTLP_ENDPOINT: {type: string, format: url, ...}
+API_GITHUB_APP_PRIVATE_KEY: {type: string, sensitivity: secret, ...}
+```
+
+**Incorrect:**
+
+```yaml
+OTEL_ENABLED: {type: boolean, ...}                  # OpenTelemetry's switch is OTEL_SDK_DISABLED
+GITHUB_APP_PRIVATE_KEY: {type: string, ...}         # GitHub Actions defines no such variable
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.0
+
+### ENVS-30
+
+**No deployment environment appears in a variable's name.**
+
+The environment selects the value, not the name. A schema with `PROD_REPORTING_DATABASE_URL` beside
+`REPORTING_DATABASE_URL` gives staging a variable it must leave empty and gives the code a branch on the environment,
+which is how a staging process ends up connected to production. One name, with a different value in each environment,
+keeps every environment running the same code. The check reports a binding whose name has a deployment environment's
+name or slug as a whole word between underscores: `PRODUCTION`, `PROD` or `STAGING`. `TEST`, `DEV` and `DEVELOPMENT` are
+allowed, because they name a test, or a tool's own dev mode, database, server or device, far more often than an
+environment (`E2E_TEST_TIMEOUT_SEC`, `ATLAS_DEV_URL`), and a word only starting like one is not one, so
+`MUSHER_DEVELOPER_SLUG` passes. A vendor's name is not reported.
+
+**Correct:**
+
+```yaml
+API_READONLY_DATABASE_URL: {type: string, format: url, ...}
+API_SEED_COUNT: {type: integer, ...}
+```
+
+**Incorrect:**
+
+```yaml
+API_PROD_READONLY_DATABASE_URL: {type: string, format: url, ...}
+API_STAGING_SEED_COUNT: {type: integer, ...}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.0
+
+### ENVS-31
+
+**A shared variable stem keeps its registered values.**
+
+A log level spelled `WARNING` in one service, `warn` in another and `Warn` in a third cannot be set by one deploy
+template or one secret store entry, and a service that receives the spelling it does not know falls back to a default
+nobody chose. A binding whose name is a shared stem or ends in one (`_LOG_LEVEL`, `_LOG_FORMAT`) allows, and
+defaults to, only the stem's registered values ([Names every program shares](#names-every-program-shares)). The check
+reads `values`, `default` and `local_default`; a vendor's name, such as `OTEL_LOG_LEVEL`, keeps its vendor's values.
+
+**Correct:**
+
+```yaml
+API_LOG_LEVEL: {type: enum, values: [trace, debug, info, warn, error], default: info, ...}
+API_LOG_FORMAT: {type: enum, values: [json, text], default: json, ...}
+```
+
+**Incorrect:**
+
+```yaml
+API_LOG_LEVEL: {type: enum, values: [DEBUG, INFO, WARNING, ERROR], ...}
+API_LOG_FORMAT: {type: enum, values: [json, pretty], ...}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.0
+
 ## References
 
 - [EC-0019 Environment contract](env-contract.md)
 - [The Twelve-Factor App: Config](https://12factor.net/config)
 - `checks/schemas/env-schema.schema.json`
+- `definitions/environment/grammar.yml` and `checks/data/vendor/`
+- [Decision 0034: Deployment environments have one name](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0034-deployment-environments-have-one-name.md)
+- [OpenTelemetry: Environment Variable Specification](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/)

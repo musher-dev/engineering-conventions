@@ -59,11 +59,27 @@
           "type": "string",
           "pattern": "^([A-Za-z0-9][A-Za-z0-9._-]*)?$"
         },
+        "products": {
+          "description": "A multi-product repository's peer products, beside product = \"\": each entry a product directory, or a path in which any segment after the first may be * for any one directory, e.g. apps/*. Each product directory holds its own manifest (REPO-17) and may hold its own env.schema.yaml (ENVS-02) and contracts/ (IFACE-08).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*(/([A-Za-z0-9][A-Za-z0-9._-]*|\\*))*$"
+          }
+        },
         "root_exceptions": {
           "description": "Root entries REPO-18 would report, each mapped to the reason it stays at the root, e.g. package.json = \"Repository tooling only; the product has its own\". REPO-19 checks each entry and reason.",
           "type": "object",
           "propertyNames": { "pattern": "^[^/]+$" },
           "additionalProperties": { "type": "string" }
+        }
+      },
+      "dependencies": {
+        "products": {
+          "required": ["product"],
+          "properties": { "product": { "const": "" } }
         }
       }
     }

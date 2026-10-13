@@ -6,7 +6,7 @@ this page only indexes what is here. A new file adds a row.
 
 | File | Tool | Configures | Caller |
 | --- | --- | --- | --- |
-| `lefthook.yml` | lefthook | The pre-commit and commit-msg hooks | lefthook, which discovers it (`task hooks:install`) |
+| `lefthook.yml` | lefthook | The pre-commit, commit-msg and pre-push hooks | lefthook, which discovers it (`task hooks:install`) |
 | `actions/actionlint.yaml` | actionlint | Workflow and composite-action lint | `task lint:actions` |
 | `actions/zizmor.yml` | zizmor | Workflow security audit | `task lint:actions:security` |
 | `commits/committed.toml` | committed | Commit message and pull request title rules: the types and scopes | the commit-msg hook, `Validate Pull Request / Title` |

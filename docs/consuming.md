@@ -6,7 +6,7 @@ configuration and one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.8.1 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.9.0 -- conventions check  # x-release-please-version
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
@@ -27,7 +27,7 @@ being told ([EC-0017](../engineering-conventions/definitions/conventions/toolcha
 min_version = "2026.9.12"   # the mise that CI and the dev container install
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.8.1"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.9.0"  # x-release-please-version
 ```
 
 Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:
@@ -42,6 +42,7 @@ conventions openapi                    # lint OpenAPI interfaces with the reposi
 conventions hadolint                   # lint every Dockerfile with .config/docker/hadolint.yaml
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
+conventions waivers                    # list the waivers in .repo/conventions.toml with their expiry
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -54,8 +55,8 @@ With the identity declaration below, that is the whole adoption. What mise does 
   through `mise exec` at the versions the release was tested with, so the release pin is the only pin to maintain.
 - Renovate's mise manager raises the version like any other tool.
 
-`conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. It needs only
-POSIX `sh` and `git`.
+`conventions check` runs from anywhere in the work tree, or against another directory with `-C DIR`. Besides the
+tools mise installs, it needs only POSIX `sh`, `git`, and `sha256sum`, `shasum` or `openssl`.
 
 | `--output` | For | Prints |
 | --- | --- | --- |
@@ -195,7 +196,12 @@ bindings:
 ```
 
 `conventions check` validates every schema against the published format and checks the naming grammar, retired
-names, committed secrets and shared variables. The format is
+names, committed secrets and shared variables. The deployment environment reaches the process only as
+`MUSHER_ENVIRONMENT`, holding `production`, `staging`, `development` or `test` (ENVS-28); a name under `OTEL_` or
+`GITHUB_` is one the vendor defines (ENVS-29); no name says which environment it is for (ENVS-30); and a `_LOG_LEVEL`
+or `_LOG_FORMAT` keeps the shared values (ENVS-31). A tool that needs the grammar itself, the units, prefixes,
+reserved vendor names and shared stems, reads `env_grammar` and `vocabulary` from the pinned release's
+`checks/data/index.json` rather than keeping a copy. The format is
 [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md); the location is
 [EC-0019](../engineering-conventions/definitions/conventions/environment/env-contract.md).
 
@@ -211,11 +217,14 @@ conventions env-file platform-api/env.schema.yaml
 ```
 
 Run the first in the task that writes your generated files, and, if you like, the second in `setup`. `env-file` never
-replaces an existing `.env`: it lists the variables the schema has gained, and `--force` writes the file again. Ignore
-the file in `.gitignore` (ENVS-27):
+replaces an existing `.env` on its own: it lists the variables the schema has gained. `--update` merges them in,
+keeping every value and minted secret the file already holds and any variable the schema no longer declares;
+`--force` writes the file again and mints every secret afresh; `--backup` keeps the replaced file as `.env.bak`. Ignore
+both files in `.gitignore` (ENVS-27):
 
 ```gitignore
 /platform-api/.env
+/platform-api/.env.bak
 ```
 
 The interface names the contract, not the schema:
@@ -259,7 +268,6 @@ A repository that holds no waivers, and whose kind selects the profile it needs,
 `.repo/conventions.toml` when it needs a different profile, its own display forms, or a waiver:
 
 ```toml
-schema_version = 1
 profile = "base-repo"         # overrides the profile the kind selects
 ```
 
@@ -289,6 +297,34 @@ docs = "api/README.md#run-the-image"
 each path and workflow it names exists. The format is
 [EC-0007](../engineering-conventions/definitions/conventions/outputs/outputs-declaration.md); what a published output
 promises its consumers is [EC-0008](../engineering-conventions/definitions/conventions/outputs/publishing-and-consuming.md).
+
+## Where to see what you published and where it runs
+
+The declaration says what a repository means to publish. What it did publish, and where each release runs, is on the
+organization's [linked artifacts](https://docs.github.com/en/code-security/concepts/supply-chain-security/linked-artifacts)
+page: one list, for every repository, of each artifact by name and digest, the registry that stores it, the repository
+that built it with its attestations, and the environments it is deployed to
+([decision 0035](decisions/0035-published-and-deployed-artifacts-are-recorded.md)). Two kinds of record put it there:
+
+- **A storage record**, written when an image is published. `actions/attest` with `push-to-registry: true` writes it
+  when the job has `artifact-metadata: write`; a private repository, which cannot attest, posts it to
+  `orgs/<org>/artifacts/metadata/storage-record`
+  ([OUT-14](../engineering-conventions/definitions/conventions/outputs/publishing-and-consuming.md#out-14)).
+- **A deployment record**, posted by the deploy job to `orgs/<org>/artifacts/metadata/deployment-record`, with
+  `logical_environment` set to the deployment environment's name (`production`, never `prod`), and posted again with
+  `status: decommissioned` when the deployment is torn down
+  ([GHA-53](../engineering-conventions/definitions/conventions/github-actions/releases-and-deployments.md#gha-53)).
+
+```yaml
+- name: Record the deployment
+  env:
+    GH_TOKEN: ${{ github.token }}   # the job grants artifact-metadata: write
+    DIGEST: ${{ needs.publish.outputs.digest }}
+  run: >-
+    gh api -X POST "orgs/${GITHUB_REPOSITORY_OWNER}/artifacts/metadata/deployment-record"
+    -f name=ghcr.io/your-org/api -f digest="${DIGEST}" -f version="${GITHUB_REF_NAME}"
+    -f status=deployed -f logical_environment=production -f deployment_name=api
+```
 
 ## Declare the interfaces you offer
 
@@ -325,8 +361,6 @@ When your repository builds against another repository's interfaces, vendor the 
 `.repo/dependencies.toml`:
 
 ```toml
-schema_version = 1
-
 [[dependencies]]
 repository = "platform-api"
 output = "contracts"
@@ -354,7 +388,7 @@ your mise configuration pins, and apply the styles to the site's sources:
 StylesPath = ../../.vale
 MinAlertLevel = warning
 # x-release-please-start-version
-Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.8.1/MusherProse.zip
+Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.9.0/MusherProse.zip
 # x-release-please-end
 
 [formats]
@@ -387,10 +421,11 @@ length are the site owner's to decide: write them as a Vale style in the site's 
 
 ## Without mise
 
-Download the release tarball, verify it, and run its launcher with conftest (and Vale) on PATH:
+Download the release tarball, verify it, and run its launcher with conftest and jq on PATH (and Vale for `prose`,
+Spectral for `openapi`, hadolint for `hadolint`):
 
 ```sh
-version=0.8.1  # x-release-please-version
+version=0.9.0  # x-release-please-version
 gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
 gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
   --signer-workflow musher-dev/engineering-conventions/.github/workflows/release.yml \
@@ -459,8 +494,8 @@ The report has one block per requirement, errors first, then a summary:
 GHA-07  warning  1 finding
 A workflow's name is its filename stem in Title Case
 https://github.com/musher-dev/engineering-conventions/blob/vX.Y.Z/engineering-conventions/definitions/conventions/github-actions/workflow-files.md#gha-07
-  .github/workflows/ci.yml
-    name "CI" should be "Validate Code": a workflow's name is its filename stem in Title Case
+  .github/workflows/validate.yml
+    name "CI" should be "Validate": a workflow's name is its filename stem in Title Case
 
 1 warning, 0 errors in 1 requirement.
 Warnings do not fail the check; --fail-on warning makes them fail.
@@ -532,6 +567,20 @@ A waiver needs a reason of at least 20 characters, a tracking issue URL and an e
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.
 A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
 are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
+
+To review them, `conventions waivers` lists each waiver with its expiry, how many days remain, its tracking URL and
+the paths it covers. With `--check-tracking` it also asks the GitHub CLI (`gh`, signed in) for the state of each
+tracking issue or pull request, and exits 1 when any is closed or merged: the work the waiver waits on is done or
+dropped, so remove the waiver or track what remains. A tracking URL that is not a GitHub issue or pull request is
+listed but not checked.
+
+```sh
+conventions waivers                    # offline: the declaration and today's date only
+conventions waivers --check-tracking   # also reads each tracking issue's state with gh
+```
+
+Only `--check-tracking` reaches the network. `conventions check` never does, so its findings depend on the
+repository and the date alone.
 
 ## Adopt in stages
 

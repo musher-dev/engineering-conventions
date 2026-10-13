@@ -16,10 +16,10 @@ next choice rather than switching every check off.
 | Profile | For |
 | --- | --- |
 | [`base-repo`](base-repo.yml) | Every repository; the copy of any site it publishes (COPY) |
-| [`service`](service.yml) | `kind = "service"`; adds TASK-11, TASK-12 and ENVS-01 |
-| [`website`](website.yml) | `kind = "website"`; adds TASK-11 |
-| [`library`](library.yml) | `kind = "library"`; adds TASK-11 |
-| [`tool`](tool.yml) | `kind = "tool"`; adds TASK-11 |
+| [`service`](service.yml) | `kind = "service"`; adds TASK-11, TASK-12, ENVS-01 and IFACE-08 |
+| [`website`](website.yml) | `kind = "website"`; adds TASK-11 and IFACE-08 |
+| [`library`](library.yml) | `kind = "library"`; adds TASK-11 and IFACE-08 |
+| [`tool`](tool.yml) | `kind = "tool"`; adds TASK-11 and IFACE-08 |
 | [`infrastructure`](infrastructure.yml) | `kind = "infrastructure"`; adds the TOFU family |
 | [`specification`](specification.yml) | `kind = "specification"` |
 | [`content`](content.yml) | `kind = "content"` |
@@ -29,8 +29,10 @@ next choice rather than switching every check off.
 Every registered kind has a profile of the same name, and `task invariants`
 fails when one is missing. Each kind's profile inherits `base-repo` and adds
 only the requirements specific to its kind: the task verbs of
-[EC-0016](../conventions/tasks/task-interface.md), selected by ID, and, for a service, its runtime
-environment ([EC-0019](../conventions/environment/env-contract.md)), or for infrastructure, its OpenTofu
+[EC-0016](../conventions/tasks/task-interface.md), selected by ID; for a service, website, library or tool,
+the contracts directory of each interface it offers (IFACE-08,
+[EC-0030](../conventions/interfaces/interfaces-declaration.md)); for a service, its runtime
+environment ([EC-0019](../conventions/environment/env-contract.md)); or for infrastructure, its OpenTofu
 state keys ([EC-0029](../conventions/opentofu/state-keys.md)).
 A kind with none of its own applies exactly what `base-repo` does.
 

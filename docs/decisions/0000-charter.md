@@ -4,6 +4,7 @@ date: 2026-09-23
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0036"]
 ---
 
 # 0000 — Charter

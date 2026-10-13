@@ -10,7 +10,7 @@ The governing rule, in one sentence:
 
 ## Status
 
-The conventions are a **draft**, owned by this repository, and every requirement is `proposed` at severity `warning`.
+Every convention here is a **draft**, owned by this repository, and every requirement is `proposed` at severity `warning`.
 [Decision 0017](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0017-releases-from-drafts.md)
 records why each choice was made.
 

@@ -93,7 +93,24 @@ passes(entry, name) if {
 	startswith(name, trim_suffix(entry, "*"))
 }
 
-default_client_prefixes := ["VITE_", "PUBLIC_"]
+# The naming grammar index.json publishes (definitions/environment/grammar.yml).
+grammar := data.conventions.index.env_grammar
+
+default_client_prefixes := grammar.client_prefixes
+
+# Every deployment environment's name, and every slug that is not also a name.
+tier_names contains name if some name in object.keys(data.conventions.index.vocabulary.deployment_environments)
+
+tier_slugs contains slug if {
+	some name, slug in data.conventions.index.vocabulary.deployment_environments
+	slug != name
+}
+
+# The name a slug abbreviates.
+tier_name_of(slug) := name if {
+	some name, s in data.conventions.index.vocabulary.deployment_environments
+	s == slug
+}
 
 # The prefixes that mark a variable the browser reads: the schema's own, or
 # the defaults, and the generated module's.

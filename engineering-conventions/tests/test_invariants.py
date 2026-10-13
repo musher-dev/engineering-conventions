@@ -329,3 +329,69 @@ def test_a_requirement_naming_a_missing_copy_rule_is_reported(content: Content) 
         "COPY-04: validation.style MusherCopy.Placeholders is not a rule in "
         "definitions/copy/style.yml"
     ]
+
+
+R = invariants.RANGE
+
+
+def _readme_beside(product: Path, tmp_path: Path, text: str) -> Path:
+    """A product directory whose definitions are the real ones, beside a README with `text`."""
+    copy = tmp_path / "engineering-conventions"
+    copy.mkdir()
+    (copy / "definitions").symlink_to(product / "definitions")
+    (tmp_path / "README.md").write_text(text, encoding="utf-8")
+    return copy
+
+
+def _root_readme(product: Path) -> str:
+    return (product.parent / "README.md").read_text(encoding="utf-8")
+
+
+def test_topic_table_is_current(content: Content) -> None:
+    assert invariants.topic_table_current(content) == []
+
+
+def test_a_stale_topic_row_names_the_row_and_the_fix(
+    content: Content, product: Path, tmp_path: Path
+) -> None:
+    text = _root_readme(product).replace(
+        f"| EC-0014 | HOOKS-01{R}HOOKS-14 |", f"| EC-0014 | HOOKS-01{R}HOOKS-11 |"
+    )
+    copy = _readme_beside(product, tmp_path, text)
+    [problem] = invariants.topic_table_current(replace(content, product=copy))
+    assert f"(git-hooks row): the Requirements column says 'HOOKS-01{R}HOOKS-11'" in problem
+    assert problem.endswith(f"write 'HOOKS-01{R}HOOKS-14'")
+
+
+def test_conventions_column_lists_runs_as_ranges(
+    content: Content, product: Path, tmp_path: Path
+) -> None:
+    text = _root_readme(product).replace(
+        f"| EC-0002{R}EC-0006, EC-0022, EC-0023 |", "| EC-0002, EC-0022 |"
+    )
+    copy = _readme_beside(product, tmp_path, text)
+    [problem] = invariants.topic_table_current(replace(content, product=copy))
+    assert "(github-actions row): the Conventions column says 'EC-0002, EC-0022'" in problem
+    assert problem.endswith(f"write 'EC-0002{R}EC-0006, EC-0022, EC-0023'")
+
+
+def test_a_missing_topic_row_and_a_non_readme_link_are_reported(
+    content: Content, product: Path, tmp_path: Path
+) -> None:
+    lines = [
+        line
+        for line in _root_readme(product).splitlines()
+        if "conventions/opentofu/README.md" not in line
+    ]
+    text = "\n".join(lines).replace("adoption/README.md)", "adoption/conventions-declaration.md)")
+    copy = _readme_beside(product, tmp_path, text)
+    problems = invariants.topic_table_current(replace(content, product=copy))
+    assert any(
+        "(adoption row): link the topic's README.md, not conventions-declaration.md" in p
+        for p in problems
+    )
+    assert any("has no row for topic 'opentofu'" in p for p in problems)
+
+
+def test_topic_table_is_skipped_without_a_root_readme(content: Content, tmp_path: Path) -> None:
+    assert invariants.topic_table_current(replace(content, product=tmp_path / "product")) == []

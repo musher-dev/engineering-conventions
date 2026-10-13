@@ -354,8 +354,11 @@ tagged `repository.system`, and that file is where they are defined and changed.
 | `observability` | How the estate is observed: the registry of telemetry names and the stack that collects and shows the telemetry |
 | `engineering` | How Musher builds software: the conventions, contributor documentation, the development container and engineering tools |
 | `brand` | Musher's public presence and visual identity: the website and the design system |
-| `company` | How Musher operates as an organization, and the sites that present it to its members and investors |
 | `catalog` | The curated content users install through the platform: catalog items and example applications |
+
+A retired system keeps its term, marked deprecated, and leaves this list: REPO-09 and REPO-03 no longer accept it.
+`company` was retired with `musher-dev/company`, its only repository
+([decision 0036](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0036-ownership-moves-out-of-company-and-platform.md)).
 
 Which repository belongs to which system, and the name each existing repository moves to, is organization data rather
 than a convention. It is kept, with the renames still to come, in `config/repositories.yaml` in

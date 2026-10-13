@@ -25,3 +25,19 @@ test_root_exceptions if {
 	table := {"product": "", "root_exceptions": {"go.sum": "why"}}
 	layout.root_exceptions == {"go.sum": "why"} with input as declared(table)
 }
+
+inventory(paths) := td.file("/tmp/inventory.json", {"conventions_inventory": {"files": paths, "texts": {}}})
+
+test_products if {
+	table := {"product": "", "products": ["apps/*", "docs/site", "/abs", "a/**"]}
+	paths := ["apps/console/package.json", "apps/hq/package.json", "docs/site/package.json", "docs/README.md"]
+	docs := array.concat(declared(table), [inventory(paths)])
+	layout.products == ["apps/*", "docs/site"] with input as docs
+	layout.product_dirs == {"apps/console", "apps/hq", "docs/site"} with input as docs
+}
+
+test_products_need_no_product if {
+	docs := array.concat(declared({"product": "app", "products": ["apps/*"]}), [inventory(["apps/a/x"])])
+	layout.products == [] with input as docs
+	count(layout.product_dirs) == 0 with input as docs
+}

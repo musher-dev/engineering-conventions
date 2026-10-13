@@ -35,9 +35,6 @@ implementations:
   - repo: musher-dev/platform
     check: DL-10
     mode: blocking
-  - repo: musher-dev/development-container
-    check: PATH-02
-    mode: blocking
 references:
   - title: "GitHub Changelog: Ubuntu 26.04 is generally available, and ubuntu-latest migration"
     url: https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration/
@@ -233,9 +230,14 @@ same goes for `|| :`, `set +e` and `continue-on-error: true` on a step or a job.
 workflows and composite actions, one command line at a time, ignoring comment lines.
 
 When a command's failure really is expected, test for it: capture the exit code and decide, so the step still fails
-on the outcomes that matter. When nothing a result depends on is lost (deleting a file that may not exist, printing
-diagnostics on a path that already fails), say so in a [waiver](../adoption/conventions-declaration.md) with the
-reason.
+on the outcomes that matter. When a step's failure is handled by a later step instead, as when a `uses:` step is
+retried (a shell loop cannot retry an action) or a refusal is reported on another check, give the continuing step an
+`id` and read `steps.<id>.outcome` in a later step of the same job or action: the failure is handed on, not lost, and
+the step passes. The later step must act on it, by retrying without `continue-on-error`, or by failing or reporting
+elsewhere. Only the outcome says the step failed; its `conclusion` is `success` once `continue-on-error` applies, so
+reading the conclusion does not count. When nothing a result depends on is lost (deleting a file that may not exist,
+printing diagnostics on a path that already fails), say so in a [waiver](../adoption/conventions-declaration.md) with
+the reason.
 
 **Correct:**
 
@@ -248,6 +250,13 @@ reason.
     fi
 - name: Remove the stale lock if present
   run: rm -f .lock
+- name: Set up the tools
+  id: setup_attempt_1
+  uses: ./.github/actions/setup-tools
+  continue-on-error: true
+- name: Set up the tools again after a failed download
+  if: steps.setup_attempt_1.outcome == 'failure'
+  uses: ./.github/actions/setup-tools
 ```
 
 **Incorrect:**
@@ -258,6 +267,13 @@ reason.
 - name: Mutation tests
   run: task mutants
   continue-on-error: true
+- name: Set up the tools
+  id: setup_attempt_1
+  uses: ./.github/actions/setup-tools
+  continue-on-error: true
+- name: Set up the tools again after a failed download
+  if: steps.setup_attempt_1.conclusion == 'failure'  # always success: the retry never runs
+  uses: ./.github/actions/setup-tools
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: platform CI-13

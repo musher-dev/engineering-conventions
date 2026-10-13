@@ -1,0 +1,4 @@
+# No schema_version: the pinned release versions this file's shape, so the
+# key is deprecated and a declaration without it is valid.
+[conventions]
+version = "0.1.0"

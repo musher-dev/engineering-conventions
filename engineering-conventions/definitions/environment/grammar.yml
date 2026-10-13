@@ -1,0 +1,89 @@
+schema_version: 1
+description: >-
+  The naming grammar of an environment schema's bindings (EC-0020): the unit
+  suffixes, the boolean and client prefixes, the variable that carries the
+  deployment environment and the names that must not, and the prefixes a
+  vendor reserves. task generate publishes it in checks/data/index.json as
+  env_grammar, which the checks read and other repositories may read instead
+  of keeping a copy.
+
+# ENVS-10. Each unit's one spelling, and the long forms reported in its place.
+units:
+  - unit: MS
+    long_forms: [MILLISECONDS]
+  - unit: SEC
+    long_forms: [SECONDS]
+  - unit: MIN
+    long_forms: [MINUTES]
+  - unit: HR
+    long_forms: [HOURS]
+  - unit: DAY
+    long_forms: [DAYS]
+  - unit: PCT
+    long_forms: [PERCENT]
+  - unit: BYTES
+  - unit: KB
+  - unit: MB
+  - unit: GB
+  - unit: COUNT
+
+# ENVS-09. A boolean's name starts with one of these; the suffixes are the
+# form it replaces, which the message rewrites.
+boolean_prefixes: [ENABLE_, IS_, HAS_, SHOULD_]
+boolean_suffixes: [_ENABLED, _DISABLED]
+
+# ENVS-14. The default client prefixes, when a schema declares none.
+client_prefixes: [VITE_, PUBLIC_]
+
+# ENVS-28 and ENVS-30 (decision 0034).
+deployment_environment:
+  variable: MUSHER_ENVIRONMENT
+  # Names that carry the tier whatever their declaration says.
+  carriers:
+    - APP_ENV
+    - APP_ENVIRONMENT
+    - DEPLOYMENT_ENVIRONMENT
+    - ENV
+    - ENVIRONMENT
+    - OTEL_DEPLOYMENT_ENVIRONMENT
+    - OTEL_ENVIRONMENT
+  carrier_suffixes: [_DEPLOYMENT_ENVIRONMENT]
+  # A framework's own mode, which a library reads by that name. It is not the
+  # deployment environment, so ENVS-28 leaves it alone.
+  vendor_modes:
+    - ASPNETCORE_ENVIRONMENT
+    - DOTNET_ENVIRONMENT
+    - FLASK_ENV
+    - MIX_ENV
+    - NODE_ENV
+    - RACK_ENV
+    - RAILS_ENV
+  # Deployment environment names and slugs ENVS-30 does not report as a word
+  # of a name. TEST names a test far more often than the test environment;
+  # DEV and DEVELOPMENT name a tool's own dev mode, database or server, or a
+  # device, as often as the development environment (ATLAS_DEV_URL,
+  # VITE_DEV_SERVER_URL).
+  name_words_allowed: [TEST, DEV, DEVELOPMENT]
+
+# ENVS-29. A prefix a vendor reserves: a name under it is one the vendor
+# defines. names is a file under checks/data/vendor/.
+reserved_prefixes:
+  - vendor: OpenTelemetry
+    prefixes: [OTEL_]
+    names: opentelemetry.json
+    suggest:
+      OTEL_DISABLED: OTEL_SDK_DISABLED
+      OTEL_ENABLED: OTEL_SDK_DISABLED
+      OTEL_ENDPOINT: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_EXPORTER_ENDPOINT: OTEL_EXPORTER_OTLP_ENDPOINT
+      OTEL_SDK_ENABLED: OTEL_SDK_DISABLED
+      OTEL_SERVICE: OTEL_SERVICE_NAME
+      OTEL_TRACES_ENABLED: OTEL_TRACES_EXPORTER
+      OTEL_METRICS_ENABLED: OTEL_METRICS_EXPORTER
+      OTEL_LOGS_ENABLED: OTEL_LOGS_EXPORTER
+  - vendor: GitHub Actions
+    prefixes: [GITHUB_, RUNNER_, ACTIONS_]
+    names: github-actions.json
+    # The vendor sets these only inside a workflow run, so a service, which
+    # never runs there, declares none of them.
+    runner_only: true

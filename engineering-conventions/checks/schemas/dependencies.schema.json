@@ -5,12 +5,11 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version",
     "dependencies"
   ],
   "properties": {
     "schema_version": {
-      "description": "Version of this file's shape. Always 1.",
+      "description": "Deprecated and ignored: the pinned release already versions this file's shape, because only the conventions tool of that release reads it. Accepted as 1 for now, and rejected in a future breaking release; remove it.",
       "const": 1
     },
     "dependencies": {

@@ -15707,6 +15707,12 @@
           "check",
           "promote"
         ],
+        "deployment_environments": {
+          "development": "dev",
+          "production": "prod",
+          "staging": "staging",
+          "test": "test"
+        },
         "display_forms": {
           "api": "API",
           "ci": "CI",

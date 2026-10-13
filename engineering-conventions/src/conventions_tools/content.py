@@ -93,6 +93,7 @@ class Term:
     tags: tuple[str, ...]
     aliases: tuple[Alias, ...]
     deprecated: bool
+    slug: str | None = None
 
 
 @dataclass(frozen=True)
@@ -275,6 +276,7 @@ def _term(data: dict[str, object]) -> Term:
         tags=get_str_list(data, "tags"),
         aliases=tuple(_alias(as_map(item)) for item in as_list(data.get("aliases"))),
         deprecated="deprecated" in data,
+        slug=get_opt_str(data, "slug"),
     )
 
 

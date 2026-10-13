@@ -643,6 +643,46 @@ terms:
     tags: [runtime.capability]
     stability: provisional
 
+  # Deployment environments: the tier a running process, a deploy or a
+  # record belongs to (decision 0034). The token is the name everywhere a
+  # name is written: MUSHER_ENVIRONMENT, a GitHub environment, a deployment
+  # record, the telemetry resource. The slug is its short form, written only
+  # where a system caps the length of a name. The names are the well-known
+  # values of OpenTelemetry's deployment.environment.name.
+  - id: deployment.environment.production
+    display_name: production
+    token: production
+    slug: prod
+    definition: >-
+      The environment the product's users rely on.
+    tags: [deployment.environment]
+    stability: provisional
+  - id: deployment.environment.staging
+    display_name: staging
+    token: staging
+    slug: staging
+    definition: >-
+      The shared environment that runs a release candidate the way production will run it, before it is promoted.
+    tags: [deployment.environment]
+    stability: provisional
+  - id: deployment.environment.development
+    display_name: development
+    token: development
+    slug: dev
+    definition: >-
+      Where work in progress runs: the shared development environment, or one developer's own when
+      MUSHER_DEVELOPER_SLUG is set.
+    tags: [deployment.environment]
+    stability: provisional
+  - id: deployment.environment.test
+    display_name: test
+    token: test
+    slug: test
+    definition: >-
+      A short-lived environment a test run creates for itself and removes when it ends, such as a CI job's stack.
+    tags: [deployment.environment]
+    stability: provisional
+
   # Organization-wide variables: environment variable names every Musher
   # program may read, reserved so that MUSHER_<WORD> stays unambiguous
   # beside the consumer prefixes MUSHER_<COMPONENT> (ENVS-25). The token is
@@ -651,8 +691,9 @@ terms:
     display_name: MUSHER_ENVIRONMENT
     token: musher-environment
     definition: >-
-      The name of the environment a process runs in, such as production or one developer's own, set by whatever
-      deploys or starts the process.
+      The deployment environment a process runs in, written as its name (production, staging, development or
+      test, never the slug), set by whatever deploys or starts the process. A developer's own environment is
+      development with MUSHER_DEVELOPER_SLUG set.
     tags: [env.org-scoped]
     stability: provisional
   - id: env.org-scoped.musher-developer-slug

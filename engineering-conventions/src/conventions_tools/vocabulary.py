@@ -19,6 +19,9 @@ RUNTIME_CAPABILITY_TAG = "runtime.capability"
 # Environment variable names reserved for every Musher program; the token is
 # the name in lower kebab-case (musher-environment is MUSHER_ENVIRONMENT).
 ORG_SCOPED_VARIABLE_TAG = "env.org-scoped"
+# Deployment environments (tiers): the token is the name, the slug its short
+# form where a system caps the length of a name (decision 0034).
+DEPLOYMENT_ENVIRONMENT_TAG = "deployment.environment"
 # Every tag whose terms carry a token the checks read; a token is unique
 # within each (invariants.terminology_consistent).
 TOKEN_TAGS = (
@@ -34,6 +37,7 @@ TOKEN_TAGS = (
     COMPATIBILITY_TAG,
     RUNTIME_CAPABILITY_TAG,
     ORG_SCOPED_VARIABLE_TAG,
+    DEPLOYMENT_ENVIRONMENT_TAG,
 )
 REPOSITORY_NAME_SCOPE = "repository-name"
 # Words that stand in for an action token as the first token of a composite
@@ -142,6 +146,18 @@ def org_scoped_variables(terminology: Terminology) -> list[str]:
     )
 
 
+def deployment_environments(terminology: Terminology) -> dict[str, str]:
+    """Each deployment environment's name, mapped to its slug."""
+    return {
+        term.token: term.slug
+        for term in sorted(terminology.terms, key=lambda term: term.token or "")
+        if DEPLOYMENT_ENVIRONMENT_TAG in term.tags
+        and term.token
+        and term.slug
+        and not term.deprecated
+    }
+
+
 def display_forms(terminology: Terminology) -> dict[str, str]:
     return dict(terminology.display_forms)
 
@@ -163,6 +179,7 @@ def project(terminology: Terminology) -> dict[str, object]:
         "banned_identifier_tokens": banned_identifier_tokens(terminology),
         "banned_repository_tokens": banned_repository_tokens(terminology),
         "capability_tokens": tokens(terminology, CAPABILITY_TAG),
+        "deployment_environments": deployment_environments(terminology),
         "display_forms": display_forms(terminology),
         "interface_compatibilities": tokens(terminology, COMPATIBILITY_TAG),
         "interface_formats": tokens(terminology, INTERFACE_FORMAT_TAG),

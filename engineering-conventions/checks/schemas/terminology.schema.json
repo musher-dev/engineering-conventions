@@ -54,9 +54,14 @@
           "$ref": "common.schema.json#/definitions/nonEmptyString"
         },
         "token": {
-          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle, repository.audience, interfaces.format, interfaces.compatibility, runtime.capability or env.org-scoped. A token joined to others with hyphens, in a filename or a repository name, is one word; the rest may be kebab-case, e.g. json-schema.",
+          "description": "The identifier token, when the term names one, e.g. validate. Required for terms tagged gha.responsibility, gha.capability, gha.action, outputs.kind, repository.system, repository.kind, repository.lifecycle, repository.audience, interfaces.format, interfaces.compatibility, runtime.capability, env.org-scoped or deployment.environment. A token joined to others with hyphens, in a filename or a repository name, is one word; the rest may be kebab-case, e.g. json-schema.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "slug": {
+          "description": "The short form of a deployment environment's name, written only where a system caps the length of a name: a DNS label, a worker or cloud resource name. Required for, and only for, terms tagged deployment.environment; everywhere else the token is the name.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]{1,7}$"
         },
         "definition": {
           "description": "What the term means here.",
@@ -127,7 +132,8 @@
                     "interfaces.format",
                     "interfaces.compatibility",
                     "runtime.capability",
-                    "env.org-scoped"
+                    "env.org-scoped",
+                    "deployment.environment"
                   ]
                 }
               }
@@ -151,7 +157,8 @@
                     "repository.system",
                     "repository.kind",
                     "repository.lifecycle",
-                    "repository.audience"
+                    "repository.audience",
+                    "deployment.environment"
                   ]
                 }
               }
@@ -160,6 +167,14 @@
           "then": {
             "properties": { "token": { "pattern": "^[a-z][a-z0-9]*$" } }
           }
+        },
+        {
+          "if": {
+            "required": ["tags"],
+            "properties": { "tags": { "contains": { "const": "deployment.environment" } } }
+          },
+          "then": { "required": ["token", "slug"] },
+          "else": { "not": { "required": ["slug"] } }
         }
       ]
     },

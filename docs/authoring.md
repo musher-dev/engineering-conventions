@@ -126,6 +126,19 @@ repository, the proposal carries `authority` pointing there
    `task generate` rewrites `checks/data/index.json`, the Vale styles and `definitions/conventions/README.md`; commit
    them with the change. `task check` runs every gate CI runs except the dev container build.
 
+## Adding a topic or family
+
+A new topic or family needs three things besides its conventions:
+
+1. **A topic README**, `definitions/conventions/<topic>/README.md`, in the shape of its siblings: the governing rule,
+   Status, Who is checked, Reading order and Quick reference.
+2. **A row in the root README's** "Find a convention by what it governs" table, linking that README and listing the
+   topic's conventions and each family's first and last ID, retired ones included.
+3. **A `families.yml` entry** for each new ID prefix, naming its topic.
+
+`task invariants` fails on a missing README, a missing or stale row and an unregistered family, and names the row to
+fix.
+
 ## Adding or changing a term
 
 Terms live in `engineering-conventions/definitions/terminology/global.yml`. A term has either a `definition` or an `authority`

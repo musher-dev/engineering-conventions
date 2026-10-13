@@ -27,7 +27,7 @@ from conventions_tools.loading import (
     get_str,
     parse_yaml,
 )
-from conventions_tools.paths import PRODUCT_DIR_NAME, index_file, rego_dir
+from conventions_tools.paths import PRODUCT_DIR_NAME, conventions_dir, index_file, rego_dir
 from conventions_tools.profiles import ProfileError, resolve_all
 
 REQUIREMENT_ID = r"[A-Z][A-Z0-9]{1,7}-[0-9]{2,3}"
@@ -458,6 +458,119 @@ def copy_rules_have_requirements(content: Content) -> list[str]:
     return found
 
 
+TOPIC_TABLE_HEADING = "## Find a convention by what it governs"
+# The table writes a range of IDs with an en dash between spaces.
+RANGE = " \N{EN DASH} "
+_TOPIC_LINK = re.compile(
+    rf"^\[[^\]]+\]\({PRODUCT_DIR_NAME}/definitions/conventions/([a-z0-9-]+)/([^)]*)\)$"
+)
+
+
+def _id_list(ids: list[str]) -> str:
+    """EC IDs as the topic table writes them: a run of three or more as a range."""
+    numbers = sorted(int(cid.removeprefix("EC-")) for cid in ids)
+    runs: list[list[int]] = []
+    for number in numbers:
+        if runs and number == runs[-1][-1] + 1:
+            runs[-1].append(number)
+        else:
+            runs.append([number])
+    parts: list[str] = []
+    for run in runs:
+        if len(run) >= 3:
+            parts.append(f"EC-{run[0]:04d}{RANGE}EC-{run[-1]:04d}")
+        else:
+            parts.extend(f"EC-{number:04d}" for number in run)
+    return ", ".join(parts)
+
+
+def _family_ranges(ids: list[str]) -> str:
+    """Each family's first and last ID, retired ones included, as a range."""
+    by_family: dict[str, list[str]] = {}
+    for rid in sorted(ids, key=requirement_sort_key):
+        by_family.setdefault(rid.rsplit("-", 1)[0], []).append(rid)
+    return ", ".join(
+        family_ids[0] if len(family_ids) == 1 else f"{family_ids[0]}{RANGE}{family_ids[-1]}"
+        for _, family_ids in sorted(by_family.items())
+    )
+
+
+def _topic_table(text: str) -> list[tuple[int, list[str]]] | None:
+    """The body rows of the root README's topic table, with their line numbers."""
+    lines = text.splitlines()
+    try:
+        start = lines.index(TOPIC_TABLE_HEADING)
+    except ValueError:
+        return None
+    rows: list[tuple[int, list[str]]] = []
+    in_table = False
+    for number, line in enumerate(lines[start + 1 :], start=start + 2):
+        if line.startswith("|"):
+            in_table = True
+            rows.append((number, [cell.strip() for cell in line.strip().strip("|").split("|")]))
+        elif in_table or line.startswith("#"):
+            break
+    return rows[2:]
+
+
+def topic_table_current(content: Content) -> list[str]:
+    """The root README's topic table has one row per topic, and each row's IDs are current.
+
+    The table is the front door: a reader picks a row by what they are
+    working on. The checks skip it where the README is not beside the
+    product directory, as in a release bundle.
+    """
+    readme = content.product.parent / "README.md"
+    if not readme.is_file():
+        return []
+    table = _topic_table(readme.read_text(encoding="utf-8"))
+    if table is None:
+        return [f"README.md has no {TOPIC_TABLE_HEADING!r} section"]
+    conventions: dict[str, list[str]] = {}
+    requirements: dict[str, list[str]] = {}
+    for convention in content.conventions:
+        conventions.setdefault(convention.topic, []).append(convention.id)
+        requirements.setdefault(convention.topic, []).extend(
+            req.id for req in convention.requirements
+        )
+    found: list[str] = []
+    seen: set[str] = set()
+    for number, cells in table:
+        where = f"README.md:{number}"
+        link = _TOPIC_LINK.fullmatch(cells[0]) if cells else None
+        if link is None or len(cells) != 4:
+            found.append(
+                f"{where}: a topic row is | [Title]({PRODUCT_DIR_NAME}/definitions/"
+                "conventions/<topic>/README.md) | governs | conventions | requirements |"
+            )
+            continue
+        topic, target = link.groups()
+        where = f"{where} ({topic} row)"
+        seen.add(topic)
+        if topic not in conventions:
+            found.append(f"{where}: no convention has topic {topic!r}; remove the row")
+            continue
+        if target != "README.md":
+            found.append(f"{where}: link the topic's README.md, not {target}")
+        expected = _id_list(conventions[topic])
+        if cells[2] != expected:
+            found.append(f"{where}: the Conventions column says {cells[2]!r}; write {expected!r}")
+        expected = _family_ranges(requirements[topic])
+        if cells[3] != expected:
+            found.append(f"{where}: the Requirements column says {cells[3]!r}; write {expected!r}")
+    found += [
+        f"README.md: {TOPIC_TABLE_HEADING!r} has no row for topic {topic!r}; add one linking "
+        f"{PRODUCT_DIR_NAME}/definitions/conventions/{topic}/README.md"
+        for topic in sorted(set(conventions) - seen)
+    ]
+    found += [
+        f"definitions/conventions/{topic}/README.md is missing; every topic has one"
+        for topic in sorted(conventions)
+        if not (conventions_dir(content.product) / topic / "README.md").is_file()
+    ]
+    return found
+
+
 CHECKS: tuple[Check, ...] = (
     ids_unique,
     families_registered,
@@ -471,6 +584,7 @@ CHECKS: tuple[Check, ...] = (
     profiles_resolve,
     kinds_have_profiles,
     copy_rules_have_requirements,
+    topic_table_current,
 )
 
 

@@ -97,7 +97,7 @@ Start from the part of your repository you are working on:
 
 | Topic | Governs in your repository | Conventions | Requirements |
 | --- | --- | --- | --- |
-| [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-11 |
+| [Adoption](engineering-conventions/definitions/conventions/adoption/README.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-11 |
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `AGENTS.md`, `.claude/rules/`, `.claude/skills/`, `.claude/agents/` | EC-0013, EC-0034 | AGENT-01 – AGENT-18 |
 | [Branch protection](engineering-conventions/definitions/conventions/branch-protection/README.md) | `.github/rulesets/`: the ruleset that protects the default branch | EC-0041 | BRANCH-01 – BRANCH-04 |
 | [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-06 |

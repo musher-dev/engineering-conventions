@@ -138,6 +138,31 @@ test_gha_41_swallowed_exit_codes if {
 	startswith(in_action, `step "Clean" in the action swallows a failure: "rm -f x || true"`)
 }
 
+# A continue-on-error step whose outcome a later step reads hands its failure
+# on: a retry of a uses: step, or a refusal another step reports.
+test_gha_41_outcome_handled_later if {
+	workflow := with_jobs({"a": job({"steps": [
+		{"name": "Attempt 1", "id": "attempt_1", "uses": "example/setup@x", "continue-on-error": true},
+		{"name": "Attempt 2", "if": "steps.attempt_1.outcome == 'failure'", "uses": "example/setup@x"},
+		{"name": "Candidate", "id": "candidate", "run": "x", "continue-on-error": true},
+		{"name": "Report", "env": {"OUTCOME": "${{ steps.candidate.outcome }}"}, "run": "test \"$OUTCOME\" = success"},
+		{"name": "Conclusion", "id": "c", "run": "x", "continue-on-error": true},
+		{"name": "Reads conclusion", "if": "steps.c.conclusion == 'failure'", "run": "x"},
+		{"name": "Read first", "if": "steps.late.outcome == 'failure'", "run": "x"},
+		{"name": "Late", "id": "late", "run": "x", "continue-on-error": true},
+		{"name": "Prefix", "id": "attempt", "run": "x", "continue-on-error": true},
+	]})})
+	action := {"runs": {"steps": [
+		{"name": "Try", "id": "try", "uses": "example/setup@x", "continue-on-error": true},
+		{"name": "Retry", "if": "steps.try.outcome == 'failure'", "uses": "example/setup@x"},
+	]}}
+	docs := [wf("validate.yml", workflow), td.file(".github/actions/setup-x/action.yml", action)]
+	found := messages(checks.findings, "GHA-41") with input as docs with data.conventions.index as td.index
+	{split(line, " in ")[0] | some line in found} == {`step "c"`, `step "late"`, `step "attempt"`}
+	some line in found
+	endswith(line, "or give the step an id and handle steps.<id>.outcome in a later step")
+}
+
 test_gha_42_actions_cache if {
 	workflow := with_jobs({"a": job({"steps": [
 		{"name": "From", "uses": "docker/build-push-action@x", "with": {"cache-from": "type=gha"}},

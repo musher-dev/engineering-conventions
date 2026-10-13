@@ -627,8 +627,12 @@
   "gha-40-slim-docker": [
     [".github/workflows/reusable-build-image.yml", "GHA-40", "warning", "job \"build\" runs on ubuntu-slim but step \"Build the image\" runs Docker, and that runner has no Docker; run it on ubuntu-24.04", true]
   ],
+  "gha-41-passes-outcome-handled": [],
   "gha-41-swallowed-failure": [
     [".github/workflows/validate.yml", "GHA-41", "warning", "step \"Lint the repository\" in job \"lint\" swallows a failure: \"task lint || true\"; let the command fail, or capture its exit code and test it, so a broken check cannot report success", true]
+  ],
+  "gha-41-unread-outcome": [
+    [".github/workflows/validate.yml", "GHA-41", "warning", "step \"setup_tools\" in job \"lint\" sets continue-on-error: true, so its failure turns green; remove it, or give the step an id and handle steps.<id>.outcome in a later step", true]
   ],
   "gha-42-actions-cache": [
     [".github/workflows/reusable-build-image.yml", "GHA-42", "warning", "step \"Build the image\" in job \"build\" uses the type=gha build cache in its cache-from input; Docker layers fill the repository's 10 GB Actions cache and evict every other cache, so keep the build cache in a registry (type=registry) instead", true],

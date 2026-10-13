@@ -656,7 +656,7 @@
           },
           "schema_version": {
             "const": 1,
-            "description": "Version of this file's shape. Always 1."
+            "description": "Deprecated and ignored: the pinned release already versions this file's shape, because only the conventions tool of that release reads it. Accepted as 1 for now, and rejected in a future breaking release; remove it."
           },
           "vocabulary": {
             "additionalProperties": false,
@@ -677,9 +677,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "schema_version"
-        ],
         "title": "Conventions declaration",
         "type": "object"
       },
@@ -752,11 +749,10 @@
           },
           "schema_version": {
             "const": 1,
-            "description": "Version of this file's shape. Always 1."
+            "description": "Deprecated and ignored: the pinned release already versions this file's shape, because only the conventions tool of that release reads it. Accepted as 1 for now, and rejected in a future breaking release; remove it."
           }
         },
         "required": [
-          "schema_version",
           "dependencies"
         ],
         "title": "Dependencies declaration",
@@ -5228,6 +5224,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -5537,6 +5534,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -5849,6 +5847,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -6158,6 +6157,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -6470,6 +6470,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -6779,6 +6780,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -7091,6 +7093,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -7401,6 +7404,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -7714,6 +7718,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -8025,6 +8030,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -8339,6 +8345,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -8652,6 +8659,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -8968,6 +8976,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -9277,6 +9286,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -9589,6 +9599,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -9898,6 +9909,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -10210,6 +10222,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -10521,6 +10534,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -10835,6 +10849,7 @@
             "DEPS-11",
             "DEPS-12",
             "DEPS-13",
+            "DEPS-14",
             "DEVC-01",
             "DEVC-02",
             "DEVC-03",
@@ -11146,6 +11161,7 @@
             "DEPS-11": "warning",
             "DEPS-12": "warning",
             "DEPS-13": "warning",
+            "DEPS-14": "warning",
             "DEVC-01": "warning",
             "DEVC-02": "warning",
             "DEVC-03": "warning",
@@ -12781,6 +12797,18 @@
           "since": "0.8.0",
           "status": "proposed",
           "title": "An updater keeps the product's dependencies current from the product directory",
+          "waivable": true
+        },
+        "DEPS-14": {
+          "aliases": [],
+          "anchor": "deps-14",
+          "convention": "EC-0032",
+          "engine": "review",
+          "path": "definitions/conventions/dependencies/dependencies-declaration.md",
+          "severity": "warning",
+          "since": "0.9.0",
+          "status": "proposed",
+          "title": "Repositories depend on each other without a cycle",
           "waivable": true
         },
         "DEVC-01": {
@@ -16442,7 +16470,6 @@
         "repository_systems": [
           "brand",
           "catalog",
-          "company",
           "engineering",
           "host",
           "infra",

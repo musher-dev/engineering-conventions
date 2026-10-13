@@ -5,6 +5,8 @@
   "adopt-02-invalid-declaration": [
     [".repo/conventions.toml", "ADOPT-02", "warning", "the declaration: Additional property waiver is not allowed.", true]
   ],
+  "adopt-02-passes-deprecated-schema-version": [],
+  "adopt-02-passes-without-schema-version": [],
   "adopt-03-expired-waiver": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
     [".repo/conventions.toml", "ADOPT-03", "warning", "waiver 1 (GHA-07) expired on 2026-09-01 and no longer suppresses its finding; fix the finding and delete the waiver, or renew it with a new expires date and a tracking link", true]
@@ -279,6 +281,7 @@
   "deps-02-invalid-declaration": [
     [".repo/dependencies.toml", "DEPS-02", "warning", "`dependencies.0`: Additional property path is not allowed.", true]
   ],
+  "deps-02-passes-deprecated-schema-version": [],
   "deps-02-passes-without-optional-fields": [],
   "deps-03-declared-twice": [
     [".repo/dependencies.toml", "DEPS-03", "warning", "specifications's \"schemas\" is declared more than once; declare each vendored output once, with one version", true],
@@ -1105,7 +1108,7 @@
   ],
   "repo-09-unregistered-system": [
     [".repo/repository.toml", "REPO-07", "warning", "the declaration names the repository \"platform-api\", but it is \"widgets-api\"; set name to \"widgets-api\", with system and component to match, or rename the repository and its declaration together", true],
-    [".repo/repository.toml", "REPO-09", "warning", "repository name \"widgets-api\" starts with \"widgets\", which is not a registered system; start it with one of \"brand\", \"catalog\", \"company\", \"engineering\", \"host\", \"infra\", \"observability\", \"platform\", \"sdk\"", true]
+    [".repo/repository.toml", "REPO-09", "warning", "repository name \"widgets-api\" starts with \"widgets\", which is not a registered system; start it with one of \"brand\", \"catalog\", \"engineering\", \"host\", \"infra\", \"observability\", \"platform\", \"sdk\"", true]
   ],
   "repo-10-banned-token": [
     [".repo/repository.toml", "REPO-10", "warning", "repository name \"platform-api-v2\" holds the token \"v2\". Names a version, which changes while the name must not; drop the token and version what the repository publishes instead.", true]

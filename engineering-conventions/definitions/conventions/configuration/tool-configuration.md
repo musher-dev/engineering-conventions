@@ -42,33 +42,6 @@ implementations:
   - repo: musher-dev/platform
     check: CFG-08
     mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-01
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-02
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-03
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-04
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-05
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-06
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-07
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-08
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-09
-    mode: blocking
 references:
   - title: "lefthook: Configuration"
     url: https://lefthook.dev/configuration/

@@ -33,7 +33,7 @@ recorded(id, path, digest) := {
 
 dependency := {"repository": "platform-api", "output": "contracts", "interfaces": ["public-http"], "version": "0.36.1"}
 
-declared(deps) := td.file(".repo/dependencies.toml", {"schema_version": 1, "dependencies": deps})
+declared(deps) := td.file(".repo/dependencies.toml", {"dependencies": deps})
 
 vendored_files := {
 	concat("/", [copy, "release.json"]): sha("f"),
@@ -77,6 +77,18 @@ test_deps_02_schema if {
 	found := declaration.findings with input as given
 		with data.conventions.index as td.index
 	messages(found, "DEPS-02") == {"`dependencies.0`: Additional property path is not allowed."}
+}
+
+# schema_version is deprecated: the conforming repository declares none, and a
+# declaration that still carries it is valid only as 1.
+test_deps_02_schema_version if {
+	others := [doc | some doc in repo([dependency], record, vendored_files); doc.path != ".repo/dependencies.toml"]
+	one := array.concat(others, [td.file(".repo/dependencies.toml", {"schema_version": 1, "dependencies": [dependency]})])
+	count(messages(declaration.findings, "DEPS-02")) == 0 with input as one
+		with data.conventions.index as td.index
+	two := array.concat(others, [td.file(".repo/dependencies.toml", {"schema_version": 2, "dependencies": [dependency]})])
+	count(messages(declaration.findings, "DEPS-02")) == 1 with input as two
+		with data.conventions.index as td.index
 }
 
 test_deps_03_twice_and_self if {

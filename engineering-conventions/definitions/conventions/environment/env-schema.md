@@ -27,12 +27,6 @@ owners:
 authority: self
 migration: authoritative
 implementations:
-  - repo: musher-dev/development-container
-    check: ENV-01
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: ENV-07
-    mode: blocking
   - repo: musher-dev/platform
     check: G-01
     mode: blocking

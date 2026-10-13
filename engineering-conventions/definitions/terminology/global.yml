@@ -803,6 +803,12 @@ terms:
       to its members and investors.
     tags: [repository.system]
     stability: provisional
+    deprecated:
+      note: >-
+        Retired with musher-dev/company, its only repository. What that
+        repository held moved to repositories in other systems, so no
+        repository is named company-* and REPO-09 no longer accepts the
+        token (decision 0036).
   - id: repository.system.catalog
     display_name: catalog
     token: catalog
@@ -1221,35 +1227,45 @@ terms:
     tags: [meta]
     stability: provisional
 
-  # Defined upstream and deliberately not restated here. GitHub Actions
-  # uses audit and drift in a narrower, automation sense: see
+  # Governance words: how this repository's checks and documents talk about
+  # holding a repository to the conventions. They were authority pointers to
+  # the platform's terminology rule until decision 0036; they are defined here
+  # because they are this repository's working vocabulary, and a reader of a
+  # diagnostic should not need a private repository to learn what one means.
+  # GitHub Actions uses audit and drift in a narrower, automation sense: see
   # gha.responsibility.audit and the drift alias of gha.responsibility.monitor.
   - id: governance.audit
     display_name: audit
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      A read-only examination that reports findings and changes nothing.
+      Fixing what an audit finds is separate work, done and reviewed as its
+      own change.
     tags: [governance]
     stability: stable
   - id: governance.drift
     display_name: drift
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      A difference between something and the source it is declared to match:
+      a generated file and its source, a vendored copy and its release, a
+      repository and the conventions release it pins. Drift is found by
+      comparing the two, never by reading either alone.
     tags: [governance]
     stability: stable
   - id: governance.gate
     display_name: gate
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      A check that a change must pass before it merges, releases or deploys:
+      a required CI job, a required status check or a required review. A
+      check whose finding does not block is not a gate.
     tags: [governance]
     stability: stable
   - id: governance.conformance
     display_name: conformance
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      Meeting every requirement that applies, as a check reports it. A
+      repository conforms to a conventions release when conventions check
+      reports no finding against it; a waived requirement is a recorded
+      deviation, not conformance.
     tags: [governance]
     stability: stable
 

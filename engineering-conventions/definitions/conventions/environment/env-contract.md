@@ -26,16 +26,6 @@ owners:
   - "@justinmerrell"
 authority: self
 migration: authoritative
-implementations:
-  - repo: musher-dev/development-container
-    check: LAYOUT-10
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-11
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: ENV-06
-    mode: blocking
 references:
   - title: "The Twelve-Factor App: Config"
     url: https://12factor.net/config

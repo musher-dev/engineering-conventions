@@ -23,10 +23,6 @@ owners:
   - "@justinmerrell"
 authority: self
 migration: authoritative
-implementations:
-  - repo: musher-dev/development-container
-    check: PATH-03
-    mode: blocking
 references:
   - title: "Task: Style guide"
     url: https://taskfile.dev/docs/styleguide

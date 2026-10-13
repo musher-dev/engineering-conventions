@@ -141,6 +141,7 @@ ID is permanent: it is never renumbered or reused.
 | [DEPS-11](dependencies/automated-updates.md#deps-11) | An updater keeps the actions of every workflow and composite action current | EC-0042 | proposed | warning | conftest |
 | [DEPS-12](dependencies/automated-updates.md#deps-12) | An updater keeps the base images of every Dockerfile current | EC-0042 | proposed | warning | conftest |
 | [DEPS-13](dependencies/automated-updates.md#deps-13) | An updater keeps the product's dependencies current from the product directory | EC-0042 | proposed | warning | conftest |
+| [DEPS-14](dependencies/dependencies-declaration.md#deps-14) | Repositories depend on each other without a cycle | EC-0032 | proposed | warning | review |
 | [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
 | [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
 | [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |

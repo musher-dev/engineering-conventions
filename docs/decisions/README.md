@@ -8,7 +8,7 @@ frontmatter validated by [`decision.schema.json`](../../engineering-conventions/
 
 These records govern this repository. The conventions it publishes are in
 [`engineering-conventions/definitions/conventions/`](../../engineering-conventions/definitions/conventions/);
-decisions about how the company operates are in `musher-dev/company`.
+decisions about why Musher exists and what it designs are in `musher-dev/pelorus`.
 
 | ID | Decision | Status |
 | --- | --- | --- |
@@ -45,8 +45,10 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0030](0030-container-images-live-in-docker-directories.md) | Container images live in docker/ directories with their own ignore files, and hadolint lints every Dockerfile | accepted |
 | [0031](0031-the-default-branch-is-protected.md) | The default branch is protected by a committed ruleset with a review gate, and every repository has a CODEOWNERS | accepted |
 | [0032](0032-every-dependency-ecosystem-has-an-updater.md) | Every dependency ecosystem a repository pins has Renovate or Dependabot proposing its updates | accepted |
+| [0033](0033-a-declaration-is-versioned-by-its-reader.md) | A declaration carries a format version only when a reader outside its release reads it, and contracts stay with the product | accepted |
 | [0034](0034-deployment-environments-have-one-name.md) | Deployment environments have one name, and reach a process only as MUSHER_ENVIRONMENT | accepted |
 | [0035](0035-published-and-deployed-artifacts-are-recorded.md) | What a repository publishes and deploys is recorded in GitHub's linked artifacts | accepted |
+| [0036](0036-ownership-moves-out-of-company-and-platform.md) | musher-dev/company's ownership moves to the repositories that hold it, the governance words are defined here, and the org graph is assembled in musher-dev/pelorus | accepted |
 
 ## Writing a decision
 

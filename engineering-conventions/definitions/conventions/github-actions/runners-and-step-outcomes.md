@@ -35,9 +35,6 @@ implementations:
   - repo: musher-dev/platform
     check: DL-10
     mode: blocking
-  - repo: musher-dev/development-container
-    check: PATH-02
-    mode: blocking
 references:
   - title: "GitHub Changelog: Ubuntu 26.04 is generally available, and ubuntu-latest migration"
     url: https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration/

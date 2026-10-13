@@ -268,7 +268,6 @@ A repository that holds no waivers, and whose kind selects the profile it needs,
 `.repo/conventions.toml` when it needs a different profile, its own display forms, or a waiver:
 
 ```toml
-schema_version = 1
 profile = "base-repo"         # overrides the profile the kind selects
 ```
 
@@ -362,8 +361,6 @@ When your repository builds against another repository's interfaces, vendor the 
 `.repo/dependencies.toml`:
 
 ```toml
-schema_version = 1
-
 [[dependencies]]
 repository = "platform-api"
 output = "contracts"

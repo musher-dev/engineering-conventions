@@ -2,8 +2,6 @@
 # through: its build enforces the families below, and every other family is
 # still reported, marked "not enforced", until the adoption is finished.
 
-schema_version = 1
-
 # A staged adoption (decision 0019). Only these families count toward
 # `conventions check --fail-on warning` until `expires`. The rest are reported
 # without failing the build, like the TASK-05 finding in Taskfile.yml.

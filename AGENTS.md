@@ -28,7 +28,8 @@ from version 2.1.277; there is no `CLAUDE.md` (AGENT-16).
   regenerate; `task generate:check` fails on drift.
 - **Every conftest requirement ships a fixture.** A fixture repo under
   `engineering-conventions/tests/fixtures/repos/` whose `expected.json` names
-  the requirement. A check that no fixture proves is not done.
+  the requirement. A check that no fixture proves is not done. Near-misses and
+  the findings snapshot: [docs/authoring.md](docs/authoring.md), steps 5 and 6.
 - **The commit type is the release.** Pick it from the one change-classification
   table in [decision 0005](docs/decisions/0005-status-severity-and-versioning.md#change-classification);
   do not restate or improvise it. A `docs:` commit cuts no release, so anything

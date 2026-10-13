@@ -30,15 +30,11 @@ wrong. Paths are relative to the repository root.
   link.
 - [ ] **Check** (`conftest` only). Emit `{"id", "path", "message"}` and nothing more. No severity, time or waiver logic:
   the `main` router owns those. Put a `*_test.rego` beside it.
-- [ ] **Fixture** (`conftest` only). Add a case under `engineering-conventions/tests/fixtures/repos/` whose
-  `expected.json` names the requirement. Put only the files that differ from `clean/` in it, and list any
-  `clean/` file it must lack in `removed.txt`. `clean` must still expect `[]`.
-- [ ] **Near-miss** (`conftest`, first released after 0.6.2). Add `<id-lower>-passes-<slug>/`: the closest conforming
-  repository, expecting none of the requirement's findings. Aim it where the check could misfire: its file selection,
-  parser, pattern, threshold or date boundary. `task invariants` fails without one.
-- [ ] **Snapshot.** Run `uv run --project engineering-conventions conventions fixtures --update-snapshot` after adding a
-  case or changing a message, and read the diff of `tests/fixtures/findings.snapshot.json` before committing it. A
-  changed message is a `fix`; a line you did not mean to change is a regression.
+- [ ] **Fixture, near-miss, snapshot** (`conftest` only). Follow `docs/authoring.md` steps 5 and 6: a case under
+  `engineering-conventions/tests/fixtures/repos/` whose `expected.json` names the requirement, holding only what
+  differs from `clean/`; a `<id-lower>-passes-<slug>/` near-miss for a requirement first released after 0.6.2; then
+  `conventions fixtures --update-snapshot`, reading the diff. A changed message is a `fix`; a line you did not mean to
+  change is a regression.
 - [ ] **Generated files.** Run `task generate` and commit what it rewrites. Never hand-edit a file `.gitattributes`
   marks `linguist-generated`.
 - [ ] **Verify.** Run `task check`. `task conventions:self` must report zero findings, warnings included.

@@ -40,7 +40,7 @@ repository, the proposal carries `authority` pointing there
 2. **Add the frontmatter entry** to the convention's `requirements:` list:
 
    ```yaml
-   - id: GHA-38
+   - id: GHA-NN
      title: A reusable workflow declares its inputs' types
      status: proposed
      severity: warning
@@ -62,7 +62,7 @@ repository, the proposal carries `authority` pointing there
 3. **Write the body section** below the frontmatter, in ID order:
 
    ````markdown
-   ### GHA-38
+   ### GHA-NN
 
    **A reusable workflow declares its inputs' types.**
 
@@ -83,24 +83,28 @@ repository, the proposal carries `authority` pointing there
    Checked by: conftest · Severity: warning · Since: 0.2.0
    ````
 
-   The heading is exactly `### <ID>` and appears once. Its anchor (`#gha-38`) is the permanent target of every
+   The heading is exactly `### <ID>` and appears once. Its anchor (`#gha-nn`) is the permanent target of every
    diagnostic link, so never put anything else in that heading. Add `· Formerly: platform CI-NN` when the requirement
    has an alias.
 
 4. **Implement the check** when the engine is `conftest`: add a `findings` rule to the package named in the
-   frontmatter, emitting `{"id": "GHA-38", "path": ..., "message": ...}`. The message must say what to change without
+   frontmatter, emitting `{"id": "GHA-NN", "path": ..., "message": ...}`. The message must say what to change without
    the link. Add Rego unit tests beside it (`*_test.rego`).
 5. **Add fixtures.** Every `conftest` requirement needs at least one fixture repository that produces its finding,
-   under `engineering-conventions/tests/fixtures/repos/gha-38-<slug>/`. A case is an overlay on the `clean` case,
+   under `engineering-conventions/tests/fixtures/repos/gha-nn-<slug>/`. A case is an overlay on the `clean` case,
    which conforms fully, so it holds only:
    - the files that differ from `clean/`, the smallest change that triggers the finding;
    - `removed.txt`, when the case needs a `clean/` file gone: one path per line;
-   - `expected.json`, listing the exact findings (`[{"id", "path", "severity"}]`, sorted).
+   - `expected.json`, listing the exact findings (`[{"id", "path", "severity"}]`, sorted);
+   - `release.json`, when the check reads release data (ADOPT-08, say): the record `bundle:build` writes into a
+     release;
+   - `repository.json`, when the check needs the repository's actual name (REPO-07, say): `{"name": "..."}`, as
+     `bin/conventions` learns it from the origin remote.
 
    `clean/` itself must still produce no findings. A requirement with no fixture fails the invariants: a check that
    is never seen to fire could be checking nothing.
 
-   A requirement first released after 0.6.2 also needs a **near-miss**: a case named `gha-38-passes-<slug>/` that
+   A requirement first released after 0.6.2 also needs a **near-miss**: a case named `gha-nn-passes-<slug>/` that
    comes as close to the requirement as a conforming repository can, and expects none of its findings. It proves the
    check stays quiet where it should, which is where false positives come from: which files it selects, how a parser
    reads them, a pattern, a threshold or a date boundary. The invariants fail on a new requirement without one.

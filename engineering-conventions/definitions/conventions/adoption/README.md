@@ -35,7 +35,6 @@ asked only to pin a release (ADOPT-09).
 
 ```toml
 # .repo/conventions.toml: optional, valid against its schema (ADOPT-02)
-schema_version = 1
 profile = "base-repo"              # ADOPT-07: a profile the release defines
 
 [adoption]                         # a staged adoption

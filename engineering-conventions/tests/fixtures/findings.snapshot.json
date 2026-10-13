@@ -220,6 +220,10 @@
   "conf-09-missing-path": [
     [".devcontainer/devcontainer.json", "CONF-09", "warning", "names .config/markdown/vale.ini, which does not exist; correct the path or remove the reference", true]
   ],
+  "conf-09-passes-glob": [],
+  "conf-09-unmatched-glob": [
+    [".github/workflows/validate-scripts.yml", "CONF-09", "warning", "names .config/rust/*.toml, which does not exist; correct the path or remove the reference", true]
+  ],
   "conf-10-trivyignore-entry": [
     [".config/security/trivyignore.yaml", "CONF-10", "warning", "vulnerabilities CVE-2026-0002: add a statement saying why the finding is acceptable; add an expired_at date, or Trivy ignores the finding forever", true]
   ],

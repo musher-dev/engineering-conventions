@@ -11,7 +11,9 @@ paths:
 
 `.config/mise/config.toml` pins every CLI this repository runs
 (docs/repository.md → "Toolchain"). The only exceptions are the lockstep
-pairs below, which mise cannot express.
+pairs below, which mise cannot express, and the two tools installed outside
+mise that docs/repository.md lists: the Dev Containers CLI (`npx` in the
+`Dev Container` job) and Claude Code (`.devcontainer/scripts/lib/base-setup.sh`).
 
 ## Rules
 

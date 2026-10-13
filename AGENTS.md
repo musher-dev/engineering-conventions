@@ -47,7 +47,8 @@ from version 2.1.277; there is no `CLAUDE.md` (AGENT-16).
 - **No inline lint suppressions.** A rule that is wrong here is turned off in
   its `.config/` file with the reason beside it.
 - **No tool installed outside `.config/mise/config.toml`.** CI installs through
-  `.github/actions/setup-tools` from that same file.
+  `.github/actions/setup-tools` from that same file. The two exceptions are
+  listed in [docs/repository.md](docs/repository.md#toolchain); add no third.
 
 ## Verification
 

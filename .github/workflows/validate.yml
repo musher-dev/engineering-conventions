@@ -240,6 +240,8 @@ jobs:
       - uses: ./.github/actions/setup-tools
         with:
           install-args: node
+      # The Dev Containers CLI is one of the two tools installed outside mise
+      # (docs/repository.md, "Toolchain"); its three uses move together.
       # --frozen-lockfile fails when devcontainer-lock.json is missing or its
       # Feature digests have drifted from devcontainer.json.
       - name: Build the dev container image

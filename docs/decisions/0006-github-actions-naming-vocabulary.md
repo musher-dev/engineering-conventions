@@ -11,7 +11,7 @@ amended_by: ["0021"]
 
 ## Context
 
-Before platform issue [#2892](https://github.com/musher-dev/platform/issues/2892), the platform's 44 workflows mixed
+Before musher-dev/platform#2892, the platform's 44 workflows mixed
 suffixes (`-validation`, `-validate`, `-lint`, `-drift`, `-scheduled`), display names disagreed with filenames, and
 "release" meant three different things. A job named `build-and-push` actually promoted an image. Other repositories
 used `ci.yml` with a `CI / required` context, or `validate.yaml` with bare job names. Names described triggers
@@ -143,7 +143,7 @@ alternative, splitting it into a `reusable-` workflow and a thin dispatch wrappe
 
 ## References
 
-- [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
+- musher-dev/platform#2892: Organize GitHub Actions workflows by responsibility
 - [GitHub Actions conventions](../../engineering-conventions/definitions/conventions/github-actions/README.md)
 - [Decision 0002: Authority and migration](0002-authority-and-migration.md)
 - [Decision 0007: Terminology model and committed generated artifacts](0007-terminology-and-generated-artifacts.md)

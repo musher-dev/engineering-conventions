@@ -20,10 +20,6 @@ owners:
   - "@justinmerrell"
 authority: self
 migration: authoritative
-implementations:
-  - repo: musher-dev/development-container
-    check: PORT-05
-    mode: blocking
 references:
   - title: "Compose file reference: ports"
     url: https://docs.docker.com/reference/compose-file/services/#ports

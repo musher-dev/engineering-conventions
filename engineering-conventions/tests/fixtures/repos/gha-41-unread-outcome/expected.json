@@ -1,0 +1,7 @@
+[
+  {
+    "id": "GHA-41",
+    "path": ".github/workflows/validate.yml",
+    "severity": "warning"
+  }
+]

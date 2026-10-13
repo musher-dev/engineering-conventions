@@ -2,7 +2,8 @@
 # title: Publishing outputs
 # description: >-
 #   An image a workflow publishes to GHCR names the repository it comes from
-#   in its org.opencontainers.image.source label (OUT-13).
+#   in its org.opencontainers.image.source label (OUT-13), and every image a
+#   job publishes has a storage record in linked artifacts (OUT-14).
 # scope: package
 # custom:
 #   convention: EC-0008
@@ -10,7 +11,11 @@ package conventions.checks.outputs.publishing
 
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.images
 import data.conventions.lib.mise
+import data.conventions.lib.permissions
+import data.conventions.lib.repository
+import data.conventions.lib.runs
 import data.conventions.lib.steps
 
 source_label := "org.opencontainers.image.source"
@@ -61,6 +66,55 @@ findings contains lib.finding("OUT-13", path, message) if {
 		]),
 		[source_label, value, repository_url, repository_url],
 	)
+}
+
+# OUT-14. An image pushed with no storage record.
+findings contains lib.finding("OUT-14", entry.path, message) if {
+	some entry in images.pushing_jobs
+	not records_storage(entry.job)
+	message := sprintf(
+		concat(" ", [
+			"job %q pushes an image without writing its storage record, so the organization's linked",
+			"artifacts do not list it; %s, and grant artifact-metadata: write",
+		]),
+		[entry.job_id, storage_fix],
+	)
+}
+
+# OUT-14. A storage record written without the permission to write it.
+findings contains lib.finding("OUT-14", entry.path, message) if {
+	some entry in images.pushing_jobs
+	records_storage(entry.job)
+	not permissions.granted(entry.workflow, entry.job, "artifact-metadata")
+	message := sprintf(
+		concat(" ", [
+			"job %q writes the image's storage record without artifact-metadata: write, so no record",
+			"is written; grant it in the job's permissions",
+		]),
+		[entry.job_id],
+	)
+}
+
+default storage_fix := "attest the pushed digest with actions/attest and push-to-registry: true, which writes it"
+
+storage_fix := concat(" ", [
+	"post it to orgs/<org>/artifacts/metadata/storage-record with name, digest, version, registry_url",
+	"and github_repository (this repository declares that it cannot attest)",
+]) if {
+	repository.attestations_unavailable
+}
+
+storage_record_patterns := [`artifacts/metadata/storage-record`]
+
+records_storage(job) if {
+	some step in files.steps(job)
+	images.registry_attestation(step)
+}
+
+records_storage(job) if {
+	some step in files.steps(job)
+	some line in steps.command_lines(step)
+	runs.line_runs(storage_record_patterns, line)
 }
 
 # The repository's own URL: its organization, from the team that owns it,

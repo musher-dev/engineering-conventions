@@ -6,11 +6,10 @@
 # rewrites the marked line on every release (extra-files in
 # .github/release-please/config.json), so never bump it by hand. The marker
 # comment is what its generic updater finds.
-schema_version = 1
 waivers = []
 
 [conventions]
-version = "0.8.1" # x-release-please-version
+version = "0.9.0" # x-release-please-version
 
 # The fixture repositories and the example consumer are separate
 # repositories that tests check on their own; many are wrong on purpose.

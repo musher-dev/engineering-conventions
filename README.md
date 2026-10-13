@@ -73,7 +73,7 @@ flowchart LR
     declarations[".repo/conventions.toml<br/>.repo/outputs.toml<br/>.repo/repository.toml"]
     check["conventions check"]
   end
-  upstream["Defined elsewhere<br/>platform, specifications,<br/>observability-schema-registry"]
+  upstream["Defined elsewhere<br/>platform, pelorus, specifications,<br/>observability-schema-registry"]
 
   defined -- "task generate" --> generated
   generated --> rego
@@ -83,7 +83,7 @@ flowchart LR
   pin --> check
   declarations --> check
   check -. "diagnostic links to ### GHA-07" .-> conventions
-  upstream -. "authority pointer" .-> terminology
+  upstream -. "authority pointer" .-> conventions
 ```
 
 Inside the product directory, [`engineering-conventions/`](engineering-conventions/README.md), the layers are
@@ -97,24 +97,24 @@ Start from the part of your repository you are working on:
 
 | Topic | Governs in your repository | Conventions | Requirements |
 | --- | --- | --- | --- |
-| [Adoption](engineering-conventions/definitions/conventions/adoption/conventions-declaration.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-11 |
+| [Adoption](engineering-conventions/definitions/conventions/adoption/README.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-11 |
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `AGENTS.md`, `.claude/rules/`, `.claude/skills/`, `.claude/agents/` | EC-0013, EC-0034 | AGENT-01 – AGENT-18 |
 | [Branch protection](engineering-conventions/definitions/conventions/branch-protection/README.md) | `.github/rulesets/`: the ruleset that protects the default branch | EC-0041 | BRANCH-01 – BRANCH-04 |
 | [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-06 |
 | [Community files](engineering-conventions/definitions/conventions/community-files/README.md) | `.github/ISSUE_TEMPLATE/`, `.github/DISCUSSION_TEMPLATE/`, `CODEOWNERS`, `SECURITY.md` | EC-0036 | COMM-01 – COMM-08 |
 | [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-12 |
-| [Container images](engineering-conventions/definitions/conventions/container-images/README.md) | Dockerfiles, their ignore files and compose files in `docker/` directories, `.config/docker/hadolint.yaml` | EC-0039, EC-0040 | IMAGE-01 – IMAGE-10 |
+| [Container images](engineering-conventions/definitions/conventions/container-images/README.md) | Dockerfiles, their ignore files and compose files in `docker/` directories, `.config/docker/hadolint.yaml` | EC-0039, EC-0040, EC-0043 | IMAGE-01 – IMAGE-12 |
 | [Copy](engineering-conventions/definitions/conventions/copy/README.md) | A site's copy and the Vale config that lints it: `.config/**/vale.ini` | EC-0038 | COPY-01 – COPY-04 |
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |
-| [Dependencies](engineering-conventions/definitions/conventions/dependencies/README.md) | `.repo/dependencies.toml`, vendored copies under `<product>/contracts/vendor/`, `.github/dependabot.yml` or Renovate | EC-0032, EC-0033, EC-0042 | DEPS-01 – DEPS-13 |
+| [Dependencies](engineering-conventions/definitions/conventions/dependencies/README.md) | `.repo/dependencies.toml`, vendored copies under `<product>/contracts/vendor/`, `.github/dependabot.yml` or Renovate | EC-0032, EC-0033, EC-0042 | DEPS-01 – DEPS-14 |
 | [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-18 |
-| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract derived from them, and the local `.env` that is never committed | EC-0019, EC-0020 | ENVS-01 – ENVS-27 |
-| [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-11 |
-| [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-49 |
+| [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract derived from them, and the local `.env` that is never committed | EC-0019, EC-0020 | ENVS-01 – ENVS-31 |
+| [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-14 |
+| [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-53 |
 | [Interfaces](engineering-conventions/definitions/conventions/interfaces/README.md) | `[[interfaces]]` in `.repo/outputs.toml`, `<product>/contracts/` | EC-0030, EC-0031 | IFACE-01 – IFACE-14 |
 | [OpenAPI](engineering-conventions/definitions/conventions/openapi/README.md) | OpenAPI interface documents, `.config/openapi/spectral.yaml` | EC-0037 | OAS-01 – OAS-03 |
 | [OpenTofu](engineering-conventions/definitions/conventions/opentofu/README.md) | Each OpenTofu root's state key, stated in its Taskfile | EC-0029 | TOFU-01 |
-| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-13 |
+| [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-14 |
 | [Releases](engineering-conventions/definitions/conventions/releases/README.md) | `.github/release-please/`, the release tag ruleset, `release.yml` | EC-0024 – EC-0026 | REL-01 – REL-20 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
 | [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-24 |
@@ -147,17 +147,18 @@ Where the rest lives:
 
 | Not owned here | Owned by |
 | --- | --- |
-| How the company operates: rituals, planning, the operating model | `musher-dev/company` |
+| Why Musher exists and what it decides, designs and ships: its purpose, its vocabulary, the design model and the org graph assembled from every repository's declarations | `musher-dev/pelorus` |
 | Telemetry names: spans, metrics, attributes, events | `musher-dev/observability-schema-registry` |
 | Document specifications: the component, blueprint and catalog formats | `musher-dev/specifications` |
-| Positioning, product vocabulary, the customer glossary, platform domain nouns | `musher-dev/platform` and `musher-dev/company` |
+| Positioning, product vocabulary, the customer glossary, platform domain nouns | `musher-dev/platform` and `musher-dev/pelorus` |
 | The development-container scaffold: the container, its toolchain setup, its stacks | `musher-dev/development-container` |
-| Teams and their membership | `musher-dev/company`, applied by `musher-dev/infra-github` |
-| Applying repository names, custom properties and rulesets to the organization | `musher-dev/infra-github` |
+| The roster: who is in the organization | `musher-dev/foundation-bootstrap` |
+| Teams and their membership; applying repository names, custom properties and rulesets to the organization | `musher-dev/infra-github` |
 | Rules local to one repository | That repository |
 
 A repository's own rule may be stricter than a convention here, never contradictory. The
-[charter](docs/decisions/0000-charter.md) is the authority for this boundary.
+[charter](docs/decisions/0000-charter.md), as amended by [decision 0036](docs/decisions/0036-ownership-moves-out-of-company-and-platform.md),
+is the authority for this boundary.
 
 ## Using the conventions in another repository
 
@@ -167,7 +168,7 @@ Pin a release in `.config/mise/config.toml` and run one command, the same locall
 min_version = "2026.9.12"
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.8.1"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.9.0"  # x-release-please-version
 ```
 
 ```sh
@@ -178,7 +179,7 @@ It prints a report grouped by requirement; `--output json` prints the findings f
 the release's checksum and build provenance, and Renovate raises the pin. To try it without changing anything:
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.8.1 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.9.0 -- conventions check  # x-release-please-version
 ```
 
 The details, and the path without mise, are in [Consuming the conventions](docs/consuming.md).

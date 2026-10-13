@@ -23,6 +23,7 @@ DEPENDENCIES = "dependencies.schema.json"
 RELEASE_RECORD = "release-record.schema.json"
 REPOSITORY = "repository.schema.json"
 ENV_SCHEMA = "env-schema.schema.json"
+ENV_GRAMMAR = "env-grammar.schema.json"
 DECISION = "decision.schema.json"
 SKILL = "skill-frontmatter.schema.json"
 SUBAGENT = "subagent-frontmatter.schema.json"
@@ -91,11 +92,6 @@ def problems(product: Path, name: str, instance: object, source: str) -> list[st
         f"{source}: {location(error)}: {error.message}"
         for error in iter_errors(product, name, instance)
     ]
-
-
-def description_of(error: ValidationError) -> str | None:
-    description = as_map(cast("object", error.schema)).get("description")
-    return description if isinstance(description, str) else None
 
 
 _COMMON_REF = f"{COMMON}#/definitions/"

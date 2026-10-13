@@ -1,5 +1,3 @@
-schema_version = 1
-
 [[dependencies]]
 repository = "host-agent"
 output = "contracts"

@@ -68,6 +68,16 @@ def copy_style_file(product: Path) -> Path:
     return definitions_dir(product) / "copy" / "style.yml"
 
 
+def env_grammar_file(product: Path) -> Path:
+    """The naming grammar of environment schemas (EC-0020), published as env_grammar."""
+    return definitions_dir(product) / "environment" / "grammar.yml"
+
+
+def vendor_data_dir(product: Path) -> Path:
+    """Variable names vendors define, extracted from their documentation (ENVS-29)."""
+    return product / "checks" / "data" / "vendor"
+
+
 def terminology_dir(product: Path) -> Path:
     return definitions_dir(product) / "terminology"
 

@@ -16,15 +16,18 @@ from conventions_tools.loading import (
     get_opt_str,
     get_str,
     get_str_list,
+    read_json,
     read_yaml,
     split_frontmatter,
 )
 from conventions_tools.paths import (
     conventions_dir,
     copy_style_file,
+    env_grammar_file,
     families_file,
     profiles_dir,
     terminology_dir,
+    vendor_data_dir,
 )
 
 SEVERITY_RANK = {"warning": 1, "error": 2}
@@ -93,6 +96,8 @@ class Term:
     tags: tuple[str, ...]
     aliases: tuple[Alias, ...]
     deprecated: bool
+    slug: str | None = None
+    values: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -160,6 +165,14 @@ class CopyStyle:
 
 
 @dataclass(frozen=True)
+class EnvGrammar:
+    """The naming grammar of environment schemas, as index.json publishes it (env_grammar)."""
+
+    path: str
+    published: dict[str, object]
+
+
+@dataclass(frozen=True)
 class Content:
     product: Path
     families: tuple[Family, ...]
@@ -167,6 +180,7 @@ class Content:
     terminology: Terminology
     profiles: tuple[Profile, ...]
     copy_style: CopyStyle
+    env_grammar: EnvGrammar
 
     @property
     def requirements(self) -> tuple[Requirement, ...]:
@@ -275,6 +289,8 @@ def _term(data: dict[str, object]) -> Term:
         tags=get_str_list(data, "tags"),
         aliases=tuple(_alias(as_map(item)) for item in as_list(data.get("aliases"))),
         deprecated="deprecated" in data,
+        slug=get_opt_str(data, "slug"),
+        values=get_str_list(data, "values"),
     )
 
 
@@ -366,6 +382,81 @@ def load_copy_style(product: Path, path: Path | None = None) -> CopyStyle:
     )
 
 
+def _vendor_names(product: Path, source: str, name: str) -> dict[str, object]:
+    """A vendored list of variable names: every name, its sources and when they were read."""
+    path = vendor_data_dir(product) / name
+    if not path.is_file():
+        raise ContentError(
+            [f"{source}: reserved prefix names {name}, which is not in checks/data/vendor/"]
+        )
+    data = as_map(read_json(path))
+    names = get_str_list(data, "names")
+    sources = [as_map(item) for item in as_list(data.get("sources"))]
+    retrieved = get_str(data, "retrieved")
+    if not names or not sources or not retrieved:
+        raise ContentError(
+            [f"{_relative(product, path)}: needs names, sources and the date they were retrieved"]
+        )
+    return {
+        "names": sorted(set(names)),
+        "retrieved": retrieved,
+        "sources": [
+            {"title": get_str(item, "title"), "url": get_str(item, "url")} for item in sources
+        ],
+    }
+
+
+def _reserved_prefix(product: Path, source: str, data: dict[str, object]) -> dict[str, object]:
+    vendored = _vendor_names(product, source, get_str(data, "names"))
+    names = set(get_str_list(vendored, "names"))
+    suggest = {
+        key: value for key, value in as_map(data.get("suggest")).items() if isinstance(value, str)
+    }
+    undefined = sorted(value for value in suggest.values() if value not in names)
+    if undefined:
+        vendor = get_str(data, "vendor")
+        raise ContentError(
+            [f"{source}: {vendor} suggests {', '.join(undefined)}, which it does not define"]
+        )
+    return {
+        "vendor": get_str(data, "vendor"),
+        "prefixes": list(get_str_list(data, "prefixes")),
+        "runner_only": data.get("runner_only") is True,
+        "suggest": suggest,
+        **vendored,
+    }
+
+
+def load_env_grammar(product: Path, path: Path | None = None) -> EnvGrammar:
+    path = path or env_grammar_file(product)
+    data = _validated(product, schemas.ENV_GRAMMAR, read_yaml(path), path)
+    source = _relative(product, path)
+    tier = as_map(data.get("deployment_environment"))
+    return EnvGrammar(
+        path=source,
+        published={
+            "units": {
+                get_str(unit, "unit"): list(get_str_list(unit, "long_forms"))
+                for unit in map(as_map, as_list(data.get("units")))
+            },
+            "boolean_prefixes": list(get_str_list(data, "boolean_prefixes")),
+            "boolean_suffixes": list(get_str_list(data, "boolean_suffixes")),
+            "client_prefixes": list(get_str_list(data, "client_prefixes")),
+            "deployment_environment": {
+                "variable": get_str(tier, "variable"),
+                "carriers": list(get_str_list(tier, "carriers")),
+                "carrier_suffixes": list(get_str_list(tier, "carrier_suffixes")),
+                "vendor_modes": list(get_str_list(tier, "vendor_modes")),
+                "name_words_allowed": list(get_str_list(tier, "name_words_allowed")),
+            },
+            "reserved_prefixes": [
+                _reserved_prefix(product, source, item)
+                for item in map(as_map, as_list(data.get("reserved_prefixes")))
+            ],
+        },
+    )
+
+
 def profile_files(directory: Path) -> list[Path]:
     return sorted(directory.glob("*.yml"))
 
@@ -397,6 +488,7 @@ def load_content(product: Path) -> Content:
     terminology: Terminology | None = None
     profiles: tuple[Profile, ...] = ()
     copy_style: CopyStyle | None = None
+    env_grammar: EnvGrammar | None = None
     try:
         families = load_families(product)
     except ContentError as error:
@@ -417,7 +509,11 @@ def load_content(product: Path) -> Content:
         copy_style = load_copy_style(product)
     except ContentError as error:
         found.extend(error.problems)
-    if found or terminology is None or copy_style is None:
+    try:
+        env_grammar = load_env_grammar(product)
+    except ContentError as error:
+        found.extend(error.problems)
+    if found or terminology is None or copy_style is None or env_grammar is None:
         raise ContentError(found)
     return Content(
         product=product,
@@ -426,4 +522,5 @@ def load_content(product: Path) -> Content:
         terminology=terminology,
         profiles=profiles,
         copy_style=copy_style,
+        env_grammar=env_grammar,
     )

@@ -4,6 +4,7 @@ date: 2026-09-27
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amends: ["0010"]
 ---
 
 # 0011 — The .repo/ declarations are TOML

@@ -290,8 +290,6 @@ def _stage(repo: Path, families: list[str]) -> None:
     expires = (datetime.now(UTC) + timedelta(days=30)).strftime("%Y-%m-%d")
     enforce = ", ".join(f'"{family}"' for family in families)
     (repo / ".repo" / "conventions.toml").write_text(
-        "schema_version = 1\n"
-        "\n"
         "[conventions]\n"
         'version = "0.1.0"\n'
         "\n"
@@ -550,6 +548,51 @@ def test_env_file_never_replaces_an_env_without_force(tmp_path: Path) -> None:
     assert _env_lines(tmp_path / ".env")["SESSION_KEY"] != first["SESSION_KEY"]
 
 
+def test_env_file_update_keeps_values_and_secrets(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text(ENV_SCHEMA)
+    previous = (
+        "API_TOKEN=mine\nexport SESSION_KEY=kept-key\n# NONCE_SALT=commented\nAPI_PORT=9090\n"
+        "OLD_FLAG=1\nOLD_FLAG=2\n  LEGACY_URL=http://localhost\n"
+    )
+    (tmp_path / ".env").write_text(previous)
+    updated = _launch(
+        "env-file", "--update", "--backup", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path
+    )
+    assert updated.returncode == 0, updated.stderr
+    assert updated.stderr.splitlines()[1:] == ["OLD_FLAG", "LEGACY_URL"]
+    written = tmp_path / ".env"
+    assert written.stat().st_mode & 0o777 == 0o600
+    values = _env_lines(written)
+    assert values["API_TOKEN"] == "mine"
+    assert values["SESSION_KEY"] == "kept-key"
+    assert values["API_PORT"] == "9090"
+    assert values["DATABASE_URL"] == "postgres://postgres@localhost:5432/app"
+    assert len(values["NONCE_SALT"]) == 32
+    text = written.read_text(encoding="utf-8")
+    kept = text.split("# Kept by conventions env-file --update:", 1)[1]
+    assert kept.splitlines()[2:] == ["OLD_FLAG=2", "LEGACY_URL=http://localhost"]
+    backup = tmp_path / ".env.bak"
+    assert backup.read_text(encoding="utf-8") == previous
+    assert backup.stat().st_mode & 0o777 == 0o600
+    again = _launch("env-file", "--update", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
+    assert again.returncode == 0, again.stderr
+    assert written.read_text(encoding="utf-8") == text
+
+
+def test_env_file_update_without_a_file_writes_one(tmp_path: Path) -> None:
+    (tmp_path / "env.schema.yaml").write_text(ENV_SCHEMA)
+    arguments = ("env-file", "--update", "-C", str(tmp_path), "env.schema.yaml")
+    completed = _launch(*arguments, cwd=tmp_path)
+    assert completed.returncode == 0, completed.stderr
+    assert len(_env_lines(tmp_path / ".env")["SESSION_KEY"]) == 43
+    assert "# Kept by" not in (tmp_path / ".env").read_text(encoding="utf-8")
+    assert not (tmp_path / ".env.bak").exists()
+    both = _launch(
+        "env-file", "--update", "--force", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path
+    )
+    assert both.returncode == 2
+
+
 def test_env_file_needs_a_schema_that_parses(tmp_path: Path) -> None:
     (tmp_path / "env.schema.yaml").write_text("- a list\n")
     completed = _launch("env-file", "-C", str(tmp_path), "env.schema.yaml", cwd=tmp_path)
@@ -557,6 +600,89 @@ def test_env_file_needs_a_schema_that_parses(tmp_path: Path) -> None:
     assert "cannot derive the local environment from env.schema.yaml" in completed.stderr
     assert not (tmp_path / ".env").exists()
     assert _launch("env-file", "absent.yaml", cwd=tmp_path).returncode == 2
+
+
+def _waivers_repo(tmp_path: Path) -> Path:
+    today = datetime.now(UTC).date()
+    (tmp_path / ".repo").mkdir(parents=True)
+    (tmp_path / ".repo" / "conventions.toml").write_text(
+        f"""\
+schema_version = 1
+profile = "base-repo"
+
+[[waivers]]
+requirement = "GHA-41"
+paths = [".github/actions/setup-x/action.yml"]
+reason = "A retry of a uses: step that a later step handles."
+tracking = "https://github.com/example/example-api/issues/7"
+expires = "{today + timedelta(days=30)}"
+
+[[waivers]]
+requirement = "CONF-09"
+reason = "A paths filter glob that matches two files."
+tracking = "https://github.com/example/example-api/pull/8"
+expires = "{today - timedelta(days=1)}"
+
+[[waivers]]
+requirement = "ENVS-02"
+reason = "Each product keeps its own environment schema."
+tracking = "https://tracker.example.com/9"
+expires = "{today}"
+"""
+    )
+    return tmp_path
+
+
+def test_waivers_lists_each_with_its_expiry(tmp_path: Path) -> None:
+    repo = _waivers_repo(tmp_path)
+    completed = _launch("waivers", "-C", str(repo), cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.splitlines() == [
+        f"GHA-41  {datetime.now(UTC).date() + timedelta(days=30)}  expires in 30 days",
+        "  tracking: https://github.com/example/example-api/issues/7",
+        "  paths: .github/actions/setup-x/action.yml",
+        f"CONF-09  {datetime.now(UTC).date() - timedelta(days=1)}  expired 1 day ago",
+        "  tracking: https://github.com/example/example-api/pull/8",
+        "  paths: everywhere",
+        f"ENVS-02  {datetime.now(UTC).date()}  expires today",
+        "  tracking: https://tracker.example.com/9",
+        "  paths: everywhere",
+    ]
+
+
+def test_waivers_without_any(tmp_path: Path) -> None:
+    assert _launch("waivers", "-C", str(tmp_path), cwd=tmp_path).stdout == (
+        "no waivers: .repo/conventions.toml does not exist\n"
+    )
+    (tmp_path / ".repo").mkdir()
+    declaration = tmp_path / ".repo" / "conventions.toml"
+    declaration.write_text('schema_version = 1\nprofile = "base-repo"\n')
+    assert _launch("waivers", "-C", str(tmp_path), cwd=tmp_path).stdout == (
+        "no waivers in .repo/conventions.toml\n"
+    )
+
+
+def test_waivers_check_tracking_reports_closed_work(tmp_path: Path) -> None:
+    repo = _waivers_repo(tmp_path / "repo")
+    stub = tmp_path / "stub"
+    stub.mkdir()
+    # A stand-in for gh: issue 7 is open, pull request 8 merged.
+    (stub / "gh").write_text(
+        '#!/bin/sh\ncase "$1 $3" in\n  "issue "*) echo OPEN ;;\n  "pr "*) echo MERGED ;;\nesac\n'
+    )
+    (stub / "gh").chmod(0o755)
+    path = {"PATH": f"{stub}{os.pathsep}{os.environ['PATH']}"}
+    completed = _launch("waivers", "--check-tracking", "-C", str(repo), cwd=repo, env=path)
+    assert completed.returncode == 1
+    states = [line for line in completed.stdout.splitlines() if line.startswith("  state:")]
+    assert states == [
+        "  state: open",
+        "  state: merged; the work this waiver waits on is done or dropped: remove the waiver,"
+        " or track what remains",
+        "  state: not checked: not a GitHub issue or pull request",
+    ]
+    closed = "1 of 3 waivers track an issue or pull request that is closed or merged"
+    assert closed in completed.stderr
 
 
 OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"

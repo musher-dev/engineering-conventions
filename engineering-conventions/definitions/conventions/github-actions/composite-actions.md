@@ -87,7 +87,7 @@ GHA-38 also covers the interface of every callable workflow under `.github/workf
 ## Status and authority
 
 This convention is a **draft**. Action naming is owned by `musher-dev/platform`, where issue
-[#2892](https://github.com/musher-dev/platform/issues/2892) introduced the grammar. The requirements here are derived
+musher-dev/platform#2892 introduced the grammar. The requirements here are derived
 from the platform's checks and published as proposed requirements until the single handoff described in
 [decision 0002](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0002-authority-and-migration.md).
 
@@ -331,7 +331,7 @@ Checked by: conftest · Severity: warning · Since: 0.1.0
 
 ## References
 
-- [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
+- musher-dev/platform#2892: Organize GitHub Actions workflows by responsibility
 - [EC-0002 Workflow files](workflow-files.md)
 - [EC-0006 Units and renames](units-and-renames.md)
 - [GitHub Docs: Metadata syntax for GitHub Actions](https://docs.github.com/en/actions/sharing-automations/creating-actions/metadata-syntax-for-github-actions)

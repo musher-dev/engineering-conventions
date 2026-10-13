@@ -142,7 +142,8 @@ def env_file:
       "# The local environment \($service) reads, generated from its env.schema.yaml by",
       "# conventions env-file. It holds this machine's values and secrets: git ignores",
       "# it (ENVS-27), and it is never committed. Fill in the empty values. After the",
-      "# schema changes, run conventions env-file again to list what is missing.",
+      "# schema changes, run conventions env-file --update: it adds what is missing and",
+      "# keeps every value and secret already here.",
       (bindings[] | .key as $name | .value | "", "# \(.description // "" | line)", "# \(facts)", assignment($name))
     ]
   | join("\n") + "\n";

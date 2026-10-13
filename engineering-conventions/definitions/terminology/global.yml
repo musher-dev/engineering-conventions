@@ -643,6 +643,46 @@ terms:
     tags: [runtime.capability]
     stability: provisional
 
+  # Deployment environments: the tier a running process, a deploy or a
+  # record belongs to (decision 0034). The token is the name everywhere a
+  # name is written: MUSHER_ENVIRONMENT, a GitHub environment, a deployment
+  # record, the telemetry resource. The slug is its short form, written only
+  # where a system caps the length of a name. The names are the well-known
+  # values of OpenTelemetry's deployment.environment.name.
+  - id: deployment.environment.production
+    display_name: production
+    token: production
+    slug: prod
+    definition: >-
+      The environment the product's users rely on.
+    tags: [deployment.environment]
+    stability: provisional
+  - id: deployment.environment.staging
+    display_name: staging
+    token: staging
+    slug: staging
+    definition: >-
+      The shared environment that runs a release candidate the way production will run it, before it is promoted.
+    tags: [deployment.environment]
+    stability: provisional
+  - id: deployment.environment.development
+    display_name: development
+    token: development
+    slug: dev
+    definition: >-
+      Where work in progress runs: the shared development environment, or one developer's own when
+      MUSHER_DEVELOPER_SLUG is set.
+    tags: [deployment.environment]
+    stability: provisional
+  - id: deployment.environment.test
+    display_name: test
+    token: test
+    slug: test
+    definition: >-
+      A short-lived environment a test run creates for itself and removes when it ends, such as a CI job's stack.
+    tags: [deployment.environment]
+    stability: provisional
+
   # Organization-wide variables: environment variable names every Musher
   # program may read, reserved so that MUSHER_<WORD> stays unambiguous
   # beside the consumer prefixes MUSHER_<COMPONENT> (ENVS-25). The token is
@@ -651,8 +691,9 @@ terms:
     display_name: MUSHER_ENVIRONMENT
     token: musher-environment
     definition: >-
-      The name of the environment a process runs in, such as production or one developer's own, set by whatever
-      deploys or starts the process.
+      The deployment environment a process runs in, written as its name (production, staging, development or
+      test, never the slug), set by whatever deploys or starts the process. A developer's own environment is
+      development with MUSHER_DEVELOPER_SLUG set.
     tags: [env.org-scoped]
     stability: provisional
   - id: env.org-scoped.musher-developer-slug
@@ -662,6 +703,35 @@ terms:
       A short, stable name for the developer whose environment a process runs in, used to name the resources that
       belong to that environment alone.
     tags: [env.org-scoped]
+    stability: provisional
+  - id: env.org-scoped.musher-api-url
+    display_name: MUSHER_API_URL
+    token: musher-api-url
+    definition: >-
+      The address of the Musher API that a client program reads: a command-line tool, an SDK or a service that calls
+      the API as a client. The program serving the API never reads it for anything else.
+    tags: [env.org-scoped]
+    stability: provisional
+
+  # Shared stems: the final words of a variable name whose values every
+  # Musher program agrees on, whatever the prefix before them (ENVS-31). The
+  # token is the stem in lower kebab-case, and values lists what it may hold.
+  - id: env.shared-stem.log-level
+    display_name: LOG_LEVEL
+    token: log-level
+    values: [trace, debug, info, warn, error]
+    definition: >-
+      The least severe log record a program writes, from trace, the most detailed, to error.
+    tags: [env.shared-stem]
+    stability: provisional
+  - id: env.shared-stem.log-format
+    display_name: LOG_FORMAT
+    token: log-format
+    values: [json, text]
+    definition: >-
+      How a program writes each log record: json, one object per line for a collector to parse, or text, for a
+      person reading a terminal.
+    tags: [env.shared-stem]
     stability: provisional
 
   # Systems: the first token of a repository's name (REPO-09) and the system
@@ -733,6 +803,12 @@ terms:
       to its members and investors.
     tags: [repository.system]
     stability: provisional
+    deprecated:
+      note: >-
+        Retired with musher-dev/company, its only repository. What that
+        repository held moved to repositories in other systems, so no
+        repository is named company-* and REPO-09 no longer accepts the
+        token (decision 0036).
   - id: repository.system.catalog
     display_name: catalog
     token: catalog
@@ -1151,35 +1227,45 @@ terms:
     tags: [meta]
     stability: provisional
 
-  # Defined upstream and deliberately not restated here. GitHub Actions
-  # uses audit and drift in a narrower, automation sense: see
+  # Governance words: how this repository's checks and documents talk about
+  # holding a repository to the conventions. They were authority pointers to
+  # the platform's terminology rule until decision 0036; they are defined here
+  # because they are this repository's working vocabulary, and a reader of a
+  # diagnostic should not need a private repository to learn what one means.
+  # GitHub Actions uses audit and drift in a narrower, automation sense: see
   # gha.responsibility.audit and the drift alias of gha.responsibility.monitor.
   - id: governance.audit
     display_name: audit
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      A read-only examination that reports findings and changes nothing.
+      Fixing what an audit finds is separate work, done and reviewed as its
+      own change.
     tags: [governance]
     stability: stable
   - id: governance.drift
     display_name: drift
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      A difference between something and the source it is declared to match:
+      a generated file and its source, a vendored copy and its release, a
+      repository and the conventions release it pins. Drift is found by
+      comparing the two, never by reading either alone.
     tags: [governance]
     stability: stable
   - id: governance.gate
     display_name: gate
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      A check that a change must pass before it merges, releases or deploys:
+      a required CI job, a required status check or a required review. A
+      check whose finding does not block is not a gate.
     tags: [governance]
     stability: stable
   - id: governance.conformance
     display_name: conformance
-    authority:
-      repo: musher-dev/platform
-      path: .claude/rules/terminology.md
+    definition: >-
+      Meeting every requirement that applies, as a check reports it. A
+      repository conforms to a conventions release when conventions check
+      reports no finding against it; a waived requirement is a recorded
+      deviation, not conformance.
     tags: [governance]
     stability: stable
 

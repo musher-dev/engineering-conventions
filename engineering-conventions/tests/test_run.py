@@ -546,7 +546,7 @@ def test_release_data_is_optional(stub: Path, home: Path, repo: Path) -> None:
 
 def test_declaration_is_passed_to_conftest(stub: Path, home: Path, repo: Path) -> None:
     # ADOPT-02 is decided in Rego like every other requirement.
-    _write_declaration(repo, 'schema_version = 1\nprofile = "no-such-profile"\n')
+    _write_declaration(repo, 'profile = "no-such-profile"\n')
     assert run.check(home, repo, NOW).findings == []
     assert ".repo/conventions.toml" in (stub / "args").read_text().splitlines()
 

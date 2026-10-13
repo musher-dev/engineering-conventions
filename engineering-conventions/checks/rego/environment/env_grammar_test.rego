@@ -53,6 +53,43 @@ test_envs_10_unit if {
 	}
 }
 
+test_envs_09_suffix_boolean if {
+	found := env_grammar.findings with input as t.one({
+		"API_TRACING_ENABLED": t.binding({"type": "boolean"}),
+		"API_AUDIT_DISABLED": t.binding({"type": "boolean"}),
+	})
+	t.messages(found, "ENVS-09") == {
+		"boolean API_TRACING_ENABLED puts its question last; start it with ENABLE_ instead, as ENABLE_API_TRACING",
+		concat(" ", [
+			"boolean API_AUDIT_DISABLED puts its question last and asks it backwards;",
+			"start it with ENABLE_ and invert it, as ENABLE_API_AUDIT",
+		]),
+	}
+}
+
+test_envs_09_suffix_boolean_keeps_its_prefixes if {
+	found := env_grammar.findings with input as prefixed({}, {"VITE_MUSHER_API_BILLING_ENABLED": t.binding({
+		"type": "boolean",
+		"consumer": "client",
+	})})
+	t.messages(found, "ENVS-09") == {concat(" ", [
+		"boolean VITE_MUSHER_API_BILLING_ENABLED puts its question last; start it with ENABLE_ instead,",
+		"as VITE_MUSHER_API_ENABLE_BILLING",
+	])}
+}
+
+test_envs_10_days if {
+	found := env_grammar.findings with input as t.one({
+		"API_RETENTION_DAYS": t.binding({}),
+		"API_EXPORT_RETENTION_DAY": t.binding({}),
+		"API_TTL_HOURS": t.binding({}),
+	})
+	t.messages(found, "ENVS-10") == {
+		"binding API_RETENTION_DAYS spells out its unit; end it in _DAY instead of _DAYS",
+		"binding API_TTL_HOURS spells out its unit; end it in _HR instead of _HOURS",
+	}
+}
+
 test_envs_11_stutter if {
 	found := env_grammar.findings with input as t.one({"API_API_PORT": t.binding({})})
 	t.messages(found, "ENVS-11") == {"binding API_API_PORT repeats API; say it once"}

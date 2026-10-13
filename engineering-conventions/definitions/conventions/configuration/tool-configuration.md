@@ -42,33 +42,6 @@ implementations:
   - repo: musher-dev/platform
     check: CFG-08
     mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-01
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-02
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-03
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-04
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-05
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-06
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-07
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-08
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: CFG-09
-    mode: blocking
 references:
   - title: "lefthook: Configuration"
     url: https://lefthook.dev/configuration/
@@ -445,12 +418,21 @@ A tool given a missing configuration path either fails, or worse, falls back to 
 proves every file has a caller; this proves every caller's path has a file, so a rename that missed a caller is
 caught. The check reads the same callers as CONF-04, accepts a path to a file or a directory, and ignores a path under
 a home directory (`~/.config/gh`, `/home/vscode/.config`, `$HOME/.config`), which is the user's, not the
-repository's, and `lefthook-local.yml`, which git ignores.
+repository's, and `lefthook-local.yml`, which git ignores. A glob, such as a workflow's `paths` filter, exists when
+it matches at least one file or directory (`*` stays within one path segment, `**` crosses them); a glob that matches
+nothing is a filter that never fires. Each file a glob matches counts as named for CONF-04.
 
 **Correct:**
 
 ```yaml
 - markdownlint-cli2 --config .config/markdown/markdownlint.jsonc "**/*.md"
+```
+
+```yaml
+on:
+  pull_request:
+    paths:
+      - ".config/python/scripts-*"  # matches scripts-pyright.json and scripts-ruff.toml
 ```
 
 **Incorrect:**
@@ -459,7 +441,8 @@ repository's, and `lefthook-local.yml`, which git ignores.
 - markdownlint-cli2 --config .config/markdownlint.jsonc "**/*.md"
 ```
 
-after the file moved to `.config/markdown/`.
+after the file moved to `.config/markdown/`, or a `paths` filter on `.config/rust/*.toml` when `.config/rust/` holds no
+TOML file.
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container CFG-09
 

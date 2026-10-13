@@ -5,7 +5,7 @@ import data.conventions.lib.testdata_test as td
 
 messages(found, id) := {f.message | some f in found; f.id == id}
 
-deps := td.file(".repo/dependencies.toml", {"schema_version": 1, "dependencies": [
+deps := td.file(".repo/dependencies.toml", {"dependencies": [
 	{"repository": "platform-api", "output": "contracts", "version": "0.36.1"},
 ]})
 

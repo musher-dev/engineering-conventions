@@ -27,7 +27,7 @@ The conventions are **drafts**, owned by this repository, and every requirement 
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0032 Dependencies declaration](dependencies-declaration.md) | DEPS-01 – DEPS-07 | The file, exact pins, the vendored copy and its release record |
+| [EC-0032 Dependencies declaration](dependencies-declaration.md) | DEPS-01 – DEPS-07, DEPS-14 | The file, exact pins, the vendored copy and its release record, and no cycle between repositories |
 | [EC-0033 Keeping dependencies current](keeping-dependencies-current.md) | DEPS-08 – DEPS-10 | The `deps:*` tasks, validation, the scheduled update |
 | [EC-0042 Automated dependency updates](automated-updates.md) | DEPS-11 – DEPS-13 | Renovate or Dependabot for the actions, the Dockerfiles and the product's manifest |
 
@@ -39,8 +39,6 @@ are fields of an environment binding ([EC-0020](../environment/env-schema.md)). 
 
 ```toml
 # .repo/dependencies.toml
-schema_version = 1
-
 [[dependencies]]
 repository = "platform-api"
 output = "contracts"

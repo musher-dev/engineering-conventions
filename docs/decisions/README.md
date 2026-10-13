@@ -8,7 +8,7 @@ frontmatter validated by [`decision.schema.json`](../../engineering-conventions/
 
 These records govern this repository. The conventions it publishes are in
 [`engineering-conventions/definitions/conventions/`](../../engineering-conventions/definitions/conventions/);
-decisions about how the company operates are in `musher-dev/company`.
+decisions about why Musher exists and what it designs are in `musher-dev/pelorus`.
 
 | ID | Decision | Status |
 | --- | --- | --- |
@@ -22,7 +22,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0007](0007-terminology-and-generated-artifacts.md) | Terminology is structured data, and generated artifacts are committed | accepted |
 | [0008](0008-repository-layout.md) | The product lives in a nested directory, and that directory is the bundle | superseded by 0009 |
 | [0009](0009-definitions-and-checks.md) | The product separates what is defined from what checks it | accepted |
-| [0010](0010-outputs-declaration.md) | A repository declares the outputs it publishes in .repo/outputs.yaml | accepted |
+| [0010](0010-outputs-declaration.md) | A repository declares the outputs it publishes in .repo/outputs.yaml (TOML since 0011) | accepted |
 | [0011](0011-declarations-are-toml.md) | The .repo/ declarations are TOML | accepted |
 | [0012](0012-repository-names.md) | A repository is named `<system>-<component>`, from a registered system | accepted |
 | [0013](0013-identity-declaration.md) | A repository declares its identity in .repo/repository.toml, and its kind selects its profile | accepted |
@@ -45,6 +45,10 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0030](0030-container-images-live-in-docker-directories.md) | Container images live in docker/ directories with their own ignore files, and hadolint lints every Dockerfile | accepted |
 | [0031](0031-the-default-branch-is-protected.md) | The default branch is protected by a committed ruleset with a review gate, and every repository has a CODEOWNERS | accepted |
 | [0032](0032-every-dependency-ecosystem-has-an-updater.md) | Every dependency ecosystem a repository pins has Renovate or Dependabot proposing its updates | accepted |
+| [0033](0033-a-declaration-is-versioned-by-its-reader.md) | A declaration carries a format version only when a reader outside its release reads it, and contracts stay with the product | accepted |
+| [0034](0034-deployment-environments-have-one-name.md) | Deployment environments have one name, and reach a process only as MUSHER_ENVIRONMENT | accepted |
+| [0035](0035-published-and-deployed-artifacts-are-recorded.md) | What a repository publishes and deploys is recorded in GitHub's linked artifacts | accepted |
+| [0036](0036-ownership-moves-out-of-company-and-platform.md) | musher-dev/company's ownership moves to the repositories that hold it, the governance words are defined here, and the org graph is assembled in musher-dev/pelorus | accepted |
 
 ## Writing a decision
 

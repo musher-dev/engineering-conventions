@@ -81,6 +81,13 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.dependencies.declaration
+  - id: DEPS-14
+    title: Repositories depend on each other without a cycle
+    status: proposed
+    severity: warning
+    since: 0.9.0
+    validation:
+      engine: review
 ---
 
 # Dependencies declaration
@@ -98,8 +105,8 @@ pinning of packages another Musher repository publishes. What a producer must sh
 [EC-0031](../interfaces/publishing-interfaces.md). Tools pinned in mise are held to one exact version by
 [TOOL-03](../toolchain/tool-pins.md#tool-03), and runtime edges are fields of an environment binding
 ([EC-0020](../environment/env-schema.md)). Which dependencies form a cycle across repositories is not visible from one
-repository: the graph built from every repository's declarations answers it
-([decision 0022](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0022-interfaces-and-dependencies.md)).
+repository: the graph built from every repository's declarations answers it (DEPS-14,
+[decision 0022](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0022-interfaces-and-dependencies.md)).
 
 ## Status and authority
 
@@ -112,8 +119,6 @@ by
 
 ```toml
 # .repo/dependencies.toml
-schema_version = 1
-
 [[dependencies]]
 repository = "platform-api"
 output = "contracts"
@@ -124,7 +129,7 @@ description = "The console's API client is generated from the public API."
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| `schema_version` | yes | The file format version. Always `1`. |
+| `schema_version` | no | Deprecated and ignored; leave it out. The release the repository pins already versions this file's shape, because only that release's tool reads it ([decision 0033](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0033-a-declaration-is-versioned-by-its-reader.md)). `1` is still accepted; any other value is reported by DEPS-02, and a future breaking release rejects the key. |
 | `dependencies[].repository` | yes | The producer's name on GitHub, without the organization. |
 | `dependencies[].output` | yes | The ID of the producer's output that delivers the interfaces, usually a `bundle`. |
 | `dependencies[].interfaces` | no | The IDs of the producer's interfaces this repository vendors. Every interface the output delivers when omitted. |
@@ -387,6 +392,48 @@ config/specifications.lock.json
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.0
+
+### DEPS-14
+
+**Repositories depend on each other without a cycle.**
+
+Two repositories that vendor from each other can never release independently: each new release of one needs a
+release of the other first, so every change crosses both, and a breaking change has no order in which it can land.
+A contract has one producer, and the repositories that build against it depend on that producer, never the other way
+round. Break a cycle by moving the shared contract to the repository that owns it, so both sides depend on that one,
+or by a link instead of a vendored copy in one direction, so that neither release waits for the other. No single
+repository can see a cycle from inside itself, so this is checked in review until the org graph, assembled from every
+repository's declarations, checks it ([decision 0036](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0036-ownership-moves-out-of-company-and-platform.md)).
+
+**Correct:**
+
+```toml
+# platform-web/.repo/dependencies.toml: the web app vendors the API's contracts
+[[dependencies]]
+repository = "platform-api"
+output = "contracts"
+version = "0.36.1"
+
+# platform-api/.repo/dependencies.toml: the API vendors nothing from platform-web
+```
+
+**Incorrect:**
+
+```toml
+# platform-web/.repo/dependencies.toml
+[[dependencies]]
+repository = "platform-api"
+output = "contracts"
+version = "0.36.1"
+
+# platform-api/.repo/dependencies.toml: and the API vendors from the web app
+[[dependencies]]
+repository = "platform-web"
+output = "contracts"
+version = "2.4.0"
+```
+
+Checked by: review · Severity: warning · Since: 0.9.0
 
 ## References
 

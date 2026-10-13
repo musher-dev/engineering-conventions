@@ -1,0 +1,49 @@
+name: Deploy API
+on:
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: The image digest to deploy
+        required: true
+        type: string
+      version:
+        description: The release version to deploy
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+jobs:
+  drift:
+    name: Check drift
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Compare the running schema with the release
+        run: task drift
+  deploy:
+    needs: drift
+    if: ${{ !cancelled() && needs.drift.result == 'success' }}
+    name: Deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+      artifact-metadata: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Deploy the service
+        run: task deploy record:deployment

@@ -68,12 +68,14 @@ declaration (`vocabulary.display_forms`); it cannot remove or change these.
 
 ## Authority references
 
-Some terms are defined by another repository and matter here only because
-the conventions use them. Those entries carry `authority: {repo, path}`
-instead of a definition, so a reader can follow the link and nobody can
-drift a second copy. `audit`, `drift`, `gate` and `conformance` are listed
-this way, pointing at the platform's terminology rule.
-
+A term defined by another repository, which matters here only because the
+conventions use it, carries `authority: {repo, path}` instead of a
+definition, so a reader can follow the link and nobody can drift a second
+copy. No term points elsewhere at present: `audit`, `drift`, `gate` and
+`conformance`, which once pointed at the platform's terminology rule, are
+defined here as the governance words this repository's own checks and
+documents use
+([decision 0036](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0036-ownership-moves-out-of-company-and-platform.md)).
 GitHub Actions uses two of those words in a narrower, automation sense. That
 sense is a separate term with its own ID: `gha.responsibility.audit` (a
 workflow responsibility) and the `drift` alias of `gha.responsibility.monitor`

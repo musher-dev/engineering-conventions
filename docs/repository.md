@@ -13,7 +13,7 @@ itself, which is what a consumer pins.
 engineering-conventions/               repository level: acts on the product
 ├── .devcontainer/  .github/           integration homes whose location the tool mandates
 ├── .config/                           tool configuration (linters, hooks, mise), indexed in its README
-├── .claude/  AGENTS.md              agent contract and path-scoped rules
+├── .claude/  AGENTS.md                agent contract and path-scoped rules
 ├── .repo/                             this repository's own declarations (conventions, outputs, repository)
 ├── Taskfile.yml  taskfiles/           orchestration; reaches the product through PRODUCT_DIR
 ├── docs/                              contributor documentation and decisions
@@ -23,13 +23,19 @@ engineering-conventions/               repository level: acts on the product
     │   ├── conventions/               EC-NNNN documents by topic, families.yml
     │   ├── terminology/               global.yml
     │   ├── profiles/                  convention profiles
-    │   └── copy/                      style.yml: the MusherCopy style and the adopted Vale packages
-    ├── checks/                        CHECKED: rego/, schemas/, data/ (generated), vale/ (generated)
+    │   ├── copy/                      style.yml: the MusherCopy style and the adopted Vale packages
+    │   └── environment/               grammar.yml: the naming grammar of environment schemas
+    ├── checks/                        CHECKED: rego/, schemas/, data/ (index.json generated), vale/ (generated)
     ├── examples/                      SHOWN: a worked, conforming consumer
     ├── bin/conventions                TOOLING: the launcher a consumer runs (mise puts bin/ on PATH)
     ├── src/  tests/                   TOOLING: the authoring CLI and its tests (not shipped)
     └── pyproject.toml  uv.lock  .python-version
 ```
+
+`.repo/` holds declarations *about* the repository, which tooling reads and the governance owners review. A product's
+interface files are product content: they go in `<product>/contracts/` (IFACE-08), where the product's owners review
+them, never in `.repo/` ([decision 0033](decisions/0033-a-declaration-is-versioned-by-its-reader.md)). This
+repository offers no interfaces, so it has no `contracts/`.
 
 This is the layout every repository follows ([EC-0018](../engineering-conventions/definitions/conventions/repository/layout.md)):
 `.repo/repository.toml` declares `[layout] product = "engineering-conventions"`, and `task conventions:self` checks
@@ -77,7 +83,7 @@ Within the repository level:
 | GitHub's own configuration | `.github/`: workflows, rulesets, Dependabot, release-please |
 | Agent permissions and path-scoped policy | `.claude/` |
 
-Four rules keep `.config/` predictable:
+Five rules keep `.config/` predictable:
 
 - **Bucket by concern.** Use `.config/<concern>/<tool>.<ext>`, with no leading dot on the filename. Two files sit
   where their tool's own search looks instead: `lefthook.yml` at the top level, because lefthook's search stops at
@@ -115,10 +121,18 @@ the few pins mise cannot express move in lockstep; they are listed in
 To add a tool, add one line under `[tools]` with a fully qualified backend (`aqua:owner/repo`, `pipx:`, `npm:`), then
 run `task tools:lock`, `task tools:install` and `task tools:doctor`.
 
+Two tools are installed outside mise, and only these two:
+
+| Tool | Where | Why not mise |
+| --- | --- | --- |
+| The Dev Containers CLI, `@devcontainers/cli` | `npx -y @devcontainers/cli@<version>` in the `Dev Container` job of `.github/workflows/validate.yml` | It builds the container from outside; pinned in mise, every container and every CI job would install a tool only that job runs. The version is exact, and its three uses move together. |
+| Claude Code | `base_install_claude` in `.devcontainer/scripts/lib/base-setup.sh` | A developer convenience no gate runs, from its own native installer. It is best-effort and skipped in CI. |
+
 ## Generated files and the bundle
 
 Some product files are written by `task generate` from `definitions/`: the conventions' frontmatter, `families.yml`,
-the profiles, the terminology and the copy style. They are committed, so a consumer never needs the authoring CLI,
+the profiles, the terminology, the copy style and the environment grammar, which embeds the vendors' variable lists
+under `checks/data/vendor/`. They are committed, so a consumer never needs the authoring CLI,
 and are never edited by hand: `task generate:check` fails when one is stale. [`.gitattributes`](../.gitattributes)
 lists them, marked `linguist-generated`.
 

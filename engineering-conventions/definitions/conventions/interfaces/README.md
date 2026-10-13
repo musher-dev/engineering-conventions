@@ -35,7 +35,7 @@ recorded in
 | Field | Example |
 | --- | --- |
 | `id` | `public-http`, addressed by consumers as `platform-api#public-http` |
-| `format` | `openapi`, `asyncapi`, `json-schema`, `protobuf`, `env-schema`, `weaver` |
+| `format` | `openapi`, `asyncapi`, `json-schema`, `protobuf`, `env-schema`, `weaver`, `data`, `systemd-unit` |
 | `definitions` | `["platform-api/contracts/openapi/public.json"]`, `["platform-api/contracts/events/*.schema.json"]` |
 | `delivered_by` | `contracts`, the ID of a `bundle`, `site` or `library` output |
 | `compatibility` | `gated`, `versioned`, `lockstep` |

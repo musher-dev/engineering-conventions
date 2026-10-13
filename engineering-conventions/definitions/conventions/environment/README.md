@@ -20,14 +20,14 @@ They adopt the environment rules of `musher-dev/platform` (the format and its na
 | Convention | Requirements | Covers |
 | --- | --- | --- |
 | [EC-0019 Environment contract](env-contract.md) | ENVS-01, ENVS-02, ENVS-15, ENVS-20, ENVS-26, ENVS-27 | That a service declares its environment, the two places a schema may live, that a dev container asks for the variables its schema takes from the host, the contract derived from the schema, and the local `.env` that is generated from it and never committed |
-| [EC-0020 Environment schema](env-schema.md) | ENVS-03 – ENVS-14, ENVS-16 – ENVS-19, ENVS-22 – ENVS-25 | The format, the naming grammar and the consumer prefix, retired names, secrets, shared variables, what each binding reaches, and the runtime instances a service requires |
+| [EC-0020 Environment schema](env-schema.md) | ENVS-03 – ENVS-14, ENVS-16 – ENVS-19, ENVS-22 – ENVS-25, ENVS-28 – ENVS-31 | The format, the naming grammar and the consumer prefix, retired names, secrets, shared variables, what each binding reaches, the runtime instances a service requires, and the names every program shares: `MUSHER_ENVIRONMENT` for the deployment environment, a vendor's reserved prefixes, and stems such as `_LOG_LEVEL` |
 
 ## Who is checked
 
 | Requirement | Profile |
 | --- | --- |
 | ENVS-01 | `service` only |
-| ENVS-02 – ENVS-27 | Every repository (`base-repo`); a repository without an environment schema has nothing to report |
+| ENVS-02 – ENVS-31 | Every repository (`base-repo`); a repository without an environment schema has nothing to report |
 
 ## Quick reference
 
@@ -41,5 +41,13 @@ They adopt the environment rules of `musher-dev/platform` (the format and its na
 | `requires.<id>.version` | `">=9, <10"` | Comparators `>=`, `>`, `<=`, `<`, `==` on dot-separated integers, separated by commas |
 | `bindings.<NAME>.requires` | `cache` | An instance ID declared under `requires` |
 | `naming.consumer_prefix` | `MUSHER_API` | `MUSHER_` and the repository's component; every binding then starts with it |
+| `MUSHER_ENVIRONMENT` | `production` | `production`, `staging`, `development`, `test`: the name, never the slug ([decision 0034](../../../../docs/decisions/0034-deployment-environments-have-one-name.md)) |
+| `<…>_LOG_LEVEL` | `info` | `trace`, `debug`, `info`, `warn`, `error` |
+| `<…>_LOG_FORMAT` | `json` | `json`, `text` |
+
+The grammar is published as data in `checks/data/index.json`: `env_grammar` (units, boolean and client prefixes,
+the deployment environment's variable, reserved vendor prefixes and their names) and, in `vocabulary`,
+`deployment_environments`, `org_scoped_variables` and `env_shared_stems`. A repository that needs them reads them
+from the release it pins ([The grammar as data](env-schema.md#the-grammar-as-data)).
 
 The authoritative shape is `checks/schemas/env-schema.schema.json`.

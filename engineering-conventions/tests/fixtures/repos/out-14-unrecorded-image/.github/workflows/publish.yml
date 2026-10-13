@@ -1,0 +1,51 @@
+name: Publish
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  image:
+    name: Image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Describe the image
+        id: meta
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
+        with:
+          images: ghcr.io/musher-dev/platform-api
+      - name: Build the image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: api
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Scan the image
+        env:
+          IMAGE: ghcr.io/musher-dev/platform-api:${{ steps.meta.outputs.version }}
+        run: trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed "${IMAGE}"
+      - name: Publish the image
+        id: push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: api
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Attest the image
+        uses: actions/attest@daf44fb950173508f38bd2406030372c1d1162b1 # v4.0.0
+        with:
+          subject-name: ghcr.io/musher-dev/platform-api
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

@@ -108,3 +108,19 @@ test_envs_02_vendor_is_only_under_contracts if {
 	found := env_contract.findings with input as repo("platform-api", paths)
 	td.pairs(found) == {["ENVS-02", "platform-api/vendor/host-agent/env.schema.yaml"]}
 }
+
+# A multi-product repository's products each keep their own schema.
+test_envs_02_listed_products if {
+	layout := {"product": "", "products": ["apps/*", "docs/site"]}
+	paths := [
+		".repo/repository.toml", "apps/console/env.schema.yaml", "apps/hq/env.schema.yaml",
+		"docs/site/env.schema.yaml", "apps/console/config/env.schema.yaml", "tools/env.schema.yaml",
+	]
+	docs := [td.repository(object.union(td.identity, {"layout": layout})), td.inventory(paths)]
+	found := env_contract.findings with input as docs
+	td.pairs(found) == {["ENVS-02", "apps/console/config/env.schema.yaml"], ["ENVS-02", "tools/env.schema.yaml"]}
+	concat(" ", [
+		"an environment schema lives at <product>/env.schema.yaml or .devcontainer/env.schema.yaml,",
+		"nowhere else; move this one to the directory of the product it belongs to, listed in [layout] products",
+	]) in {f.message | some f in found}
+}

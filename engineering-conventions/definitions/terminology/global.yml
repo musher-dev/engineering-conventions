@@ -774,6 +774,12 @@ terms:
       to its members and investors.
     tags: [repository.system]
     stability: provisional
+    deprecated:
+      note: >-
+        Retired with musher-dev/company, its only repository. What that
+        repository held moved to repositories in other systems, so no
+        repository is named company-* and REPO-09 no longer accepts the
+        token (decision 0036).
   - id: repository.system.catalog
     display_name: catalog
     token: catalog

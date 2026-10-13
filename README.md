@@ -73,7 +73,7 @@ flowchart LR
     declarations[".repo/conventions.toml<br/>.repo/outputs.toml<br/>.repo/repository.toml"]
     check["conventions check"]
   end
-  upstream["Defined elsewhere<br/>platform, specifications,<br/>observability-schema-registry"]
+  upstream["Defined elsewhere<br/>platform, pelorus, specifications,<br/>observability-schema-registry"]
 
   defined -- "task generate" --> generated
   generated --> rego
@@ -83,7 +83,7 @@ flowchart LR
   pin --> check
   declarations --> check
   check -. "diagnostic links to ### GHA-07" .-> conventions
-  upstream -. "authority pointer" .-> terminology
+  upstream -. "authority pointer" .-> conventions
 ```
 
 Inside the product directory, [`engineering-conventions/`](engineering-conventions/README.md), the layers are
@@ -147,17 +147,18 @@ Where the rest lives:
 
 | Not owned here | Owned by |
 | --- | --- |
-| How the company operates: rituals, planning, the operating model | `musher-dev/company` |
+| Why Musher exists and what it decides, designs and ships: its purpose, its vocabulary, the design model and the org graph assembled from every repository's declarations | `musher-dev/pelorus` |
 | Telemetry names: spans, metrics, attributes, events | `musher-dev/observability-schema-registry` |
 | Document specifications: the component, blueprint and catalog formats | `musher-dev/specifications` |
-| Positioning, product vocabulary, the customer glossary, platform domain nouns | `musher-dev/platform` and `musher-dev/company` |
+| Positioning, product vocabulary, the customer glossary, platform domain nouns | `musher-dev/platform` and `musher-dev/pelorus` |
 | The development-container scaffold: the container, its toolchain setup, its stacks | `musher-dev/development-container` |
-| Teams and their membership | `musher-dev/company`, applied by `musher-dev/infra-github` |
-| Applying repository names, custom properties and rulesets to the organization | `musher-dev/infra-github` |
+| The roster: who is in the organization | `musher-dev/foundation-bootstrap` |
+| Teams and their membership; applying repository names, custom properties and rulesets to the organization | `musher-dev/infra-github` |
 | Rules local to one repository | That repository |
 
 A repository's own rule may be stricter than a convention here, never contradictory. The
-[charter](docs/decisions/0000-charter.md) is the authority for this boundary.
+[charter](docs/decisions/0000-charter.md), as amended by [decision 0036](docs/decisions/0036-ownership-moves-out-of-company-and-platform.md),
+is the authority for this boundary.
 
 ## Using the conventions in another repository
 

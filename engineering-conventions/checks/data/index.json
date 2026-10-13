@@ -15773,7 +15773,6 @@
         "repository_systems": [
           "brand",
           "catalog",
-          "company",
           "engineering",
           "host",
           "infra",

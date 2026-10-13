@@ -1019,7 +1019,7 @@
   ],
   "repo-09-unregistered-system": [
     [".repo/repository.toml", "REPO-07", "warning", "the declaration names the repository \"platform-api\", but it is \"widgets-api\"; set name to \"widgets-api\", with system and component to match, or rename the repository and its declaration together", true],
-    [".repo/repository.toml", "REPO-09", "warning", "repository name \"widgets-api\" starts with \"widgets\", which is not a registered system; start it with one of \"brand\", \"catalog\", \"company\", \"engineering\", \"host\", \"infra\", \"observability\", \"platform\", \"sdk\"", true]
+    [".repo/repository.toml", "REPO-09", "warning", "repository name \"widgets-api\" starts with \"widgets\", which is not a registered system; start it with one of \"brand\", \"catalog\", \"engineering\", \"host\", \"infra\", \"observability\", \"platform\", \"sdk\"", true]
   ],
   "repo-10-banned-token": [
     [".repo/repository.toml", "REPO-10", "warning", "repository name \"platform-api-v2\" holds the token \"v2\". Names a version, which changes while the name must not; drop the token and version what the repository publishes instead.", true]

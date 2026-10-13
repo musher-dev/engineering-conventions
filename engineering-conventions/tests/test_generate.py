@@ -191,7 +191,6 @@ def test_repository_vocabulary_projection(content: Content) -> None:
     assert projected["repository_systems"] == [
         "brand",
         "catalog",
-        "company",
         "engineering",
         "host",
         "infra",

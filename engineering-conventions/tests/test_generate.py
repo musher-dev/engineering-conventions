@@ -8,9 +8,9 @@ import pytest
 
 from conventions_tools import generate, vocabulary
 from conventions_tools.cli import main
-from conventions_tools.content import Content, load_profiles
+from conventions_tools.content import Content, load_env_grammar, load_profiles
 from conventions_tools.loading import ContentError, as_list, as_map
-from conventions_tools.paths import HOME_ENV
+from conventions_tools.paths import HOME_ENV, env_grammar_file
 from conventions_tools.profiles import ProfileError, ResolvedProfile, resolve_all
 
 
@@ -44,6 +44,7 @@ def test_index_top_level_shape(content: Content) -> None:
         "dependencies_schema",
         "devcontainer_schema",
         "discussion_forms_schema",
+        "env_grammar",
         "env_schema",
         "issue_config_schema",
         "issue_forms_schema",
@@ -176,13 +177,52 @@ def test_vocabulary_projection(content: Content) -> None:
     assert projected["interface_compatibilities"] == ["gated", "lockstep", "versioned"]
     assert "postgresql" in as_list(projected["runtime_capabilities"])
     assert "valkey" in as_list(projected["runtime_capabilities"])
-    assert projected["org_scoped_variables"] == ["MUSHER_DEVELOPER_SLUG", "MUSHER_ENVIRONMENT"]
+    assert projected["org_scoped_variables"] == [
+        "MUSHER_API_URL",
+        "MUSHER_DEVELOPER_SLUG",
+        "MUSHER_ENVIRONMENT",
+    ]
+    assert projected["env_shared_stems"] == {
+        "LOG_FORMAT": ["json", "text"],
+        "LOG_LEVEL": ["trace", "debug", "info", "warn", "error"],
+    }
     assert projected["deployment_environments"] == {
         "development": "dev",
         "production": "prod",
         "staging": "staging",
         "test": "test",
     }
+
+
+def test_env_grammar_is_published(content: Content) -> None:
+    index = as_map(as_map(generate.build_index(content)["conventions"])["index"])
+    grammar = as_map(index["env_grammar"])
+    assert as_map(grammar["units"])["DAY"] == ["DAYS"]
+    assert as_map(grammar["deployment_environment"])["variable"] == "MUSHER_ENVIRONMENT"
+    reserved = {
+        prefix: as_map(entry)
+        for entry in as_list(grammar["reserved_prefixes"])
+        for prefix in as_list(as_map(entry)["prefixes"])
+    }
+    otel = reserved["OTEL_"]
+    assert "OTEL_SDK_DISABLED" in as_list(otel["names"])
+    assert "OTEL_EXPORTER_OTLP_LOGS_CLIENT_CERTIFICATE" in as_list(otel["names"])
+    assert as_map(otel["suggest"])["OTEL_ENABLED"] == "OTEL_SDK_DISABLED"
+    assert otel["retrieved"]
+    assert reserved["GITHUB_"]["runner_only"] is True
+
+
+def test_env_grammar_refuses_a_suggestion_the_vendor_does_not_define(
+    product: Path, tmp_path: Path
+) -> None:
+    source = env_grammar_file(product).read_text(encoding="utf-8")
+    edited = tmp_path / "grammar.yml"
+    edited.write_text(
+        source.replace("OTEL_SERVICE: OTEL_SERVICE_NAME", "OTEL_SERVICE: OTEL_SERVICE_TITLE"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ContentError, match="OTEL_SERVICE_TITLE"):
+        load_env_grammar(product, edited)
 
 
 def test_repository_vocabulary_projection(content: Content) -> None:

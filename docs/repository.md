@@ -23,8 +23,9 @@ engineering-conventions/               repository level: acts on the product
     │   ├── conventions/               EC-NNNN documents by topic, families.yml
     │   ├── terminology/               global.yml
     │   ├── profiles/                  convention profiles
-    │   └── copy/                      style.yml: the MusherCopy style and the adopted Vale packages
-    ├── checks/                        CHECKED: rego/, schemas/, data/ (generated), vale/ (generated)
+    │   ├── copy/                      style.yml: the MusherCopy style and the adopted Vale packages
+    │   └── environment/               grammar.yml: the naming grammar of environment schemas
+    ├── checks/                        CHECKED: rego/, schemas/, data/ (index.json generated), vale/ (generated)
     ├── examples/                      SHOWN: a worked, conforming consumer
     ├── bin/conventions                TOOLING: the launcher a consumer runs (mise puts bin/ on PATH)
     ├── src/  tests/                   TOOLING: the authoring CLI and its tests (not shipped)
@@ -118,7 +119,8 @@ run `task tools:lock`, `task tools:install` and `task tools:doctor`.
 ## Generated files and the bundle
 
 Some product files are written by `task generate` from `definitions/`: the conventions' frontmatter, `families.yml`,
-the profiles, the terminology and the copy style. They are committed, so a consumer never needs the authoring CLI,
+the profiles, the terminology, the copy style and the environment grammar, which embeds the vendors' variable lists
+under `checks/data/vendor/`. They are committed, so a consumer never needs the authoring CLI,
 and are never edited by hand: `task generate:check` fails when one is stale. [`.gitattributes`](../.gitattributes)
 lists them, marked `linguist-generated`.
 

@@ -437,6 +437,13 @@
   "envs-09-boolean-prefix": [
     ["platform-api/env.schema.yaml", "ENVS-09", "warning", "boolean API_AUDIT_LOG does not start with ENABLE_, IS_, HAS_ or SHOULD_; rename it, e.g. ENABLE_...", true]
   ],
+  "envs-09-suffix-boolean": [
+    ["platform-api/env.schema.yaml", "ENVS-09", "warning", "boolean API_TRACING_ENABLED puts its question last; start it with ENABLE_ instead, as ENABLE_API_TRACING", true]
+  ],
+  "envs-10-days": [
+    ["platform-api/env.schema.yaml", "ENVS-10", "warning", "binding API_EXPORT_RETENTION_DAYS spells out its unit; end it in _DAY instead of _DAYS", true]
+  ],
+  "envs-10-passes-day": [],
   "envs-10-unit-suffix": [
     ["platform-api/env.schema.yaml", "ENVS-10", "warning", "binding API_REQUEST_TIMEOUT_SECONDS spells out its unit; end it in _SEC instead of _SECONDS", true]
   ],
@@ -515,6 +522,35 @@
   ],
   "envs-27-passes-glob": [],
   "envs-27-passes-product-gitignore": [],
+  "envs-28-passes-musher-environment": [],
+  "envs-28-slug-value": [
+    ["platform-api/env.schema.yaml", "ENVS-28", "warning", "binding MUSHER_ENVIRONMENT allows the slug dev; its value is the name, so write development", true],
+    ["platform-api/env.schema.yaml", "ENVS-28", "warning", "binding MUSHER_ENVIRONMENT allows the slug prod; its value is the name, so write production", true]
+  ],
+  "envs-28-tier-carrier": [
+    ["platform-api/env.schema.yaml", "ENVS-28", "warning", "binding API_DEPLOYMENT_ENVIRONMENT carries the deployment environment, which reaches a process only as MUSHER_ENVIRONMENT; read that instead, and retire API_DEPLOYMENT_ENVIRONMENT with it as the replacement", true],
+    ["platform-api/env.schema.yaml", "ENVS-28", "warning", "binding API_ENV carries the deployment environment, which reaches a process only as MUSHER_ENVIRONMENT; read that instead, and retire API_ENV with it as the replacement", true],
+    ["platform-api/env.schema.yaml", "ENVS-28", "warning", "binding OTEL_ENVIRONMENT carries the deployment environment, which reaches a process only as MUSHER_ENVIRONMENT; read that instead, and retire OTEL_ENVIRONMENT with it as the replacement", true]
+  ],
+  "envs-29-passes-vendor-names": [],
+  "envs-29-runner-name-in-service": [
+    ["platform-api/env.schema.yaml", "ENVS-29", "warning", "binding GITHUB_SHA is set by GitHub Actions only inside a workflow run, and a deployed service never runs there; pass the value in under the service's own name, or mark the binding lifecycle: build-time if only the build reads it", true]
+  ],
+  "envs-29-undefined-vendor-name": [
+    ["platform-api/env.schema.yaml", "ENVS-29", "warning", "binding OTEL_ENABLED is under OTEL_, which OpenTelemetry reserves, and OpenTelemetry defines no such variable; use OTEL_SDK_DISABLED, which is true where this was false", true]
+  ],
+  "envs-30-passes-developer-and-test": [],
+  "envs-30-tier-in-name": [
+    ["platform-api/env.schema.yaml", "ENVS-30", "warning", "binding API_PROD_READONLY_DATABASE_URL names the deployment environment (PROD); the environment selects the value, not the name, so call it API_READONLY_DATABASE_URL and set a different value in each environment", true]
+  ],
+  "envs-31-log-level-values": [
+    ["platform-api/env.schema.yaml", "ENVS-31", "warning", "binding API_LOG_LEVEL allows DEBUG, but every _LOG_LEVEL holds one of trace, debug, info, warn, error; write debug", true],
+    ["platform-api/env.schema.yaml", "ENVS-31", "warning", "binding API_LOG_LEVEL allows ERROR, but every _LOG_LEVEL holds one of trace, debug, info, warn, error; write error", true],
+    ["platform-api/env.schema.yaml", "ENVS-31", "warning", "binding API_LOG_LEVEL allows INFO, but every _LOG_LEVEL holds one of trace, debug, info, warn, error; write info", true],
+    ["platform-api/env.schema.yaml", "ENVS-31", "warning", "binding API_LOG_LEVEL allows WARNING, but every _LOG_LEVEL holds one of trace, debug, info, warn, error", true],
+    ["platform-api/env.schema.yaml", "ENVS-31", "warning", "binding API_LOG_LEVEL defaults to INFO, but every _LOG_LEVEL holds one of trace, debug, info, warn, error; write info", true]
+  ],
+  "envs-31-passes-registered-values": [],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],

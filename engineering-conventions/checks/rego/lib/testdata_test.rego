@@ -89,7 +89,8 @@ index := {
 		],
 		"interface_compatibilities": ["gated", "lockstep", "versioned"],
 		"runtime_capabilities": ["object-storage", "payments", "postgresql"],
-		"org_scoped_variables": ["MUSHER_DEVELOPER_SLUG", "MUSHER_ENVIRONMENT"],
+		"org_scoped_variables": ["MUSHER_API_URL", "MUSHER_DEVELOPER_SLUG", "MUSHER_ENVIRONMENT"],
+		"env_shared_stems": {"LOG_FORMAT": ["json", "text"], "LOG_LEVEL": ["trace", "debug", "info", "warn", "error"]},
 		"deployment_environments": {
 			"development": "dev", "production": "prod", "staging": "staging",
 			"test": "test",
@@ -103,6 +104,9 @@ index := {
 			"utils": "Says nothing about what it holds; name what it holds.",
 		},
 	},
+	# The environment grammar is data the checks read as published; the
+	# tests use the real one rather than a second copy to keep in step.
+	"env_grammar": data.conventions.index.env_grammar,
 	"declaration_schema": declaration_schema,
 	"outputs_schema": outputs_schema,
 	"dependencies_schema": dependencies_schema,

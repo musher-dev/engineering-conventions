@@ -195,7 +195,12 @@ bindings:
 ```
 
 `conventions check` validates every schema against the published format and checks the naming grammar, retired
-names, committed secrets and shared variables. The format is
+names, committed secrets and shared variables. The deployment environment reaches the process only as
+`MUSHER_ENVIRONMENT`, holding `production`, `staging`, `development` or `test` (ENVS-28); a name under `OTEL_` or
+`GITHUB_` is one the vendor defines (ENVS-29); no name says which environment it is for (ENVS-30); and a `_LOG_LEVEL`
+or `_LOG_FORMAT` keeps the shared values (ENVS-31). A tool that needs the grammar itself, the units, prefixes,
+reserved vendor names and shared stems, reads `env_grammar` and `vocabulary` from the pinned release's
+`checks/data/index.json` rather than keeping a copy. The format is
 [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md); the location is
 [EC-0019](../engineering-conventions/definitions/conventions/environment/env-contract.md).
 

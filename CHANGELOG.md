@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0](https://github.com/musher-dev/engineering-conventions/compare/v0.8.1...v0.9.0) (2026-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **conventions:** a repository named company-* or declaring system = "company" is now a REPO-09 or REPO-03 finding.
+
+### Features
+
+* **conventions:** name deployment environments once, record artifacts ([#101](https://github.com/musher-dev/engineering-conventions/issues/101)) ([92f36da](https://github.com/musher-dev/engineering-conventions/commit/92f36da31b07b7e990bed832506a5fedfbd09d60))
+
 ## [0.8.1](https://github.com/musher-dev/engineering-conventions/compare/v0.8.0...v0.8.1) (2026-10-03)
 
 

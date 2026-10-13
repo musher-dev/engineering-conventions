@@ -896,8 +896,7 @@
     [".repo/outputs.toml", "OUT-02", "warning", "`outputs.0`: Additional property name is not allowed.", true]
   ],
   "out-03-retired-contract-kind": [
-    [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"contract\", which is retired; declare the definition as an [[interfaces]] entry (schema_version = 2) delivered by the bundle, site or library output that ships it", true],
-    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-image) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+    [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"contract\", which is retired; declare the definition as an [[interfaces]] entry (schema_version = 2) delivered by the bundle, site or library output that ships it", true]
   ],
   "out-03-unknown-kind": [
     [".repo/outputs.toml", "OUT-03", "warning", "output \"api-image\" has kind \"docker\", which is not an output kind; use one of \"bundle\", \"cli\", \"image\", \"library\", \"site\", \"vmimage\"", true]

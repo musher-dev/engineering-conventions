@@ -3,10 +3,5 @@
     "id": "OUT-03",
     "path": ".repo/outputs.toml",
     "severity": "warning"
-  },
-  {
-    "id": "REL-01",
-    "path": ".repo/outputs.toml",
-    "severity": "warning"
   }
 ]

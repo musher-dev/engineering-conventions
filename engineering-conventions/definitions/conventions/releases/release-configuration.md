@@ -181,11 +181,11 @@ A repository with several packages sets `"tag-separator": "/"` and `"separate-pu
 
 **A repository that declares a versioned output releases it with release-please.**
 
-A bundle, command-line tool, contract or library is consumed by version: someone pins `1.4.2` and expects the next
+A bundle, command-line tool or library is consumed by version: someone pins `1.4.2` and expects the next
 release to say what changed. A version cut by hand has no changelog anyone can trust, no tag rule anyone reviewed, and
 no record of why it is a minor rather than a patch. release-please derives all three from the commits and puts them in
 a pull request a person merges. The check reports a `.repo/outputs.toml` that declares an output of kind `bundle`,
-`cli`, `contract` or `library` when the repository has no release-please config. Images and sites are not versioned
+`cli` or `library` when the repository has no release-please config. Images and sites are not versioned
 this way and are not counted.
 
 **Correct:** `.repo/outputs.toml` declares a `bundle`, and `.github/release-please/config.json` exists.

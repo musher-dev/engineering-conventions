@@ -1,0 +1,6 @@
+schema_version = 1
+profile = "service"
+waivers = []
+
+[conventions]
+version = "0.1.0"

@@ -11058,12 +11058,34 @@
           },
           "layout": {
             "additionalProperties": false,
+            "dependencies": {
+              "products": {
+                "properties": {
+                  "product": {
+                    "const": ""
+                  }
+                },
+                "required": [
+                  "product"
+                ]
+              }
+            },
             "description": "Where the repository keeps its product (EC-0018). REPO-14 asks for it; a repository without a product directory sets product to \"\".",
             "properties": {
               "product": {
                 "description": "The product directory: one path segment named after the repository, e.g. platform-api, or \"\" when the repository has no product directory.",
                 "pattern": "^([A-Za-z0-9][A-Za-z0-9._-]*)?$",
                 "type": "string"
+              },
+              "products": {
+                "description": "A multi-product repository's peer products, beside product = \"\": each entry a product directory, or a path in which any segment after the first may be * for any one directory, e.g. apps/*. Each product directory holds its own manifest (REPO-17) and may hold its own env.schema.yaml (ENVS-02) and contracts/ (IFACE-08).",
+                "items": {
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*(/([A-Za-z0-9][A-Za-z0-9._-]*|\\*))*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
               },
               "root_exceptions": {
                 "additionalProperties": {

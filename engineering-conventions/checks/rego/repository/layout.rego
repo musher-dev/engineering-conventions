@@ -4,7 +4,8 @@
 #   The identity declaration says where the product lives (REPO-14); the
 #   product directory exists (REPO-15), is named after the repository
 #   (REPO-16) and holds its build manifest (REPO-17); the root holds no
-#   product content (REPO-18) except exceptions with reasons (REPO-19); and
+#   product content (REPO-18) except exceptions with reasons (REPO-19), or
+#   the directories a multi-product repository lists in [layout] products; and
 #   Dependabot (REPO-20, REPO-22) and the Taskfile (REPO-21) agree with it.
 # scope: package
 # custom:
@@ -36,6 +37,17 @@ findings contains lib.finding("REPO-15", files.repository_path, message) if {
 	)
 }
 
+# REPO-15. A multi-product repository's products entry that names no
+# directory.
+findings contains lib.finding("REPO-15", files.repository_path, message) if {
+	some entry in layout.products
+	not entry_matched(entry)
+	message := sprintf(
+		"[layout] products lists %q, which names no directory; create the product, or correct the entry",
+		[entry],
+	)
+}
+
 # REPO-16. Judged against the declared name: REPO-07 reports a declared name
 # that is not the actual one.
 findings contains lib.finding("REPO-16", files.repository_path, message) if {
@@ -61,12 +73,27 @@ findings contains lib.finding("REPO-17", product_dir, message) if {
 	)
 }
 
-# REPO-18
+# REPO-17. Each product of a multi-product repository is a build root too.
+findings contains lib.finding("REPO-17", dir, message) if {
+	some dir in layout.product_dirs
+	not builds(dir)
+	message := sprintf(
+		concat(" ", [
+			"%s/ is a product [layout] products lists, but holds no build manifest; add the product's",
+			"manifest to it (one of %s), or correct the entry",
+		]),
+		[dir, concat(", ", sort(manifests))],
+	)
+}
+
+# REPO-18. A source tree that holds a declared product, such as apps/ in a
+# repository that lists apps/*, is where the layout puts its products.
 findings contains lib.finding("REPO-18", name, message) if {
 	declares_placement
 	some name in root_entries
 	name in root_content
 	not name in object.keys(root_exceptions)
+	not name in product_roots
 	message := sprintf(
 		concat(" ", [
 			"%s is product content at the repository root; move it into %s, or list it under",
@@ -217,6 +244,26 @@ product_ecosystems contains "opentofu" if {
 	startswith(path, concat("", [product_dir, "/"]))
 	endswith(path, concat("", ["/", opentofu_lockfile]))
 }
+
+# A directory of a multi-product repository that holds a manifest, or an
+# OpenTofu root's lockfile at or below it.
+builds(dir) if {
+	some manifest in manifests
+	concat("/", [dir, manifest]) in files.all_files
+}
+
+builds(dir) if {
+	some path in files.all_files
+	startswith(path, concat("", [dir, "/"]))
+	endswith(path, concat("", ["/", opentofu_lockfile]))
+}
+
+entry_matched(entry) if {
+	some dir in existing_directories
+	glob.match(entry, ["/"], dir)
+}
+
+product_roots contains split(dir, "/")[0] if some dir in layout.product_dirs
 
 dependabot_ecosystems[updater] := ecosystem.manifests if {
 	some ecosystem in ecosystems

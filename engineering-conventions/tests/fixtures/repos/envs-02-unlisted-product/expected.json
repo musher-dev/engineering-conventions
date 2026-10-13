@@ -1,0 +1,7 @@
+[
+  {
+    "id": "ENVS-02",
+    "path": "scripts/seed/env.schema.yaml",
+    "severity": "warning"
+  }
+]

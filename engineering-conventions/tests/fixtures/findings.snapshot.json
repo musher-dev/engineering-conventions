@@ -418,7 +418,11 @@
   "envs-02-misplaced-schema": [
     ["platform-api/config/env.schema.yaml", "ENVS-02", "warning", "an environment schema lives at platform-api/env.schema.yaml or .devcontainer/env.schema.yaml, nowhere else; move this one to platform-api/env.schema.yaml", true]
   ],
+  "envs-02-passes-products": [],
   "envs-02-passes-vendored-copy": [],
+  "envs-02-unlisted-product": [
+    ["scripts/seed/env.schema.yaml", "ENVS-02", "warning", "an environment schema lives at <product>/env.schema.yaml or .devcontainer/env.schema.yaml, nowhere else; move this one to the directory of the product it belongs to, listed in [layout] products", true]
+  ],
   "envs-03-invalid-schema": [
     ["platform-api/env.schema.yaml", "ENVS-03", "warning", "`bindings.API_PORT.type`: bindings.API_PORT.type must be one of the following: \"string\", \"integer\", \"number\", \"boolean\", \"enum\", \"list\".", true]
   ],
@@ -797,6 +801,11 @@
   "iface-08-definitions-outside-contracts": [
     [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "IFACE-08", "warning", "interface \"grpc\" names definitions \"platform-api/proto/\" outside platform-api/contracts/; keep every interface the repository offers there, so its consumers and checks find it in one place", true],
+    [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
+    [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
+  ],
+  "iface-08-passes-product-contracts": [
+    [".config/openapi/spectral.yaml", "OAS-02", "warning", "the repository declares an openapi interface in .repo/outputs.toml but has no Spectral ruleset; add .config/openapi/spectral.yaml with `extends: [spectral:oas, https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs]`, so its documents are linted with Spectral's OpenAPI and OWASP rules", true],
     [".repo/outputs.toml", "OAS-03", "warning", "the repository declares an openapi interface but no validate workflow lints it; run `conventions openapi`, or `spectral lint --ruleset .config/openapi/spectral.yaml`, in a validate workflow, directly or through a task, so a document that breaks the ruleset cannot merge", true],
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (contracts) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]
   ],

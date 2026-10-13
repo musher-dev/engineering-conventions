@@ -271,7 +271,9 @@ folder, or a second product-level file) looks authoritative while feeding nothin
 reports any `env.schema.yaml` or `env.schema.yml` elsewhere, and names where it belongs, except in a vendored copy
 under the contracts directory's `vendor/` ([EC-0032](../dependencies/dependencies-declaration.md)): that file is
 another repository's interface, kept unchanged, and the DEPS requirements check it. It needs the product directory
-from `[layout]`, and reports nothing until the repository declares it.
+from `[layout]`, and reports nothing until the repository declares it. A multi-product repository, which declares
+`product = ""` and lists its peer products in `[layout] products` ([EC-0018](../repository/layout.md)), keeps one
+schema at the top of each product directory instead: `<product>` is then each directory the list names.
 
 **Correct:**
 
@@ -285,6 +287,20 @@ platform-api/env.schema.yaml
 ```text
 platform-api/config/env.schema.yaml
 env.schema.yml
+```
+
+**Correct**, in a multi-product repository that declares `products = ["apps/*"]`:
+
+```text
+apps/orders/env.schema.yaml
+apps/billing/env.schema.yaml
+.devcontainer/env.schema.yaml
+```
+
+**Incorrect**, in the same repository:
+
+```text
+scripts/seed/env.schema.yaml   # scripts/seed/ is not a listed product
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container LAYOUT-11

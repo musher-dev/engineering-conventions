@@ -23,12 +23,34 @@ dir := "contracts" if {
 
 vendor_dir := concat("/", [dir, "vendor"])
 
-# Every file under the contracts directory that the repository offers: not a
+# Every contracts directory: the repository's own, and in a multi-product
+# repository (product = "" with [layout] products) each product's.
+dirs contains dir
+
+dirs contains concat("/", [home, "contracts"]) if some home in layout.product_dirs
+
+# The contracts directories as a reader sees them, for a message.
+described_dirs := concat(", ", sort([concat("", [d, "/"]) | some d in dirs]))
+
+# The contracts directory that holds a path.
+dir_of(path) := d if {
+	some d in dirs
+	startswith(path, concat("", [d, "/"]))
+}
+
+# Whether a path is offered from a contracts directory: inside one, outside
+# its vendor/.
+in_offered_dir(path) if {
+	some d in dirs
+	startswith(path, concat("", [d, "/"]))
+	not startswith(path, concat("", [d, "/vendor/"]))
+}
+
+# Every file under a contracts directory that the repository offers: not a
 # vendored copy, not a document and not a dotfile.
 offered_files contains path if {
 	some path in files.repository_files
-	startswith(path, concat("", [dir, "/"]))
-	not startswith(path, concat("", [vendor_dir, "/"]))
+	in_offered_dir(path)
 	not endswith(lower(path), ".md")
 	not startswith(files.basename(path), ".")
 }

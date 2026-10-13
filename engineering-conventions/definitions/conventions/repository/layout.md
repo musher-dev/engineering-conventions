@@ -170,11 +170,13 @@ This convention covers where a repository keeps its product, and the three place
 `.repo/repository.toml`, Dependabot's configuration and the root Taskfile. Where tool configuration goes within the
 repository level, and what the product directory holds beyond its manifest, are not decided here.
 
-**Multi-product repositories are out of scope.** A repository with several peer products under one workspace root (a
-root `package.json` with `apps/` and `packages/`) is a different shape: its root *is* a build root. Until a variant is
-designed for it, such a repository declares `product = ""` and waives REPO-18 in `.repo/conventions.toml`, with the
-issue that tracks its split or the variant as the waiver's reason
-([EC-0001](../adoption/conventions-declaration.md)).
+**Multi-product repositories declare their products.** A repository with several peer products under one workspace
+root (a root `package.json` or `go.work` with `apps/` and `packages/`) is a different shape: its root *is* a build
+root. Such a repository declares `product = ""` and lists its products in `[layout] products`
+([Declaring the product](#declaring-the-product)); each listed directory is then held to what a product directory is
+held to (REPO-15, REPO-17), keeps its own environment schema (ENVS-02) and contracts directory (IFACE-08), and the
+root's workspace manifest and lockfile are root exceptions with their reason (REPO-19). What the root may hold beyond
+that is not decided here.
 
 ## Status and authority
 
@@ -205,7 +207,20 @@ product = "platform-api"
 | Field | Meaning |
 | --- | --- |
 | `product` | The product directory: one path segment, the repository's name. `""` means the repository has no product directory, such as a documentation or infrastructure repository. |
+| `products` | Only beside `product = ""`: a multi-product repository's peer products, each a directory path whose segments after the first may be `*` for any one directory, such as `apps/*`. |
 | `root_exceptions` | Root entries REPO-18 would report, each mapped to the reason it stays at the root. |
+
+A multi-product repository lists its products:
+
+```toml
+[layout]
+product = ""
+products = ["apps/*", "tools/cli"]
+
+[layout.root_exceptions]
+"package.json" = "The workspace root of the products under apps/."
+"bun.lock" = "The workspace lockfile."
+```
 
 `product = ""` is a statement, not an absence: the requirements that need a product directory skip, and the root
 still holds no product content (REPO-18). A missing `[layout]` table is not read as "no product" (REPO-14), or
@@ -244,7 +259,8 @@ Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: developme
 **The declared product directory exists.**
 
 The declaration is what every other path is checked against, so it has to be true. A product directory that was
-renamed or never created leaves every literal that names it pointing at nothing.
+renamed or never created leaves every literal that names it pointing at nothing. In a multi-product repository, each
+`products` entry must name at least one directory.
 
 **Correct:**
 
@@ -299,7 +315,8 @@ else, and the directory is only a folder of sources. The recognised manifests ar
 `pyproject.toml`, `go.mod`, `deno.json`, `deno.jsonc`, `pom.xml`, `build.gradle`, `build.gradle.kts`,
 `settings.gradle` and `settings.gradle.kts`, at the top of the product directory. An OpenTofu root's manifest is its
 `.terraform.lock.hcl`, the dependency record `tofu init` writes beside the root's configuration, so that lockfile
-counts in the product directory or in any directory below it.
+counts in the product directory or in any directory below it. In a multi-product repository, every directory the
+`products` entries name is a product directory and holds its own manifest.
 
 **Correct:**
 
@@ -342,7 +359,9 @@ level. This applies whether or not the repository has a product directory. The e
 | Java | `pom.xml`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `gradlew`, `mvnw` |
 | Source trees | `src`, `crates`, `cmd`, `internal`, `pkg`, `lib`, `tests`, `apps`, `packages` |
 
-An entry kept on purpose goes under `[layout.root_exceptions]` with its reason (REPO-19).
+An entry kept on purpose goes under `[layout.root_exceptions]` with its reason (REPO-19). A source tree that holds a
+product `[layout] products` lists, such as `apps/` under `products = ["apps/*"]`, is where the layout puts the
+products, and is not reported.
 
 **Correct:**
 

@@ -381,9 +381,9 @@ needs its own copy of the step.
 
 The check reads every `secrets.<NAME>` and `vars.<NAME>` a workflow or composite action refers to, splits the name on
 `_`, and reports one with a word that is a deployment environment's name, its slug or a synonym: `PRODUCTION`,
-`PROD`, `PRD`, `STAGING`, `STG`, `STAGE`, `PREPROD`, `DEVELOPMENT` or `DEV`. `TEST` and `LIVE` are not read, since in
-a name they most often mean a service's own mode (a payment provider's test or live keys, TestPyPI) rather than a
-deployment environment. Each name is reported once per file.
+`PROD`, `PRD`, `STAGING`, `STG`, `STAGE` or `PREPROD`. `TEST`, `LIVE`, `DEV` and `DEVELOPMENT` are not read, since in
+a name they most often mean a service's own mode rather than a deployment environment: a payment provider's test or
+live keys, TestPyPI, a tool's dev database or dev server. Each name is reported once per file.
 
 **Correct:**
 
@@ -472,11 +472,12 @@ record states is set in [decision
 `physical_environment` is the provider and region, and `deployment_name` is unique within its `cluster`.
 
 The check reads each job, in a workflow whose responsibility token ([EC-0002](workflow-files.md#gha-02)) is `deploy`,
-that names an `environment` and runs steps. It reports the job when no step posts the record: a `run:` line that
-names `artifacts/metadata/deployment-record`, directly or through a task that runs it, or a local composite action
-whose steps do. It also reports a job that posts the record without `artifact-metadata: write` in its permissions
-(or the workflow's, when the job sets none), which the job's `GITHUB_TOKEN` needs to write it. A job that calls a
-reusable workflow is not read: the called workflow's jobs are.
+that names an `environment` and runs steps. It reports those jobs when none of them posts the record: a `run:` line
+that names `artifacts/metadata/deployment-record`, directly or through a task that runs it, or a local composite
+action whose steps do. One job records each deployment, so a job beside it that only reads the environment's secrets,
+such as a drift check, needs no record of its own. It also reports a job that posts the record without
+`artifact-metadata: write` in its permissions (or the workflow's, when the job sets none), which the job's
+`GITHUB_TOKEN` needs to write it. A job that calls a reusable workflow is not read: the called workflow's jobs are.
 
 **Correct:**
 

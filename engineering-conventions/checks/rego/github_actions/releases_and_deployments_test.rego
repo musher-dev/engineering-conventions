@@ -210,8 +210,10 @@ test_gha_51_environment_in_names if {
 		},
 		"run": "cp config/secrets.production.yaml .",
 	}]
-	conditional := {"name": "Maybe", "if": "vars.DEV_ENABLED == 'true'", "run": "true"}
-	docs := [wf("deploy.yml", workflow("workflow_dispatch", {"a": job({"steps": array.concat(steps, [conditional])})}))]
+	conditional := {"name": "Maybe", "if": "vars.PRODUCTION_ENABLED == 'true'", "run": "true"}
+	dev_mode := {"name": "Dev", "env": {"ATLAS": "${{ vars.ATLAS_DEV_URL }}"}, "run": "true"}
+	all_steps := array.concat(steps, [conditional, dev_mode])
+	docs := [wf("deploy.yml", workflow("workflow_dispatch", {"a": job({"steps": all_steps})}))]
 	results := checks.findings with input as docs with data.conventions.index as td.index
 	found := messages(results, "GHA-51")
 	count(found) == 3
@@ -223,8 +225,8 @@ test_gha_51_environment_in_names if {
 	])
 	some staging in found
 	contains(staging, "vars.API_BASE_URL_STAGING scopes")
-	some dev in found
-	contains(dev, "vars.DEV_ENABLED scopes")
+	some production in found
+	contains(production, "vars.PRODUCTION_ENABLED scopes")
 }
 
 app_token(given) := {"name": "Mint", "uses": "actions/create-github-app-token@x", "with": given}
@@ -322,18 +324,22 @@ test_gha_53_deployment_records if {
 	]
 	results := checks.findings with input as docs with data.conventions.index as td.index
 	found := messages(results, "GHA-53")
-	found == {
-		concat(" ", [
-			`job "bare" deploys to the "production" environment but records no deployment; post the deployment`,
-			"record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version,",
-			"status: deployed and logical_environment: production) so the organization's linked artifacts show",
-			"what runs there",
-		]),
-		concat(" ", [
-			`job "unpermitted" posts a deployment record without artifact-metadata: write; grant it in the job's`,
-			"permissions so the record is written",
-		]),
+	found == {concat(" ", [
+		`job "unpermitted" posts a deployment record without artifact-metadata: write; grant it in the job's`,
+		"permissions so the record is written",
+	])}
+	unrecorded := {
+		"name": "W", "on": "workflow_dispatch",
+		"jobs": {"bare": jobs.bare, "no_environment": jobs.no_environment},
 	}
+	results_bare := checks.findings with input as [wf("deploy-staging-api.yml", unrecorded)]
+		with data.conventions.index as td.index
+	messages(results_bare, "GHA-53") == {concat(" ", [
+		`job "bare" deploys to the "production" environment but records no deployment; post the deployment`,
+		"record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version,",
+		"status: deployed and logical_environment: production) so the organization's linked artifacts show",
+		"what runs there",
+	])}
 	other := [wf("verify-production.yml", deploy)]
 	results_other := checks.findings with input as other with data.conventions.index as td.index
 	count(messages(results_other, "GHA-53")) == 0

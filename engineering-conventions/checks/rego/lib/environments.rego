@@ -47,5 +47,6 @@ production_words := {"production", slug} if {
 # The words that, inside a secret or variable name, scope it to a
 # deployment environment: every name, slug and synonym, less those that
 # usually mean a service's own mode there (a payment provider's test or
-# live keys, TestPyPI) or a developer's machine.
-name_words := (names | object.keys(other_words)) - {"test", "live", "local"}
+# live keys, TestPyPI), a developer's machine, or a tool's own dev mode (a
+# dev database URL, a dev server), as ENVS-30 does.
+name_words := (names | object.keys(other_words)) - {"test", "live", "local", "dev", "development"}

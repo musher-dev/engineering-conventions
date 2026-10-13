@@ -1702,7 +1702,9 @@
             "OTEL_ENVIRONMENT"
           ],
           "name_words_allowed": [
-            "TEST"
+            "TEST",
+            "DEV",
+            "DEVELOPMENT"
           ],
           "variable": "MUSHER_ENVIRONMENT",
           "vendor_modes": [

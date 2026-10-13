@@ -22,5 +22,5 @@ test_production_words if {
 
 test_name_words if {
 	found := environments.name_words with data.conventions.index as td.index
-	found == {"production", "prod", "prd", "staging", "stg", "stage", "preprod", "development", "dev"}
+	found == {"production", "prod", "prd", "staging", "stg", "stage", "preprod"}
 }

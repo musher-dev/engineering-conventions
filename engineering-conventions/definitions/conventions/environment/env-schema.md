@@ -1223,22 +1223,23 @@ The environment selects the value, not the name. A schema with `PROD_READONLY_UR
 staging a variable it must leave empty and gives the code a branch on the environment, which is how a staging
 process ends up connected to production. One name, with a different value in each environment, keeps every
 environment running the same code. The check reports a binding whose name has a deployment environment's name or
-slug as a whole word between underscores: `PRODUCTION`, `PROD`, `STAGING`, `DEVELOPMENT` or `DEV`. `TEST` is
-allowed, because it names a test far more often than the test environment (`E2E_TEST_TIMEOUT_SEC`), and a word only
-starting like one is not one, so `MUSHER_DEVELOPER_SLUG` and `API_DEVICE_ID` pass. A vendor's name is not reported.
+slug as a whole word between underscores: `PRODUCTION`, `PROD` or `STAGING`. `TEST`, `DEV` and `DEVELOPMENT` are
+allowed, because they name a test, or a tool's own dev mode, database, server or device, far more often than an
+environment (`E2E_TEST_TIMEOUT_SEC`, `ATLAS_DEV_URL`), and a word only starting like one is not one, so
+`MUSHER_DEVELOPER_SLUG` passes. A vendor's name is not reported.
 
 **Correct:**
 
 ```yaml
 API_READONLY_DATABASE_URL: {type: string, format: url, ...}
-ENABLE_DEBUG_TOOLS: {type: boolean, ...}
+API_SEED_COUNT: {type: integer, ...}
 ```
 
 **Incorrect:**
 
 ```yaml
 API_PROD_READONLY_DATABASE_URL: {type: string, format: url, ...}
-ENABLE_DEV_TOOLS: {type: boolean, ...}
+API_STAGING_SEED_COUNT: {type: integer, ...}
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.9.0

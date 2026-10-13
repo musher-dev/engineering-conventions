@@ -166,6 +166,7 @@ client_of(path, name) := client if {
 declared_values(binding) := {["values", v] | some v in binding.values; is_string(v)} | {[field, binding[field]] |
 	some field in ["default", "local_default"]
 	is_string(binding[field])
+	binding[field] != ""
 }
 
 value_message(name, field, value) := sprintf(

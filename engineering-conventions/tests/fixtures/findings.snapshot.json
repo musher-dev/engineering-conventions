@@ -722,6 +722,7 @@
     [".github/workflows/deploy-api.yml", "GHA-52", "warning", "step \"app_token\" in job \"deploy\" mints a GitHub App token with app-id, the older input; name the App with client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key: ${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both", true]
   ],
   "gha-52-passes-client-id-variable": [],
+  "gha-53-passes-one-job-records": [],
   "gha-53-passes-recorded-by-task": [],
   "gha-53-unrecorded-deploy": [
     [".github/workflows/deploy-api.yml", "GHA-53", "warning", "job \"deploy\" deploys to the \"production\" environment but records no deployment; post the deployment record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version, status: deployed and logical_environment: production) so the organization's linked artifacts show what runs there", true]

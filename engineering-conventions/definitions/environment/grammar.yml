@@ -59,8 +59,11 @@ deployment_environment:
     - RACK_ENV
     - RAILS_ENV
   # Deployment environment names and slugs ENVS-30 does not report as a word
-  # of a name: TEST names a test far more often than the test environment.
-  name_words_allowed: [TEST]
+  # of a name. TEST names a test far more often than the test environment;
+  # DEV and DEVELOPMENT name a tool's own dev mode, database or server, or a
+  # device, as often as the development environment (ATLAS_DEV_URL,
+  # VITE_DEV_SERVER_URL).
+  name_words_allowed: [TEST, DEV, DEVELOPMENT]
 
 # ENVS-29. A prefix a vendor reserves: a name under it is one the vendor
 # defines. names is a file under checks/data/vendor/.

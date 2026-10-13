@@ -147,11 +147,14 @@ findings contains lib.finding("GHA-52", path, message) if {
 	)
 }
 
-# GHA-53. A deploy job that posts no deployment record.
+# GHA-53. A deploy workflow none of whose environment jobs posts a deployment
+# record. One job records the deployment; a job that only reads the
+# environment's secrets beside it, such as a drift check, need not.
 findings contains lib.finding("GHA-53", path, message) if {
 	some path, workflow in files.workflows
-	some job_id, job in deploy_jobs(path, workflow)
-	not records_deployment(job)
+	jobs := deploy_jobs(path, workflow)
+	not any_records_deployment(jobs)
+	some job_id, job in jobs
 	message := sprintf(
 		concat(" ", [
 			"job %q deploys to the %q environment but records no deployment; post the deployment",
@@ -462,6 +465,11 @@ deploy_jobs(path, workflow) := {job_id: job |
 records_deployment(job) if {
 	some step in files.steps(job)
 	posts_record(step)
+}
+
+any_records_deployment(jobs) if {
+	some job in jobs
+	records_deployment(job)
 }
 
 posts_record(step) if {

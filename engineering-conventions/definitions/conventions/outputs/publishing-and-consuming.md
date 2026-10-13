@@ -4,8 +4,9 @@ title: Publishing and consuming outputs
 summary: >-
   An output documents how to consume it, is published only from a release
   tag and never overwritten, carries its provenance when it is an image,
-  names its own repository as its source when it is published to GHCR, and
-  is consumed by an exact version.
+  names its own repository as its source when it is published to GHCR, has
+  a storage record in the organization's linked artifacts when it is an
+  image, and is consumed by an exact version.
 status: draft
 topic: outputs
 applies_to:
@@ -29,6 +30,12 @@ references:
     url: https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
   - title: "docker/metadata-action"
     url: https://github.com/docker/metadata-action
+  - title: "GitHub Docs: Linked artifacts"
+    url: https://docs.github.com/en/code-security/concepts/supply-chain-security/linked-artifacts
+  - title: "GitHub Docs: Uploading storage and deployment data to the linked artifacts page"
+    url: https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/upload-linked-artifacts
+  - title: "GitHub REST API: Artifact metadata"
+    url: https://docs.github.com/en/rest/orgs/artifact-metadata
 requirements:
   - id: OUT-08
     title: An output's docs say how to consume it
@@ -63,6 +70,14 @@ requirements:
     status: proposed
     severity: warning
     since: 0.7.1
+    validation:
+      engine: conftest
+      package: conventions.checks.outputs.publishing
+  - id: OUT-14
+    title: A published image has a storage record in linked artifacts
+    status: proposed
+    severity: warning
+    since: 0.9.0
     validation:
       engine: conftest
       package: conventions.checks.outputs.publishing
@@ -267,8 +282,97 @@ publishes to GHCR, in the Dockerfile. A value computed when the workflow or buil
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
 
+### OUT-14
+
+**A published image has a storage record in linked artifacts.**
+
+The declaration in `.repo/outputs.toml` says what a repository means to publish; a storage record says what it did
+publish. The organization's linked artifacts page lists each artifact the organization builds with GitHub Actions:
+its registry, its digest, its version and the repository it came from, with its attestations, on one page for every
+repository, and a deployment record ([GHA-53](../github-actions/releases-and-deployments.md#gha-53)) adds where it
+runs. Without a storage record an image is missing from that page, its alerts cannot be tied to what is deployed, and
+the organization's graph has a declaration with nothing observed behind it ([decision
+0035](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0035-published-and-deployed-artifacts-are-recorded.md)).
+
+A storage record is written one of two ways. `actions/attest` (or `actions/attest-build-provenance`) with
+`push-to-registry: true` writes it when the job has `artifact-metadata: write`, beside the provenance attestation
+that [IMAGE-12](../container-images/image-publishing.md#image-12) asks for. A repository that cannot attest, a private
+one on a plan without artifact attestations, posts it itself to `POST /orgs/{org}/artifacts/metadata/storage-record`
+with `name`, `digest`, `registry_url`, `version` and `github_repository`, which the API requires when no attestation
+names the repository. The record's `name` is the image's registry path without its tag, and `version` is the release,
+never `latest`.
+
+The check reads each job of a release, publish or deploy workflow that pushes an image: a `docker/build-push-action`
+or `docker/bake-action` step whose `push` is `true` or an expression, or a `run:` line that runs `docker push` or a
+build with `--push`, to any registry but one on the runner (`localhost`). It reports the job when it has neither an
+attestation step with `push-to-registry: true` nor a step whose command line names
+`artifacts/metadata/storage-record` (directly, or through a task that runs it), and when it has one without
+`artifact-metadata: write` in its permissions, or the workflow's when the job sets none.
+
+Other outputs, a release's assets (a bundle, a command-line tool) or a package, belong on the same page, and a storage
+record for each is recommended. It is checked in review until a check can tell what a job published from what it
+built.
+
+**Correct:**
+
+```yaml
+permissions:
+  contents: read
+  packages: write           # push the image and its attestation to GHCR
+  id-token: write           # sign the provenance attestation
+  attestations: write       # store it
+  artifact-metadata: write  # write the storage record
+steps:
+  - id: push
+    uses: docker/build-push-action@<sha>
+    with:
+      push: true
+      tags: ghcr.io/example-org/example-api:${{ github.ref_name }}
+  - uses: actions/attest@<sha>  # v4
+    with:
+      subject-name: ghcr.io/example-org/example-api
+      subject-digest: ${{ steps.push.outputs.digest }}
+      push-to-registry: true
+```
+
+**Correct, in a repository that cannot attest:**
+
+```yaml
+permissions:
+  contents: read
+  packages: write
+  artifact-metadata: write
+steps:
+  - id: push
+    uses: docker/build-push-action@<sha>
+    with:
+      push: true
+      tags: ghcr.io/example-org/example-api:${{ github.ref_name }}
+  - env:
+      GH_TOKEN: ${{ github.token }}
+      DIGEST: ${{ steps.push.outputs.digest }}
+    run: |
+      gh api -X POST "orgs/${GITHUB_REPOSITORY_OWNER}/artifacts/metadata/storage-record" \
+        -f name=ghcr.io/example-org/example-api -f digest="$DIGEST" -f version="$GITHUB_REF_NAME" \
+        -f registry_url=https://ghcr.io -f github_repository="$GITHUB_REPOSITORY"
+```
+
+**Incorrect:**
+
+```yaml
+steps:
+  - uses: docker/build-push-action@<sha>
+    with:
+      push: true
+      tags: ghcr.io/example-org/example-api:${{ github.ref_name }}   # pushed, and recorded nowhere
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.0
+
 ## References
 
 - [EC-0007 Outputs declaration](outputs-declaration.md)
 - [OCI image-spec: Pre-defined annotation keys](https://github.com/opencontainers/image-spec/blob/main/annotations.md)
 - [Semantic Versioning 2.0.0](https://semver.org/)
+- [GitHub Docs: Linked artifacts](https://docs.github.com/en/code-security/concepts/supply-chain-security/linked-artifacts)
+- [GitHub REST API: Artifact metadata](https://docs.github.com/en/rest/orgs/artifact-metadata)

@@ -31,8 +31,8 @@ include:
   # OAS asks nothing of a repository that declares no openapi interface,
   # and an API can be offered by a service, a library or a specification, so
   # every kind selects it. COPY likewise applies only to a repository that
-  # publishes a site, and IMAGE only to one with a Dockerfile or a compose
-  # file.
+  # publishes a site, and IMAGE only to one with a Dockerfile, a compose
+  # file or a workflow that pushes an image.
   families:
     [
       ADOPT, GHA, OUT, REL, REPO, AGENT, CONF, HOOKS, TOOL, DEC, DEVC, DEPS, COMM, OAS, COMMIT, COPY,

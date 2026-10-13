@@ -1,0 +1,7 @@
+[
+  {
+    "id": "IMAGE-11",
+    "path": ".github/workflows/publish.yml",
+    "severity": "warning"
+  }
+]

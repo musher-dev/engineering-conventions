@@ -299,6 +299,34 @@ each path and workflow it names exists. The format is
 [EC-0007](../engineering-conventions/definitions/conventions/outputs/outputs-declaration.md); what a published output
 promises its consumers is [EC-0008](../engineering-conventions/definitions/conventions/outputs/publishing-and-consuming.md).
 
+## Where to see what you published and where it runs
+
+The declaration says what a repository means to publish. What it did publish, and where each release runs, is on the
+organization's [linked artifacts](https://docs.github.com/en/code-security/concepts/supply-chain-security/linked-artifacts)
+page: one list, for every repository, of each artifact by name and digest, the registry that stores it, the repository
+that built it with its attestations, and the environments it is deployed to
+([decision 0035](decisions/0035-published-and-deployed-artifacts-are-recorded.md)). Two kinds of record put it there:
+
+- **A storage record**, written when an image is published. `actions/attest` with `push-to-registry: true` writes it
+  when the job has `artifact-metadata: write`; a private repository, which cannot attest, posts it to
+  `orgs/<org>/artifacts/metadata/storage-record`
+  ([OUT-14](../engineering-conventions/definitions/conventions/outputs/publishing-and-consuming.md#out-14)).
+- **A deployment record**, posted by the deploy job to `orgs/<org>/artifacts/metadata/deployment-record`, with
+  `logical_environment` set to the deployment environment's name (`production`, never `prod`), and posted again with
+  `status: decommissioned` when the deployment is torn down
+  ([GHA-53](../engineering-conventions/definitions/conventions/github-actions/releases-and-deployments.md#gha-53)).
+
+```yaml
+- name: Record the deployment
+  env:
+    GH_TOKEN: ${{ github.token }}   # the job grants artifact-metadata: write
+    DIGEST: ${{ needs.publish.outputs.digest }}
+  run: >-
+    gh api -X POST "orgs/${GITHUB_REPOSITORY_OWNER}/artifacts/metadata/deployment-record"
+    -f name=ghcr.io/your-org/api -f digest="${DIGEST}" -f version="${GITHUB_REF_NAME}"
+    -f status=deployed -f logical_environment=production -f deployment_name=api
+```
+
 ## Declare the interfaces you offer
 
 When other repositories build or run against something yours defines, such as an OpenAPI document, event schemas or

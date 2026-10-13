@@ -704,7 +704,24 @@
     [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without manifest-file: .github/release-please/manifest.json; pass it so the action reads the repository's release-please files", true]
   ],
   "gha-49-production-push": [
-    [".github/workflows/deploy-production.yml", "GHA-49", "warning", "the workflow acts on production (its filename names production) but runs on a push to a branch; a merge does not release, so it acts on or reports about the previous release; trigger it from the release (a tag, release: published, or workflow_call from the deploy), a schedule, or workflow_dispatch", true]
+    [".github/workflows/deploy-production.yml", "GHA-49", "warning", "the workflow acts on production (its filename names production) but runs on a push to a branch; a merge does not release, so it acts on or reports about the previous release; trigger it from the release (a tag, release: published, or workflow_call from the deploy), a schedule, or workflow_dispatch", true],
+    [".github/workflows/deploy-production.yml", "GHA-53", "warning", "job \"deploy\" deploys to the \"production\" environment but records no deployment; post the deployment record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version, status: deployed and logical_environment: production) so the organization's linked artifacts show what runs there", true]
+  ],
+  "gha-50-passes-environment-name": [],
+  "gha-50-slug-environment": [
+    [".github/workflows/deploy-api.yml", "GHA-50", "warning", "job \"deploy\" deploys to the GitHub environment \"prod\", another word for the production deployment environment; name the environment \"production\", the name every deployment record, ruleset and search uses", true]
+  ],
+  "gha-51-environment-in-secret-name": [
+    [".github/workflows/deploy-api.yml", "GHA-51", "warning", "secrets.PROD_ORDERS_DATABASE_URL scopes a value to a deployment environment by its name (PROD); set it on that environment's GitHub environment as secrets.ORDERS_DATABASE_URL, the same name in each environment, and read it from a job with that environment:", true]
+  ],
+  "gha-51-passes-environment-secret": [],
+  "gha-52-app-id-secret": [
+    [".github/workflows/deploy-api.yml", "GHA-52", "warning", "step \"app_token\" in job \"deploy\" mints a GitHub App token with app-id, the older input; name the App with client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key: ${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both", true]
+  ],
+  "gha-52-passes-client-id-variable": [],
+  "gha-53-passes-recorded-by-task": [],
+  "gha-53-unrecorded-deploy": [
+    [".github/workflows/deploy-api.yml", "GHA-53", "warning", "job \"deploy\" deploys to the \"production\" environment but records no deployment; post the deployment record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version, status: deployed and logical_environment: production) so the organization's linked artifacts show what runs there", true]
   ],
   "hooks-01-assert-installed": [
     [".config/lefthook.yml", "HOOKS-01", "warning", "assert_lefthook_installed is not true, so where the lefthook executable is missing the hooks skip without a word; set assert_lefthook_installed: true", true]
@@ -919,6 +936,14 @@
     ["api/docker/Dockerfile", "IMAGE-10", "warning", "no validate workflow lints the Dockerfiles; run `conventions hadolint`, or `hadolint --config .config/docker/hadolint.yaml` on every Dockerfile, in a validate workflow, directly or through a task, so a Dockerfile that breaks a rule cannot merge", true]
   ],
   "image-10-passes-through-a-task": [],
+  "image-11-passes-scan-before-push": [],
+  "image-11-unscanned-image": [
+    [".github/workflows/publish.yml", "IMAGE-11", "warning", "job \"image\" pushes an image without scanning it first; before the push, run trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed on the built image (or aquasecurity/trivy-action with exit-code: 1), so a known vulnerability stops the publish", true]
+  ],
+  "image-12-passes-private-repository": [],
+  "image-12-unattested-image": [
+    [".github/workflows/publish.yml", "IMAGE-12", "warning", "job \"image\" pushes an image without attesting its build provenance; attest the pushed digest with actions/attest and push-to-registry: true (a private or internal repository, where GitHub offers no attestations, declares visibility in .repo/repository.toml)", true]
+  ],
   "mise-pin-without-declaration": [],
   "oas-02-floating-owasp-version": [
     [".config/openapi/spectral.yaml", "OAS-02", "warning", ".config/openapi/spectral.yaml extends the OWASP API security ruleset as https://unpkg.com/@stoplight/spectral-owasp-ruleset/dist/ruleset.mjs, which names no exact release; extend https://unpkg.com/@stoplight/spectral-owasp-ruleset@2.0.1/dist/ruleset.mjs, which names one exact release", true],
@@ -979,9 +1004,20 @@
     [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true],
     [".repo/outputs.toml", "OUT-12", "warning", "output \"docs-site\" is a site but its location \"docs.example.com\" is not an https:// origin; give the URL people and tools fetch it from", true]
   ],
-  "out-13-passes-metadata-labels": [],
+  "out-13-passes-metadata-labels": [
+    [".github/workflows/publish.yml", "IMAGE-11", "warning", "job \"image\" pushes an image without scanning it first; before the push, run trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed on the built image (or aquasecurity/trivy-action with exit-code: 1), so a known vulnerability stops the publish", true],
+    [".github/workflows/publish.yml", "IMAGE-12", "warning", "job \"image\" pushes an image without attesting its build provenance; attest the pushed digest with actions/attest and push-to-registry: true (a private or internal repository, where GitHub offers no attestations, declares visibility in .repo/repository.toml)", true],
+    [".github/workflows/publish.yml", "OUT-14", "warning", "job \"image\" pushes an image without writing its storage record, so the organization's linked artifacts do not list it; attest the pushed digest with actions/attest and push-to-registry: true, which writes it, and grant artifact-metadata: write", true]
+  ],
   "out-13-unlabelled-image": [
-    [".github/workflows/publish.yml", "OUT-13", "warning", "job \"image\" step \"Publish the image\" publishes an image to ghcr.io without the label org.opencontainers.image.source=https://github.com/musher-dev/platform-api, so GHCR connects the package to no repository; add the label to the build, take the labels from docker/metadata-action, or set it with LABEL in the Dockerfile", true]
+    [".github/workflows/publish.yml", "IMAGE-11", "warning", "job \"image\" pushes an image without scanning it first; before the push, run trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed on the built image (or aquasecurity/trivy-action with exit-code: 1), so a known vulnerability stops the publish", true],
+    [".github/workflows/publish.yml", "IMAGE-12", "warning", "job \"image\" pushes an image without attesting its build provenance; attest the pushed digest with actions/attest and push-to-registry: true (a private or internal repository, where GitHub offers no attestations, declares visibility in .repo/repository.toml)", true],
+    [".github/workflows/publish.yml", "OUT-13", "warning", "job \"image\" step \"Publish the image\" publishes an image to ghcr.io without the label org.opencontainers.image.source=https://github.com/musher-dev/platform-api, so GHCR connects the package to no repository; add the label to the build, take the labels from docker/metadata-action, or set it with LABEL in the Dockerfile", true],
+    [".github/workflows/publish.yml", "OUT-14", "warning", "job \"image\" pushes an image without writing its storage record, so the organization's linked artifacts do not list it; attest the pushed digest with actions/attest and push-to-registry: true, which writes it, and grant artifact-metadata: write", true]
+  ],
+  "out-14-passes-posted-record": [],
+  "out-14-unrecorded-image": [
+    [".github/workflows/publish.yml", "OUT-14", "warning", "job \"image\" writes the image's storage record without artifact-metadata: write, so no record is written; grant it in the job's permissions", true]
   ],
   "rel-01-unreleased-output": [
     [".repo/outputs.toml", "REL-01", "warning", "the repository declares versioned outputs (api-bundle) but has no release-please config at .github/release-please/config.json; release them with release-please in manifest mode so every version has a tag, a changelog and a GitHub Release", true]

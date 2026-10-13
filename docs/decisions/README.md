@@ -46,6 +46,7 @@ decisions about how the company operates are in `musher-dev/company`.
 | [0031](0031-the-default-branch-is-protected.md) | The default branch is protected by a committed ruleset with a review gate, and every repository has a CODEOWNERS | accepted |
 | [0032](0032-every-dependency-ecosystem-has-an-updater.md) | Every dependency ecosystem a repository pins has Renovate or Dependabot proposing its updates | accepted |
 | [0034](0034-deployment-environments-have-one-name.md) | Deployment environments have one name, and reach a process only as MUSHER_ENVIRONMENT | accepted |
+| [0035](0035-published-and-deployed-artifacts-are-recorded.md) | What a repository publishes and deploys is recorded in GitHub's linked artifacts | accepted |
 
 ## Writing a decision
 

@@ -52,6 +52,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0040](container-images/dockerfile-linting.md) | Dockerfile linting | container-images | draft |
 | [EC-0041](branch-protection/default-branch-protection.md) | Default-branch protection | branch-protection | draft |
 | [EC-0042](dependencies/automated-updates.md) | Automated dependency updates | dependencies | draft |
+| [EC-0043](container-images/image-publishing.md) | Publishing container images | container-images | draft |
 
 ## Requirements
 
@@ -238,6 +239,10 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-47](github-actions/releases-and-deployments.md#gha-47) | release-please runs with a token other than the default GITHUB_TOKEN | EC-0023 | proposed | warning | conftest |
 | [GHA-48](github-actions/releases-and-deployments.md#gha-48) | The last jobs of a release, publish or deploy workflow run unless the run is cancelled | EC-0023 | proposed | warning | conftest |
 | [GHA-49](github-actions/releases-and-deployments.md#gha-49) | A workflow that acts on production does not run on a push to a branch | EC-0023 | proposed | warning | conftest |
+| [GHA-50](github-actions/releases-and-deployments.md#gha-50) | A job's GitHub environment that names a deployment environment uses its name | EC-0023 | proposed | warning | conftest |
+| [GHA-51](github-actions/releases-and-deployments.md#gha-51) | A secret or variable's name carries no deployment environment | EC-0023 | proposed | warning | conftest |
+| [GHA-52](github-actions/releases-and-deployments.md#gha-52) | A GitHub App's credentials are a client-ID variable and a private-key secret | EC-0023 | proposed | warning | conftest |
+| [GHA-53](github-actions/releases-and-deployments.md#gha-53) | A deploy job records the deployment in GitHub's linked artifacts | EC-0023 | proposed | warning | conftest |
 | [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
 | [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |
@@ -276,6 +281,8 @@ ID is permanent: it is never renumbered or reused.
 | [IMAGE-08](container-images/dockerfile-linting.md#image-08) | A repository with a Dockerfile pins hadolint in mise | EC-0040 | proposed | warning | conftest |
 | [IMAGE-09](container-images/dockerfile-linting.md#image-09) | Lefthook's pre-commit hook runs hadolint with the repository's configuration on every staged Dockerfile | EC-0040 | proposed | warning | conftest |
 | [IMAGE-10](container-images/dockerfile-linting.md#image-10) | A validate workflow runs hadolint with the repository's configuration | EC-0040 | proposed | warning | conftest |
+| [IMAGE-11](container-images/image-publishing.md#image-11) | A job that pushes an image scans it first and fails on HIGH and CRITICAL vulnerabilities | EC-0043 | proposed | warning | conftest |
+| [IMAGE-12](container-images/image-publishing.md#image-12) | A job that pushes an image attests its build provenance in the registry, unless the repository is private | EC-0043 | proposed | warning | conftest |
 | [OAS-01](openapi/openapi-documents.md#oas-01) | Every OpenAPI interface document passes the repository's Spectral ruleset | EC-0037 | proposed | warning | delegated |
 | [OAS-02](openapi/openapi-documents.md#oas-02) | The Spectral ruleset extends spectral:oas and the OWASP API security ruleset at an exact release | EC-0037 | proposed | warning | conftest |
 | [OAS-03](openapi/openapi-documents.md#oas-03) | A validate workflow lints the OpenAPI interfaces with the repository's ruleset | EC-0037 | proposed | warning | conftest |
@@ -292,6 +299,7 @@ ID is permanent: it is never renumbered or reused.
 | [OUT-11](outputs/publishing-and-consuming.md#out-11) | A repository consumes another repository's output by an exact version | EC-0008 | proposed | warning | review |
 | [OUT-12](outputs/outputs-declaration.md#out-12) | A site output's location is an https:// origin | EC-0007 | proposed | warning | conftest |
 | [OUT-13](outputs/publishing-and-consuming.md#out-13) | An image published to GHCR names its own repository in org.opencontainers.image.source | EC-0008 | proposed | warning | conftest |
+| [OUT-14](outputs/publishing-and-consuming.md#out-14) | A published image has a storage record in linked artifacts | EC-0008 | proposed | warning | conftest |
 | [REL-01](releases/release-configuration.md#rel-01) | A repository that declares a versioned output releases it with release-please | EC-0024 | proposed | warning | conftest |
 | [REL-02](releases/release-configuration.md#rel-02) | The release-please config and release-please manifest are .github/release-please/config.json and manifest.json | EC-0024 | proposed | warning | conftest |
 | [REL-03](releases/release-configuration.md#rel-03) | The release-please action reads those two files and sets no release type of its own | EC-0024 | proposed | warning | conftest |

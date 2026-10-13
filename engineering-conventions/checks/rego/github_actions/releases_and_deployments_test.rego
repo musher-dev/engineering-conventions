@@ -164,3 +164,177 @@ test_gha_49_allowed_triggers if {
 	results_10 := checks.findings with input as [staging] with data.conventions.index as td.index
 	count(messages(results_10, "GHA-49")) == 0
 }
+
+test_gha_49_recognises_the_production_slug if {
+	by_slug := wf("deploy-prod.yml", workflow("push", {"a": job({})}))
+	by_environment := wf("deploy.yml", workflow("push", {"a": job({"environment": "prod"})}))
+	results := checks.findings with input as [by_slug, by_environment] with data.conventions.index as td.index
+	count(messages(results, "GHA-49")) == 2
+}
+
+test_gha_50_environment_names if {
+	jobs := {
+		"slug": job({"environment": "prod"}),
+		"synonym": job({"environment": {"name": "STG"}}),
+		"local": job({"environment": "local"}),
+		"named": job({"environment": "production"}),
+		"gate": job({"environment": "pypi"}),
+		"computed": job({"environment": "${{ inputs.environment }}"}),
+		"test": job({"environment": "test"}),
+	}
+	docs := [wf("deploy.yml", workflow("workflow_dispatch", jobs))]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	found := messages(results, "GHA-50")
+	count(found) == 3
+	some slug in found
+	slug == concat(" ", [
+		`job "slug" deploys to the GitHub environment "prod", another word for the production deployment`,
+		`environment; name the environment "production", the name every deployment record, ruleset and`,
+		"search uses",
+	])
+	some synonym in found
+	contains(synonym, `"STG", another word for the staging deployment environment`)
+	some local in found
+	contains(local, `name the environment "development"`)
+}
+
+test_gha_51_environment_in_names if {
+	steps := [{
+		"name": "Use", "env": {
+			"A": "${{ secrets.PROD_ORDERS_DATABASE_URL }}",
+			"B": "${{ vars.API_BASE_URL_STAGING }}",
+			"C": "${{ secrets.ORDERS_DATABASE_URL }}",
+			"D": "${{ secrets.TEST_PYPI_TOKEN }}",
+			"E": "${{ secrets.DEVCONTAINER_TOKEN }}",
+			"F": "${{ secrets.PROD_ORDERS_DATABASE_URL }}",
+		},
+		"run": "cp config/secrets.production.yaml .",
+	}]
+	conditional := {"name": "Maybe", "if": "vars.DEV_ENABLED == 'true'", "run": "true"}
+	docs := [wf("deploy.yml", workflow("workflow_dispatch", {"a": job({"steps": array.concat(steps, [conditional])})}))]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	found := messages(results, "GHA-51")
+	count(found) == 3
+	some prod in found
+	prod == concat(" ", [
+		"secrets.PROD_ORDERS_DATABASE_URL scopes a value to a deployment environment by its name (PROD); set it",
+		"on that environment's GitHub environment as secrets.ORDERS_DATABASE_URL, the same name in each",
+		"environment, and read it from a job with that environment:",
+	])
+	some staging in found
+	contains(staging, "vars.API_BASE_URL_STAGING scopes")
+	some dev in found
+	contains(dev, "vars.DEV_ENABLED scopes")
+}
+
+app_token(given) := {"name": "Mint", "uses": "actions/create-github-app-token@x", "with": given}
+
+test_gha_52_app_token_steps if {
+	steps := [
+		app_token({"client-id": "${{ vars.DEPLOY_APP_CLIENT_ID }}", "private-key": "${{ secrets.DEPLOY_APP_PRIVATE_KEY }}"}),
+		app_token({"app-id": "${{ secrets.DEPLOY_APP_ID }}", "private-key": "${{ secrets.DEPLOY_KEY }}"}),
+		app_token({"client-id": "${{ secrets.DEPLOY_APP_CLIENT_ID }}", "private-key": "${{ secrets.BOT_APP_PRIVATE_KEY }}"}),
+		app_token({"client-id": "${{ vars.DEPLOY_APP_CLIENT_ID }}", "private-key": "${{ secrets.BOT_APP_PRIVATE_KEY }}"}),
+	]
+	docs := [wf("deploy.yml", workflow("workflow_dispatch", {"a": job({"steps": steps})}))]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	found := messages(results, "GHA-52")
+	found == {
+		concat(" ", [
+			`step "Mint" in job "a" mints a GitHub App token with app-id, the older input; name the App with`,
+			"client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key:",
+			"${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both",
+		]),
+		concat(" ", [
+			`step "Mint" in job "a" mints a GitHub App token with private-key ${{ secrets.DEPLOY_KEY }}; name the`,
+			"App with client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key:",
+			"${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both",
+		]),
+		concat(" ", [
+			`step "Mint" in job "a" mints a GitHub App token with client-id ${{ secrets.DEPLOY_APP_CLIENT_ID }};`,
+			"name the App with client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key:",
+			"${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both",
+		]),
+		concat(" ", [
+			`step "Mint" in job "a" mints a GitHub App token with a client ID for DEPLOY and a private key for BOT;`,
+			"name the App with client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key:",
+			"${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both",
+		]),
+	}
+}
+
+test_gha_52_release_token_steps_are_rel_16s if {
+	steps := [app_token({"app-id": "${{ secrets.AUTOMATION_APP_ID }}"})]
+	docs := [wf("release.yml", workflow("push", {"a": job({"steps": steps})}))]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	count(messages(results, "GHA-52")) == 0
+}
+
+test_gha_52_credential_references if {
+	steps := [{
+		"name": "Use", "env": {
+			"A": "${{ secrets.BOT_APP_ID }}",
+			"B": "${{ vars.BOT_APP_ID }}",
+			"C": "${{ secrets.BOT_APP_CLIENT_ID }}",
+			"D": "${{ vars.BOT_APP_PRIVATE_KEY }}",
+			"E": "${{ vars.BOT_APP_CLIENT_ID }}",
+			"F": "${{ secrets.BOT_APP_PRIVATE_KEY }}",
+		},
+		"run": "true",
+	}]
+	bot := {"client-id": "${{ vars.BOT_APP_CLIENT_ID }}", "private-key": "${{ secrets.BOT_APP_PRIVATE_KEY }}"}
+	action := {"runs": {"steps": [app_token(bot)]}}
+	docs := [
+		wf("maintain.yml", workflow("workflow_dispatch", {"a": job({"steps": steps})})),
+		td.file(".github/actions/authenticate-bot/action.yml", action),
+	]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	found := messages(results, "GHA-52")
+	count(found) == 4
+	some secret_id in found
+	startswith(secret_id, "secrets.BOT_APP_ID keeps an App ID as a secret")
+	some key in found
+	startswith(key, "vars.BOT_APP_PRIVATE_KEY keeps a private key in a variable")
+}
+
+record_step := {
+	"name": "Record",
+	"run": "gh api -X POST \"orgs/$OWNER/artifacts/metadata/deployment-record\" --input record.json",
+}
+
+deploy_job(extra) := job(object.union({"environment": "production"}, extra))
+
+test_gha_53_deployment_records if {
+	jobs := {
+		"bare": deploy_job({"steps": [{"name": "Deploy", "run": "task deploy"}]}),
+		"recorded": deploy_job({"permissions": {"artifact-metadata": "write"}, "steps": [record_step]}),
+		"unpermitted": deploy_job({"permissions": {"contents": "read"}, "steps": [record_step]}),
+		"inherited": deploy_job({"steps": [record_step]}),
+		"through_action": deploy_job({"steps": [{"name": "Record", "uses": "./.github/actions/sync-deployment"}]}),
+		"no_environment": job({"steps": [{"name": "Plan", "run": "task plan"}]}),
+		"caller": {"name": "Call", "uses": "./.github/workflows/reusable-deploy-api.yml", "environment": "production"},
+	}
+	deploy := {"name": "W", "on": "workflow_dispatch", "permissions": {"artifact-metadata": "write"}, "jobs": jobs}
+	action := {"runs": {"steps": [object.union(record_step, {"shell": "bash"})]}}
+	docs := [
+		wf("deploy-production-api.yml", deploy),
+		td.file(".github/actions/sync-deployment/action.yml", action),
+	]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	found := messages(results, "GHA-53")
+	found == {
+		concat(" ", [
+			`job "bare" deploys to the "production" environment but records no deployment; post the deployment`,
+			"record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version,",
+			"status: deployed and logical_environment: production) so the organization's linked artifacts show",
+			"what runs there",
+		]),
+		concat(" ", [
+			`job "unpermitted" posts a deployment record without artifact-metadata: write; grant it in the job's`,
+			"permissions so the record is written",
+		]),
+	}
+	other := [wf("verify-production.yml", deploy)]
+	results_other := checks.findings with input as other with data.conventions.index as td.index
+	count(messages(results_other, "GHA-53")) == 0
+}

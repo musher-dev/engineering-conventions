@@ -441,7 +441,9 @@ Checked by: conftest · Severity: warning · Since: 0.7.0
 One directory for every interface a repository offers is what lets a consumer, a reviewer or a tool find them without
 reading the code, and what lets IFACE-01 prove nothing in it is undeclared. A definition elsewhere is an interface the
 repository offers from a place nobody looks. The check needs the product directory from `[layout]`; without one,
-REPO-14 is reported instead.
+REPO-14 is reported instead. A repository that declares `product = ""` keeps `contracts/` at its root, and a
+multi-product repository may also keep one at the top of each product its `[layout] products` lists
+([EC-0018](../repository/layout.md)), such as `apps/orders/contracts/`; IFACE-01 then reads each of them.
 
 **Correct:**
 

@@ -93,7 +93,8 @@ vars:
   PROSE_STYLES: MusherConventions MusherCopy
   # The bundle's top-level entries under engineering-conventions/. The
   # authoring side (src/, tests/, pyproject.toml, uv.lock, .python-version)
-  # is excluded because consumers run the rules with conftest and Vale alone.
+  # is excluded because consumers run the rules with bin/conventions, which
+  # needs conftest and jq (and Vale, Spectral or hadolint for those commands).
   # So are the Rego unit tests: conftest would load them as policy.
   BUNDLE_ENTRIES: README.md bin checks definitions examples
 

@@ -32,7 +32,7 @@ test_adopt_09_unpinned if {
 test_adopt_09_pins if {
 	entry := {"github:musher-dev/engineering-conventions": {"version": "0.2.0"}}
 	table := td.file(".devcontainer/mise.toml", {"tools": entry})
-	declared := td.declaration({"schema_version": 1, "conventions": {"version": "0.2.0"}})
+	declared := td.declaration({"conventions": {"version": "0.2.0"}})
 	some docs in [[td.pin], [table], [declared]]
 	count(declaration.findings) == 0 with input as docs
 		with data.conventions.index as td.index
@@ -41,7 +41,6 @@ test_adopt_09_pins if {
 
 test_adopt_02_schema_problems_in_one_finding if {
 	docs := [td.pin, td.declaration({
-		"schema_version": 1,
 		"profile": 7,
 		"waiver": [],
 		"waivers": [waiver("ADOPT-03", "2026-12-01")],
@@ -56,29 +55,45 @@ test_adopt_02_schema_problems_in_one_finding if {
 }
 
 test_adopt_02_messages if {
-	adopt_waiver := td.declaration({"schema_version": 1, "waivers": [waiver("ADOPT-03", "2026-12-01")]})
+	adopt_waiver := td.declaration({"waivers": [waiver("ADOPT-03", "2026-12-01")]})
 	messages(declaration.findings, "ADOPT-02") == {
 		"`waivers.0.requirement` names ADOPT-03; ADOPT requirements cannot be waived.",
 	} with input as [td.pin, adopt_waiver]
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
-	override := td.declaration({"schema_version": 1, "vocabulary": {"display_forms": {"api": "Api", "grpc": "gRPC"}}})
+	override := td.declaration({"vocabulary": {"display_forms": {"api": "Api", "grpc": "gRPC"}}})
 	messages(declaration.findings, "ADOPT-02") == {concat("", [
 		`declares display form "Api" for token "api", which the release defines as "API"; `,
 		"a declaration may only add forms",
 	])} with input as [td.pin, override]
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
-	wrong_type := td.declaration({"schema_version": 1, "profile": 7})
+	wrong_type := td.declaration({"profile": 7})
 	wrong_type_message := "`profile`: Invalid type. Expected: string, given: integer."
 	messages(declaration.findings, "ADOPT-02") == {wrong_type_message} with input as [td.pin, wrong_type]
 		with data.conventions.index as td.index
 		with data.conventions.runtime.now as td.now
 }
 
+# schema_version is deprecated: a declaration without it is valid, and one
+# that still carries it is valid only as 1.
+test_adopt_02_schema_version_is_optional if {
+	some declared in [td.declaration({"profile": "base-repo"}), td.declaration({"schema_version": 1})]
+	count(messages(declaration.findings, "ADOPT-02")) == 0 with input as [td.pin, declared]
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+}
+
+test_adopt_02_schema_version_other_than_1 if {
+	declared := td.declaration({"schema_version": 2})
+	count(messages(declaration.findings, "ADOPT-02")) == 1 with input as [td.pin, declared]
+		with data.conventions.index as td.index
+		with data.conventions.runtime.now as td.now
+}
+
 # conftest renders an unquoted TOML date as a timestamp at midnight UTC.
 test_adopt_02_bare_toml_date if {
-	bare := td.declaration({"schema_version": 1, "waivers": [waiver("GHA-07", "2026-12-01T00:00:00Z")]})
+	bare := td.declaration({"waivers": [waiver("GHA-07", "2026-12-01T00:00:00Z")]})
 	messages(declaration.findings, "ADOPT-02") == {concat("", [
 		"`waivers.0.expires` is the bare TOML date 2026-12-01T00:00:00Z; ",
 		`quote it as "2026-12-01", because the declaration's dates are strings.`,

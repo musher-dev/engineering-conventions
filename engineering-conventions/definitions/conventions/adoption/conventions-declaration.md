@@ -138,7 +138,6 @@ waived without making every waiver meaningless.
 
 ```toml
 # .repo/conventions.toml
-schema_version = 1
 
 # Optional: the convention profile that applies, overriding the one the kind in
 # .repo/repository.toml selects.
@@ -181,7 +180,7 @@ ADOPT-02 reports.
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| `schema_version` | yes | The file format version. Always `1`. |
+| `schema_version` | no | Deprecated and ignored; leave it out. The release the repository pins already versions this file's shape, because only that release's tool reads it ([decision 0033](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0033-a-declaration-is-versioned-by-its-reader.md)). `1` is still accepted; any other value is reported by ADOPT-02, and a future breaking release rejects the key. |
 | `conventions.version` | no | The release pinned, such as `0.1.0`, for a repository that does not pin it in mise. Upgrade by changing this value and the downloaded bundle together; ADOPT-08 reports a mismatch. |
 | `profile` | no | The convention profile that selects which requirements apply and at what severity. It overrides the profile of the repository's kind ([EC-0009](../repository/identity-declaration.md)); without either, `base-repo` applies. It must be one the pinned release defines (ADOPT-07). |
 | `vocabulary.display_forms` | no | Extra display forms, keyed by lowercase token. They add to the release's display forms and cannot change one the release defines. |
@@ -274,7 +273,6 @@ ships is reported here too.
 **Correct:**
 
 ```toml
-schema_version = 1
 profile = "base-repo"
 
 [conventions]
@@ -284,7 +282,6 @@ version = "0.1.0"
 **Incorrect:**
 
 ```toml
-schema_version = 1
 profile = "base-repo"
 
 [conventions]

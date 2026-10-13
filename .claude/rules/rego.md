@@ -11,8 +11,8 @@ conftest and nothing else, so what is written here is what a consumer executes.
 
 ## Rules
 
-- **MUST** keep a check pure. A package under `conventions.checks.<family>.<convention>`
-  defines only `findings contains f if { ... }`, with
+- **MUST** keep a check pure. A package under `conventions.checks.<topic>.<convention>`
+  (the topic with `_` for `-`, such as `github_actions`) defines only `findings contains f if { ... }`, with
   `f := {"id", "path", "message"}`. Severity, profiles, waivers and time belong to
   `package main` alone, so changing a severity is a frontmatter edit, never a
   Rego change.
@@ -20,20 +20,11 @@ conftest and nothing else, so what is written here is what a consumer executes.
   carry `# METADATA` with `custom.convention: EC-NNNN` on the package.
 - **MUST** write a `message` a reader can act on without the URL: what is wrong
   and what to change it to.
-- **MUST** ship a fixture repo for every requirement a check emits:
-  `engineering-conventions/tests/fixtures/repos/<id-lower>-<slug>/`, an overlay
-  on `clean/` holding only the files that differ (plus `removed.txt`), with an
-  `expected.json` that names it. A requirement no fixture expects is unproven;
-  `task invariants` fails on it.
-- **MUST** ship a passing near-miss for a requirement first released after 0.6.2:
-  `tests/fixtures/repos/<id-lower>-passes-<slug>/`, the closest conforming
-  repository, whose `expected.json` has none of the requirement's findings.
-  Aim it at where the check could misfire (file selection, parser, pattern,
-  threshold, date boundary). `task invariants` fails without one.
-- **MUST** keep `tests/fixtures/findings.snapshot.json` current: it records
-  every case's findings with their messages, so run
-  `conventions fixtures --update-snapshot` after a new case or a changed
-  message, and review the diff. A changed message is a `fix`.
+- **MUST** ship a fixture repo for every requirement a check emits, a passing
+  near-miss (`<id-lower>-passes-<slug>/`) for one first released after 0.6.2,
+  and a current `tests/fixtures/findings.snapshot.json`, whose diff you read.
+  A changed message is a `fix`. The procedure is docs/authoring.md, "Adding a
+  requirement", steps 5 and 6.
 - **MUST** keep the shared test index in `lib/testdata_test.rego` to the real
   index's shape; `lib/testdata_shape_test.rego` fails when it drifts.
 - **MUST** put a `*_test.rego` beside every policy file. `task checks:test` fails

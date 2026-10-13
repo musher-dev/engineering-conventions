@@ -33,6 +33,10 @@ tasks:
           PATHSPEC: "'engineering-conventions/definitions/copy/style.yml'"
       - task: schemas:validate:files
         vars:
+          SCHEMA: env-grammar
+          PATHSPEC: "'engineering-conventions/definitions/environment/grammar.yml'"
+      - task: schemas:validate:files
+        vars:
           YQ_FLAGS: -p toml
           SCHEMA: conventions-declaration
           PATHSPEC: "'.repo/conventions.toml' 'engineering-conventions/examples/**/.repo/conventions.toml'"

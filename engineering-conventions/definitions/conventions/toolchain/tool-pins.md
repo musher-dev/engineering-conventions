@@ -42,12 +42,6 @@ implementations:
   - repo: musher-dev/platform
     check: TC-12
     mode: blocking
-  - repo: musher-dev/development-container
-    check: TC-02
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: TC-03
-    mode: blocking
 references:
   - title: "mise: Configuration"
     url: https://mise.jdx.dev/configuration.html

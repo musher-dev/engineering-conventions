@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-09",
+    "path": ".github/workflows/validate-scripts.yml",
+    "severity": "warning"
+  }
+]

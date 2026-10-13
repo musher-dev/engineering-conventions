@@ -225,15 +225,12 @@ def _git_files(repo: Path) -> list[str] | None:
     A directory inside some other repository (a fixture, say) is walked
     instead: its files are relative to itself, not to that repository.
     """
-    git = shutil.which("git")
-    if git is None or not is_work_tree_root(repo):
+    if not is_work_tree_root(repo):
         return None
-    listed = subprocess.run(
-        [git, "-C", str(repo), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    listed = _git(repo, "ls-files", "-z", "--cached", "--others", "--exclude-standard")
+    if listed is None:
+        return None
+    listed.check_returncode()
     # The index still lists a file deleted from the work tree until the
     # deletion is staged; only files that exist are part of the repository.
     return sorted({name for name in listed.stdout.split("\0") if name and (repo / name).exists()})

@@ -74,7 +74,7 @@ requirements are review matters. They describe judgment that a policy engine can
 ## Status and authority
 
 This convention is a **draft** owned by `musher-dev/platform` through issue
-[#2892](https://github.com/musher-dev/platform/issues/2892), published here as proposed requirements until the single
+musher-dev/platform#2892, published here as proposed requirements until the single
 handoff described in [decision 0002](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0002-authority-and-migration.md).
 No platform check implements these
 requirements; they are applied in review.
@@ -240,7 +240,7 @@ Checked by: review · Severity: warning · Since: 0.1.0
 
 ## References
 
-- [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
+- musher-dev/platform#2892: Organize GitHub Actions workflows by responsibility
 - [EC-0002 Workflow files](workflow-files.md)
 - [EC-0003 Jobs and steps](jobs-and-steps.md)
 - [EC-0004 Composite actions](composite-actions.md)

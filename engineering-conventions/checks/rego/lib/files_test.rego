@@ -15,7 +15,7 @@ test_classifies_and_normalises_paths if {
 	object.keys(files.workflows) == {".github/workflows/validate.yml"} with input as docs
 	object.keys(files.actions) == {".github/actions/setup-tools/action.yml"} with input as docs
 	object.keys(files.rulesets) == {".github/rulesets/main.json"} with input as docs
-	files.declaration == {"schema_version": 1, "profile": "base-repo"} with input as docs
+	files.declaration == {"profile": "base-repo"} with input as docs
 	files.declared with input as docs
 	".github/README.md" in files.repository_files with input as docs
 	not "/tmp/inventory.json" in files.repository_files with input as docs

@@ -249,6 +249,35 @@ test_conf_09_dangling_reference if {
 	}
 }
 
+# A paths-filter glob is judged by what it matches, and calls each file it
+# matches; a glob that matches nothing is a filter that never fires.
+test_conf_09_glob_reference if {
+	paths := array.concat(conforming_files, [
+		".config/python/scripts-pyright.json",
+		".config/python/scripts-ruff.toml",
+		".github/workflows/validate.yml",
+	])
+	text := concat("\n", [index_text, "| `python/` | Pyright, Ruff | `Validate` |", ""])
+	workflow := td.file(".github/workflows/validate.yml", {"on": {"pull_request": {"paths": [
+		".config/python/scripts-*",
+		".config/python/**",
+		".config/python/scripts-[rp]*",
+		".config/rust/*.toml",
+	]}}})
+	found := config.findings with input as repo(paths, {".config/README.md": text}, [taskfile, workflow])
+	ids_at(found) == {["CONF-09", ".github/workflows/validate.yml"]}
+	messages(found, "CONF-09") == {
+		"names .config/rust/*.toml, which does not exist; correct the path or remove the reference",
+	}
+}
+
+test_conf_04_called_by_glob if {
+	paths := array.concat(conforming_files, [".config/python/scripts-ruff.toml", ".github/workflows/validate.yml"])
+	text := concat("\n", [index_text, "| `python/scripts-ruff.toml` | Ruff | `Validate` |", ""])
+	workflow := td.file(".github/workflows/validate.yml", {"on": {"push": {"paths": [".config/python/scripts-*"]}}})
+	count(config.findings) == 0 with input as repo(paths, {".config/README.md": text}, [taskfile, workflow])
+}
+
 test_suggested_name_default if {
 	config.suggested_name("elsewhere/x.yml") == "<tool>.<ext>"
 }

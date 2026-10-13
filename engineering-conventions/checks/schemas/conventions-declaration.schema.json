@@ -4,10 +4,9 @@
   "description": "A consuming repository's optional .repo/conventions.toml: the convention profile that applies to it and every waiver it holds, and, for a repository that does not pin the release in mise, the release it is checked against. ADOPT-02 checks a declaration against this schema.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version"],
   "properties": {
     "schema_version": {
-      "description": "Version of this file's shape. Always 1.",
+      "description": "Deprecated and ignored: the pinned release already versions this file's shape, because only the conventions tool of that release reads it. Accepted as 1 for now, and rejected in a future breaking release; remove it.",
       "const": 1
     },
     "conventions": {

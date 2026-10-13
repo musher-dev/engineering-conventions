@@ -1,6 +1,21 @@
 [
   {
+    "id": "IMAGE-11",
+    "path": ".github/workflows/publish.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "IMAGE-12",
+    "path": ".github/workflows/publish.yml",
+    "severity": "warning"
+  },
+  {
     "id": "OUT-13",
+    "path": ".github/workflows/publish.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "OUT-14",
     "path": ".github/workflows/publish.yml",
     "severity": "warning"
   }

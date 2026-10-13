@@ -22,7 +22,8 @@ are held to them first. This file routes; it restates none of them.
   (zizmor, config in `.config/actions/zizmor.yml`).
 - **Tools in CI**: installed only through `.github/actions/setup-tools`, the one
   `jdx/mise-action` reference, from `.config/mise/config.toml`. MUST NOT install
-  a tool any other way.
+  a tool any other way; the one exception in a workflow, the Dev Containers
+  CLI, is listed in docs/repository.md → "Toolchain".
 - **Required checks**: `.github/rulesets/RULESETS.md`. A new gate joins the
   `Validate / Required` aggregate; renaming a job that a ruleset lists breaks
   every open PR (GHA-36).

@@ -89,7 +89,8 @@ reference text are out of scope.
 
 This convention verifies the mechanism, not the voice. Which words a site avoids, which claims it may make, its tone
 and how long its sentences run are the site owner's decisions: positioning and product vocabulary are owned by
-`musher-dev/platform` and `musher-dev/company` ([the charter](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0000-charter.md)).
+`musher-dev/platform` and `musher-dev/pelorus` ([the charter](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0000-charter.md),
+as amended by [decision 0036](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0036-ownership-moves-out-of-company-and-platform.md)).
 A site that wants such rules writes them as a Vale style in its own repository and applies it beside MusherProse, in
 the same `BasedOnStyles`.
 

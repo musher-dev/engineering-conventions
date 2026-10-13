@@ -13,6 +13,7 @@ package conventions.checks.github_actions.runners_and_step_outcomes
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.steps
+import data.conventions.lib.values
 
 # GHA-39
 findings contains lib.finding("GHA-39", path, message) if {
@@ -70,14 +71,16 @@ findings contains lib.finding("GHA-41", entry.path, message) if {
 	)
 }
 
-# GHA-41: continue-on-error written as a literal true on a step.
+# GHA-41: continue-on-error written as a literal true on a step whose
+# outcome no later step reads.
 findings contains lib.finding("GHA-41", entry.path, message) if {
 	some entry in steps.entries
 	continues_on_error(entry.step)
+	not {"path": entry.path, "step": entry.step} in handled_steps
 	message := sprintf(
 		concat(" ", [
 			"%s in %s sets continue-on-error: true, so its failure turns green; remove it,",
-			"or make the step succeed only when what follows can rely on it",
+			"or give the step an id and handle steps.<id>.outcome in a later step",
 		]),
 		[entry.label, entry.where],
 	)
@@ -265,6 +268,34 @@ docker_step(step) if {
 # `|| true`, `|| :` and `set +e` as commands; the pattern reads one line of
 # comment-free code.
 swallow_pattern := `\|\|\s*(true|:)(\s|;|\)|$)|(^|[;&|]\s*|\bthen\s+)set\s+\+e\b`
+
+# A step that continues on error, with an id a later step in the same job or
+# action reads as steps.<id>.outcome: the failure is handed on, not lost. Its
+# conclusion is always success, so only its outcome says it failed.
+handled_steps contains {"path": path, "step": step} if {
+	some path, workflow in files.workflows
+	some job in files.jobs(workflow)
+	job_steps := files.steps(job)
+	some index, step in job_steps
+	outcome_read(job_steps, index, step)
+}
+
+handled_steps contains {"path": path, "step": step} if {
+	some path, action in files.actions
+	action_steps := files.action_steps(action)
+	some index, step in action_steps
+	outcome_read(action_steps, index, step)
+}
+
+outcome_read(all_steps, index, step) if {
+	is_string(step.id)
+	regex.match(`^[A-Za-z_][A-Za-z0-9_-]*$`, step.id)
+	pattern := sprintf(`\bsteps\.%s\.outcome\b`, [step.id])
+	some later, other in all_steps
+	later > index
+	some value in values.string_values(other)
+	regex.match(pattern, value)
+}
 
 continues_on_error(node) if node["continue-on-error"] == true
 

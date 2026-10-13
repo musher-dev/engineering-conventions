@@ -31,6 +31,11 @@ engineering-conventions/               repository level: acts on the product
     └── pyproject.toml  uv.lock  .python-version
 ```
 
+`.repo/` holds declarations *about* the repository, which tooling reads and the governance owners review. A product's
+interface files are product content: they go in `<product>/contracts/` (IFACE-08), where the product's owners review
+them, never in `.repo/` ([decision 0033](decisions/0033-a-declaration-is-versioned-by-its-reader.md)). This
+repository offers no interfaces, so it has no `contracts/`.
+
 This is the layout every repository follows ([EC-0018](../engineering-conventions/definitions/conventions/repository/layout.md)):
 `.repo/repository.toml` declares `[layout] product = "engineering-conventions"`, and `task conventions:self` checks
 that the root holds no product content and that the Taskfile and Dependabot name the same directory.

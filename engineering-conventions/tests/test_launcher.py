@@ -290,8 +290,6 @@ def _stage(repo: Path, families: list[str]) -> None:
     expires = (datetime.now(UTC) + timedelta(days=30)).strftime("%Y-%m-%d")
     enforce = ", ".join(f'"{family}"' for family in families)
     (repo / ".repo" / "conventions.toml").write_text(
-        "schema_version = 1\n"
-        "\n"
         "[conventions]\n"
         'version = "0.1.0"\n'
         "\n"

@@ -118,7 +118,7 @@ index := {
 dependencies_schema := {
 	"type": "object",
 	"additionalProperties": false,
-	"required": ["schema_version", "dependencies"],
+	"required": ["dependencies"],
 	"properties": {
 		"schema_version": {"const": 1},
 		"dependencies": {"type": "array", "items": {
@@ -196,7 +196,6 @@ subagent_frontmatter_schema := {
 declaration_schema := {
 	"type": "object",
 	"additionalProperties": false,
-	"required": ["schema_version"],
 	"properties": {
 		"schema_version": {"const": 1},
 		"conventions": {"type": "object", "properties": {"version": {"type": "string"}}},
@@ -238,8 +237,7 @@ named_inventory(paths, name) := file(
 	{"conventions_inventory": {"files": paths, "repository": {"name": name}}},
 )
 
-# schema_version is filled in so a test states only what it is about.
-declaration(contents) := file(".repo/conventions.toml", object.union({"schema_version": 1}, contents))
+declaration(contents) := file(".repo/conventions.toml", contents)
 
 # schema_version is filled in so a test states only what it is about.
 repository(contents) := file(".repo/repository.toml", object.union({"schema_version": 1}, contents))

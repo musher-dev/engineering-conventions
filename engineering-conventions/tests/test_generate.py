@@ -92,7 +92,8 @@ def test_index_carries_a_self_contained_declaration_schema(content: Content) -> 
     schema = as_map(_index(content)["declaration_schema"])
     refs = json.dumps(schema)
     assert "common.schema.json" not in refs
-    assert schema["required"] == ["schema_version"]
+    assert "required" not in schema
+    assert as_map(as_map(schema["properties"])["schema_version"])["const"] == 1
 
 
 def test_convention_entry_keeps_authority(content: Content) -> None:

@@ -649,7 +649,7 @@
           },
           "schema_version": {
             "const": 1,
-            "description": "Version of this file's shape. Always 1."
+            "description": "Deprecated and ignored: the pinned release already versions this file's shape, because only the conventions tool of that release reads it. Accepted as 1 for now, and rejected in a future breaking release; remove it."
           },
           "vocabulary": {
             "additionalProperties": false,
@@ -670,9 +670,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "schema_version"
-        ],
         "title": "Conventions declaration",
         "type": "object"
       },
@@ -745,11 +742,10 @@
           },
           "schema_version": {
             "const": 1,
-            "description": "Version of this file's shape. Always 1."
+            "description": "Deprecated and ignored: the pinned release already versions this file's shape, because only the conventions tool of that release reads it. Accepted as 1 for now, and rejected in a future breaking release; remove it."
           }
         },
         "required": [
-          "schema_version",
           "dependencies"
         ],
         "title": "Dependencies declaration",

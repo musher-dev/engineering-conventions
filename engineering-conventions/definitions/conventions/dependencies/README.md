@@ -39,8 +39,6 @@ are fields of an environment binding ([EC-0020](../environment/env-schema.md)). 
 
 ```toml
 # .repo/dependencies.toml
-schema_version = 1
-
 [[dependencies]]
 repository = "platform-api"
 output = "contracts"

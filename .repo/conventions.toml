@@ -6,7 +6,6 @@
 # rewrites the marked line on every release (extra-files in
 # .github/release-please/config.json), so never bump it by hand. The marker
 # comment is what its generic updater finds.
-schema_version = 1
 waivers = []
 
 [conventions]

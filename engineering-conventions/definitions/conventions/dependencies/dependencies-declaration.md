@@ -112,8 +112,6 @@ by
 
 ```toml
 # .repo/dependencies.toml
-schema_version = 1
-
 [[dependencies]]
 repository = "platform-api"
 output = "contracts"
@@ -124,7 +122,7 @@ description = "The console's API client is generated from the public API."
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| `schema_version` | yes | The file format version. Always `1`. |
+| `schema_version` | no | Deprecated and ignored; leave it out. The release the repository pins already versions this file's shape, because only that release's tool reads it ([decision 0033](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0033-a-declaration-is-versioned-by-its-reader.md)). `1` is still accepted; any other value is reported by DEPS-02, and a future breaking release rejects the key. |
 | `dependencies[].repository` | yes | The producer's name on GitHub, without the organization. |
 | `dependencies[].output` | yes | The ID of the producer's output that delivers the interfaces, usually a `bundle`. |
 | `dependencies[].interfaces` | no | The IDs of the producer's interfaces this repository vendors. Every interface the output delivers when omitted. |

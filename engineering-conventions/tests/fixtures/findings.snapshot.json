@@ -5,6 +5,8 @@
   "adopt-02-invalid-declaration": [
     [".repo/conventions.toml", "ADOPT-02", "warning", "the declaration: Additional property waiver is not allowed.", true]
   ],
+  "adopt-02-passes-deprecated-schema-version": [],
+  "adopt-02-passes-without-schema-version": [],
   "adopt-03-expired-waiver": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
     [".repo/conventions.toml", "ADOPT-03", "warning", "waiver 1 (GHA-07) expired on 2026-09-01 and no longer suppresses its finding; fix the finding and delete the waiver, or renew it with a new expires date and a tracking link", true]
@@ -275,6 +277,7 @@
   "deps-02-invalid-declaration": [
     [".repo/dependencies.toml", "DEPS-02", "warning", "`dependencies.0`: Additional property path is not allowed.", true]
   ],
+  "deps-02-passes-deprecated-schema-version": [],
   "deps-02-passes-without-optional-fields": [],
   "deps-03-declared-twice": [
     [".repo/dependencies.toml", "DEPS-03", "warning", "specifications's \"schemas\" is declared more than once; declare each vendored output once, with one version", true],

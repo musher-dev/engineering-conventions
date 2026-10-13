@@ -37,7 +37,7 @@ test_conforming if {
 test_envs_28_carriers if {
 	found := env_shared.findings with input as t.one({
 		"DEPLOYMENT_ENVIRONMENT": t.binding({}),
-		"COLLECTOR_DEPLOYMENT_ENVIRONMENT": t.binding({}),
+		"WORKER_DEPLOYMENT_ENVIRONMENT": t.binding({}),
 		"OTEL_ENVIRONMENT": t.binding({}),
 		"API_ENV": t.binding({}),
 		"VITE_APP_ENV": t.binding({"consumer": "client"}),
@@ -109,15 +109,15 @@ test_envs_29_runner_names_in_a_service if {
 
 test_envs_30_tier_words if {
 	found := env_shared.findings with input as t.one({
-		"PROD_READONLY_URL": t.binding({}),
+		"PROD_REPORTING_URL": t.binding({}),
 		"ENABLE_DEV_TOOLS": t.binding({"type": "boolean"}),
 		"ATLAS_DEV_URL": t.binding({}),
 		"WORKERS__STAGING__BATCH_SIZE": t.binding({}),
 	})
 	t.messages(found, "ENVS-30") == {
 		concat(" ", [
-			"binding PROD_READONLY_URL names the deployment environment (PROD); the environment selects the",
-			"value, not the name, so call it READONLY_URL and set a different value in each environment",
+			"binding PROD_REPORTING_URL names the deployment environment (PROD); the environment selects the",
+			"value, not the name, so call it REPORTING_URL and set a different value in each environment",
 		]),
 		concat(" ", [
 			"binding WORKERS__STAGING__BATCH_SIZE names the deployment environment (STAGING); the environment",

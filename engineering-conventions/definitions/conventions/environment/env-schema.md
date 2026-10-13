@@ -1219,11 +1219,11 @@ Checked by: conftest · Severity: warning · Since: 0.9.0
 
 **No deployment environment appears in a variable's name.**
 
-The environment selects the value, not the name. A schema with `PROD_READONLY_URL` beside `READONLY_URL` gives
-staging a variable it must leave empty and gives the code a branch on the environment, which is how a staging
-process ends up connected to production. One name, with a different value in each environment, keeps every
-environment running the same code. The check reports a binding whose name has a deployment environment's name or
-slug as a whole word between underscores: `PRODUCTION`, `PROD` or `STAGING`. `TEST`, `DEV` and `DEVELOPMENT` are
+The environment selects the value, not the name. A schema with `PROD_REPORTING_DATABASE_URL` beside
+`REPORTING_DATABASE_URL` gives staging a variable it must leave empty and gives the code a branch on the environment,
+which is how a staging process ends up connected to production. One name, with a different value in each environment,
+keeps every environment running the same code. The check reports a binding whose name has a deployment environment's
+name or slug as a whole word between underscores: `PRODUCTION`, `PROD` or `STAGING`. `TEST`, `DEV` and `DEVELOPMENT` are
 allowed, because they name a test, or a tool's own dev mode, database, server or device, far more often than an
 environment (`E2E_TEST_TIMEOUT_SEC`, `ATLAS_DEV_URL`), and a word only starting like one is not one, so
 `MUSHER_DEVELOPER_SLUG` passes. A vendor's name is not reported.

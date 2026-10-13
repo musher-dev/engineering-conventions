@@ -11,11 +11,11 @@ supersedes: []
 ## Context
 
 A survey of the organization's environment schemas found the deployment environment, the tier a process runs in,
-reaching programs under four variables: `OTEL_DEPLOYMENT_ENVIRONMENT`, `DEPLOYMENT_ENVIRONMENT`,
-`COLLECTOR_DEPLOYMENT_ENVIRONMENT` and `OTEL_ENVIRONMENT`. None of them is one OpenTelemetry reads: its SDKs take
-resource attributes from `OTEL_RESOURCE_ATTRIBUTES`, so the telemetry's `deployment.environment.name` was whatever
-each service's bootstrap copied by hand. The values were spelled two ways, `production` in one place and `prod` in
-another, and tiers appeared inside names (`PROD_READONLY_URL`, a secret-store setting suffixed `_PROD`), so the code
+reaching programs under four variables: `OTEL_DEPLOYMENT_ENVIRONMENT`, `DEPLOYMENT_ENVIRONMENT`, a component-prefixed
+`<COMPONENT>_DEPLOYMENT_ENVIRONMENT` and `OTEL_ENVIRONMENT`. None of them is one OpenTelemetry reads: its SDKs take
+resource attributes from `OTEL_RESOURCE_ATTRIBUTES`, so the telemetry's `deployment.environment.name` was whatever each
+service's bootstrap copied by hand. The values were spelled two ways, `production` in one place and `prod` in another,
+and tiers appeared inside names (`PROD_REPORTING_DATABASE_URL`, a secret-store setting suffixed `_PROD`), so the code
 chose between variables by environment instead of the environment choosing the value.
 
 The same survey found an invented `OTEL_ENABLED` where OpenTelemetry's switch is `OTEL_SDK_DISABLED`, a log level

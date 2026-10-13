@@ -13,7 +13,7 @@ itself, which is what a consumer pins.
 engineering-conventions/               repository level: acts on the product
 ├── .devcontainer/  .github/           integration homes whose location the tool mandates
 ├── .config/                           tool configuration (linters, hooks, mise), indexed in its README
-├── .claude/  AGENTS.md              agent contract and path-scoped rules
+├── .claude/  AGENTS.md                agent contract and path-scoped rules
 ├── .repo/                             this repository's own declarations (conventions, outputs, repository)
 ├── Taskfile.yml  taskfiles/           orchestration; reaches the product through PRODUCT_DIR
 ├── docs/                              contributor documentation and decisions
@@ -77,7 +77,7 @@ Within the repository level:
 | GitHub's own configuration | `.github/`: workflows, rulesets, Dependabot, release-please |
 | Agent permissions and path-scoped policy | `.claude/` |
 
-Four rules keep `.config/` predictable:
+Five rules keep `.config/` predictable:
 
 - **Bucket by concern.** Use `.config/<concern>/<tool>.<ext>`, with no leading dot on the filename. Two files sit
   where their tool's own search looks instead: `lefthook.yml` at the top level, because lefthook's search stops at

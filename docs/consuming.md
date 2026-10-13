@@ -42,6 +42,7 @@ conventions openapi                    # lint OpenAPI interfaces with the reposi
 conventions hadolint                   # lint every Dockerfile with .config/docker/hadolint.yaml
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
+conventions waivers                    # list the waivers in .repo/conventions.toml with their expiry
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -535,6 +536,20 @@ A waiver needs a reason of at least 20 characters, a tracking issue URL and an e
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.
 A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
 are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
+
+To review them, `conventions waivers` lists each waiver with its expiry, how many days remain, its tracking URL and
+the paths it covers. With `--check-tracking` it also asks the GitHub CLI (`gh`, signed in) for the state of each
+tracking issue or pull request, and exits 1 when any is closed or merged: the work the waiver waits on is done or
+dropped, so remove the waiver or track what remains. A tracking URL that is not a GitHub issue or pull request is
+listed but not checked.
+
+```sh
+conventions waivers                    # offline: the declaration and today's date only
+conventions waivers --check-tracking   # also reads each tracking issue's state with gh
+```
+
+Only `--check-tracking` reaches the network. `conventions check` never does, so its findings depend on the
+repository and the date alone.
 
 ## Adopt in stages
 

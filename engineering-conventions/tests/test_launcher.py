@@ -604,6 +604,89 @@ def test_env_file_needs_a_schema_that_parses(tmp_path: Path) -> None:
     assert _launch("env-file", "absent.yaml", cwd=tmp_path).returncode == 2
 
 
+def _waivers_repo(tmp_path: Path) -> Path:
+    today = datetime.now(UTC).date()
+    (tmp_path / ".repo").mkdir(parents=True)
+    (tmp_path / ".repo" / "conventions.toml").write_text(
+        f"""\
+schema_version = 1
+profile = "base-repo"
+
+[[waivers]]
+requirement = "GHA-41"
+paths = [".github/actions/setup-x/action.yml"]
+reason = "A retry of a uses: step that a later step handles."
+tracking = "https://github.com/example/example-api/issues/7"
+expires = "{today + timedelta(days=30)}"
+
+[[waivers]]
+requirement = "CONF-09"
+reason = "A paths filter glob that matches two files."
+tracking = "https://github.com/example/example-api/pull/8"
+expires = "{today - timedelta(days=1)}"
+
+[[waivers]]
+requirement = "ENVS-02"
+reason = "Each product keeps its own environment schema."
+tracking = "https://tracker.example.com/9"
+expires = "{today}"
+"""
+    )
+    return tmp_path
+
+
+def test_waivers_lists_each_with_its_expiry(tmp_path: Path) -> None:
+    repo = _waivers_repo(tmp_path)
+    completed = _launch("waivers", "-C", str(repo), cwd=repo)
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.splitlines() == [
+        f"GHA-41  {datetime.now(UTC).date() + timedelta(days=30)}  expires in 30 days",
+        "  tracking: https://github.com/example/example-api/issues/7",
+        "  paths: .github/actions/setup-x/action.yml",
+        f"CONF-09  {datetime.now(UTC).date() - timedelta(days=1)}  expired 1 day ago",
+        "  tracking: https://github.com/example/example-api/pull/8",
+        "  paths: everywhere",
+        f"ENVS-02  {datetime.now(UTC).date()}  expires today",
+        "  tracking: https://tracker.example.com/9",
+        "  paths: everywhere",
+    ]
+
+
+def test_waivers_without_any(tmp_path: Path) -> None:
+    assert _launch("waivers", "-C", str(tmp_path), cwd=tmp_path).stdout == (
+        "no waivers: .repo/conventions.toml does not exist\n"
+    )
+    (tmp_path / ".repo").mkdir()
+    declaration = tmp_path / ".repo" / "conventions.toml"
+    declaration.write_text('schema_version = 1\nprofile = "base-repo"\n')
+    assert _launch("waivers", "-C", str(tmp_path), cwd=tmp_path).stdout == (
+        "no waivers in .repo/conventions.toml\n"
+    )
+
+
+def test_waivers_check_tracking_reports_closed_work(tmp_path: Path) -> None:
+    repo = _waivers_repo(tmp_path / "repo")
+    stub = tmp_path / "stub"
+    stub.mkdir()
+    # A stand-in for gh: issue 7 is open, pull request 8 merged.
+    (stub / "gh").write_text(
+        '#!/bin/sh\ncase "$1 $3" in\n  "issue "*) echo OPEN ;;\n  "pr "*) echo MERGED ;;\nesac\n'
+    )
+    (stub / "gh").chmod(0o755)
+    path = {"PATH": f"{stub}{os.pathsep}{os.environ['PATH']}"}
+    completed = _launch("waivers", "--check-tracking", "-C", str(repo), cwd=repo, env=path)
+    assert completed.returncode == 1
+    states = [line for line in completed.stdout.splitlines() if line.startswith("  state:")]
+    assert states == [
+        "  state: open",
+        "  state: merged; the work this waiver waits on is done or dropped: remove the waiver,"
+        " or track what remains",
+        "  state: not checked: not a GitHub issue or pull request",
+    ]
+    closed = "1 of 3 waivers track an issue or pull request that is closed or merged"
+    assert closed in completed.stderr
+
+
 OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"
 
 

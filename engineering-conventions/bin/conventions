@@ -29,6 +29,7 @@
 #   conventions hadolint [-C DIR] [--config FILE] [FILE...]
 #   conventions env-contract [-C DIR] SCHEMA
 #   conventions env-file [-C DIR] [--force | --update] [--backup] SCHEMA
+#   conventions waivers [-C DIR] [--check-tracking]
 #   conventions version
 set -eu
 
@@ -697,6 +698,79 @@ env_file() {
   fi
 }
 
+# tracking_state URL: the state gh reports for a GitHub issue or pull
+# request (OPEN, CLOSED or MERGED), "unknown" when gh cannot read it, or
+# "not checked" for any other URL.
+tracking_state() {
+  case $1 in
+    https://github.com/*/*/issues/[0-9]*) kind=issue ;;
+    https://github.com/*/*/pull/[0-9]*) kind='pr' ;;
+    *) echo "not checked: not a GitHub issue or pull request"; return 0 ;;
+  esac
+  gh "${kind}" view "$1" --json state --jq .state < /dev/null 2> /dev/null || echo unknown
+}
+
+# List the waivers .repo/conventions.toml declares (EC-0001), each with its
+# expiry and how far away it is. With --check-tracking, ask gh for the state
+# of each tracking issue or pull request, and fail when any is closed: the
+# work the waiver waits on is done, or was dropped, so the waiver should go.
+# Only --check-tracking reaches the network; `conventions check` never does.
+waivers() {
+  given='' tracking=''
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      --check-tracking) tracking=1; shift ;;
+      *) usage ;;
+    esac
+  done
+  find_root
+  cd "${root}"
+  declaration=.repo/conventions.toml
+  if [ ! -f "${declaration}" ]; then
+    printf 'no waivers: %s does not exist\n' "${declaration}"
+    return 0
+  fi
+  if [ -n "${tracking}" ]; then
+    command -v gh > /dev/null 2>&1 ||
+      die "--check-tracking needs the GitHub CLI: install gh (https://cli.github.com) and run gh auth login"
+  fi
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+  tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse "${declaration}" \
+    > "${scratch}/declaration.json" || die "cannot read ${declaration}"
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -r --arg today "$(date -u +%Y-%m-%d)" -f "${bundle}/bin/waivers.jq" \
+    "${scratch}/declaration.json" > "${scratch}/rows" || die "cannot read the waivers in ${declaration}"
+  if [ ! -s "${scratch}/rows" ]; then
+    printf 'no waivers in %s\n' "${declaration}"
+    return 0
+  fi
+  tab=$(printf '\t')
+  closed=0 count=0
+  while IFS="${tab}" read -r requirement expires remaining url paths; do
+    count=$((count + 1))
+    printf '%s  %s  %s\n' "${requirement}" "${expires}" "${remaining}"
+    printf '  tracking: %s\n' "${url}"
+    printf '  paths: %s\n' "${paths}"
+    if [ -n "${tracking}" ]; then
+      state=$(tracking_state "${url}")
+      case ${state} in
+        CLOSED | MERGED)
+          closed=$((closed + 1))
+          printf '  state: %s; the work this waiver waits on is done or dropped: remove the waiver, or track what remains\n' \
+            "$(printf '%s' "${state}" | tr '[:upper:]' '[:lower:]')"
+          ;;
+        OPEN) printf '  state: open\n' ;;
+        *) printf '  state: %s\n' "${state}" ;;
+      esac
+    fi
+  done < "${scratch}/rows"
+  if [ "${closed}" -gt 0 ]; then
+    printf '%s of %s waivers track an issue or pull request that is closed or merged\n' "${closed}" "${count}" >&2
+    exit 1
+  fi
+}
+
 version() {
   release="${bundle}/checks/data/release.json"
   if [ -f "${release}" ]; then
@@ -715,6 +789,7 @@ case ${command} in
   hadolint) lint_dockerfiles "$@" ;;
   env-contract) env_contract "$@" ;;
   env-file) env_file "$@" ;;
+  waivers) waivers "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

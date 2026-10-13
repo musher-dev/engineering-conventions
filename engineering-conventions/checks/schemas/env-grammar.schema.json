@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Environment naming grammar",
+  "description": "The naming grammar of an environment schema's bindings (definitions/environment/grammar.yml, EC-0020). `conventions generate` publishes it, with each reserved prefix's vendored names, as env_grammar in index.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "units",
+    "boolean_prefixes",
+    "boolean_suffixes",
+    "client_prefixes",
+    "deployment_environment",
+    "reserved_prefixes"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this file's shape. Always 1.",
+      "const": 1
+    },
+    "description": {
+      "description": "What this file covers.",
+      "$ref": "common.schema.json#/definitions/nonEmptyString"
+    },
+    "units": {
+      "description": "Each unit suffix's one spelling, without its underscore, and the long forms ENVS-10 reports in its place.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["unit"],
+        "properties": {
+          "unit": { "$ref": "#/definitions/word" },
+          "long_forms": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/definitions/word" }
+          }
+        }
+      }
+    },
+    "boolean_prefixes": {
+      "description": "The prefixes a boolean binding's name starts with (ENVS-09).",
+      "$ref": "#/definitions/prefixes"
+    },
+    "boolean_suffixes": {
+      "description": "The suffixes a boolean's name is often given instead, which ENVS-09's message rewrites as a prefix.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^_[A-Z][A-Z0-9]*$" }
+    },
+    "client_prefixes": {
+      "description": "The client prefixes a schema has when it declares no naming.client_prefixes (ENVS-14).",
+      "$ref": "#/definitions/prefixes"
+    },
+    "deployment_environment": {
+      "description": "The one variable that carries the deployment environment, and the names that must not (ENVS-28, ENVS-30; decision 0034).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variable", "carriers", "carrier_suffixes", "vendor_modes", "name_words_allowed"],
+      "properties": {
+        "variable": { "$ref": "#/definitions/name" },
+        "carriers": {
+          "description": "Names that carry the deployment environment whatever their declaration says.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/name" }
+        },
+        "carrier_suffixes": {
+          "description": "Name endings that carry the deployment environment.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^_[A-Z][A-Z0-9_]*$" }
+        },
+        "vendor_modes": {
+          "description": "A framework's own mode variable, read by a library under that name; not the deployment environment.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/name" }
+        },
+        "name_words_allowed": {
+          "description": "Deployment environment names or slugs, upper-cased, that ENVS-30 does not report as a word of a name.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/word" }
+        }
+      }
+    },
+    "reserved_prefixes": {
+      "description": "Prefixes a vendor reserves: a name under one is a name that vendor defines (ENVS-29).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["vendor", "prefixes", "names"],
+        "properties": {
+          "vendor": { "$ref": "common.schema.json#/definitions/nonEmptyString" },
+          "prefixes": { "$ref": "#/definitions/prefixes" },
+          "names": {
+            "description": "The file under checks/data/vendor/ that lists every name the vendor defines, with its sources.",
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*\\.json$"
+          },
+          "suggest": {
+            "description": "A name made up under the prefix, mapped to the vendor's name for what it means.",
+            "type": "object",
+            "propertyNames": { "$ref": "#/definitions/name" },
+            "additionalProperties": { "$ref": "#/definitions/name" }
+          },
+          "runner_only": {
+            "description": "The vendor sets its names only inside a CI run, so a service declares none of them.",
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "word": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*$" },
+    "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$" },
+    "prefixes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*_$" }
+    }
+  }
+}

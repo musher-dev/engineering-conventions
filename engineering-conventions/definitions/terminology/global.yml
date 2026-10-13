@@ -704,6 +704,35 @@ terms:
       belong to that environment alone.
     tags: [env.org-scoped]
     stability: provisional
+  - id: env.org-scoped.musher-api-url
+    display_name: MUSHER_API_URL
+    token: musher-api-url
+    definition: >-
+      The address of the Musher API that a client program reads: a command-line tool, an SDK or a service that calls
+      the API as a client. The program serving the API never reads it for anything else.
+    tags: [env.org-scoped]
+    stability: provisional
+
+  # Shared stems: the final words of a variable name whose values every
+  # Musher program agrees on, whatever the prefix before them (ENVS-31). The
+  # token is the stem in lower kebab-case, and values lists what it may hold.
+  - id: env.shared-stem.log-level
+    display_name: LOG_LEVEL
+    token: log-level
+    values: [trace, debug, info, warn, error]
+    definition: >-
+      The least severe log record a program writes, from trace, the most detailed, to error.
+    tags: [env.shared-stem]
+    stability: provisional
+  - id: env.shared-stem.log-format
+    display_name: LOG_FORMAT
+    token: log-format
+    values: [json, text]
+    definition: >-
+      How a program writes each log record: json, one object per line for a collector to parse, or text, for a
+      person reading a terminal.
+    tags: [env.shared-stem]
+    stability: provisional
 
   # Systems: the first token of a repository's name (REPO-09) and the system
   # field of .repo/repository.toml (REPO-03). A system groups repositories by

@@ -22,6 +22,10 @@ ORG_SCOPED_VARIABLE_TAG = "env.org-scoped"
 # Deployment environments (tiers): the token is the name, the slug its short
 # form where a system caps the length of a name (decision 0034).
 DEPLOYMENT_ENVIRONMENT_TAG = "deployment.environment"
+# The final words of a variable name whose values every Musher program
+# agrees on (ENVS-31); the token is the stem in lower kebab-case
+# (log-level is _LOG_LEVEL), and the term carries its values.
+SHARED_STEM_TAG = "env.shared-stem"
 # Every tag whose terms carry a token the checks read; a token is unique
 # within each (invariants.terminology_consistent).
 TOKEN_TAGS = (
@@ -38,6 +42,7 @@ TOKEN_TAGS = (
     RUNTIME_CAPABILITY_TAG,
     ORG_SCOPED_VARIABLE_TAG,
     DEPLOYMENT_ENVIRONMENT_TAG,
+    SHARED_STEM_TAG,
 )
 REPOSITORY_NAME_SCOPE = "repository-name"
 # Words that stand in for an action token as the first token of a composite
@@ -158,6 +163,15 @@ def deployment_environments(terminology: Terminology) -> dict[str, str]:
     }
 
 
+def env_shared_stems(terminology: Terminology) -> dict[str, list[str]]:
+    """Each shared stem in upper snake case, mapped to its values in the term's order."""
+    return {
+        term.token.upper().replace("-", "_"): list(term.values)
+        for term in terminology.terms
+        if SHARED_STEM_TAG in term.tags and term.token and not term.deprecated
+    }
+
+
 def display_forms(terminology: Terminology) -> dict[str, str]:
     return dict(terminology.display_forms)
 
@@ -181,6 +195,7 @@ def project(terminology: Terminology) -> dict[str, object]:
         "capability_tokens": tokens(terminology, CAPABILITY_TAG),
         "deployment_environments": deployment_environments(terminology),
         "display_forms": display_forms(terminology),
+        "env_shared_stems": env_shared_stems(terminology),
         "interface_compatibilities": tokens(terminology, COMPATIBILITY_TAG),
         "interface_formats": tokens(terminology, INTERFACE_FORMAT_TAG),
         "org_scoped_variables": org_scoped_variables(terminology),

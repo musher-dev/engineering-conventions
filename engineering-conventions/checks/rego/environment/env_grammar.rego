@@ -167,9 +167,13 @@ expected_prefix := concat("", ["MUSHER_", upper(replace(component, "-", "_"))]) 
 
 name_pattern := `^[A-Z][A-Z0-9]*(__?[A-Z0-9]+)*$`
 
-boolean_prefixes := ["ENABLE_", "IS_", "HAS_", "SHOULD_"]
+boolean_prefixes := env.grammar.boolean_prefixes
 
-unit_abbreviations := {"SECONDS": "SEC", "MINUTES": "MIN", "MILLISECONDS": "MS", "PERCENT": "PCT"}
+# Each long form of a unit, mapped to the unit's one spelling.
+unit_abbreviations[long] := unit if {
+	some unit, longs in env.grammar.units
+	some long in longs
+}
 
 starts_with_component(name, components) if {
 	some component in components
@@ -194,6 +198,16 @@ boolean_name(_, name) if {
 }
 
 boolean_message(path, name) := sprintf(
+	"boolean %s puts its question last; start it with ENABLE_ instead, as %s",
+	[name, suffix_rename(path, name, "_ENABLED")],
+) if {
+	endswith(name, "_ENABLED")
+} else := sprintf(
+	"boolean %s puts its question last and asks it backwards; start it with ENABLE_ and invert it, as %s",
+	[name, suffix_rename(path, name, "_DISABLED")],
+) if {
+	endswith(name, "_DISABLED")
+} else := sprintf(
 	concat(" ", [
 		"boolean %s does not start with ENABLE_, IS_, HAS_ or SHOULD_;",
 		"a browser flag is <client prefix>ENABLE_, e.g. %sENABLE_...",
@@ -202,6 +216,16 @@ boolean_message(path, name) := sprintf(
 ) if {
 	some prefix in env.client_prefixes(path)
 	startswith(name, prefix)
+} else := sprintf("boolean %s does not start with ENABLE_, IS_, HAS_ or SHOULD_; rename it, e.g. ENABLE_...", [name])
+
+# X_ENABLED as ENABLE_X, keeping any client and consumer prefix first:
+# VITE_MUSHER_WEB_BILLING_ENABLED is VITE_MUSHER_WEB_ENABLE_BILLING.
+suffix_rename(path, name, suffix) := concat("", [lead, "ENABLE_", trim_suffix(core, suffix)]) if {
+	core := without_client(path, env.rest(path, name))
+	lead := trim_suffix(name, core)
 }
 
-else := sprintf("boolean %s does not start with ENABLE_, IS_, HAS_ or SHOULD_; rename it, e.g. ENABLE_...", [name])
+without_client(path, rest) := trim_prefix(rest, client) if {
+	some client in env.client_prefixes(path)
+	startswith(rest, client)
+} else := rest

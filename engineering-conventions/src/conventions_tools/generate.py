@@ -114,6 +114,7 @@ def build_index(content: Content) -> dict[str, object]:
         "repository_schema": schemas.self_contained(content.product, schemas.REPOSITORY),
         # ENVS-03 validates every env.schema.yaml the same way.
         "env_schema": schemas.self_contained(content.product, schemas.ENV_SCHEMA),
+        "env_grammar": content.env_grammar.published,
         # DEC-02 validates each decision record's frontmatter the same way.
         "decision_schema": schemas.self_contained(content.product, schemas.DECISION),
         # AGENT-10 and AGENT-12 validate each skill's and subagent's frontmatter

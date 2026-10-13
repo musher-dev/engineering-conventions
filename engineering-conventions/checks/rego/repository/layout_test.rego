@@ -222,3 +222,44 @@ test_repo_22_without_a_layout if {
 test_update_directories_default if {
 	layout.update_directories({"package-ecosystem": "npm"}) == ["/"]
 }
+
+# A multi-product repository lists its products beside product = "".
+multi := {"product": "", "products": ["apps/*", "tools/cli"], "root_exceptions": {
+	"package.json": "The workspace root of the products under apps/",
+	"bun.lock": "The workspace lockfile",
+}}
+
+multi_files := [
+	".repo/repository.toml", "package.json", "bun.lock",
+	"apps/console/package.json", "apps/hq/package.json", "tools/cli/go.mod",
+]
+
+test_products_conform if {
+	count(layout.findings) == 0 with input as repo(multi, multi_files, [])
+}
+
+test_products_each_hold_a_manifest_and_exist if {
+	table := object.union(multi, {"products": ["apps/*", "tools/cli", "services/*"]})
+	paths := array.concat(multi_files, ["apps/hq/README.md", "apps/site/index.html", "src/main.go"])
+	found := layout.findings with input as repo(table, paths, [])
+	td.pairs(found) == {
+		["REPO-15", ".repo/repository.toml"],
+		["REPO-17", "apps/site"],
+		["REPO-18", "src"],
+	}
+	messages(found, "REPO-15") == {
+		`[layout] products lists "services/*", which names no directory; create the product, or correct the entry`,
+	}
+	messages(found, "REPO-17") == {concat(" ", [
+		"apps/site/ is a product [layout] products lists, but holds no build manifest; add the product's",
+		"manifest to it (one of Cargo.toml, build.gradle, build.gradle.kts, deno.json, deno.jsonc, go.mod,",
+		"package.json, pom.xml, pyproject.toml, settings.gradle, settings.gradle.kts), or correct the entry",
+	])}
+}
+
+test_products_ignored_beside_a_product if {
+	table := {"product": "platform-api", "products": ["apps/*"]}
+	paths := array.concat(product_files, ["apps/site/index.html"])
+	found := layout.findings with input as repo(table, paths, [])
+	td.pairs(found) == {["REPO-18", "apps"]}
+}

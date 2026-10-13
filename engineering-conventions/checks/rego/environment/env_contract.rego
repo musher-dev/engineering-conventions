@@ -3,7 +3,8 @@
 # description: >-
 #   A service declares its runtime environment at <product>/env.schema.yaml
 #   (ENVS-01), and environment schemas live only there and in
-#   .devcontainer/, apart from vendored copies (ENVS-02). A dev container
+#   .devcontainer/ (or in each product a multi-product repository lists),
+#   apart from vendored copies (ENVS-02). A dev container
 #   asks for every variable its schema takes from the host (ENVS-15).
 # scope: package
 # custom:
@@ -72,13 +73,24 @@ allowed contains dev_schema
 
 allowed contains product_schema
 
+# Each product of a multi-product repository (EC-0018) keeps its own.
+allowed contains sprintf("%s/env.schema.yaml", [dir]) if some dir in layout.product_dirs
+
 default home := "<product>/env.schema.yaml"
 
 home := sprintf("%s/env.schema.yaml", [layout.product_dir])
 
 destination(path) := dev_schema if startswith(path, ".devcontainer/")
 
-destination(path) := home if not startswith(path, ".devcontainer/")
+destination(path) := home if {
+	not startswith(path, ".devcontainer/")
+	count(layout.products) == 0
+}
+
+destination(path) := "the directory of the product it belongs to, listed in [layout] products" if {
+	not startswith(path, ".devcontainer/")
+	count(layout.products) > 0
+}
 
 host_bindings contains name if {
 	some name, binding in env.bindings_of(dev_schema)

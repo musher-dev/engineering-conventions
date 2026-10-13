@@ -223,3 +223,33 @@ test_labels_without_an_id if {
 	])
 	expected in messages(found, "IFACE-02")
 }
+
+# A multi-product repository's products each keep a contracts directory.
+test_iface_products_contracts if {
+	layout := {"product": "", "products": ["apps/*"]}
+	listed := object.union(public, {"definitions": ["apps/console/contracts/openapi/public.json"]})
+	in_place := object.union(events, {"definitions": ["release/locks/*.json"]})
+	found := declaration.findings with input as [
+		td.repository(object.union(td.identity, {"layout": layout})),
+		td.inventory([
+			"apps/console/package.json", "apps/console/contracts/openapi/public.json",
+			"apps/hq/contracts/stray.json", "release/locks/a.json",
+		]),
+		declared([listed, in_place]),
+	]
+		with data.conventions.index as td.index
+	td.pairs({f | some f in found; f.id in {"IFACE-01", "IFACE-08"}}) == {
+		["IFACE-01", "apps/hq/contracts/stray.json"],
+		["IFACE-08", ".repo/outputs.toml"],
+	}
+	messages(found, "IFACE-01") == {concat(" ", [
+		"apps/hq/contracts/stray.json is in apps/hq/contracts/, which holds only what other repositories",
+		"build against, but no interface in .repo/outputs.toml covers it; add it to an interface's",
+		"definitions, or move it out of apps/hq/contracts/",
+	])}
+	messages(found, "IFACE-08") == {concat(" ", [
+		`interface "events" names definitions "release/locks/*.json" outside apps/console/contracts/,`,
+		"apps/hq/contracts/, contracts/; keep every interface the repository offers there, so its consumers",
+		"and checks find it in one place",
+	])}
+}

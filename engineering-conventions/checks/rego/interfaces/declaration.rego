@@ -26,7 +26,7 @@ findings contains lib.finding("IFACE-01", path, message) if {
 			"%s is in %s/, which holds only what other repositories build against, but no interface",
 			"in %s covers it; add it to an interface's definitions, or move it out of %s/",
 		]),
-		[path, contracts.dir, files.outputs_path, contracts.dir],
+		[path, contracts.dir_of(path), files.outputs_path, contracts.dir_of(path)],
 	)
 }
 
@@ -131,10 +131,10 @@ findings contains lib.finding("IFACE-08", files.outputs_path, message) if {
 	not offered_path(pattern)
 	message := sprintf(
 		concat(" ", [
-			"%s names definitions %q outside %s/; keep every interface the repository offers there,",
+			"%s names definitions %q outside %s; keep every interface the repository offers there,",
 			"so its consumers and checks find it in one place",
 		]),
-		[label(entry, index), pattern, contracts.dir],
+		[label(entry, index), pattern, contracts.described_dirs],
 	)
 }
 
@@ -160,10 +160,7 @@ declared_files contains path if {
 	some path in contracts.interface_files(entry)
 }
 
-offered_path(pattern) if {
-	startswith(pattern, concat("", [contracts.dir, "/"]))
-	not startswith(pattern, concat("", [contracts.vendor_dir, "/"]))
-}
+offered_path(pattern) if contracts.in_offered_dir(pattern)
 
 label(entry, _) := sprintf("interface %q", [entry.id]) if files.has_string(entry, "id")
 

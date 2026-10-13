@@ -1,0 +1,2 @@
+platform-api/go.mod
+platform-api/env.schema.yaml

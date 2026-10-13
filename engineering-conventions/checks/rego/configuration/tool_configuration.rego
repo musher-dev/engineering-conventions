@@ -10,6 +10,7 @@
 #   convention: EC-0011
 package conventions.checks.configuration.tool_configuration
 
+import data.conventions.lib.doublestar
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.values
@@ -218,9 +219,30 @@ covers(reference, path) if reference == path
 
 covers(reference, path) if startswith(path, concat("", [reference, "/"]))
 
+covers(reference, path) if {
+	glob_pattern(reference)
+	doublestar.match(reference, path)
+}
+
+covers(reference, path) if {
+	glob_pattern(reference)
+	some directory in files.directories
+	doublestar.match(reference, directory)
+	startswith(path, concat("", [directory, "/"]))
+}
+
 exists(path) if path in files.repository_files
 
 exists(path) if path in files.directories
+
+# A glob, such as a workflow's paths filter, exists when it matches a file or
+# a directory: one that matches nothing is a filter that never fires.
+exists(path) if {
+	glob_pattern(path)
+	doublestar.matches_any(path, files.repository_files | files.directories)
+}
+
+glob_pattern(path) if regex.match(`[*?\[]`, path)
 
 # The documents that run tools, and so name their configuration.
 caller_patterns := [
@@ -242,8 +264,8 @@ callers contains doc if {
 # A .config/ path in a string, with whatever is written before it in the same
 # word: nothing, ./, or a variable for the repository root. A path under a
 # home directory (~/.config/gh, /home/vscode/.config, $HOME/.config) is the
-# user's, not the repository's.
-reference_pattern := `([^\s"'=:(,\[]*)\.config/([A-Za-z0-9_./-]*[A-Za-z0-9_])`
+# user's, not the repository's. The path may be a glob (`*`, `?`, `[...]`).
+reference_pattern := `([^\s"'=:(,\[]*)\.config/([A-Za-z0-9_./*?\[\]-]*[A-Za-z0-9_*?\]])`
 
 references contains {"path": concat("", [".config/", match[2]]), "caller": doc.path} if {
 	some doc in callers

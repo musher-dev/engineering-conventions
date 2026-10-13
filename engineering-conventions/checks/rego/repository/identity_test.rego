@@ -34,6 +34,16 @@ test_repo_02_one_finding_with_a_count if {
 	}
 }
 
+# Against the real schema, which the shared test index does not carry.
+test_repo_02_products_only_beside_no_product if {
+	listed := {"layout": {"product": "", "products": ["apps/*"]}}
+	count(identity.findings) == 0 with input as declared(listed)
+	beside := {"layout": {"product": "platform-api", "products": ["apps/*"]}}
+	found := identity.findings with input as declared(beside)
+	td.pairs(found) == {["REPO-02", ".repo/repository.toml"]}
+	messages(found, "REPO-02") == {"`layout.product`: layout.product does not match: \"\"."}
+}
+
 test_repo_02_a_declaration_that_is_not_a_table if {
 	found := identity.findings with input as [td.file(".repo/repository.toml", ["junk"])]
 		with data.conventions.index as td.index

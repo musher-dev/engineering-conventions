@@ -21,34 +21,6 @@ owners:
   - "@justinmerrell"
 authority: self
 migration: authoritative
-implementations:
-  - repo: musher-dev/development-container
-    check: LAYOUT-01
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-02
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-03
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-04
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-05
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-06
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-08
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: LAYOUT-09
-    mode: blocking
-  - repo: musher-dev/development-container
-    check: PATH-02
-    mode: blocking
 references:
   - title: "Dependabot options reference: directories"
     url: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#directories-or-directory--

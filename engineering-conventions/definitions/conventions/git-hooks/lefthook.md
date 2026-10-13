@@ -42,9 +42,6 @@ implementations:
   - repo: musher-dev/platform
     check: LH-06
     mode: blocking
-  - repo: musher-dev/development-container
-    check: PATH-01
-    mode: blocking
 references:
   - title: "Lefthook: Configuration"
     url: https://lefthook.dev/configuration/

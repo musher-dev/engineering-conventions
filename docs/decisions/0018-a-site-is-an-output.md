@@ -71,7 +71,7 @@ makes it available, and that workflow is `deploy`.
 - **OUT-03** in `checks/rego/outputs/declaration.rego` accepts `site` and `vmimage`, because the kinds are read from
   the generated vocabulary.
 - **OUT-06** reports a `site` whose workflow is not `publish`, `release` or `deploy`, and any other kind whose
-  workflow is not `publish` or `release`. The fixture `out-06-deploy-site` proves a site passes with
+  workflow is not `publish` or `release`. The fixture `out-06-passes-deploy-site` proves a site passes with
   `deploy-docs.yml`, and `out-06-deploy-image` proves an image still fails with `deploy.yml`.
 - **OUT-12** reports a site whose `location` does not start with `https://`. The fixture is `out-12-site-location`.
 - That a site's versioned paths are never overwritten is review-only (OUT-09).

@@ -68,8 +68,8 @@ only there. A workflow that only publishes is still `publish`.
 ## Enforcement
 
 OUT-06 in `checks/rego/outputs/declaration.rego` reports an output whose `publish_workflow` exists but has a
-responsibility other than `publish` or `release`. The fixture `out-06-release-workflow` proves a `release.yml` passes;
-`out-06-publish-workflow` proves a `validate.yml` still fails. Whether a release workflow publishes only what it
+responsibility other than `publish` or `release`. The fixture `out-06-passes-release-workflow` proves a `release.yml`
+passes; `out-06-publish-workflow` proves a `validate.yml` still fails. Whether a release workflow publishes only what it
 releases is review-only: a reviewer looks for publishing steps gated on the release having been created.
 
 ## Considered options

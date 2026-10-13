@@ -910,16 +910,16 @@
   "out-06-deploy-image": [
     [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"deploy.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
   ],
-  "out-06-deploy-site": [
+  "out-06-passes-deploy-site": [
     [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
   ],
-  "out-06-publish-workflow": [
-    [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"validate.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
-  ],
-  "out-06-release-workflow": [
+  "out-06-passes-release-workflow": [
     [".github/workflows/release.yml", "REL-02", "warning", "step \"release\" in job \"release\" runs release-please, but the repository has no release-please config; add .github/release-please/config.json and .github/release-please/manifest.json", true],
     [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without config-file: .github/release-please/config.json; pass it so the action reads the repository's release-please files", true],
     [".github/workflows/release.yml", "REL-03", "warning", "step \"release\" in job \"release\" runs release-please without manifest-file: .github/release-please/manifest.json; pass it so the action reads the repository's release-please files", true]
+  ],
+  "out-06-publish-workflow": [
+    [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"validate.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
   ],
   "out-12-site-location": [
     [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true],

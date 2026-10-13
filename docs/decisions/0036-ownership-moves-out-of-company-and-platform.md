@@ -60,10 +60,11 @@ breaking change ([decision 0005](0005-status-severity-and-versioning.md#change-c
 use them. The narrower GitHub Actions senses keep their own IDs (`gha.responsibility.audit` and the `drift` alias of
 `gha.responsibility.monitor`).
 
-**The org graph is assembled in `musher-dev/pelorus`**, from what `conventions graph` reports for each repository,
-the graph logic this repository ships in its command-line tool, joined with the linked-artifact records of decision
-0035. Decision 0010's rule still holds: the logic is published here and runs elsewhere. A cycle between two
-repositories' vendored dependencies is DEPS-14, checked by review until the graph runs it.
+**The org graph is assembled in `musher-dev/pelorus`**, from what `conventions graph` reports for each repository
+(graph logic this repository will ship in its command-line tool), joined with the linked-artifact records of
+[decision 0035](0035-published-and-deployed-artifacts-are-recorded.md). Decision 0010's rule still holds: the
+logic is published here and runs elsewhere. A cycle between two repositories' vendored dependencies is DEPS-14,
+checked by review until the graph runs it.
 
 ## Consequences
 

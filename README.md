@@ -109,7 +109,7 @@ Start from the part of your repository you are working on:
 | [Dependencies](engineering-conventions/definitions/conventions/dependencies/README.md) | `.repo/dependencies.toml`, vendored copies under `<product>/contracts/vendor/`, `.github/dependabot.yml` or Renovate | EC-0032, EC-0033, EC-0042 | DEPS-01 – DEPS-13 |
 | [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-18 |
 | [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract derived from them, and the local `.env` that is never committed | EC-0019, EC-0020 | ENVS-01 – ENVS-27 |
-| [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-11 |
+| [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-14 |
 | [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-49 |
 | [Interfaces](engineering-conventions/definitions/conventions/interfaces/README.md) | `[[interfaces]]` in `.repo/outputs.toml`, `<product>/contracts/` | EC-0030, EC-0031 | IFACE-01 – IFACE-14 |
 | [OpenAPI](engineering-conventions/definitions/conventions/openapi/README.md) | OpenAPI interface documents, `.config/openapi/spectral.yaml` | EC-0037 | OAS-01 – OAS-03 |

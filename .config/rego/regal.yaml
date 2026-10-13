@@ -7,9 +7,9 @@
 
 rules:
   idiomatic:
-    # Packages are namespaced `conventions.checks.<family>.<convention>` so
+    # Packages are namespaced `conventions.checks.<topic>.<convention>` so
     # they cannot collide with a consumer's own policies when both are loaded
-    # by one conftest run, while the files sit at checks/rego/<family>/ so the
+    # by one conftest run, while the files sit at checks/rego/<topic>/ so the
     # bundle's paths stay short. `package main` must stay `main` because it is
     # conftest's default namespace. Both break this rule by design.
     directory-package-mismatch:

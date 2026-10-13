@@ -11,8 +11,8 @@ conftest and nothing else, so what is written here is what a consumer executes.
 
 ## Rules
 
-- **MUST** keep a check pure. A package under `conventions.checks.<family>.<convention>`
-  defines only `findings contains f if { ... }`, with
+- **MUST** keep a check pure. A package under `conventions.checks.<topic>.<convention>`
+  (the topic with `_` for `-`, such as `github_actions`) defines only `findings contains f if { ... }`, with
   `f := {"id", "path", "message"}`. Severity, profiles, waivers and time belong to
   `package main` alone, so changing a severity is a frontmatter edit, never a
   Rego change.

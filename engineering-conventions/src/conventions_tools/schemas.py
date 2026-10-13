@@ -93,11 +93,6 @@ def problems(product: Path, name: str, instance: object, source: str) -> list[st
     ]
 
 
-def description_of(error: ValidationError) -> str | None:
-    description = as_map(cast("object", error.schema)).get("description")
-    return description if isinstance(description, str) else None
-
-
 _COMMON_REF = f"{COMMON}#/definitions/"
 _LOCAL_REF = "#/definitions/"
 _INLINED_PREFIX = "common_"

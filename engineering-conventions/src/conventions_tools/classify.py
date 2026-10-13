@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from pathlib import Path
 
-from conventions_tools.invariants import NO_BASELINE, baseline_index, unwrap_index
+from conventions_tools.baseline import NO_BASELINE, baseline_index, unwrap_index
 from conventions_tools.loading import ContentError, as_list, as_map, get_str
 from conventions_tools.paths import REPOSITORY_URL, index_file
 

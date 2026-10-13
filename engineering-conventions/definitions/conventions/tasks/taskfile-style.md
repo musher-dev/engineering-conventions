@@ -254,7 +254,7 @@ This convention is a **draft** owned by this repository (`authority: self`). Its
 retire their copies once they pin a release that carries them
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
 `musher-dev/platform` retired TF-01, TF-06 to TF-09, TF-12, TF-15 and TF-21 when it adopted 0.7.1
-([platform#3338](https://github.com/musher-dev/platform/pull/3338)).
+(musher-dev/platform#3338).
 Every requirement is `proposed` at severity `warning`.
 
 ### What was adopted, and what was not

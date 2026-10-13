@@ -138,7 +138,7 @@ It does not cover job and step names ([EC-0003](jobs-and-steps.md)), composite a
 ## Status and authority
 
 This convention is a **draft**. Workflow naming is owned by `musher-dev/platform`, where issue
-[#2892](https://github.com/musher-dev/platform/issues/2892) introduced the grammar and its blocking checks. The
+musher-dev/platform#2892 introduced the grammar and its blocking checks. The
 requirements here are derived from those checks and published as proposed requirements; this document becomes the
 authority only through the single handoff described in
 [decision 0002](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0002-authority-and-migration.md).
@@ -591,7 +591,7 @@ the new version only inside its own run, and splitting the publish out would mea
 
 ## References
 
-- [platform #2892: Organize GitHub Actions workflows by responsibility](https://github.com/musher-dev/platform/issues/2892)
+- musher-dev/platform#2892: Organize GitHub Actions workflows by responsibility
 - [Decision 0006: GitHub Actions naming vocabulary](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0006-github-actions-naming-vocabulary.md)
 - [EC-0003 Jobs and steps](jobs-and-steps.md)
 - [EC-0006 Units and renames](units-and-renames.md)

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/musher-dev/engineering-conventions/compare/v0.9.0...v0.9.1) (2026-10-15)
+
+
+### Features
+
+* **conventions:** move the scaffold's general rules here ([#113](https://github.com/musher-dev/engineering-conventions/issues/113)) ([e922c37](https://github.com/musher-dev/engineering-conventions/commit/e922c37a81e7188bfa165719c2887abef84e99dc))
+
 ## [0.9.0](https://github.com/musher-dev/engineering-conventions/compare/v0.8.1...v0.9.0) (2026-10-13)
 
 

@@ -14,7 +14,9 @@ summary: >-
   binding after the program that reads it. The deployment environment
   reaches a process only as MUSHER_ENVIRONMENT and never appears in a
   name, a vendor's prefix holds only that vendor's names, and a shared stem
-  such as _LOG_LEVEL keeps its registered values.
+  such as _LOG_LEVEL keeps its registered values. The dev container's
+  schema declares every variable its stacks read, and the stacks and files
+  a binding names agree with it.
 status: draft
 topic: environment
 applies_to:
@@ -252,6 +254,33 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.environment.env_shared
+  - id: ENVS-32
+    title: Every variable a dev container stack reads is a binding in the dev container's environment schema
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_stacks
+    aliases: ["development-container:ENV-03"]
+  - id: ENVS-33
+    title: Every stack a binding lists in consumers exists and reads it
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_stacks
+    aliases: ["development-container:ENV-04", "development-container:ENV-03"]
+  - id: ENVS-34
+    title: Every file a binding is mirrored_in exists and repeats its local_default
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.environment.env_stacks
+    aliases: ["development-container:ENV-05"]
 ---
 
 # Environment schema
@@ -271,14 +300,18 @@ either repository defines is part of it, and a schema from either validates unch
 
 A vendored copy under `contracts/vendor/` is another repository's schema; ENVS-03 to ENVS-19 do not read it.
 
+ENVS-32 and ENVS-33 read the dev container's schema, `.devcontainer/env.schema.yaml`, beside the compose files under
+`.devcontainer/` that [EC-0028](../dev-containers/dev-container-stacks.md#scope) checks. ENVS-34 reads every schema
+and the files its bindings are `mirrored_in`.
+
 Checks that need the code are out of scope: that the code reads only declared variables, that every binding has a
 reader, and that a generated settings module is current. They stay with each product's own tooling.
 
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`), with its requirements `proposed` at
-severity `warning`. It adopts development-container's ENV-01 and ENV-07 and platform's naming grammar (G-01, G-02,
-G-04, G-06 to G-09 and G-11), which keep their IDs as aliases
+severity `warning`. It adopts development-container's ENV-01, ENV-03 to ENV-05 and ENV-07 and platform's naming
+grammar (G-01, G-02, G-04, G-06 to G-09 and G-11), which keep their IDs as aliases
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
 The platform's grammar IDs were rule numbers in its documentation rather than IDs its command-line tool printed;
 they are aliased so a reader who knows them finds the rule. Two platform rules are not adopted: G-03 (a numeric value
@@ -365,10 +398,10 @@ against it.
 | `source` | no | `code-default`, `env-file`, `infisical`, `ci-secret`, `vendor` or `host` |
 | `path` | no | The secret-store path, when not the schema's `infisical.path` |
 | `consumer` | no | The part of the product that reads it: `api`, `workers`, `client` (the browser) or `server` |
-| `consumers` | no | The dev-environment stacks that read it |
+| `consumers` | no | The dev-environment stacks that read it, each by its [name](../dev-containers/dev-container-stacks.md#scope) (ENVS-33) |
 | `roles` | no | The host roles whose rendered environment file carries it |
 | `group` | no | A heading the rendered environment file groups it under |
-| `mirrored_in` | no | Files that repeat its `local_default` and must agree with it |
+| `mirrored_in` | no | Files, relative to the schema's directory, that repeat its `local_default` and must agree with it (ENVS-34) |
 | `nested` | no | Groups it into a nested settings model: `group`, `sub`, `field`, `model` (ENVS-13) |
 | `grammar_exempt`, `grammar_exempt_reason` | no | The grammar does not apply, and why |
 | `python_field_name` | no | The generated Python field name, when the natural one would collide |
@@ -1269,6 +1302,104 @@ API_LOG_FORMAT: {type: enum, values: [json, pretty], ...}
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.9.0
+
+### ENVS-32
+
+**Every variable a dev container stack reads is a binding in the dev container's environment schema.**
+
+Docker Compose fills an unset `${VAR}` with its default, or with nothing, and says so only in a warning nobody reads.
+A stack that reads a variable its schema does not declare gets no line in the generated `.env`, so a password
+renamed in the compose file but not in the schema quietly falls back to the default, and the stack and the code that
+connects to it disagree. The check reads every string value of every compose file under `.devcontainer/`, top-level
+`name:` and `x-` extensions included, when `.devcontainer/env.schema.yaml` exists. It finds `${VAR}` in each form
+Compose interpolates (`${VAR:-default}`, `${VAR-default}`, `${VAR:?error}`, `${VAR?error}`, `${VAR:+value}`,
+`${VAR+value}`), including one inside another's default, and skips `$$`, which is a literal dollar sign. A name
+the schema lets through in `vendor_passthrough` counts as declared, and so does `COMPOSE_PROJECT_NAME`, which Compose
+sets itself.
+
+**Correct:**
+
+```yaml
+# .devcontainer/env.schema.yaml
+bindings:
+  POSTGRES_PASSWORD: {type: string, sensitivity: secret, local_default: postgres, consumers: [postgres], ...}
+# .devcontainer/stacks/postgres/compose.yaml
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+```
+
+**Incorrect:**
+
+```yaml
+# .devcontainer/stacks/postgres/compose.yaml: the schema declares POSTGRES_PASSWORD, not POSTGRES_SECRET
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_SECRET:-postgres}
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container ENV-03
+
+### ENVS-33
+
+**Every stack a binding lists in consumers exists and reads it.**
+
+`consumers` says which stacks a variable configures, so a tool can tell a developer which values matter for the
+stacks they run. An entry that names no stack, or a stack that stopped reading the variable, points them at a value
+that changes nothing. Each entry in a binding's `consumers` in `.devcontainer/env.schema.yaml` is a stack's
+[name](../dev-containers/dev-container-stacks.md#scope), the directory that holds its compose file, and a compose file
+in that directory reads the variable as ENVS-32 finds it.
+
+**Correct:**
+
+```yaml
+POSTGRES_DB: {type: string, local_default: app, consumers: [postgres, azimutt], ...}
+# .devcontainer/stacks/postgres/compose.yaml and .devcontainer/stacks/azimutt/compose.yaml both read ${POSTGRES_DB}
+```
+
+**Incorrect:**
+
+```yaml
+POSTGRES_DB: {type: string, local_default: app, consumers: [postgresql], ...}  # the stack is postgres
+REDIS_PASSWORD: {type: string, consumers: [redis], ...}  # .devcontainer/stacks/redis/compose.yaml never reads it
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container ENV-04, ENV-03 (in part)
+
+### ENVS-34
+
+**Every file a binding is mirrored_in exists and repeats its local_default.**
+
+Some files cannot read the environment, such as a collector's config that takes credentials literally, so they repeat
+a binding's `local_default`. `mirrored_in` names them so the two cannot drift apart unnoticed: when one changes and
+the other does not, the local stack fails to log in. Each path is relative to the schema's directory and stays inside
+it, without `..`; the file exists, and its text contains the `local_default` exactly. A string is compared as it is,
+and any other value as the generated `.env` writes it before quoting: `15432` as `15432`, `true` as `true`. A binding
+with `mirrored_in` has a `local_default`. A file larger than the 256 KiB the runner embeds is not compared.
+
+**Correct:**
+
+```yaml
+# .devcontainer/env.schema.yaml
+MINIO_OBS_ROOT_USER:
+  local_default: minioadmin
+  mirrored_in: [stacks/observability/config/loki-config.yaml]
+  ...
+# .devcontainer/stacks/observability/config/loki-config.yaml contains: access_key_id: minioadmin
+```
+
+**Incorrect:**
+
+```yaml
+MINIO_OBS_ROOT_USER:
+  local_default: obsadmin  # loki-config.yaml still says minioadmin
+  mirrored_in: [stacks/observability/config/loki-config.yaml]
+  ...
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container ENV-05
 
 ## References
 

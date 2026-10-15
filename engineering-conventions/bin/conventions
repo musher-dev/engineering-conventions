@@ -262,15 +262,28 @@ derive() {
 }
 
 # derive_all: add what each environment schema derives to the jq arguments
-# being built. A schema that does not parse derives nothing; ENVS-03 and the
-# parse report say why.
+# being built, and the text of each file its bindings are mirrored_in that
+# the repository holds, up to TEXT_LIMIT bytes, unless TEXTS already embeds
+# it. A schema that does not parse derives nothing; ENVS-03 and the parse
+# report say why.
 derive_all() {
   derived=0
+  : > "${scratch}/mirrors"
   matching "${ENV_SCHEMAS}" | while IFS= read -r file; do
     [ -n "${file}" ] || continue
     derived=$((derived + 1))
     if derive "${file}" > "${scratch}/derived.${derived}.json"; then
       printf '%s\n%s\n%s\n' --slurpfile "derived:${file}" "${scratch}/derived.${derived}.json"
+    fi
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -r --arg dir "$(dirname -- "${file}")" -f "${bundle}/bin/mirrors.jq" \
+      "${scratch}/schema.json" >> "${scratch}/mirrors" 2> /dev/null || true
+  done
+  sort -u "${scratch}/mirrors" | while IFS= read -r file; do
+    [ -n "${file}" ] || continue
+    printf '%s\n' "${files}" | grep -Fqx -- "${file}" || continue
+    if printf '%s\n' "${file}" | grep -Eq -- "${TEXTS}"; then continue; fi
+    if [ "$(wc -c < "${file}")" -le "${TEXT_LIMIT}" ]; then
+      printf '%s\n%s\n%s\n' --rawfile "text:${file}" "${file}"
     fi
   done
 }

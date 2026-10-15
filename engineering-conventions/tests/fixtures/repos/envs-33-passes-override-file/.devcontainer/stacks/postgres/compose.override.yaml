@@ -1,0 +1,5 @@
+# The stack postgres reads the password here, beside its compose.yaml.
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}

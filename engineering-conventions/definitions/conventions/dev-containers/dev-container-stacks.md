@@ -73,8 +73,11 @@ anyone rebuilds the container. These requirements keep them reproducible and kee
 
 A compose file under `.devcontainer/`, at any depth, named `compose.yaml`, `docker-compose.yaml`, or either with a
 suffix such as `compose.override.yaml`. Compose files elsewhere describe the product, not the dev environment, and are
-not checked here. A value written with a variable is left alone. DEVC-16 also reads the `requires` of every
-environment schema the repository holds ([EC-0020](../environment/env-schema.md#runtime-requirements)).
+not checked here. A stack is named for the directory that holds its compose file:
+`.devcontainer/stacks/postgres/compose.yaml` is the stack `postgres`, the name an environment schema's `consumers`
+uses ([ENVS-33](../environment/env-schema.md#envs-33)). A value written with a variable is left alone. DEVC-16 also
+reads the `requires` of every environment schema the repository holds
+([EC-0020](../environment/env-schema.md#runtime-requirements)).
 
 ## Status and authority
 

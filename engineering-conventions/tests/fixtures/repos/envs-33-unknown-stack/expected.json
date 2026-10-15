@@ -1,0 +1,3 @@
+[
+  {"id": "ENVS-33", "path": ".devcontainer/env.schema.yaml", "severity": "warning"}
+]

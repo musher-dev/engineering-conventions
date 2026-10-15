@@ -1,0 +1,7 @@
+services:
+  azimutt:
+    image: ghcr.io/azimuttapp/azimutt:2.1.4
+    ports:
+      - "127.0.0.1:15440:4000"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD-postgres}@postgres:5432/app

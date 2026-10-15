@@ -46,6 +46,9 @@ CASES = [
     "envs-20-stale-contract",
     "envs-20-passes-derived-contract",
     "envs-27-negated",
+    # The launcher embeds each file a binding is mirrored_in (ENVS-34).
+    "envs-34-mirror-drift",
+    "envs-34-passes-mirrored-value",
 ]
 
 

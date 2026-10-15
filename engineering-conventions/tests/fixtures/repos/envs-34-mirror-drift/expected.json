@@ -1,0 +1,3 @@
+[
+  {"id": "ENVS-34", "path": ".devcontainer/stacks/postgres/init.sql", "severity": "warning"}
+]

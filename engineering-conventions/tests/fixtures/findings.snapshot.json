@@ -736,6 +736,10 @@
   "gha-53-unrecorded-deploy": [
     [".github/workflows/deploy-api.yml", "GHA-53", "warning", "job \"deploy\" deploys to the \"production\" environment but records no deployment; post the deployment record (gh api -X POST orgs/<org>/artifacts/metadata/deployment-record with name, digest, version, status: deployed and logical_environment: production) so the organization's linked artifacts show what runs there", true]
   ],
+  "gha-54-passes-filter-forms": [],
+  "gha-54-unmatched-filter": [
+    [".github/workflows/validate.yml", "GHA-54", "warning", "step \"changes\" in job \"lint\": the pattern \"services/api/**\" in paths-filter filter \"api\" matches no file in the repository, so the filter never reports a change; point it at the files it is meant to watch, or delete it", true]
+  ],
   "hooks-01-assert-installed": [
     [".config/lefthook.yml", "HOOKS-01", "warning", "assert_lefthook_installed is not true, so where the lefthook executable is missing the hooks skip without a word; set assert_lefthook_installed: true", true]
   ],

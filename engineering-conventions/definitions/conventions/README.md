@@ -245,6 +245,7 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-51](github-actions/releases-and-deployments.md#gha-51) | A secret or variable's name carries no deployment environment | EC-0023 | proposed | warning | conftest |
 | [GHA-52](github-actions/releases-and-deployments.md#gha-52) | A GitHub App's credentials are a client-ID variable and a private-key secret | EC-0023 | proposed | warning | conftest |
 | [GHA-53](github-actions/releases-and-deployments.md#gha-53) | A deploy job records the deployment in GitHub's linked artifacts | EC-0023 | proposed | warning | conftest |
+| [GHA-54](github-actions/runners-and-step-outcomes.md#gha-54) | Every pattern in a dorny/paths-filter filter matches a file in the repository | EC-0022 | proposed | warning | conftest |
 | [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
 | [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |

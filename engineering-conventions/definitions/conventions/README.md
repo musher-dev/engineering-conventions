@@ -162,6 +162,9 @@ ID is permanent: it is never renumbered or reused.
 | [DEVC-16](dev-containers/dev-container-stacks.md#devc-16) | A dev container stack that labels the capability it provides runs a version every environment schema accepts | EC-0028 | proposed | warning | conftest |
 | [DEVC-17](dev-containers/dev-container-configuration.md#devc-17) | devcontainer.json is valid against the Dev Container specification's schema | EC-0027 | proposed | warning | conftest |
 | [DEVC-18](dev-containers/dev-container-configuration.md#devc-18) | Every variable in devcontainer.json is one the specification defines, used where it resolves | EC-0027 | proposed | warning | conftest |
+| [DEVC-19](dev-containers/dev-container-stacks.md#devc-19) | A dev container configuration's forwardPorts and portsAttributes name the same ports | EC-0028 | proposed | warning | conftest |
+| [DEVC-20](dev-containers/dev-container-stacks.md#devc-20) | A dev container forwards every host port its stacks publish | EC-0028 | proposed | warning | conftest |
+| [DEVC-21](dev-containers/dev-container-stacks.md#devc-21) | A dev container forwards ports from the reserved range 15432-15460 only | EC-0028 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |

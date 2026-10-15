@@ -1,0 +1,18 @@
+// A dev container that meets every DEVC requirement.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "forwardPorts": [15432, 15433],
+  "portsAttributes": {
+    "15434": { "label": "MinIO API", "onAutoForward": "silent" },
+    "15432": { "label": "PostgreSQL", "onAutoForward": "silent" },
+  },
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

@@ -5,6 +5,8 @@
     "ghcr.io/devcontainers/features/git:1": {},
   },
   "remoteUser": "vscode",
+  "forwardPorts": [15432],
+  "portsAttributes": { "15432": { "label": "PostgreSQL" } },
   "mounts": [
     "source=gh-config,target=/home/vscode/.config/gh,type=volume",
   ],

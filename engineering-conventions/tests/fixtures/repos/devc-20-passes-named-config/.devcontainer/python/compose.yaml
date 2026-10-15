@@ -1,0 +1,5 @@
+services:
+  redis:
+    image: valkey/valkey:9.0.1
+    ports:
+      - "127.0.0.1:15433:6379"

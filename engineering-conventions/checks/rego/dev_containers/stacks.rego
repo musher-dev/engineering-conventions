@@ -4,7 +4,10 @@
 #   The compose stacks under .devcontainer/ run fixed images (DEVC-11), publish
 #   their ports on the loopback address only (DEVC-12), publish them from
 #   the reserved range (DEVC-13), and run a version of the capability they
-#   label that every environment schema's range accepts (DEVC-16).
+#   label that every environment schema's range accepts (DEVC-16). The dev
+#   container names the same ports in forwardPorts and portsAttributes
+#   (DEVC-19), forwards every port its stacks publish (DEVC-20), and forwards
+#   none outside the reserved range (DEVC-21).
 # scope: package
 # custom:
 #   convention: EC-0028
@@ -101,6 +104,126 @@ findings contains lib.finding("DEVC-16", entry.path, message) if {
 		"the service %s labels %s %q, which is not a version; write the engine's version as integers separated by dots",
 		[entry.name, version_label, entry.version],
 	)
+}
+
+# DEVC-19. A forwarded port without attributes.
+findings contains lib.finding("DEVC-19", path, message) if {
+	some path, config in configurations
+	some port in forwarded(config)
+	not described(config, port)
+	message := sprintf(
+		"forwardPorts lists %d, but portsAttributes has no entry for it; add one with the port's label",
+		[port],
+	)
+}
+
+# DEVC-19. Attributes for a port that is not forwarded.
+findings contains lib.finding("DEVC-19", path, message) if {
+	some path, config in configurations
+	some port in attribute_ports(config)
+	not port in forwarded(config)
+	message := sprintf(
+		"portsAttributes describes %d, which forwardPorts does not list; forward it, or remove the entry",
+		[port],
+	)
+}
+
+# DEVC-20
+findings contains lib.finding("DEVC-20", port.path, message) if {
+	some port in published
+	paired := pairs(port.path)
+	count(paired) > 0
+	some host_port in port.host_ports
+	not forwarded_by_any(paired, host_port)
+	message := sprintf(
+		"the service %s publishes host port %d, which %s does not forward; add it to forwardPorts",
+		[port.service, host_port, concat(" or ", sort(paired))],
+	)
+}
+
+# DEVC-21
+findings contains lib.finding("DEVC-21", path, message) if {
+	some path, config in configurations
+	some port in forwarded(config)
+	not in_range(port)
+	message := sprintf(
+		"forwardPorts lists %d, outside the reserved range %d-%d; forward the host port a stack publishes from the range",
+		[port, port_range.low, port_range.high],
+	)
+}
+
+configurations := mise.devcontainers
+
+# The configurations at the root of .devcontainer/, in either form the
+# specification allows.
+root_configurations contains path if {
+	some path, _ in configurations
+	path in {".devcontainer/devcontainer.json", ".devcontainer.json"}
+}
+
+# The configurations a compose file's stack is compared with: the one in the
+# same .devcontainer/<name>/ directory; else the one at the root of
+# .devcontainer/; else, when the repository holds only named configurations,
+# any of them.
+pairs(compose_path) := {named} if {
+	named := named_configuration(compose_path)
+	configurations[named]
+}
+
+pairs(compose_path) := root_configurations if {
+	not configurations[named_configuration(compose_path)]
+	count(root_configurations) > 0
+}
+
+pairs(compose_path) := object.keys(configurations) if {
+	not configurations[named_configuration(compose_path)]
+	count(root_configurations) == 0
+}
+
+named_configuration(compose_path) := sprintf(".devcontainer/%s/devcontainer.json", [split(compose_path, "/")[1]])
+
+forwarded_by_any(paths, port) if {
+	some path in paths
+	port in forwarded(configurations[path])
+}
+
+# The numeric entries of forwardPorts. A "service:port" entry forwards a
+# compose service's port and is not compared.
+forwarded(config) := {to_number(value) | some value in forward_ports(config); numeric(value)}
+
+forward_ports(config) := config.forwardPorts if is_array(config.forwardPorts)
+
+forward_ports(config) := [] if not is_array(config.forwardPorts)
+
+# The ports portsAttributes names one by one.
+attribute_ports(config) := {to_number(key) | some key, _ in attributes(config); numeric(key)}
+
+# The ranges portsAttributes names, such as "40000-55000".
+attribute_ranges(config) := {[to_number(bounds[0]), to_number(bounds[1])] |
+	some key, _ in attributes(config)
+	regex.match(`^[0-9]+-[0-9]+$`, key)
+	bounds := split(key, "-")
+}
+
+attributes(config) := config.portsAttributes if is_object(config.portsAttributes)
+
+attributes(config) := {} if not is_object(config.portsAttributes)
+
+# A forwarded port has attributes under its own key, or under a range that
+# holds it. A key written as a regular expression is not matched.
+described(config, port) if port in attribute_ports(config)
+
+described(config, port) if {
+	some bounds in attribute_ranges(config)
+	port >= bounds[0]
+	port <= bounds[1]
+}
+
+numeric(value) if is_number(value)
+
+numeric(value) if {
+	is_string(value)
+	regex.match(`^[0-9]+$`, value)
 }
 
 capability_label := "dev.musher.capability"

@@ -4,6 +4,8 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": { "ghcr.io/devcontainers/features/git:1": {} },
   "remoteUser": "vscode",
+  "forwardPorts": [15432],
+  "portsAttributes": { "15432": { "label": "PostgreSQL" } },
   "customizations": {
     "vscode": {
       "settings": {

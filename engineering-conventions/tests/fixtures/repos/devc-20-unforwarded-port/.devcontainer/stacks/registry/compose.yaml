@@ -1,0 +1,5 @@
+services:
+  registry:
+    image: registry:3.0.0
+    ports:
+      - "127.0.0.1:15436:5000"

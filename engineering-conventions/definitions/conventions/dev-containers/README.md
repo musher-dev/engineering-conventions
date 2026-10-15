@@ -25,7 +25,7 @@ container has anything to find: each requirement reads a `devcontainer.json` or 
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0027 Dev container configuration](dev-container-configuration.md) | DEVC-01 – DEVC-10, DEVC-14, DEVC-15, DEVC-17, DEVC-18 | Where the configuration lives, the lockfile, the base image, the user, lifecycle scripts, secrets, named volumes and where they mount, the container name, the specification's schema and variables, updates and the CI build |
+| [EC-0027 Dev container configuration](dev-container-configuration.md) | DEVC-01 – DEVC-10, DEVC-14, DEVC-15, DEVC-17, DEVC-18, DEVC-22, DEVC-23 | Where the configuration lives, the lockfile, the base image, the user, lifecycle scripts, secrets, named volumes and where they mount, the container name, the specification's schema and variables, mounts into the workspace and the editor's link to a Rust product, updates and the CI build |
 | [EC-0028 Dev container stacks](dev-container-stacks.md) | DEVC-11 – DEVC-13, DEVC-16, DEVC-19 – DEVC-21 | The images and published ports of the compose stacks under `.devcontainer/`, the ports the dev container forwards, and the version of a capability a stack labels |
 
 Related requirements in other families:
@@ -33,6 +33,7 @@ Related requirements in other families:
 - A dev container Feature that installs a tool mise pins installs the pinned version (TOOL-08).
 - The dev environment's schema is `.devcontainer/env.schema.yaml` (ENVS-02), and `secrets` names every variable it
   takes from the host (ENVS-15).
+- The product directory DEVC-22 and DEVC-23 read is declared in `.repo/repository.toml` (REPO-14).
 
 ## Quick reference
 
@@ -47,6 +48,8 @@ Related requirements in other families:
 | A named volume in `mounts` | `musher-${devcontainerId}-<purpose>` | DEVC-08 |
 | A volume's target under `/home` | In `remoteUser`'s home | DEVC-15 |
 | `runArgs` | No `--name` | DEVC-14 |
+| A mount's target in the workspace | Inside a declared product directory | DEVC-22 |
+| `rust-analyzer.linkedProjects` | Lists each product's `Cargo.toml` | DEVC-23 |
 | `devcontainer.json` as a whole | Valid against the specification's schema | DEVC-17 |
 | A `${...}` variable | One the specification defines; `${containerEnv:…}` only in `remoteEnv` | DEVC-18 |
 | Updates | Dependabot `devcontainers`, or Renovate | DEVC-09 |

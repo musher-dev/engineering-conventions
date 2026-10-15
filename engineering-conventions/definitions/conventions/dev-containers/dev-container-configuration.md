@@ -7,8 +7,10 @@ summary: >-
   as a user other than root, runs lifecycle scripts the repository holds,
   commits no secret, names its volumes for the container and mounts them in
   the remote user's home, gives the container no fixed name, is valid
-  against the specification's schema and uses only its variables, and is
-  kept current by Dependabot or Renovate and built in CI.
+  against the specification's schema and uses only its variables, mounts
+  into the workspace only inside the product directory, links a Cargo
+  product for rust-analyzer, and is kept current by Dependabot or Renovate
+  and built in CI.
 status: draft
 topic: dev-containers
 applies_to:
@@ -20,6 +22,7 @@ applies_to:
     - .devcontainer/**/Dockerfile
     - .github/dependabot.yml
     - .github/workflows/*.yml
+    - .repo/repository.toml
 created: 2026-09-29
 owners:
   - "@justinmerrell"
@@ -151,6 +154,24 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.specification
+  - id: DEVC-22
+    title: A mount into the workspace lands inside a declared product directory
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.workspace
+    aliases: ["development-container:LAYOUT-07a"]
+  - id: DEVC-23
+    title: rust-analyzer.linkedProjects lists the Cargo.toml of each product directory that has one
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.dev_containers.workspace
+    aliases: ["development-container:LAYOUT-07b"]
 ---
 
 # Dev container configuration
@@ -169,11 +190,15 @@ or the root `.devcontainer.json`. A repository without one has no finding here.
 Where a value is written with a variable (`${localEnv:…}`, `${VERSION}` in a `FROM`), the check leaves it alone: the
 environment or the build decides it. Whether the variable itself is one the specification defines is DEVC-18's.
 
+DEVC-22 and DEVC-23 also read the product directory the identity declaration names in `[layout]`
+([EC-0018](../repository/layout.md)), so a repository without `.repo/repository.toml` has no finding from them.
+
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`), and every requirement is `proposed` at
 severity `warning`. The dev container scaffold is `musher-dev/development-container`'s; this convention holds any
-repository's dev container to the same bar, that one's included.
+repository's dev container to the same bar, that one's included. DEVC-22 and DEVC-23 adopt the two halves of that
+scaffold's LAYOUT-07, which keeps its ID as an alias.
 
 ## Requirements
 
@@ -560,3 +585,63 @@ Code's `${workspaceFolder}` in a setting.
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### DEVC-22
+
+**A mount into the workspace lands inside a declared product directory.**
+
+A volume mounted into the workspace keeps a product's build output, such as Cargo's `target/` or `node_modules/`, off
+the slow bind mount and across rebuilds. It works only where the build writes, which is inside the product directory
+([EC-0018](../repository/layout.md)). A mount left at the root when the product moved into its directory covers a
+path nothing writes: the container starts, the build output lands on the bind mount again, and the mount point leaves
+an empty directory at the root. The check reads each mount whose target starts with
+`/workspaces/${localWorkspaceFolderBasename}/` or `${containerWorkspaceFolder}/`, in the string or the object form,
+and requires the rest of the target to be the product directory or under it; in a multi-product repository, under a
+directory a `products` entry matches. A repository whose identity declaration names no product has nowhere such a
+mount can go, so every one is reported. A mount outside the workspace is not checked.
+
+**Correct:**
+
+```jsonc
+// .repo/repository.toml: [layout] product = "host-agent"
+"mounts": ["source=musher-${devcontainerId}-target,target=/workspaces/${localWorkspaceFolderBasename}/host-agent/target,type=volume"]
+```
+
+**Incorrect:**
+
+```jsonc
+// the product moved to host-agent/, the mount did not
+"mounts": ["source=musher-${devcontainerId}-target,target=/workspaces/${localWorkspaceFolderBasename}/target,type=volume"]
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container LAYOUT-07 (in part)
+
+### DEVC-23
+
+**rust-analyzer.linkedProjects lists the Cargo.toml of each product directory that has one.**
+
+The editor opens the repository root, one level above the product, and rust-analyzer discovers a Cargo workspace only
+at the root and in the directories directly below it. A product nested deeper, such as a multi-product repository's
+`apps/<name>`, is not found, and one directly below is found only while discovery happens to reach it: the editor then
+shows no types, no errors and no navigation for the Rust code, with no message saying why. Listing each product's
+manifest in the dev container's VS Code settings links it explicitly, whatever the depth. An entry may start with
+`./` or `${workspaceFolder}/`. A product directory without a `Cargo.toml` needs no entry.
+
+**Correct:**
+
+```jsonc
+"customizations": {
+  "vscode": {
+    "settings": { "rust-analyzer.linkedProjects": ["host-agent/Cargo.toml"] }
+  }
+}
+```
+
+**Incorrect:**
+
+```jsonc
+// host-agent/Cargo.toml exists, and nothing links it
+"customizations": { "vscode": { "extensions": ["rust-lang.rust-analyzer"] } }
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container LAYOUT-07 (in part)

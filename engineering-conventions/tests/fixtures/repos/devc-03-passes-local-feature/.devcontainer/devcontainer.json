@@ -7,6 +7,8 @@
     "./features/tools": {},
   },
   "remoteUser": "vscode",
+  "forwardPorts": [15432],
+  "portsAttributes": { "15432": { "label": "PostgreSQL" } },
   "mounts": [
     "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
   ],

@@ -87,6 +87,7 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-16](agents/agent-context.md#agent-16) | No CLAUDE.md is committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-17](agents/agent-context.md#agent-17) | An AGENTS.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
 | [AGENT-18](agents/agent-context.md#agent-18) | Every import in an AGENTS.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [AGENT-19](agents/agent-context.md#agent-19) | Every paths entry of a rule under .claude/rules/ matches a file in the repository | EC-0013 | proposed | warning | conftest |
 | [BRANCH-01](branch-protection/default-branch-protection.md#branch-01) | An active branch ruleset committed under .github/rulesets/ covers the default branch | EC-0041 | proposed | warning | conftest |
 | [BRANCH-02](branch-protection/default-branch-protection.md#branch-02) | The default branch's rulesets block deletion and force pushes, and require a pull request and status checks | EC-0041 | proposed | warning | conftest |
 | [BRANCH-03](branch-protection/default-branch-protection.md#branch-03) | A pull request to the default branch needs an approval or a code owner's review | EC-0041 | proposed | warning | conftest |
@@ -117,6 +118,7 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-10](configuration/suppressions.md#conf-10) | Every entry in a trivyignore.yaml has a statement and an expiry within the term | EC-0012 | proposed | warning | conftest |
 | [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
+| [CONF-13](configuration/tool-configuration.md#conf-13) | Every pattern in the root .gitattributes matches a file in the repository | EC-0011 | proposed | warning | conftest |
 | [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
 | [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
 | [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |
@@ -244,6 +246,7 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-51](github-actions/releases-and-deployments.md#gha-51) | A secret or variable's name carries no deployment environment | EC-0023 | proposed | warning | conftest |
 | [GHA-52](github-actions/releases-and-deployments.md#gha-52) | A GitHub App's credentials are a client-ID variable and a private-key secret | EC-0023 | proposed | warning | conftest |
 | [GHA-53](github-actions/releases-and-deployments.md#gha-53) | A deploy job records the deployment in GitHub's linked artifacts | EC-0023 | proposed | warning | conftest |
+| [GHA-54](github-actions/runners-and-step-outcomes.md#gha-54) | Every pattern in a dorny/paths-filter filter matches a file in the repository | EC-0022 | proposed | warning | conftest |
 | [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
 | [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |

@@ -3,15 +3,16 @@
 # description: >-
 #   The files that give a coding agent its instructions: one root AGENTS.md
 #   as the project memory (AGENT-15), no CLAUDE.md (AGENT-16), the README
-#   imported (AGENT-17), path-scoped rules (AGENT-03), a bounded
-#   always-loaded context (AGENT-04), imports that resolve (AGENT-18), and
-#   no personal agent files in git (AGENT-07). AGENT-01, 02, 05, 06 and 08
+#   imported (AGENT-17), path-scoped rules (AGENT-03) whose paths match
+#   files (AGENT-19), a bounded always-loaded context (AGENT-04), imports
+#   that resolve (AGENT-18), and no personal agent files in git (AGENT-07). AGENT-01, 02, 05, 06 and 08
 #   are retired.
 # scope: package
 # custom:
 #   convention: EC-0013
 package conventions.checks.agents.agent_context
 
+import data.conventions.lib.doublestar
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.paths
@@ -20,6 +21,21 @@ import data.conventions.lib.text
 # AGENT-03
 findings contains lib.finding("AGENT-03", path, unscoped_message) if {
 	some path in unconditional_rules
+}
+
+# AGENT-19
+findings contains lib.finding("AGENT-19", path, message) if {
+	some path in files.repository_files
+	regex.match(rule_pattern, path)
+	some pattern in rule_paths(files.texts[path])
+	not doublestar.matches_any(pattern, files.all_files)
+	message := sprintf(
+		concat(" ", [
+			"the paths: entry %q matches no file in the repository, so Claude Code never loads the rule",
+			"for it; point it at the files the rule governs, or delete it",
+		]),
+		[pattern],
+	)
 }
 
 # AGENT-04
@@ -168,6 +184,18 @@ scoped(content) if {
 	is_string(pattern)
 	trim_space(pattern) != ""
 }
+
+# A rule's paths entries: a list of globs, or one string of them separated
+# by commas outside braces, so `*.{ts,tsx}` stays one entry.
+rule_paths(content) := {trim_space(entry) |
+	some entry in path_entries(text.frontmatter(content).paths)
+	is_string(entry)
+	trim_space(entry) != ""
+}
+
+path_entries(value) := value if is_array(value)
+
+path_entries(value) := regex.find_n(`(?:[^,{]|\{[^}]*\})+`, value, -1) if is_string(value)
 
 unscoped_message := concat(" ", [
 	"the rule has no paths: frontmatter, so Claude Code loads it in every session; add a",

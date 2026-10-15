@@ -1,0 +1,14 @@
+// A local Feature is part of the repository; the lockfile never records it.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "./features/tools": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

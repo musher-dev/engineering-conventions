@@ -1,0 +1,11 @@
+# Each form CONF-13 reads, matching a file, and the lines it skips.
+* text=auto eol=lf
+*.sh text eol=lf
+/Taskfile.yml text eol=lf
+platform-api/ linguist-detectable
+docs/decisions/*.md linguist-documentation
+**/devcontainer-lock.json linguist-generated=true -diff
+.devcontainer/stacks/** text eol=lf
+
+*.[ch] diff=cpp
+"name with spaces.txt" -text

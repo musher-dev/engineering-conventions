@@ -5,7 +5,8 @@ summary: >-
   A tool's configuration lives in .config/<concern>/<tool>.<ext>, never at
   the repository root, and is passed to the tool by path. .config/ holds
   declarations only, is indexed in its README, and every file in it has a
-  caller that names it, as every path a caller names exists.
+  caller that names it, as every path a caller names exists, and every
+  pattern in the root .gitattributes matches a file.
 status: draft
 topic: configuration
 applies_to:
@@ -135,6 +136,15 @@ requirements:
       engine: conftest
       package: conventions.checks.configuration.tool_configuration
     aliases: ["development-container:CFG-09"]
+  - id: CONF-13
+    title: Every pattern in the root .gitattributes matches a file in the repository
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.configuration.tool_configuration
+    aliases: ["development-container:PATH-01b"]
 ---
 
 # Tool configuration
@@ -170,6 +180,7 @@ Its requirements are `proposed` at severity `warning`, like every requirement in
 | CFG-04 reads Taskfiles, workflows, lefthook and shell scripts | Taskfiles, lefthook, workflows, composite actions, `devcontainer.json` and `package.json` | Shell scripts are not parsed; a script's caller names the configuration instead |
 | CFG-07's list of root files differs in the two repositories | One list, in the check | One answer everywhere |
 | platform CFG-09 means a suppression's expiry | [CONF-10](suppressions.md#conf-10) | The two repositories' CFG-09 are different checks |
+| development-container PATH-01 checks `.gitattributes`, path filters and rule paths together | CONF-13 checks `.gitattributes`; [GHA-54](../github-actions/runners-and-step-outcomes.md#gha-54) and [AGENT-19](../agents/agent-context.md#agent-19) the others | Each pattern is checked beside the convention for the file that holds it |
 
 ## The layout
 
@@ -445,6 +456,35 @@ after the file moved to `.config/markdown/`, or a `paths` filter on `.config/rus
 TOML file.
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container CFG-09
+
+### CONF-13
+
+**Every pattern in the root `.gitattributes` matches a file in the repository.**
+
+git never reports a `.gitattributes` pattern that matches nothing. A line that marks generated files, fixes a line
+ending or turns off a diff keeps its place after the files it named move or go, and the attributes silently stop
+applying: a generated file shows in review again, or a script checks out with CRLF and fails. The check reads each
+pattern as git does: a pattern with no slash matches a name at any depth, a leading `/` anchors it to the root, and a
+trailing `/` names a directory. It skips blank lines, comments, `[attr]` macros, `!` lines, which git rejects, and
+patterns with a `[...]` class or in quotes. Every tracked file counts, fixtures included.
+
+**Correct:**
+
+```text
+* text=auto eol=lf
+*.sh text eol=lf
+engineering-conventions/checks/data/index.json linguist-generated=true
+```
+
+**Incorrect:**
+
+```text
+* text=auto eol=lf
+.env text eol=lf                      # no .env is committed
+checks/data/index.json linguist-generated=true   # moved under engineering-conventions/
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PATH-01 (in part)
 
 ## Rationale
 

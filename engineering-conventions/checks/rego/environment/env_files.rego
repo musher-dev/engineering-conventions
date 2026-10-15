@@ -12,6 +12,7 @@ package conventions.checks.environment.env_files
 
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.gitignore
 import data.conventions.lib.paths
 
 # ENVS-26
@@ -83,7 +84,7 @@ ignored(path) if {
 		not startswith(line, "#")
 		negated := startswith(line, "!")
 		pattern := trim_prefix(line, "!")
-		matches(pattern, relative)
+		gitignore.matches(pattern, relative)
 		rank := (source.depth * 1000000) + index
 	]
 	count(decisions) > 0
@@ -97,26 +98,4 @@ gitignores contains {"base": paths.directory(path), "depth": count(split(path, "
 	some path, text in files.texts
 	files.basename(path) == ".gitignore"
 	not files.fixture(path)
-}
-
-# A pattern with no slash, or only a trailing one, matches a name at any
-# depth; a pattern with a slash is anchored to the .gitignore's directory,
-# and a leading **/ matches at any depth.
-matches(pattern, relative) if {
-	clean := trim_suffix(pattern, "/")
-	not contains(clean, "/")
-	some name in split(relative, "/")
-	glob.match(clean, [], name)
-}
-
-matches(pattern, relative) if {
-	contains(trim_suffix(pattern, "/"), "/")
-	clean := trim_prefix(trim_suffix(pattern, "/"), "/")
-	glob.match(clean, ["/"], relative)
-}
-
-matches(pattern, relative) if {
-	startswith(pattern, "**/")
-	rest := substring(pattern, 3, -1)
-	glob.match(rest, ["/"], files.basename(relative))
 }

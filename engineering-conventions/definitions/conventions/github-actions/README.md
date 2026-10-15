@@ -48,7 +48,7 @@ Read them in this order. Each builds on the vocabulary of the one before.
 | [EC-0004 Composite actions](composite-actions.md) | GHA-20 – GHA-23, GHA-38 | Action tokens, directory grammar, metadata, kebab-case inputs and outputs |
 | [EC-0005 Execution hygiene](execution-hygiene.md) | GHA-24 – GHA-33 | Pinning, permissions, credentials, timeouts, concurrency, path filters, linters |
 | [EC-0006 Units and renames](units-and-renames.md) | GHA-34 – GHA-37 | Choosing a workflow, job, action or reusable workflow; the validation split; renaming safely |
-| [EC-0022 Runners and step outcomes](runners-and-step-outcomes.md) | GHA-39 – GHA-45 | Pinned runner images, `ubuntu-slim` limits, swallowed failures, build caches, caller permissions, diff bases, working directories |
+| [EC-0022 Runners and step outcomes](runners-and-step-outcomes.md) | GHA-39 – GHA-45, GHA-54 | Pinned runner images, `ubuntu-slim` limits, swallowed failures, build caches, caller permissions, diff bases, path filters that match, working directories |
 | [EC-0023 Releases and deployments](releases-and-deployments.md) | GHA-46 – GHA-53 | Leased force pushes, the release-please token, jobs a skip cannot turn green, production triggers, environment names, environment-scoped secrets, GitHub App credentials, deployment records |
 
 The vocabulary and its reasoning are recorded in

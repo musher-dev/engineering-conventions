@@ -3,8 +3,9 @@
 # description: >-
 #   Tool configuration lives in .config/, bucketed by concern and indexed in
 #   .config/README.md (CONF-01..03, 05..08); every file there has a caller
-#   that names it (CONF-04), and every .config/ path a caller names exists
-#   (CONF-09).
+#   that names it (CONF-04), every .config/ path a caller names exists
+#   (CONF-09), and every pattern in the root .gitattributes matches a file
+#   (CONF-13).
 # scope: package
 # custom:
 #   convention: EC-0011
@@ -13,6 +14,7 @@ package conventions.checks.configuration.tool_configuration
 import data.conventions.lib.doublestar
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.gitignore
 import data.conventions.lib.values
 
 index_path := ".config/README.md"
@@ -143,6 +145,46 @@ findings contains lib.finding("CONF-09", reference.caller, message) if {
 		"names %s, which does not exist; correct the path or remove the reference",
 		[reference.path],
 	)
+}
+
+# CONF-13
+findings contains lib.finding("CONF-13", gitattributes_path, message) if {
+	some entry in gitattributes_patterns
+	not attributed(entry.pattern)
+	message := sprintf(
+		concat(" ", [
+			"line %d: the pattern %s matches no file in the repository, so its attributes apply to",
+			"nothing; point it at the files it is meant for, or delete the line",
+		]),
+		[entry.line, entry.pattern],
+	)
+}
+
+gitattributes_path := ".gitattributes"
+
+# Each pattern of the root .gitattributes with its line number. A blank
+# line, a comment, a macro ([attr]), a negation (which git rejects) and a
+# quoted or bracketed pattern, which the matcher does not read, are skipped.
+gitattributes_patterns contains {"line": index + 1, "pattern": pattern} if {
+	some index, raw in split(files.texts[gitattributes_path], "\n")
+	line := trim_space(raw)
+	line != ""
+	not startswith(line, "#")
+	pattern := regex.split(`\s+`, line)[0]
+	checkable_attribute_pattern(pattern)
+}
+
+checkable_attribute_pattern(pattern) if {
+	not startswith(pattern, "!")
+	not startswith(pattern, "\"")
+	not contains(pattern, "[")
+}
+
+# Every tracked file counts, fixtures included: git applies attributes to
+# them too.
+attributed(pattern) if {
+	some path in files.all_files
+	gitignore.matches(pattern, path)
 }
 
 top_level_allowed := {"README.md", "lefthook.yml", "lefthook-local.yml"}

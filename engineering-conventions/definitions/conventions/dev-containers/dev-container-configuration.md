@@ -231,7 +231,9 @@ Checked by: conftest · Severity: warning · Since: 0.6.3
 
 A Feature added without regenerating the lockfile is unlocked, and one removed leaves an entry that looks as if it
 still installs. Either way the lockfile no longer describes the container. A Feature that another Feature pulls in
-through `dependsOn` is locked without being named in the configuration, and is not reported.
+through `dependsOn` is locked without being named in the configuration, and is not reported. A local Feature, one
+referenced by a path such as `./features/tools`, is part of the repository and is not locked: the Dev Container CLI
+records only published Features, so a configuration whose Features are all local needs no lockfile.
 
 **Correct:**
 

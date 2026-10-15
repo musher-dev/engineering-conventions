@@ -309,3 +309,58 @@ test_gha_45_checkout_into_a_subdirectory_is_not_judged if {
 	results_13 := checks.findings with input as [wf("validate.yml", workflow)] with data.conventions.index as td.index
 	count(messages(results_13, "GHA-45")) == 0
 }
+
+gha_54_files := td.inventory([
+	".github/workflows/validate.yml",
+	"apps/api/main.go",
+	"docs/api/index.md",
+	".config/lefthook.yml",
+])
+
+test_gha_54_patterns_that_match_nothing if {
+	filters := concat("\n", [
+		"api:",
+		"  - 'apps/api/**'",
+		"  - 'services/api/**'",
+		"  - added|modified: 'docs/api/*.md'",
+		"  - added: 'docs/web/*.md'",
+		"  - '!apps/api/vendor/**'",
+		"  - '${{ inputs.extra }}'",
+		"config: .config/*.yml",
+		"shared: &shared",
+		"  - 'apps/**/*.go'",
+		"both:",
+		"  - *shared",
+		"  - 'lib/**'",
+		"",
+	])
+	workflow := with_jobs({"detect": job({"steps": [
+		filter_step({"filters": filters, "base": "main"}),
+		filter_step({"filters": ".github/filters.yml", "base": "main"}),
+	]})})
+	results := checks.findings with input as [wf("validate.yml", workflow), gha_54_files]
+		with data.conventions.index as td.index
+	found := messages(results, "GHA-54")
+	found == {
+		gha_54_message("services/api/**", "api"),
+		gha_54_message("docs/web/*.md", "api"),
+		gha_54_message("lib/**", "both"),
+	}
+}
+
+test_gha_54_composite_action if {
+	action := {"name": "Detect", "description": "x", "runs": {"using": "composite", "steps": [
+		filter_step({"filters": "web: ['apps/web/**']"}),
+	]}}
+	docs := [td.file(".github/actions/detect/action.yml", action), gha_54_files]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	{f.path | some f in results; f.id == "GHA-54"} == {".github/actions/detect/action.yml"}
+}
+
+gha_54_message(pattern, filter) := sprintf(
+	concat(" ", [
+		"step \"Filter\" in job \"detect\": the pattern %q in paths-filter filter %q matches no file in the",
+		"repository, so the filter never reports a change; point it at the files it is meant to watch, or delete it",
+	]),
+	[pattern, filter],
+)

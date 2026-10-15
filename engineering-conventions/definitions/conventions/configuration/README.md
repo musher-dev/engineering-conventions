@@ -18,7 +18,7 @@ check it replaces in `aliases`, so a waiver or a habit that names `CFG-03` still
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0011 Tool configuration](tool-configuration.md) | CONF-01 – CONF-09 | Where configuration lives, the `.config/` index, callers, and what `.config/` may hold |
+| [EC-0011 Tool configuration](tool-configuration.md) | CONF-01 – CONF-09, CONF-13 | Where configuration lives, the `.config/` index, callers, what `.config/` may hold, and `.gitattributes` patterns that match |
 | [EC-0012 Suppressions](suppressions.md) | CONF-10 – CONF-12 | Reasons and expiry dates in Trivy's and gitleaks' ignore files |
 
 ## Quick reference

@@ -198,6 +198,8 @@ TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.Taskfile\.ya?ml$'
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'
 # A .gitignore, for whether it ignores a product's local .env (ENVS-27).
 TEXTS="${TEXTS}|"'(^|/)\.gitignore$'
+# The root .gitattributes, for whether each pattern matches a file (CONF-13).
+TEXTS="${TEXTS}|"'^\.gitattributes$'
 TEXT_LIMIT=262144
 
 # Files whose size the checks read: Markdown, for the agent context budget.

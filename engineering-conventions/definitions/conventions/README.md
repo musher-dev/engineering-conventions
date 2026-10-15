@@ -87,6 +87,7 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-16](agents/agent-context.md#agent-16) | No CLAUDE.md is committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-17](agents/agent-context.md#agent-17) | An AGENTS.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
 | [AGENT-18](agents/agent-context.md#agent-18) | Every import in an AGENTS.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [AGENT-19](agents/agent-context.md#agent-19) | Every paths entry of a rule under .claude/rules/ matches a file in the repository | EC-0013 | proposed | warning | conftest |
 | [BRANCH-01](branch-protection/default-branch-protection.md#branch-01) | An active branch ruleset committed under .github/rulesets/ covers the default branch | EC-0041 | proposed | warning | conftest |
 | [BRANCH-02](branch-protection/default-branch-protection.md#branch-02) | The default branch's rulesets block deletion and force pushes, and require a pull request and status checks | EC-0041 | proposed | warning | conftest |
 | [BRANCH-03](branch-protection/default-branch-protection.md#branch-03) | A pull request to the default branch needs an approval or a code owner's review | EC-0041 | proposed | warning | conftest |

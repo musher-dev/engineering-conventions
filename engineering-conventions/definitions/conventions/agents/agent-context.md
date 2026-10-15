@@ -4,8 +4,8 @@ title: Agent context
 summary: >-
   The files that give a coding agent its instructions: one AGENTS.md at the
   root as the project memory, importing the README, no CLAUDE.md beside it,
-  path-scoped rules, an always-loaded context kept under 40 KiB, imports
-  that resolve, and no personal agent files in git.
+  rules scoped to paths that exist, an always-loaded context kept under
+  40 KiB, imports that resolve, and no personal agent files in git.
 status: draft
 topic: agents
 applies_to:
@@ -142,6 +142,15 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.agents.agent_context
+  - id: AGENT-19
+    title: Every paths entry of a rule under .claude/rules/ matches a file in the repository
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.agents.agent_context
+    aliases: ["development-container:PATH-01d"]
 ---
 
 # Agent context
@@ -170,7 +179,8 @@ repository that adopts this convention says so where it lists its tools.
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`). AGENT-17, AGENT-03 and AGENT-04 adopt
-`musher-dev/platform`'s MF-01, MF-02 and MF-03, which retire there once a release carries them
+`musher-dev/platform`'s MF-01, MF-02 and MF-03, and AGENT-19 adopts the rule-paths part of
+`musher-dev/development-container`'s PATH-01; each retires there once a release carries it
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
 Its requirements are `proposed` at severity `warning`, like every requirement in the 0.x series.
 
@@ -189,7 +199,7 @@ The requirements depend on these behaviours of Claude Code, from its
 | A `CLAUDE.md` or `CLAUDE.local.md` in the working directory or above it replaces every `AGENTS.md`: Claude Code then reads the `CLAUDE.md` files only | No `CLAUDE.md` is committed (AGENT-16) |
 | `@path` imports a file into the importing file's context at launch, in `AGENTS.md` as in `CLAUDE.md`; a relative path resolves from the importing file, and imports nest to four hops | The README is imported, not copied (AGENT-17); imports count toward the budget (AGENT-04) and must resolve (AGENT-18) |
 | An `@path` inside a code span or fenced block is not an import | Write a literal `@name` in backticks |
-| Rules under `.claude/rules/` load alongside `AGENTS.md`; a rule without `paths` frontmatter, or with frontmatter that does not parse, loads at launch with the project memory | Every rule is scoped (AGENT-03) |
+| Rules under `.claude/rules/` load alongside `AGENTS.md`; a rule without `paths` frontmatter, or with frontmatter that does not parse, loads at launch with the project memory | Every rule is scoped (AGENT-03), by entries that match files (AGENT-19) |
 | A nested `AGENTS.md` loads only when the agent reads a file in its directory | Only the project memory and its imports count toward the budget |
 | `CLAUDE.local.md` and `.claude/settings.local.json` are one person's preferences | They stay out of git (AGENT-07) |
 
@@ -429,6 +439,36 @@ Ask @octocat about releases.
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.8.0
+
+### AGENT-19
+
+**Every `paths` entry of a rule under `.claude/rules/` matches a file in the repository.**
+
+Claude Code loads a scoped rule when the agent reads a file its `paths` match. An entry that matches nothing never
+loads the rule, so after a directory is renamed the agent works on the moved files without the instructions written
+for them, and nothing says so. Each entry, in a list or a comma-separated string, is matched as a glob: `*` stays
+within one path segment, `**` crosses them, and `{a,b}` is either. AGENT-03 asks for the list; this asks that each
+entry in it still names something.
+
+**Correct:**
+
+```markdown
+---
+paths:
+  - "apps/api/**"
+---
+```
+
+**Incorrect:**
+
+```markdown
+---
+paths:
+  - "services/api/**"   # renamed to apps/api/
+---
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PATH-01 (in part)
 
 ## References
 

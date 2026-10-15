@@ -98,6 +98,10 @@
   "agent-18-unresolved-import": [
     ["AGENTS.md", "AGENT-18", "warning", "@docs/testing.md does not name a file in the repository; correct the path, or put the text in backticks if it is not meant as an import", true]
   ],
+  "agent-19-passes-path-forms": [],
+  "agent-19-unmatched-path": [
+    [".claude/rules/api.md", "AGENT-19", "warning", "the paths: entry \"services/api/**\" matches no file in the repository, so Claude Code never loads the rule for it; point it at the files the rule governs, or delete it", true]
+  ],
   "branch-01-evaluate-only": [
     [".github/rulesets/main-branch.json", "BRANCH-01", "warning", "no active branch ruleset in .github/rulesets/ covers the default branch, so anyone who can push may delete it, force-push to it, or merge without review or checks; add one whose ref_name includes ~DEFAULT_BRANCH", true]
   ],

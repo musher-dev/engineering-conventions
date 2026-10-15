@@ -342,7 +342,11 @@
     [".devcontainer/devcontainer.json", "DEVC-02", "warning", "the Features are not locked; commit .devcontainer/devcontainer-lock.json, written by `devcontainer build` or `devcontainer upgrade`", true]
   ],
   "devc-02-passes-no-features": [],
+  "devc-03-local-and-unlocked": [
+    [".devcontainer/devcontainer-lock.json", "DEVC-03", "warning", "the Feature ghcr.io/devcontainers/features/github-cli:1 is not in the lockfile; run `devcontainer upgrade` to record it", true]
+  ],
   "devc-03-passes-depends-on": [],
+  "devc-03-passes-local-feature": [],
   "devc-03-stale-lockfile": [
     [".devcontainer/devcontainer-lock.json", "DEVC-03", "warning", "the Feature ghcr.io/devcontainers/features/github-cli:1 is not in the lockfile; run `devcontainer upgrade` to record it", true]
   ],

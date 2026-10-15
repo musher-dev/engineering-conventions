@@ -4,6 +4,7 @@ date: 2026-09-29
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0037"]
 ---
 
 # 0020 — Dev container files get their own family, and the scaffold is consumed by pinning an image

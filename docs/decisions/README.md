@@ -49,6 +49,7 @@ decisions about why Musher exists and what it designs are in `musher-dev/pelorus
 | [0034](0034-deployment-environments-have-one-name.md) | Deployment environments have one name, and reach a process only as MUSHER_ENVIRONMENT | accepted |
 | [0035](0035-published-and-deployed-artifacts-are-recorded.md) | What a repository publishes and deploys is recorded in GitHub's linked artifacts | accepted |
 | [0036](0036-ownership-moves-out-of-company-and-platform.md) | musher-dev/company's ownership moves to the repositories that hold it, the governance words are defined here, and the org graph is assembled in musher-dev/pelorus | accepted |
+| [0037](0037-the-scaffolds-general-rules-move-here.md) | The dev container scaffold's general rules move here, and a stack is named by its directory | accepted |
 
 ## Writing a decision
 

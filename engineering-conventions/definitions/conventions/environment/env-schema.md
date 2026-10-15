@@ -258,7 +258,7 @@ requirements:
     title: Every variable a dev container stack reads is a binding in the dev container's environment schema
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.environment.env_stacks
@@ -267,7 +267,7 @@ requirements:
     title: Every stack a binding lists in consumers exists and reads it
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.environment.env_stacks
@@ -276,7 +276,7 @@ requirements:
     title: Every file a binding is mirrored_in exists and repeats its local_default
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.environment.env_stacks
@@ -1340,7 +1340,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_SECRET:-postgres}
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container ENV-03
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container ENV-03
 
 ### ENVS-33
 
@@ -1366,7 +1366,7 @@ POSTGRES_DB: {type: string, local_default: app, consumers: [postgresql], ...}  #
 REDIS_PASSWORD: {type: string, consumers: [redis], ...}  # .devcontainer/stacks/redis/compose.yaml never reads it
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container ENV-04, ENV-03 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container ENV-04, ENV-03 (in part)
 
 ### ENVS-34
 
@@ -1399,7 +1399,7 @@ MINIO_OBS_ROOT_USER:
   ...
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container ENV-05
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container ENV-05
 
 ## References
 

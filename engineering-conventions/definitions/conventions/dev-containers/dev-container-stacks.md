@@ -71,7 +71,7 @@ requirements:
     title: A dev container configuration's forwardPorts and portsAttributes name the same ports
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -80,7 +80,7 @@ requirements:
     title: A dev container forwards every host port its stacks publish
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -89,7 +89,7 @@ requirements:
     title: A dev container forwards ports from the reserved range 15432-15460 only
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -278,7 +278,7 @@ inside such a range counts as described.
 }
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PORT-01
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PORT-01
 
 ### DEVC-20
 
@@ -311,7 +311,7 @@ services:
       - "127.0.0.1:15433:6379"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PORT-02
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PORT-02
 
 ### DEVC-21
 
@@ -335,4 +335,4 @@ number or fails. A forwarded port in the range is one a stack publishes, under t
 "forwardPorts": [5432, 3000]
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PORT-05 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PORT-05 (in part)

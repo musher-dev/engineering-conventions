@@ -12288,7 +12288,7 @@
           "package": "conventions.checks.agents.agent_context",
           "path": "definitions/conventions/agents/agent-context.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "Every paths entry of a rule under .claude/rules/ matches a file in the repository",
           "waivable": true
@@ -12721,7 +12721,7 @@
           "package": "conventions.checks.configuration.tool_configuration",
           "path": "definitions/conventions/configuration/tool-configuration.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "Every pattern in the root .gitattributes matches a file in the repository",
           "waivable": true
@@ -13309,7 +13309,7 @@
           "package": "conventions.checks.dev_containers.stacks",
           "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "A dev container configuration's forwardPorts and portsAttributes name the same ports",
           "waivable": true
@@ -13324,7 +13324,7 @@
           "package": "conventions.checks.dev_containers.stacks",
           "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "A dev container forwards every host port its stacks publish",
           "waivable": true
@@ -13339,7 +13339,7 @@
           "package": "conventions.checks.dev_containers.stacks",
           "path": "definitions/conventions/dev-containers/dev-container-stacks.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "A dev container forwards ports from the reserved range 15432-15460 only",
           "waivable": true
@@ -13354,7 +13354,7 @@
           "package": "conventions.checks.dev_containers.workspace",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "A mount into the workspace lands inside a declared product directory",
           "waivable": true
@@ -13369,7 +13369,7 @@
           "package": "conventions.checks.dev_containers.workspace",
           "path": "definitions/conventions/dev-containers/dev-container-configuration.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "rust-analyzer.linkedProjects lists the Cargo.toml of each product directory that has one",
           "waivable": true
@@ -13815,7 +13815,7 @@
           "package": "conventions.checks.environment.env_stacks",
           "path": "definitions/conventions/environment/env-schema.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "Every variable a dev container stack reads is a binding in the dev container's environment schema",
           "waivable": true
@@ -13831,7 +13831,7 @@
           "package": "conventions.checks.environment.env_stacks",
           "path": "definitions/conventions/environment/env-schema.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "Every stack a binding lists in consumers exists and reads it",
           "waivable": true
@@ -13846,7 +13846,7 @@
           "package": "conventions.checks.environment.env_stacks",
           "path": "definitions/conventions/environment/env-schema.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "Every file a binding is mirrored_in exists and repeats its local_default",
           "waivable": true
@@ -14590,7 +14590,7 @@
           "package": "conventions.checks.github_actions.runners_and_step_outcomes",
           "path": "definitions/conventions/github-actions/runners-and-step-outcomes.md",
           "severity": "warning",
-          "since": "0.10.0",
+          "since": "0.9.1",
           "status": "proposed",
           "title": "Every pattern in a dorny/paths-filter filter matches a file in the repository",
           "waivable": true

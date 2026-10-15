@@ -146,7 +146,7 @@ requirements:
     title: Every paths entry of a rule under .claude/rules/ matches a file in the repository
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.agents.agent_context
@@ -468,7 +468,7 @@ paths:
 ---
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PATH-01 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PATH-01 (in part)
 
 ## References
 

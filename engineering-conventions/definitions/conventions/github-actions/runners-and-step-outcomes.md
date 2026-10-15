@@ -4,8 +4,8 @@ title: Runners and step outcomes
 summary: >-
   A job runs on a pinned runner image that it fits, every failure reaches the
   run's result, and a job relies only on what exists: a build cache in a
-  registry, the permissions its caller grants, a diff base it can fetch, and
-  directories the repository holds.
+  registry, the permissions its caller grants, a diff base it can fetch,
+  path filters that match files, and directories the repository holds.
 status: draft
 topic: github-actions
 applies_to:
@@ -108,15 +108,24 @@ requirements:
       engine: conftest
       package: conventions.checks.github_actions.runners_and_step_outcomes
     aliases: ["development-container:PATH-02a"]
+  - id: GHA-54
+    title: Every pattern in a dorny/paths-filter filter matches a file in the repository
+    status: proposed
+    severity: warning
+    since: 0.10.0
+    validation:
+      engine: conftest
+      package: conventions.checks.github_actions.runners_and_step_outcomes
+    aliases: ["development-container:PATH-01c"]
 ---
 
 # Runners and step outcomes
 
 A job's result is only worth reading if the job ran on the machine it was proven on and every failure inside it
 reached that result. These requirements pin the runner image, keep a job within the limits of the runner it picks,
-refuse the shell idioms that turn a failure green, and catch four settings that fail only at run time: a build cache
-that evicts every other cache, a caller that grants less than its callee needs, a path filter with no diff base, and a
-working directory that does not exist.
+refuse the shell idioms that turn a failure green, and catch five settings that fail only at run time: a build cache
+that evicts every other cache, a caller that grants less than its callee needs, a path filter with no diff base or
+with a pattern that matches nothing, and a working directory that does not exist.
 
 ## Scope
 
@@ -143,6 +152,7 @@ which keep their own copies until they pin a release that carries these and reti
 | platform `DL-09` | GHA-43 | A caller that declares no permissions at all is left to GHA-26, where the platform reads it as granting none; a callee's `read-all` or `write-all` is compared too. |
 | platform `DL-10` | GHA-44 | The platform checks one workflow, and also requires a deep checkout; here every push-triggered workflow is checked, for `base` only. |
 | development-container `PATH-02` | GHA-45 | The workflow half. The Dependabot half belongs to the repository-layout conventions. |
+| development-container `PATH-01` | GHA-54 | The `dorny/paths-filter` part. `.gitattributes` is [CONF-13](../configuration/tool-configuration.md#conf-13), `.claude/rules/` is [AGENT-19](../agents/agent-context.md#agent-19), and lefthook globs are [HOOKS-11](../git-hooks/lefthook.md#hooks-11). |
 
 ## Requirements
 
@@ -416,6 +426,40 @@ defaults:
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container PATH-02
+
+### GHA-54
+
+**Every pattern in a `dorny/paths-filter` filter matches a file in the repository.**
+
+A filter whose pattern matches nothing never reports a change, and the jobs it gates are skipped as if nothing they
+cover had changed. After a directory is renamed the workflow still passes, and the checks it was meant to run stop
+running without a word. The check reads the filters written inline in `filters:`, as a YAML block, and each pattern
+in them: a string, or the string values of a `added|modified: <pattern>` entry. `*` stays within one path segment and
+`**` crosses them, as the action matches. A `filters:` that names a file of filters is not read, and neither is a
+pattern that starts with `!` or holds an expression or a variable.
+
+**Correct:**
+
+```yaml
+- uses: dorny/paths-filter@<sha>  # pinned as GHA-24 asks
+  with:
+    filters: |
+      api:
+        - "apps/api/**"
+        - added|modified: "docs/api/*.md"
+```
+
+**Incorrect:**
+
+```yaml
+- uses: dorny/paths-filter@<sha>
+  with:
+    filters: |
+      api:
+        - "services/api/**"    # renamed to apps/api/
+```
+
+Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PATH-01 (in part)
 
 ## References
 

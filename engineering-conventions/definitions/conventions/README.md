@@ -87,6 +87,7 @@ ID is permanent: it is never renumbered or reused.
 | [AGENT-16](agents/agent-context.md#agent-16) | No CLAUDE.md is committed | EC-0013 | proposed | warning | conftest |
 | [AGENT-17](agents/agent-context.md#agent-17) | An AGENTS.md with a README beside it imports that README | EC-0013 | proposed | warning | conftest |
 | [AGENT-18](agents/agent-context.md#agent-18) | Every import in an AGENTS.md names a file in the repository | EC-0013 | proposed | warning | conftest |
+| [AGENT-19](agents/agent-context.md#agent-19) | Every paths entry of a rule under .claude/rules/ matches a file in the repository | EC-0013 | proposed | warning | conftest |
 | [BRANCH-01](branch-protection/default-branch-protection.md#branch-01) | An active branch ruleset committed under .github/rulesets/ covers the default branch | EC-0041 | proposed | warning | conftest |
 | [BRANCH-02](branch-protection/default-branch-protection.md#branch-02) | The default branch's rulesets block deletion and force pushes, and require a pull request and status checks | EC-0041 | proposed | warning | conftest |
 | [BRANCH-03](branch-protection/default-branch-protection.md#branch-03) | A pull request to the default branch needs an approval or a code owner's review | EC-0041 | proposed | warning | conftest |
@@ -117,6 +118,7 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-10](configuration/suppressions.md#conf-10) | Every entry in a trivyignore.yaml has a statement and an expiry within the term | EC-0012 | proposed | warning | conftest |
 | [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
+| [CONF-13](configuration/tool-configuration.md#conf-13) | Every pattern in the root .gitattributes matches a file in the repository | EC-0011 | proposed | warning | conftest |
 | [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
 | [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
 | [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |
@@ -160,6 +162,11 @@ ID is permanent: it is never renumbered or reused.
 | [DEVC-16](dev-containers/dev-container-stacks.md#devc-16) | A dev container stack that labels the capability it provides runs a version every environment schema accepts | EC-0028 | proposed | warning | conftest |
 | [DEVC-17](dev-containers/dev-container-configuration.md#devc-17) | devcontainer.json is valid against the Dev Container specification's schema | EC-0027 | proposed | warning | conftest |
 | [DEVC-18](dev-containers/dev-container-configuration.md#devc-18) | Every variable in devcontainer.json is one the specification defines, used where it resolves | EC-0027 | proposed | warning | conftest |
+| [DEVC-19](dev-containers/dev-container-stacks.md#devc-19) | A dev container configuration's forwardPorts and portsAttributes name the same ports | EC-0028 | proposed | warning | conftest |
+| [DEVC-20](dev-containers/dev-container-stacks.md#devc-20) | A dev container forwards every host port its stacks publish | EC-0028 | proposed | warning | conftest |
+| [DEVC-21](dev-containers/dev-container-stacks.md#devc-21) | A dev container forwards ports from the reserved range 15432-15460 only | EC-0028 | proposed | warning | conftest |
+| [DEVC-22](dev-containers/dev-container-configuration.md#devc-22) | A mount into the workspace lands inside a declared product directory | EC-0027 | proposed | warning | conftest |
+| [DEVC-23](dev-containers/dev-container-configuration.md#devc-23) | rust-analyzer.linkedProjects lists the Cargo.toml of each product directory that has one | EC-0027 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-02](environment/env-contract.md#envs-02) | An environment schema lives only at \<product\>/env.schema.yaml or .devcontainer/env.schema.yaml | EC-0019 | proposed | warning | conftest |
 | [ENVS-03](environment/env-schema.md#envs-03) | An environment schema is valid against the published format | EC-0020 | proposed | warning | conftest |
@@ -191,6 +198,9 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-29](environment/env-schema.md#envs-29) | A name under a reserved vendor prefix is one that vendor defines | EC-0020 | proposed | warning | conftest |
 | [ENVS-30](environment/env-schema.md#envs-30) | No deployment environment appears in a variable's name | EC-0020 | proposed | warning | conftest |
 | [ENVS-31](environment/env-schema.md#envs-31) | A shared variable stem keeps its registered values | EC-0020 | proposed | warning | conftest |
+| [ENVS-32](environment/env-schema.md#envs-32) | Every variable a dev container stack reads is a binding in the dev container's environment schema | EC-0020 | proposed | warning | conftest |
+| [ENVS-33](environment/env-schema.md#envs-33) | Every stack a binding lists in consumers exists and reads it | EC-0020 | proposed | warning | conftest |
+| [ENVS-34](environment/env-schema.md#envs-34) | Every file a binding is mirrored_in exists and repeats its local_default | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |
@@ -244,6 +254,7 @@ ID is permanent: it is never renumbered or reused.
 | [GHA-51](github-actions/releases-and-deployments.md#gha-51) | A secret or variable's name carries no deployment environment | EC-0023 | proposed | warning | conftest |
 | [GHA-52](github-actions/releases-and-deployments.md#gha-52) | A GitHub App's credentials are a client-ID variable and a private-key secret | EC-0023 | proposed | warning | conftest |
 | [GHA-53](github-actions/releases-and-deployments.md#gha-53) | A deploy job records the deployment in GitHub's linked artifacts | EC-0023 | proposed | warning | conftest |
+| [GHA-54](github-actions/runners-and-step-outcomes.md#gha-54) | Every pattern in a dorny/paths-filter filter matches a file in the repository | EC-0022 | proposed | warning | conftest |
 | [HOOKS-01](git-hooks/lefthook.md#hooks-01) | A lefthook configuration sets assert_lefthook_installed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-02](git-hooks/lefthook.md#hooks-02) | min_version is set, and equals the lefthook version mise installs | EC-0014 | proposed | warning | conftest |
 | [HOOKS-03](git-hooks/lefthook.md#hooks-03) | A lefthook configuration sets glob_matcher to doublestar | EC-0014 | proposed | warning | conftest |

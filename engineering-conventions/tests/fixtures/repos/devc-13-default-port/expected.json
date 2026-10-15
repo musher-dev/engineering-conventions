@@ -1,3 +1,4 @@
 [
-  {"id": "DEVC-13", "path": ".devcontainer/stacks/postgres/compose.yaml", "severity": "warning"}
+  {"id": "DEVC-13", "path": ".devcontainer/stacks/postgres/compose.yaml", "severity": "warning"},
+  {"id": "DEVC-20", "path": ".devcontainer/stacks/postgres/compose.yaml", "severity": "warning"}
 ]

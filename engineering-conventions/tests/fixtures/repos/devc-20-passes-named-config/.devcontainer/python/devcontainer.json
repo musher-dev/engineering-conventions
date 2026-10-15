@@ -1,0 +1,10 @@
+// A second configuration with its own stack, which only it forwards.
+{
+  "name": "Platform API (Python)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "remoteUser": "vscode",
+  "forwardPorts": [15433],
+  "portsAttributes": {
+    "15433": { "label": "Redis", "onAutoForward": "silent" },
+  },
+}

@@ -1,0 +1,5 @@
+# No .env is committed, and the schema moved into platform-api/.
+* text=auto eol=lf
+*.sh text eol=lf
+.env text eol=lf
+/env.schema.yaml linguist-documentation

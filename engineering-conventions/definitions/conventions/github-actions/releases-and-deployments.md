@@ -504,7 +504,7 @@ jobs:
             -f name=ghcr.io/example-org/example-api -f digest="$DIGEST" -f version="$VERSION" \
             -f status=deployed -f logical_environment=production \
             -f physical_environment=example-cloud/us-east -f deployment_name=example-api \
-            -f github_repository="$GITHUB_REPOSITORY"
+            -f github_repository="${GITHUB_REPOSITORY#*/}"
 ```
 
 **Incorrect:**

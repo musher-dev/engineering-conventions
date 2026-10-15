@@ -5,6 +5,8 @@
     "ghcr.io/devcontainers/features/git:1": {},
   },
   "remoteUser": "vscode",
+  "forwardPorts": [15432],
+  "portsAttributes": { "15432": { "label": "PostgreSQL" } },
   // SESSION_SECRET is generated locally, so Codespaces need not ask for it.
   "secrets": {
     "MODEL_API_KEY": { "description": "Key for the hosted model API" },

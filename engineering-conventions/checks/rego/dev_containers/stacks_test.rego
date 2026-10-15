@@ -138,3 +138,104 @@ test_devc_16_not_a_version if {
 		"write the engine's version as integers separated by dots",
 	])}
 }
+
+config_path := ".devcontainer/devcontainer.json"
+
+forwarding(forward, attributes) := {
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+	"forwardPorts": forward,
+	"portsAttributes": attributes,
+}
+
+with_config(config_files, services) := array.concat(
+	[td.file(p, c) | some p, c in config_files],
+	[td.file(path, {"services": services}), td.inventory(array.concat([p | some p, _ in config_files], [path]))],
+)
+
+described := {"15432": {"label": "PostgreSQL"}}
+
+test_a_conforming_forwarded_stack if {
+	docs := with_config(
+		{config_path: forwarding([15432, "15433", "postgres:5432"], {
+			"15432": {"label": "PostgreSQL"},
+			"15433-15434": {"label": "Spare"},
+			".+/server\\.js": {"onAutoForward": "silent"},
+		})},
+		postgres(["127.0.0.1:15432:5432", "127.0.0.1:15433:5433", "${PORT}:5434"]),
+	)
+	count(stacks.findings) == 0 with input as docs
+}
+
+test_devc_19_each_side if {
+	docs := with_config(
+		{config_path: forwarding([15432, "15433"], {"15432": {}, "15434": {}})},
+		postgres(["127.0.0.1:15432:5432", "127.0.0.1:15433:5433"]),
+	)
+	found := stacks.findings with input as docs
+	td.pairs(found) == {["DEVC-19", config_path]}
+	messages(found, "DEVC-19") == {
+		"forwardPorts lists 15433, but portsAttributes has no entry for it; add one with the port's label",
+		"portsAttributes describes 15434, which forwardPorts does not list; forward it, or remove the entry",
+	}
+}
+
+test_devc_19_without_either_property if {
+	docs := [td.file(config_path, {"image": "x:1"}), td.inventory([config_path])]
+	count(stacks.findings) == 0 with input as docs
+}
+
+test_devc_20_not_forwarded if {
+	docs := with_config(
+		{config_path: forwarding([15432], described)},
+		postgres(["127.0.0.1:15432:5432", "127.0.0.1:15433-15434:6379-6380", {"target": 9000, "published": 15435}]),
+	)
+	found := stacks.findings with input as docs
+	messages(found, "DEVC-20") == {not_forwarded(port, config_path) | some port in [15433, 15434, 15435]}
+}
+
+not_forwarded(port, paths) := sprintf(
+	"the service postgres publishes host port %d, which %s does not forward; add it to forwardPorts",
+	[port, paths],
+)
+
+test_devc_20_without_a_configuration if {
+	count(stacks.findings) == 0 with input as compose(postgres(["127.0.0.1:15432:5432"]))
+}
+
+test_devc_20_pairs_a_named_configuration if {
+	named := ".devcontainer/stacks/devcontainer.json"
+	docs := with_config(
+		{config_path: forwarding([15432], described), named: forwarding([], {})},
+		postgres(["127.0.0.1:15432:5432"]),
+	)
+	found := stacks.findings with input as docs
+	messages(found, "DEVC-20") == {not_forwarded(15432, named)}
+}
+
+test_devc_20_any_named_configuration if {
+	python := ".devcontainer/python/devcontainer.json"
+	node := ".devcontainer/node/devcontainer.json"
+	forwarded := with_config(
+		{python: forwarding([15432], described), node: forwarding([], {})},
+		postgres(["127.0.0.1:15432:5432"]),
+	)
+	count(stacks.findings) == 0 with input as forwarded
+	neither := with_config({python: forwarding([], {}), node: forwarding([], {})}, postgres(["127.0.0.1:15432:5432"]))
+	found := stacks.findings with input as neither
+	messages(found, "DEVC-20") == {not_forwarded(15432, concat(" or ", [node, python]))}
+}
+
+outside(port) := sprintf(
+	"forwardPorts lists %d, outside the reserved range 15432-15460; %s",
+	[port, "forward the host port a stack publishes from the range"],
+)
+
+test_devc_21_outside_the_range if {
+	docs := with_config(
+		{config_path: forwarding([5432, "15461", 15460, "db:5432"], {"5432": {}, "15461": {}, "15460": {}})},
+		{},
+	)
+	found := stacks.findings with input as docs
+	td.pairs(found) == {["DEVC-21", config_path]}
+	messages(found, "DEVC-21") == {outside(5432), outside(15461)}
+}

@@ -156,8 +156,8 @@ This convention is a **draft** owned by this repository (`authority: self`). It 
 `musher-dev/development-container` checks today (LAYOUT-01 to LAYOUT-06, LAYOUT-08 and LAYOUT-09, and the Dependabot
 half of PATH-02), which keep their IDs as aliases
 ([decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)).
-Its requirements are `proposed` at severity `warning`. The dev container's mounts and editor links (LAYOUT-07) stay
-with the scaffold.
+Its requirements are `proposed` at severity `warning`. The dev container's mounts and editor links (LAYOUT-07) are
+DEVC-22 and DEVC-23, in [EC-0027](../dev-containers/dev-container-configuration.md).
 
 ## Declaring the product
 

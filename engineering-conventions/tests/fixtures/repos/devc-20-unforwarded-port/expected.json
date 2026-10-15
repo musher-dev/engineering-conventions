@@ -1,0 +1,3 @@
+[
+  {"id": "DEVC-20", "path": ".devcontainer/stacks/registry/compose.yaml", "severity": "warning"}
+]

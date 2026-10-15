@@ -233,9 +233,18 @@ findings contains lib.finding("DEVC-10", path, message) if {
 
 default feature_references(_) := set()
 
-feature_references(devcontainer) := object.keys(devcontainer.features) if {
+# The Features the lockfile records. A local Feature, referenced by a path
+# such as ./features/tools, is part of the repository: the Dev Container CLI
+# never writes it to the lockfile.
+feature_references(devcontainer) := {reference |
 	is_object(devcontainer.features)
+	some reference in object.keys(devcontainer.features)
+	not local_feature(reference)
 }
+
+local_feature(reference) if startswith(reference, "./")
+
+local_feature(reference) if startswith(reference, "../")
 
 # The lockfile beside a configuration: .devcontainer-lock.json for the root
 # form, devcontainer-lock.json beside any other.

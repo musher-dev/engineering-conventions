@@ -13,6 +13,7 @@ conforming := {
 	"AGENTS.md": memory,
 	"README.md": "# Project\n",
 	".claude/rules/source.md": rule,
+	"src/main.go": "package main\n",
 }
 
 # The runner's inventory: every path, the text of each agent-context file
@@ -133,7 +134,7 @@ test_agent_03_empty_or_unparsed_paths if {
 }
 
 test_agent_03_comma_separated_string if {
-	texts := with_files({".claude/rules/csv.md": "---\npaths: \"src/**, lib/**\"\n---\n"})
+	texts := with_files({".claude/rules/csv.md": "---\npaths: \"src/**, lib/**\"\n---\n", "lib/a.go": ""})
 	count(agent_context.findings) == 0 with input as repo(texts)
 }
 
@@ -217,4 +218,30 @@ test_agent_07_personal_files if {
 	texts := with_files({".claude/settings.local.json": "{}", "apps/CLAUDE.local.md": "mine\n"})
 	found := agent_context.findings with input as repo(texts)
 	td.pairs(found) == {["AGENT-07", ".claude/settings.local.json"], ["AGENT-07", "apps/CLAUDE.local.md"]}
+}
+
+agent_19_message(pattern) := sprintf(
+	concat(" ", [
+		"the paths: entry %q matches no file in the repository, so Claude Code never loads the rule",
+		"for it; point it at the files the rule governs, or delete it",
+	]),
+	[pattern],
+)
+
+test_agent_19_entries_that_match_nothing if {
+	texts := with_files({
+		".claude/rules/list.md": "---\npaths:\n  - \"src/**\"\n  - \"services/api/**\"\n---\n",
+		".claude/rules/csv.md": "---\npaths: \"src/*.{go,rs}, web/**\"\n---\n",
+	})
+	found := agent_context.findings with input as repo(texts)
+	{[f.path, f.message] | some f in found; f.id == "AGENT-19"} == {
+		[".claude/rules/list.md", agent_19_message("services/api/**")],
+		[".claude/rules/csv.md", agent_19_message("web/**")],
+	}
+}
+
+test_agent_19_braces_and_depth if {
+	texts := with_files({".claude/rules/deep.md": "---\npaths: [\"**/*.{go,py}\", \"src/main.go\"]\n---\n"})
+	found := agent_context.findings with input as repo(texts)
+	not "AGENT-19" in {f.id | some f in found}
 }

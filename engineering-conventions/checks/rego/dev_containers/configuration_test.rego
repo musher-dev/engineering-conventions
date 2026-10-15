@@ -371,3 +371,25 @@ test_devc_10_ci_action_without_lockfile if {
 	})
 	count(configuration.findings) == 0 with input as unlocked(without_features, [dependabot, action])
 }
+
+local_feature := "./features/tools"
+
+test_devc_03_local_feature_is_not_locked if {
+	config := object.union(devcontainer, {"features": {local_feature: {}, "../shared/feature": {}}})
+	count(configuration.findings) == 0 with input as conforming(config)
+}
+
+test_devc_02_only_local_features_need_no_lockfile if {
+	config := object.union(without_features, {"features": {local_feature: {}}})
+	count(configuration.findings) == 0 with input as unlocked(config, [dependabot, frozen_build])
+}
+
+test_devc_03_reports_the_registry_feature_beside_a_local_one if {
+	cli := "ghcr.io/devcontainers/features/github-cli:1"
+	config := object.union(devcontainer, {"features": {local_feature: {}, cli: {}}})
+	found := configuration.findings with input as conforming(config)
+	messages(found, "DEVC-03") == {sprintf(
+		"the Feature %s is not in the lockfile; run `devcontainer upgrade` to record it",
+		[cli],
+	)}
+}

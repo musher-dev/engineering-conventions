@@ -1,0 +1,4 @@
+[
+  {"id": "DEVC-19", "path": ".devcontainer/devcontainer.json", "severity": "warning"},
+  {"id": "DEVC-19", "path": ".devcontainer/devcontainer.json", "severity": "warning"}
+]

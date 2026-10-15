@@ -392,6 +392,26 @@ def test_inventory_document_derives_from_each_environment_schema(
     assert list(as_map(derived["api/env.schema.yaml"])) == ["contract"]
 
 
+def test_inventory_document_embeds_mirrored_files(product: Path, tmp_path: Path) -> None:
+    # The text of each file a binding is mirrored_in, resolved against the
+    # schema's directory (ENVS-34); a path outside it, a file the repository
+    # does not hold, and one over the size limit are left out.
+    chosen = run.selection(product)
+    (tmp_path / ".devcontainer" / "stacks").mkdir(parents=True)
+    (tmp_path / ".devcontainer" / "env.schema.yaml").write_text(
+        "service: devcontainer\nruntime: docker-compose\nbindings:\n"
+        "  A:\n    local_default: x\n    mirrored_in:\n"
+        "      - ./stacks//a.conf\n      - ../outside.conf\n      - /etc/hosts\n"
+        "      - stacks/missing.conf\n      - stacks/big.conf\n"
+    )
+    (tmp_path / ".devcontainer" / "stacks" / "a.conf").write_text("a = x\n")
+    (tmp_path / ".devcontainer" / "stacks" / "big.conf").write_text("x" * (chosen.text_limit + 1))
+    (tmp_path / "outside.conf").write_text("x\n")
+    files = run.inventory(tmp_path)
+    listing = as_map(run.inventory_document(tmp_path, files, None, chosen)["conventions_inventory"])
+    assert as_map(listing["texts"]) == {".devcontainer/stacks/a.conf": "a = x\n"}
+
+
 def test_the_contract_carries_runtime_requirements(product: Path) -> None:
     # A deploy preflight compares x-musher-requires with what infrastructure
     # reports (decision 0026).

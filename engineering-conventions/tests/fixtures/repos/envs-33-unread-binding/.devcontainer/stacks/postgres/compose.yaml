@@ -1,0 +1,8 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg17
+    ports:
+      - "127.0.0.1:15432:5432"
+    environment:
+      # Hard-coded, so the binding no longer reaches the stack.
+      POSTGRES_PASSWORD: postgres

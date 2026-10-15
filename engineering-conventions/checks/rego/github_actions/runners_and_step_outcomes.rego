@@ -4,12 +4,14 @@
 #   Jobs run on a pinned runner image they fit, every failure reaches the
 #   run's result, and a job relies only on what exists: a cache no pull
 #   request can write, the permissions its caller grants, a diff base it can
-#   fetch, a directory in the repository.
+#   fetch, path filters that match files (GHA-54), a directory in the
+#   repository.
 # scope: package
 # custom:
 #   convention: EC-0022
 package conventions.checks.github_actions.runners_and_step_outcomes
 
+import data.conventions.lib.doublestar
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.steps
@@ -162,6 +164,21 @@ findings contains lib.finding("GHA-45", setting.path, message) if {
 	message := sprintf(
 		"%s sets working-directory %q, which is not a directory in the repository; name one that exists",
 		[setting.where, setting.value],
+	)
+}
+
+# GHA-54
+findings contains lib.finding("GHA-54", entry.path, message) if {
+	some entry in steps.entries
+	steps.action(entry.step) == "dorny/paths-filter"
+	some filter in path_filters(entry.step)
+	not doublestar.matches_any(filter.pattern, files.all_files)
+	message := sprintf(
+		concat(" ", [
+			"%s in %s: the pattern %q in paths-filter filter %q matches no file in the repository,",
+			"so the filter never reports a change; point it at the files it is meant to watch, or delete it",
+		]),
+		[entry.label, entry.where, filter.pattern, filter.name],
 	)
 }
 
@@ -437,3 +454,44 @@ checkable_directory(directory) if {
 	not contains(directory, "$")
 	not regex.match(`(^|/)\.\.(/|$)`, directory)
 }
+
+# Each pattern of a dorny/paths-filter step's inline filters, with the
+# filter it belongs to. A negation or a pattern holding an expression or a
+# variable is not judged.
+path_filters(step) := {filter |
+	some name, value in inline_filters(step)
+	some pattern in filter_patterns(value)
+	pattern != ""
+	not startswith(pattern, "!")
+	not contains(pattern, "$")
+	filter := {"name": name, "pattern": pattern}
+}
+
+# The filters input as YAML: a block string, or one line holding a colon. A
+# one-line value without a colon names a file of filters, which is not read.
+inline_filters(step) := filters if {
+	value := steps.inputs(step).filters
+	is_string(value)
+	regex.match(`[\n:]`, trim_space(value))
+	yaml.is_valid(value)
+	filters := yaml.unmarshal(value)
+	is_object(filters)
+}
+
+# A filter is one pattern or a list; a list item is a pattern, a list of
+# them (a YAML alias), or a mapping from change types to a pattern, such as
+# `added|modified: "**/*.ts"`.
+filter_patterns(value) := {value} if is_string(value)
+
+filter_patterns(value) := {pattern |
+	some item in value
+	some pattern in item_patterns(item)
+} if {
+	is_array(value)
+}
+
+item_patterns(item) := {item} if is_string(item)
+
+item_patterns(item) := {pattern | some pattern in item; is_string(pattern)} if is_object(item)
+
+item_patterns(item) := {pattern | some pattern in item; is_string(pattern)} if is_array(item)

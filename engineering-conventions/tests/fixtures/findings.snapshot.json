@@ -562,6 +562,24 @@
     ["platform-api/env.schema.yaml", "ENVS-31", "warning", "binding API_LOG_LEVEL defaults to INFO, but every _LOG_LEVEL holds one of trace, debug, info, warn, error; write info", true]
   ],
   "envs-31-passes-registered-values": [],
+  "envs-32-passes-escapes-and-defaults": [],
+  "envs-32-undeclared-variable": [
+    [".devcontainer/stacks/postgres/compose.yaml", "ENVS-32", "warning", "this file reads ${POSTGRES_SECRET}, which .devcontainer/env.schema.yaml does not declare; add it as a binding there, or stop reading it", true]
+  ],
+  "envs-33-passes-override-file": [],
+  "envs-33-unknown-stack": [
+    [".devcontainer/env.schema.yaml", "ENVS-33", "warning", "POSTGRES_PASSWORD lists the consumer postgresql, but no compose file under .devcontainer/ is in a directory named postgresql; name the stack that reads it, or remove the entry", true]
+  ],
+  "envs-33-unread-binding": [
+    [".devcontainer/env.schema.yaml", "ENVS-33", "warning", "POSTGRES_PASSWORD lists the stack postgres as a consumer, but its compose file does not read ${POSTGRES_PASSWORD}; read it there, or remove postgres", true]
+  ],
+  "envs-34-mirror-drift": [
+    [".devcontainer/stacks/postgres/init.sql", "ENVS-34", "warning", "POSTGRES_PASSWORD has local_default \"hunter2\" in .devcontainer/env.schema.yaml, but this file does not contain it; make the two agree", true]
+  ],
+  "envs-34-missing-mirror": [
+    [".devcontainer/env.schema.yaml", "ENVS-34", "warning", "POSTGRES_PASSWORD is mirrored_in .devcontainer/stacks/postgres/init.sql, which does not exist; correct the path, or remove it from mirrored_in", true]
+  ],
+  "envs-34-passes-mirrored-value": [],
   "gha-01-filename-grammar": [
     [".github/workflows/Deploy_Docs.yml", "GHA-01", "warning", "filename \"Deploy_Docs.yml\" does not follow [reusable-]<responsibility>[-<scope>].yml, lowercase kebab-case starting with a letter: rename it to \"deploy-docs.yml\"", true]
   ],

@@ -191,6 +191,9 @@ ID is permanent: it is never renumbered or reused.
 | [ENVS-29](environment/env-schema.md#envs-29) | A name under a reserved vendor prefix is one that vendor defines | EC-0020 | proposed | warning | conftest |
 | [ENVS-30](environment/env-schema.md#envs-30) | No deployment environment appears in a variable's name | EC-0020 | proposed | warning | conftest |
 | [ENVS-31](environment/env-schema.md#envs-31) | A shared variable stem keeps its registered values | EC-0020 | proposed | warning | conftest |
+| [ENVS-32](environment/env-schema.md#envs-32) | Every variable a dev container stack reads is a binding in the dev container's environment schema | EC-0020 | proposed | warning | conftest |
+| [ENVS-33](environment/env-schema.md#envs-33) | Every stack a binding lists in consumers exists and reads it | EC-0020 | proposed | warning | conftest |
+| [ENVS-34](environment/env-schema.md#envs-34) | Every file a binding is mirrored_in exists and repeats its local_default | EC-0020 | proposed | warning | conftest |
 | [GHA-01](github-actions/workflow-files.md#gha-01) | A workflow filename follows [reusable-]\<responsibility\>[-\<scope\>].\<ext\> | EC-0002 | proposed | warning | conftest |
 | [GHA-02](github-actions/workflow-files.md#gha-02) | An entry-point workflow starts with a responsibility token | EC-0002 | proposed | warning | conftest |
 | [GHA-03](github-actions/workflow-files.md#gha-03) | The reusable- prefix marks exactly the workflows triggered only by workflow_call | EC-0002 | proposed | warning | conftest |

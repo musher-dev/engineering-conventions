@@ -1,0 +1,14 @@
+# Every reference is declared: $$ is a literal dollar sign, and Compose sets
+# COMPOSE_PROJECT_NAME itself.
+name: ${COMPOSE_PROJECT_NAME:-musher-dev}
+x-healthcheck: &healthcheck
+  test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB}"]
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg17
+    ports:
+      - "127.0.0.1:15432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in .devcontainer/.env}
+      PGPASSFILE_NOTE: "$${HOME}/.pgpass"
+    healthcheck: *healthcheck

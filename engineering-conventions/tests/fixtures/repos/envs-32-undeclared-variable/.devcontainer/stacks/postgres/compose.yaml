@@ -1,0 +1,8 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg17
+    ports:
+      - "127.0.0.1:15432:5432"
+    environment:
+      # The schema declares POSTGRES_PASSWORD, not POSTGRES_SECRET.
+      POSTGRES_PASSWORD: ${POSTGRES_SECRET:-postgres}

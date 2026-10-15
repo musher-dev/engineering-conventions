@@ -292,21 +292,28 @@ def _jq() -> str:
     return found
 
 
-def derive(repo: Path, relative: str, program: Path) -> object | None:
+def _parse_schema(repo: Path, relative: str) -> str | None:
+    """An environment schema as conftest parse prints it, or None when it does not parse."""
+    parsed = subprocess.run(
+        [_conftest(), "parse", relative], cwd=repo, capture_output=True, text=True, check=False
+    )
+    return parsed.stdout if parsed.returncode == 0 else None
+
+
+def derive(repo: Path, relative: str, program: Path, parsed: str | None = None) -> object | None:
     """What bin/env-contract.jq derives from an environment schema, or None.
 
     The schema is read by conftest, as bin/conventions reads it, so both
     runners give the checks the same document. A schema that does not parse
     derives nothing; ENVS-03 and the parse report say why.
     """
-    parsed = subprocess.run(
-        [_conftest(), "parse", relative], cwd=repo, capture_output=True, text=True, check=False
-    )
-    if parsed.returncode != 0:
+    if parsed is None:
+        parsed = _parse_schema(repo, relative)
+    if parsed is None:
         return None
     derived = subprocess.run(
         [_jq(), "-S", "--arg", "part", "derived", "-f", str(program)],
-        input=parsed.stdout,
+        input=parsed,
         capture_output=True,
         text=True,
         check=False,
@@ -314,6 +321,28 @@ def derive(repo: Path, relative: str, program: Path) -> object | None:
     if derived.returncode != 0 or not derived.stdout.strip():
         return None
     return cast("object", json.loads(derived.stdout))
+
+
+def mirrored_files(schema: str, parsed: str) -> set[str]:
+    """The files a schema's bindings are mirrored_in (ENVS-34), from the repository root.
+
+    Each is resolved against the schema's directory with . and empty segments
+    dropped; one that is absolute or has a .. segment is left out, as
+    bin/mirrors.jq and environment/env_stacks.rego resolve them.
+    """
+    try:
+        document: object = json.loads(parsed)
+    except json.JSONDecodeError:
+        return set()
+    directory = schema.split("/")[:-1]
+    found: set[str] = set()
+    for binding in as_map(as_map(document).get("bindings")).values():
+        for entry in as_list(as_map(binding).get("mirrored_in")):
+            if not isinstance(entry, str) or entry.startswith("/") or ".." in entry.split("/"):
+                continue
+            segments = [s for s in [*directory, *entry.split("/")] if s not in {"", "."}]
+            found.add("/".join(segments))
+    return found
 
 
 def inventory_document(
@@ -348,11 +377,23 @@ def inventory_document(
         for relative in files
         if chosen.digests.search(relative)
     }
-    derived = {
-        relative: document
-        for relative in files
-        if chosen.env_schemas.search(relative)
-        and (document := derive(repo, relative, chosen.derivation)) is not None
+    derived: dict[str, object] = {}
+    mirrored: set[str] = set()
+    for relative in files:
+        if not chosen.env_schemas.search(relative):
+            continue
+        schema = _parse_schema(repo, relative)
+        if schema is None:
+            continue
+        if (document := derive(repo, relative, chosen.derivation, schema)) is not None:
+            derived[relative] = document
+        mirrored |= mirrored_files(relative, schema)
+    held = set(files)
+    texts |= {
+        relative: (repo / relative).read_text(encoding="utf-8", errors="replace")
+        for relative in sorted(mirrored & held)
+        if not chosen.texts.search(relative)
+        and (repo / relative).stat().st_size <= chosen.text_limit
     }
     listing: dict[str, object] = {"files": files}
     if repository is not None:

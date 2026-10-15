@@ -20,14 +20,14 @@ They adopt the environment rules of `musher-dev/platform` (the format and its na
 | Convention | Requirements | Covers |
 | --- | --- | --- |
 | [EC-0019 Environment contract](env-contract.md) | ENVS-01, ENVS-02, ENVS-15, ENVS-20, ENVS-26, ENVS-27 | That a service declares its environment, the two places a schema may live, that a dev container asks for the variables its schema takes from the host, the contract derived from the schema, and the local `.env` that is generated from it and never committed |
-| [EC-0020 Environment schema](env-schema.md) | ENVS-03 – ENVS-14, ENVS-16 – ENVS-19, ENVS-22 – ENVS-25, ENVS-28 – ENVS-31 | The format, the naming grammar and the consumer prefix, retired names, secrets, shared variables, what each binding reaches, the runtime instances a service requires, and the names every program shares: `MUSHER_ENVIRONMENT` for the deployment environment, a vendor's reserved prefixes, and stems such as `_LOG_LEVEL` |
+| [EC-0020 Environment schema](env-schema.md) | ENVS-03 – ENVS-14, ENVS-16 – ENVS-19, ENVS-22 – ENVS-25, ENVS-28 – ENVS-34 | The format, the naming grammar and the consumer prefix, retired names, secrets, shared variables, what each binding reaches, the runtime instances a service requires, and the names every program shares: `MUSHER_ENVIRONMENT` for the deployment environment, a vendor's reserved prefixes, and stems such as `_LOG_LEVEL`; and that the dev container's schema declares every variable its stacks read, and the stacks and files a binding names agree with it |
 
 ## Who is checked
 
 | Requirement | Profile |
 | --- | --- |
 | ENVS-01 | `service` only |
-| ENVS-02 – ENVS-31 | Every repository (`base-repo`); a repository without an environment schema has nothing to report |
+| ENVS-02 – ENVS-34 | Every repository (`base-repo`); a repository without an environment schema has nothing to report |
 
 ## Quick reference
 

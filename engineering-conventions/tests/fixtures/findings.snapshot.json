@@ -235,6 +235,11 @@
   "conf-12-gitleaksignore-line": [
     [".config/security/gitleaksignore", "CONF-12", "warning", "line 4 (9b8c7d6:tests/data/sample.json:generic-api-key:7) has no rationale; add a # comment directly above it saying why the finding is not a secret", true]
   ],
+  "conf-13-passes-pattern-forms": [],
+  "conf-13-stale-pattern": [
+    [".gitattributes", "CONF-13", "warning", "line 4: the pattern .env matches no file in the repository, so its attributes apply to nothing; point it at the files it is meant for, or delete the line", true],
+    [".gitattributes", "CONF-13", "warning", "line 5: the pattern /env.schema.yaml matches no file in the repository, so its attributes apply to nothing; point it at the files it is meant for, or delete the line", true]
+  ],
   "copy-01-passes-website-with-vale-config": [],
   "copy-01-site-without-vale-config": [
     [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]

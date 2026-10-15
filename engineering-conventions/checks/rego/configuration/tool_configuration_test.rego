@@ -281,3 +281,48 @@ test_conf_04_called_by_glob if {
 test_suggested_name_default if {
 	config.suggested_name("elsewhere/x.yml") == "<tool>.<ext>"
 }
+
+gitattributes(text, paths) := repo(
+	array.concat(conforming_files, paths),
+	{".config/README.md": index_text, ".gitattributes": text},
+	[taskfile],
+)
+
+conf_13(found) := {f.message | some f in found; f.id == "CONF-13"}
+
+test_conf_13_every_pattern_matches if {
+	text := concat("\n", [
+		"# Line endings.",
+		"* text=auto eol=lf",
+		"*.sh text eol=lf",
+		"/Taskfile.yml text",
+		"mise/ -diff",
+		"**/uv.lock linguist-generated=true",
+		"[attr]generated linguist-generated=true -diff",
+		"*.[ch] diff=cpp",
+		"!*.md text",
+		"",
+	])
+	found := config.findings with input as gitattributes(text, ["scripts/a/run.sh"])
+	conf_13(found) == set()
+}
+
+test_conf_13_pattern_for_a_missing_file if {
+	text := "* text=auto eol=lf\n.env text eol=lf\ndocs/*.md linguist-documentation\n"
+	found := config.findings with input as gitattributes(text, [".devcontainer/.env.example", "web/docs/a.md"])
+	conf_13(found) == {
+		concat("", [
+			"line 2: the pattern .env matches no file in the repository, so its attributes apply to ",
+			"nothing; point it at the files it is meant for, or delete the line",
+		]),
+		concat("", [
+			"line 3: the pattern docs/*.md matches no file in the repository, so its attributes apply to ",
+			"nothing; point it at the files it is meant for, or delete the line",
+		]),
+	}
+	ids_at(found) == {["CONF-13", ".gitattributes"]}
+}
+
+test_conf_13_no_gitattributes if {
+	conf_13(config.findings) == set() with input as conforming
+}

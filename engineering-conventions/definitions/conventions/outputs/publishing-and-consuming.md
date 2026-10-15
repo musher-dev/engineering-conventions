@@ -299,8 +299,9 @@ A storage record is written one of two ways. `actions/attest` (or `actions/attes
 that [IMAGE-12](../container-images/image-publishing.md#image-12) asks for. A repository that cannot attest, a private
 one on a plan without artifact attestations, posts it itself to `POST /orgs/{org}/artifacts/metadata/storage-record`
 with `name`, `digest`, `registry_url`, `version` and `github_repository`, which the API requires when no attestation
-names the repository. The record's `name` is the image's registry path without its tag, and `version` is the release,
-never `latest`.
+names the repository. The record's `name` is the image's registry path without its tag, `version` is the release,
+never `latest`, and `github_repository` is the repository's name without its owner: `example-api`, not
+`example-org/example-api`, which the API rejects.
 
 The check reads each job of a release, publish or deploy workflow that pushes an image: a `docker/build-push-action`
 or `docker/bake-action` step whose `push` is `true` or an expression, or a `run:` line that runs `docker push` or a
@@ -354,7 +355,7 @@ steps:
     run: |
       gh api -X POST "orgs/${GITHUB_REPOSITORY_OWNER}/artifacts/metadata/storage-record" \
         -f name=ghcr.io/example-org/example-api -f digest="$DIGEST" -f version="$GITHUB_REF_NAME" \
-        -f registry_url=https://ghcr.io -f github_repository="$GITHUB_REPOSITORY"
+        -f registry_url=https://ghcr.io -f github_repository="${GITHUB_REPOSITORY#*/}"
 ```
 
 **Incorrect:**

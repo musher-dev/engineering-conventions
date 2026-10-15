@@ -1,0 +1,20 @@
+// The product's Cargo.toml, linked with the ${workspaceFolder} prefix.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "rust-analyzer.linkedProjects": ["${workspaceFolder}/platform-api/Cargo.toml"],
+      },
+    },
+  },
+}

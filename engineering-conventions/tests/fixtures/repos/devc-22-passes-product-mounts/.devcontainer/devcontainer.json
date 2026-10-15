@@ -1,0 +1,20 @@
+// Mounts into the workspace inside the product directory, by string and
+// object form, every target key and both ways to name the workspace folder,
+// and a mount outside the workspace.
+{
+  "name": "Platform API",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
+    "source=musher-${devcontainerId}-target,target=/workspaces/${localWorkspaceFolderBasename}/platform-api/target,type=volume",
+    { "source": "musher-${devcontainerId}-bin", "target": "${containerWorkspaceFolder}/platform-api/bin", "type": "volume" },
+    "src=musher-${devcontainerId}-cache,dst=/workspaces/${localWorkspaceFolderBasename}/platform-api/.cache,type=volume",
+    "source=musher-${devcontainerId}-root,destination=/workspaces/${localWorkspaceFolderBasename}/platform-api,type=volume",
+    "source=musher-${devcontainerId}-tools,target=/workspaces/tools,type=volume",
+  ],
+  "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+}

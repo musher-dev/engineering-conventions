@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/musher-dev/engineering-conventions/compare/v0.9.1...v0.9.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* **conventions:** judge only stack ports in DEVC-21; date to 0.9.1 ([#115](https://github.com/musher-dev/engineering-conventions/issues/115)) ([479e047](https://github.com/musher-dev/engineering-conventions/commit/479e047c1c084e16ea56eea1916650f3457e8b34))
+
 ## [0.9.1](https://github.com/musher-dev/engineering-conventions/compare/v0.9.0...v0.9.1) (2026-10-15)
 
 

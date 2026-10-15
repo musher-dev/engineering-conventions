@@ -13341,7 +13341,7 @@
           "severity": "warning",
           "since": "0.9.1",
           "status": "proposed",
-          "title": "A dev container forwards ports from the reserved range 15432-15460 only",
+          "title": "A dev container forwards a stack's ports from the reserved range 15432-15460 only",
           "waivable": true
         },
         "DEVC-22": {

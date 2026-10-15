@@ -164,7 +164,7 @@ ID is permanent: it is never renumbered or reused.
 | [DEVC-18](dev-containers/dev-container-configuration.md#devc-18) | Every variable in devcontainer.json is one the specification defines, used where it resolves | EC-0027 | proposed | warning | conftest |
 | [DEVC-19](dev-containers/dev-container-stacks.md#devc-19) | A dev container configuration's forwardPorts and portsAttributes name the same ports | EC-0028 | proposed | warning | conftest |
 | [DEVC-20](dev-containers/dev-container-stacks.md#devc-20) | A dev container forwards every host port its stacks publish | EC-0028 | proposed | warning | conftest |
-| [DEVC-21](dev-containers/dev-container-stacks.md#devc-21) | A dev container forwards ports from the reserved range 15432-15460 only | EC-0028 | proposed | warning | conftest |
+| [DEVC-21](dev-containers/dev-container-stacks.md#devc-21) | A dev container forwards a stack's ports from the reserved range 15432-15460 only | EC-0028 | proposed | warning | conftest |
 | [DEVC-22](dev-containers/dev-container-configuration.md#devc-22) | A mount into the workspace lands inside a declared product directory | EC-0027 | proposed | warning | conftest |
 | [DEVC-23](dev-containers/dev-container-configuration.md#devc-23) | rust-analyzer.linkedProjects lists the Cargo.toml of each product directory that has one | EC-0027 | proposed | warning | conftest |
 | [ENVS-01](environment/env-contract.md#envs-01) | A service declares its runtime environment at \<product\>/env.schema.yaml | EC-0019 | proposed | warning | conftest |

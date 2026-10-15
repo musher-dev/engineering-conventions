@@ -233,9 +233,18 @@ outside(port) := sprintf(
 test_devc_21_outside_the_range if {
 	docs := with_config(
 		{config_path: forwarding([5432, "15461", 15460, "db:5432"], {"5432": {}, "15461": {}, "15460": {}})},
-		{},
+		postgres(["127.0.0.1:15460:5432"]),
 	)
 	found := stacks.findings with input as docs
 	td.pairs(found) == {["DEVC-21", config_path]}
 	messages(found, "DEVC-21") == {outside(5432), outside(15461)}
+}
+
+test_devc_21_leaves_an_application_port_alone if {
+	docs := with_config(
+		{config_path: forwarding([15432, 17200], {"15432": {}, "17200": {}})},
+		postgres(["127.0.0.1:15432:5432"]),
+	)
+	found := stacks.findings with input as docs
+	not "DEVC-21" in {f.id | some f in found}
 }

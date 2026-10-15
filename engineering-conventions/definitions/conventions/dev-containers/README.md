@@ -57,4 +57,4 @@ Related requirements in other families:
 | A stack service's `image` | A fixed tag or a digest | DEVC-11 |
 | A stack's published port | `127.0.0.1`, from 15432–15460 | DEVC-12, DEVC-13 |
 | A stack service labelled `dev.musher.capability` | Its `dev.musher.capability-version` in every environment schema's range | DEVC-16 |
-| `forwardPorts`, `portsAttributes` | The same ports, every port a stack publishes, all from 15432–15460 | DEVC-19, DEVC-20, DEVC-21 |
+| `forwardPorts`, `portsAttributes` | The same ports, every port a stack publishes, a stack's ports from 15432–15460 | DEVC-19, DEVC-20, DEVC-21 |

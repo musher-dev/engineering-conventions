@@ -6,9 +6,10 @@
     "ghcr.io/devcontainers/features/git:1": {},
   },
   "remoteUser": "vscode",
-  "forwardPorts": [15432, 15460, "postgres:5432"],
+  "forwardPorts": [15432, 15460, 17200, "postgres:5432"],
   "portsAttributes": {
     "15460": { "label": "Azimutt", "onAutoForward": "silent" },
+    "17200": { "label": "API", "onAutoForward": "notify" },
     "15432": { "label": "PostgreSQL", "onAutoForward": "silent" },
   },
   "mounts": [

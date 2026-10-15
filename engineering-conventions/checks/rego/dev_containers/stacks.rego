@@ -7,7 +7,7 @@
 #   label that every environment schema's range accepts (DEVC-16). The dev
 #   container names the same ports in forwardPorts and portsAttributes
 #   (DEVC-19), forwards every port its stacks publish (DEVC-20), and forwards
-#   none outside the reserved range (DEVC-21).
+#   no stack port outside the reserved range (DEVC-21).
 # scope: package
 # custom:
 #   convention: EC-0028
@@ -145,11 +145,32 @@ findings contains lib.finding("DEVC-20", port.path, message) if {
 findings contains lib.finding("DEVC-21", path, message) if {
 	some path, config in configurations
 	some port in forwarded(config)
+	stack_port(port)
 	not in_range(port)
 	message := sprintf(
 		"forwardPorts lists %d, outside the reserved range %d-%d; forward the host port a stack publishes from the range",
 		[port, port_range.low, port_range.high],
 	)
+}
+
+# A port that belongs to the stacks: one a stack publishes on the host or
+# listens on in its container, or one in the 154xx band the reserved range
+# sits in. An application's own port, such as an API's dev server, is not
+# judged (DEVC-21).
+stack_port(port) if {
+	some entry in published
+	port in entry.host_ports
+}
+
+stack_port(port) if {
+	some entry in published
+	parts := split(entry.spec, ":")
+	port in numbers_in(parts[count(parts) - 1])
+}
+
+stack_port(port) if {
+	port >= 15400
+	port <= 15499
 }
 
 configurations := mise.devcontainers

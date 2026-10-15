@@ -158,7 +158,7 @@ requirements:
     title: A mount into the workspace lands inside a declared product directory
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.workspace
@@ -167,7 +167,7 @@ requirements:
     title: rust-analyzer.linkedProjects lists the Cargo.toml of each product directory that has one
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.workspace
@@ -614,7 +614,7 @@ mount can go, so every one is reported. A mount outside the workspace is not che
 "mounts": ["source=musher-${devcontainerId}-target,target=/workspaces/${localWorkspaceFolderBasename}/target,type=volume"]
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container LAYOUT-07 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container LAYOUT-07 (in part)
 
 ### DEVC-23
 
@@ -644,4 +644,4 @@ manifest in the dev container's VS Code settings links it explicitly, whatever t
 "customizations": { "vscode": { "extensions": ["rust-lang.rust-analyzer"] } }
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container LAYOUT-07 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container LAYOUT-07 (in part)

@@ -71,7 +71,7 @@ requirements:
     title: A dev container configuration's forwardPorts and portsAttributes name the same ports
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -80,16 +80,16 @@ requirements:
     title: A dev container forwards every host port its stacks publish
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
     aliases: ["development-container:PORT-02"]
   - id: DEVC-21
-    title: A dev container forwards ports from the reserved range 15432-15460 only
+    title: A dev container forwards a stack's ports from the reserved range 15432-15460 only
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.dev_containers.stacks
@@ -278,7 +278,7 @@ inside such a range counts as described.
 }
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PORT-01
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PORT-01
 
 ### DEVC-20
 
@@ -311,28 +311,31 @@ services:
       - "127.0.0.1:15433:6379"
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PORT-02
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PORT-02
 
 ### DEVC-21
 
-**A dev container forwards ports from the reserved range 15432-15460 only.**
+**A dev container forwards a stack's ports from the reserved range 15432-15460 only.**
 
 The reserved range keeps the dev environment's ports clear of the services already on the developer's machine
 (DEVC-13). Forwarding a port outside it, such as 5432, takes that port on the developer's machine, where a local
 PostgreSQL or another project's container is likely to hold it already, and the forward silently moves to another
-number or fails. A forwarded port in the range is one a stack publishes, under the number a reader recognises. A
-`"service:port"` entry is not compared.
+number or fails. A forwarded port in the range is one a stack publishes, under the number a reader recognises.
+
+Only a stack's ports are judged: a port a stack publishes on the host or listens on in its container, and any port
+from 15400 to 15499, the band the range sits in. An application's own port, such as an API's dev server on 17200, is
+the application's to choose. A `"service:port"` entry is not compared.
 
 **Correct:**
 
 ```jsonc
-"forwardPorts": [15432, 15460]
+"forwardPorts": [15432, 15460, 17200]
 ```
 
 **Incorrect:**
 
 ```jsonc
-"forwardPorts": [5432, 3000]
+"forwardPorts": [5432, 15470]
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PORT-05 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PORT-05 (in part)

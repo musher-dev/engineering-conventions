@@ -112,7 +112,7 @@ requirements:
     title: Every pattern in a dorny/paths-filter filter matches a file in the repository
     status: proposed
     severity: warning
-    since: 0.10.0
+    since: 0.9.1
     validation:
       engine: conftest
       package: conventions.checks.github_actions.runners_and_step_outcomes
@@ -459,7 +459,7 @@ pattern that starts with `!` or holds an expression or a variable.
         - "services/api/**"    # renamed to apps/api/
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.10.0 · Formerly: development-container PATH-01 (in part)
+Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PATH-01 (in part)
 
 ## References
 

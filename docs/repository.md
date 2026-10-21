@@ -108,7 +108,7 @@ There is no `.editorconfig`. Editor settings live once, in `devcontainer.json` �
 | Tier | Home | Holds |
 | --- | --- | --- |
 | Baked into the image | `.devcontainer/Dockerfile` → `ARG MISE_VERSION` | mise, and only mise, because mise cannot pin itself |
-| Pinned by mise | `.config/mise/config.toml` | Every CLI the gates run, and their runtimes |
+| Pinned by mise | `.config/mise/config.toml` | Every CLI the gates run and their runtimes, plus Codex, the coding agent the dev container offers beside Claude Code |
 | Container Features | `devcontainer.json` → `features` | `gh`, git and zsh, which configure the container itself |
 
 The dev container (post-create), `task setup` and CI (through `.github/actions/setup-tools`) all install from

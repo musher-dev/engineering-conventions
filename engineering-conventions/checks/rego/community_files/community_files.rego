@@ -4,7 +4,8 @@
 #   The files GitHub reads to route people to a repository: its issue forms
 #   (COMM-01) and template chooser (COMM-02), its one CODEOWNERS where it has
 #   one (COMM-03) written in syntax GitHub honours (COMM-04), which every
-#   repository has (COMM-08), its own security
+#   repository has (COMM-08), with no catch-all (COMM-09) and no root-anchored
+#   path that names nothing (COMM-10), its own security
 #   policy, which says how to report a vulnerability (COMM-05), and its
 #   discussion category forms (COMM-07). The forms are validated against
 #   SchemaStore's schemas, vendored under checks/schemas/vendor/.
@@ -101,6 +102,48 @@ unsupported(pattern) := "uses a [ ] character range, which CODEOWNERS does not s
 unsupported(pattern) := `escapes a leading # with \, which CODEOWNERS does not support` if {
 	startswith(pattern, `\#`)
 }
+
+# A pattern that matches every path: with a code owner's review required,
+# it gates every pull request, a bot's pin bump included (COMM-09).
+catch_all_patterns := {"*", "**", "/**"}
+
+# A root-anchored pattern with no wildcard, range or escape names one path,
+# which either exists or does not (COMM-10). An escaped pattern is left
+# alone rather than unescaped and guessed at.
+literal_path(pattern) if {
+	startswith(pattern, "/")
+	pattern != "/"
+	not regex.match(`[*?\[\\]`, pattern)
+}
+
+# Whether a path exists is a question about the tree, so the fixtures the
+# declaration sets apart count too.
+tree_directories contains dir if {
+	some path in files.all_files
+	parts := split(path, "/")
+	some i in numbers.range(1, count(parts) - 1)
+	dir := concat("/", array.slice(parts, 0, i))
+}
+
+# `/docs/` matches only a directory; `/docs` matches a file or a directory.
+names_existing(pattern) if {
+	endswith(pattern, "/")
+	trim_suffix(trim_prefix(pattern, "/"), "/") in tree_directories
+}
+
+names_existing(pattern) if {
+	not endswith(pattern, "/")
+	trim_prefix(pattern, "/") in files.all_files
+}
+
+names_existing(pattern) if {
+	not endswith(pattern, "/")
+	trim_prefix(pattern, "/") in tree_directories
+}
+
+kind_of(pattern) := "directory" if endswith(pattern, "/")
+
+kind_of(pattern) := "file or directory" if not endswith(pattern, "/")
 
 security_pattern := `^(\.github/|docs/)?(?i:security)\.(?i:md|markdown|adoc|rst)$`
 
@@ -258,6 +301,35 @@ findings contains lib.finding("COMM-04", path, message) if {
 			"earlier one's owners; put every owner for a pattern on one line",
 		]),
 		[later.line, later.pattern, max(earlier_lines)],
+	)
+}
+
+findings contains lib.finding("COMM-09", path, message) if {
+	some path, path_rules in rules
+	some rule in path_rules
+	rule.pattern in catch_all_patterns
+	count(rule.owners) > 0
+	message := sprintf(
+		concat(" ", [
+			"line %d: the catch-all `%s` owns every path, so where a code owner's review is required every",
+			"pull request waits for %s, a bot's pin bump included; own only /.github/, /.repo/ and the",
+			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+		]),
+		[rule.line, rule.pattern, concat(" ", rule.owners)],
+	)
+}
+
+findings contains lib.finding("COMM-10", path, message) if {
+	some path, path_rules in rules
+	some rule in path_rules
+	literal_path(rule.pattern)
+	not names_existing(rule.pattern)
+	message := sprintf(
+		concat(" ", [
+			"line %d: `%s` names no %s in the repository, so the line protects nothing;",
+			"point it at the path's current name or delete it",
+		]),
+		[rule.line, rule.pattern, kind_of(rule.pattern)],
 	)
 }
 

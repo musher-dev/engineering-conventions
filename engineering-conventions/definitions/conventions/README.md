@@ -101,6 +101,8 @@ ID is permanent: it is never renumbered or reused.
 | [COMM-06](community-files/community-files.md#comm-06) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
 | [COMM-07](community-files/community-files.md#comm-07) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMM-08](community-files/community-files.md#comm-08) | Every repository has a CODEOWNERS | EC-0036 | proposed | warning | conftest |
+| [COMM-09](community-files/community-files.md#comm-09) | CODEOWNERS has no catch-all rule that owns every path | EC-0036 | proposed | warning | conftest |
+| [COMM-10](community-files/community-files.md#comm-10) | Every root-anchored literal path in CODEOWNERS names a file or directory that exists | EC-0036 | proposed | warning | conftest |
 | [COMMIT-01](commits/commit-messages.md#commit-01) | .config/commits/committed.toml states the repository's commit rules | EC-0035 | proposed | warning | conftest |
 | [COMMIT-02](commits/commit-messages.md#commit-02) | committed is pinned in mise | EC-0035 | proposed | warning | conftest |
 | [COMMIT-03](commits/commit-messages.md#commit-03) | Lefthook's commit-msg hook runs committed on the message being written | EC-0035 | proposed | warning | conftest |

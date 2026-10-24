@@ -6,7 +6,8 @@ summary: >-
   reads them and in the form it honours: issue and discussion forms valid
   against GitHub's form schemas, a template chooser that decides blank
   issues, at most one CODEOWNERS, at .github/CODEOWNERS, in syntax GitHub
-  does not skip, and a security policy that says how to report a
+  does not skip, owning selected paths rather than every path, and naming
+  only paths that exist, and a security policy that says how to report a
   vulnerability and passes OpenSSF Scorecard's Security-Policy check.
 status: draft
 topic: community-files
@@ -106,6 +107,22 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.community_files.community_files
+  - id: COMM-09
+    title: CODEOWNERS has no catch-all rule that owns every path
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.community_files.community_files
+  - id: COMM-10
+    title: Every root-anchored literal path in CODEOWNERS names a file or directory that exists
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.community_files.community_files
 ---
 
 # Community files
@@ -145,7 +162,8 @@ Where an industry schema or tool already defines the rule, this convention deleg
 | --- | --- | --- |
 | Issue forms, the template chooser, discussion forms | [SchemaStore](https://github.com/SchemaStore/schemastore)'s schemas (Apache-2.0) | Vendored unmodified under `checks/schemas/vendor/schemastore/`, and validated in Rego |
 | What makes a security policy useful | [OpenSSF Scorecard](https://github.com/ossf/scorecard)'s Security-Policy check | Delegated: the repository runs it (COMM-06) |
-| CODEOWNERS syntax | GitHub's documentation | Checked in Rego (COMM-03, COMM-04): no maintained offline validator exists |
+| CODEOWNERS syntax | GitHub's documentation | Checked in Rego (COMM-03, COMM-04, COMM-10): no maintained offline validator exists |
+| CODEOWNERS as a selective gate | The standard `musher-dev/platform` set, which it, `musher-dev/platform-api` and `musher-dev/specifications` follow | Checked in Rego (COMM-09) |
 
 ## Requirements
 
@@ -230,8 +248,8 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 CODEOWNERS decides who is asked to review a change, and with a ruleset that requires code-owner review, who can
 approve it. GitHub looks for it in `.github/`, then the root, then `docs/`, and reads only the first it finds, so a
 second CODEOWNERS is silently ignored and its rules apply nowhere. One file in one place, beside the rest of GitHub's
-configuration, is the one a reviewer edits. Every repository has one ([COMM-08](#comm-08)); a catch-all `*` rule is not
-required, and a repository that wants review only on some paths lists only those.
+configuration, is the one a reviewer edits. Every repository has one ([COMM-08](#comm-08)), and it lists only the
+paths that need a code owner's review, with no catch-all ([COMM-09](#comm-09)).
 
 **Correct:**
 
@@ -264,7 +282,8 @@ reports, with the line number:
 - a pattern written on two lines: the later line wins and replaces the earlier one's owners entirely, so the owners
   on the first line are silently dropped.
 
-Whether an owner exists and has write access needs GitHub's API, and stays a review matter.
+Whether an owner exists and has write access needs GitHub's API, and is not checked offline; see
+[COMM-09](#comm-09).
 
 **Correct:**
 
@@ -389,12 +408,84 @@ no CODEOWNERS in any place GitHub reads one; [COMM-03](#comm-03) says which plac
 
 ```text
 # .github/CODEOWNERS
-* @musher-dev/platform
+/.github/    @musher-dev/platform
+/.repo/      @musher-dev/platform
 ```
 
 **Incorrect:** no CODEOWNERS in `.github/`, at the root or in `docs/`.
 
 Checked by: conftest · Severity: warning · Since: 0.8.0
+
+### COMM-09
+
+**CODEOWNERS has no catch-all rule that owns every path.**
+
+With a ruleset that requires a code owner's review ([BRANCH-03](../branch-protection/default-branch-protection.md#branch-03)),
+a `*` line turns CODEOWNERS from a gate on what matters into a gate on everything: a bot's pin bump, a lock file and a
+typo fix all wait for the same person, who learns to approve without reading. The selective gate is the standard
+`musher-dev/platform` set for every repository. CODEOWNERS owns the gate itself, `/.github/` and `/.repo/` where it
+exists, plus a short list of paths whose change carries trust or a wide blast radius. Pin, lock and vendored files
+stay unowned, so a bot's pull request merges on green checks. The ruleset pairs `required_approving_review_count: 0`
+with `require_code_owner_review: true`, so a pull request that touches no owned path needs no review.
+
+The check reports, with the line number, a rule whose pattern is `*`, `**` or `/**` and names an owner. A narrower
+glob, such as `*.md` or `/docs/**`, is a selection, not a catch-all, and a catch-all with no owner leaves every path
+explicitly unowned. A repository that does want every path owned, for a reason it can state, records a waiver for
+COMM-09 in `.repo/conventions.toml`; the waivers are the allowlist, each with a reason, a tracking issue and an expiry.
+
+Two more failures leave a CODEOWNERS line protecting nothing without a warning: an owner that does not exist, and an
+owner without explicit write access to the repository. Both need GitHub's API, so this convention does not check them
+offline. The repository checks them against GitHub, which lists every line it could not apply:
+
+```sh
+gh api repos/{owner}/{repo}/codeowners/errors --jq .errors
+```
+
+An empty list (`[]`) means every owner resolved.
+
+**Correct:**
+
+```text
+# .github/CODEOWNERS: the gate, and what every consumer inherits
+/.github/              @your-org/maintainers
+/.repo/                @your-org/maintainers
+/src/auth/             @your-org/security
+```
+
+**Incorrect:**
+
+```text
+# .github/CODEOWNERS: every pull request, a lock-file bump included, waits for review
+*                      @your-org/maintainers
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
+
+### COMM-10
+
+**Every root-anchored literal path in CODEOWNERS names a file or directory that exists.**
+
+A CODEOWNERS line names paths, not files, so nothing breaks when the path it names is renamed or deleted: the line
+stays, matches nothing, and the code it was written to protect moves out from under it unowned. A selective gate
+([COMM-09](#comm-09)) makes this worse, since an unowned path merges on green checks. A path that starts with `/` and
+has no wildcard (`*`, `?`), range or escape names exactly one place in the repository, so the check can tell whether
+it is there. A pattern ending in `/` must name a directory; one without it, a file or a directory. A relative pattern,
+such as `docs/`, and a glob may match anywhere and are not judged. The check reports each such line, with its number.
+
+**Correct:**
+
+```text
+/.github/              @your-org/maintainers
+/src/auth/             @your-org/security
+```
+
+**Incorrect:**
+
+```text
+/src/authentication/   @your-org/security    # renamed to src/auth/: this line protects nothing
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
 
 ## References
 

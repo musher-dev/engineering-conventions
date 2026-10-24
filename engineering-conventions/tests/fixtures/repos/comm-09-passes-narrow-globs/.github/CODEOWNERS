@@ -1,0 +1,6 @@
+# Globs that select some paths, and a catch-all with no owner.
+*
+*.md               @your-org/docs
+/docs/**           @your-org/docs
+/.github/          @your-org/maintainers
+/platform-api/     @your-org/api

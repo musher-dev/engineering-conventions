@@ -137,6 +137,10 @@ test_conf_04_callers_of_every_kind if {
 		td.file(".github/actions/lint/action.yml", {"runs": {"steps": [{"run": "yamllint -c .config/yaml/yamllint.yaml"}]}}),
 		td.file(".devcontainer/devcontainer.json", {"settings": {"yaml": "${workspaceFolder}/.config/yaml/yamllint.yaml"}}),
 		td.file("taskfiles/lint.Taskfile.yml", {"vars": {"C": "{{.ROOT_DIR}}/.config/yaml"}}),
+		td.file(
+			"taskfiles/tools/yamllint.Taskfile.yml",
+			{"tasks": {"tool:yamllint": {"vars": {"YAMLLINT_CONFIG": ".config/yaml/yamllint.yaml"}}}},
+		),
 	]
 	count(config.findings) == 0 with input as repo(conforming_files, {".config/README.md": index_text}, [caller])
 }

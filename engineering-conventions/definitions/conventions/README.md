@@ -282,6 +282,7 @@ ID is permanent: it is never renumbered or reused.
 | [HOOKS-12](git-hooks/lefthook.md#hooks-12) | A pre-commit job that fixes files sets stage_fixed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-13](git-hooks/lefthook.md#hooks-13) | No job runs the same command in pre-commit and pre-push | EC-0014 | proposed | warning | conftest |
 | [HOOKS-14](git-hooks/lefthook.md#hooks-14) | A job runs no one-shot package runner directly | EC-0014 | proposed | warning | conftest |
+| [HOOKS-15](git-hooks/lefthook.md#hooks-15) | Where a tool has a wrapper, a job runs a task rather than the tool | EC-0014 | proposed | warning | conftest |
 | [IFACE-01](interfaces/interfaces-declaration.md#iface-01) | Every file in the contracts directory belongs to a declared interface | EC-0030 | proposed | warning | conftest |
 | [IFACE-02](interfaces/interfaces-declaration.md#iface-02) | An interface's format, compatibility and audience are registered values | EC-0030 | proposed | warning | conftest |
 | [IFACE-03](interfaces/interfaces-declaration.md#iface-03) | Interface IDs are unique within a repository | EC-0030 | proposed | warning | conftest |
@@ -386,11 +387,15 @@ ID is permanent: it is never renumbered or reused.
 | [TASK-17](tasks/taskfile-style.md#task-17) | A task that destroys what nothing can restore declares a prompt | EC-0015 | proposed | warning | conftest |
 | [TASK-18](tasks/taskfile-style.md#task-18) | A fragment's silent task echoes what it is doing, and its internal task with commands of its own is silent | EC-0015 | proposed | warning | conftest |
 | [TASK-19](tasks/taskfile-style.md#task-19) | A fragment's task that only calls other tasks echoes nothing of its own | EC-0015 | proposed | warning | conftest |
-| [TASK-20](tasks/taskfile-style.md#task-20) | A Taskfile that flattens its fragments includes each with flatten, never optional, dir or internal | EC-0015 | proposed | warning | conftest |
+| [TASK-20](tasks/taskfile-style.md#task-20) | A Taskfile that flattens its fragments includes each area fragment with flatten, never optional, dir or internal | EC-0015 | proposed | warning | conftest |
 | [TASK-21](tasks/taskfile-style.md#task-21) | A fragment declares no top-level includes, vars, env or dotenv | EC-0015 | proposed | warning | conftest |
 | [TASK-22](tasks/taskfile-style.md#task-22) | A fragment opens with a comment that names its area | EC-0015 | proposed | warning | conftest |
 | [TASK-23](tasks/taskfile-style.md#task-23) | In prefixed output, every silent task sets a kebab-case prefix | EC-0015 | proposed | warning | conftest |
 | [TASK-24](tasks/taskfile-style.md#task-24) | In prefixed output, a task that runs a long-lived process is silent | EC-0015 | proposed | warning | conftest |
+| [TASK-25](tasks/taskfile-style.md#task-25) | A tool wrapper is included with flatten and internal, and names its tasks tool:\<tool\> | EC-0015 | proposed | warning | conftest |
+| [TASK-26](tasks/taskfile-style.md#task-26) | A tool that has a wrapper runs only in its wrapper | EC-0015 | proposed | warning | conftest |
+| [TASK-27](tasks/taskfile-style.md#task-27) | A flattened fragment's public tasks are named under its area | EC-0015 | proposed | warning | conftest |
+| [TASK-28](tasks/taskfile-style.md#task-28) | Every sources glob matches something the repository holds | EC-0015 | proposed | warning | conftest |
 | [TOFU-01](opentofu/state-keys.md#tofu-01) | An OpenTofu root's state key is tfstate/\<repository\>/\<root\>/terraform.tfstate | EC-0029 | proposed | warning | conftest |
 | [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
 | [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |

@@ -2,7 +2,7 @@
 version: '3'
 
 tasks:
-  stack:up:
+  dev-stack:up:
     desc: Start the local stack.
     cmds:
       - docker compose up -d

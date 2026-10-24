@@ -51,6 +51,7 @@ decisions about why Musher exists and what it designs are in `musher-dev/pelorus
 | [0036](0036-ownership-moves-out-of-company-and-platform.md) | musher-dev/company's ownership moves to the repositories that hold it, the governance words are defined here, and the org graph is assembled in musher-dev/pelorus | accepted |
 | [0037](0037-the-scaffolds-general-rules-move-here.md) | The dev container scaffold's general rules move here, and a stack is named by its directory | accepted |
 | [0038](0038-config-concerns-and-tool-strictness.md) | A .config/ concern names the files its tool reads, and every tool's configuration starts from its preset | accepted |
+| [0039](0039-each-tool-runs-from-one-wrapper.md) | Each tool runs from one internal wrapper task, and a cached task lists every input it has | accepted |
 | [0040](0040-a-job-skips-on-proof-of-an-identical-passing-run.md) | A job skips on proof of an identical passing run, behind a kill switch | accepted |
 
 ## Writing a decision

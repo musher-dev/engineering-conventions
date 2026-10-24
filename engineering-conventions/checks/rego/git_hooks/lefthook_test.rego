@@ -322,3 +322,52 @@ test_hooks_14_quiet_on_pinned_tools_and_tasks if {
 		not "HOOKS-14" in td.ids(lefthook.findings) with input as pre_commit({"run": run})
 	}
 }
+
+# A repository whose root Taskfile includes a yamllint wrapper.
+wrapped(job) := array.concat(pre_commit(job), [
+	td.file("Taskfile.yml", {"version": "3", "includes": {"tool-yamllint": {
+		"taskfile": "taskfiles/tools/yamllint.Taskfile.yml", "flatten": true, "internal": true,
+	}}}),
+	td.file("taskfiles/tools/yamllint.Taskfile.yml", {"version": "3", "tasks": {"tool:yamllint": {
+		"desc": "Lint YAML.", "cmds": ["yamllint ."],
+	}}}),
+])
+
+test_hooks_15_wrapped_tool_run_directly if {
+	run := "# lint the staged YAML\nNO_COLOR=1 yamllint --strict {staged_files}"
+	found := lefthook.findings with input as wrapped({"run": run})
+	messages(found, "HOOKS-15") == {concat("", [
+		`pre-commit job "markdown" runs yamllint directly, while taskfiles/tools/yamllint.Taskfile.yml holds how `,
+		"it runs; run the task that calls it, passing the files, such as task <area task> -- {staged_files}",
+	])}
+}
+
+test_hooks_15_quiet_on_tasks_and_unwrapped_tools if {
+	runs := [
+		"task lint:yaml -- {staged_files}",
+		"markdownlint-cli2 --fix {staged_files}",
+		"uv run yamllint {staged_files}",
+		"echo yamllint",
+	]
+	every run in runs {
+		not "HOOKS-15" in td.ids(lefthook.findings) with input as wrapped({"run": run})
+	}
+	not "HOOKS-15" in td.ids(lefthook.findings) with input as pre_commit({"run": "yamllint {staged_files}"})
+}
+
+test_hooks_15_leaves_committed_to_commit_03 if {
+	config := object.union(conforming, {"commit-msg": {"jobs": [{
+		"name": "committed",
+		"run": "committed --config .config/commits/committed.toml --commit-file {1}",
+		"fail_text": "The message must pass committed.",
+	}]}})
+	repo := array.concat(docs(config), [
+		td.file("Taskfile.yml", {"version": "3", "includes": {"tool-committed": {
+			"taskfile": "taskfiles/tools/committed.Taskfile.yml", "flatten": true, "internal": true,
+		}}}),
+		td.file("taskfiles/tools/committed.Taskfile.yml", {"version": "3", "tasks": {"tool:committed": {
+			"desc": "Check.", "cmds": ["committed"],
+		}}}),
+	])
+	not "HOOKS-15" in td.ids(lefthook.findings) with input as repo
+}

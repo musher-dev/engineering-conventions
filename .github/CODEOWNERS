@@ -2,19 +2,43 @@
 #
 # Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
-# One owner for the whole repository. This departs from musher-dev/platform,
-# whose CODEOWNERS forbids a `*` catch-all so review stays selective across a
-# many-team monorepo. Here one steward owns one set of conventions, so every PR
-# is codeowned by design: `require_code_owner_review` in
-# .github/rulesets/main-branch.json makes a PR from anyone else wait for that
-# steward's approval. GitHub waives the requirement on the owner's own PRs, so
-# those merge on green checks alone.
+# A selective gate, the standard musher-dev/platform set for every repository:
+# no `*` catch-all (COMM-09), and owners only on the paths whose change alters
+# what this repository enforces or what every consumer inherits.
+# .github/rulesets/main-branch.json pairs `required_approving_review_count: 0`
+# with `require_code_owner_review: true`, so a pull request that touches an
+# owned path waits for its owner and any other pull request merges on green
+# checks. GitHub waives the requirement on the owner's own pull requests.
+#
+# What is owned, and why:
+#   /.github/          the gate itself: this file, the rulesets, the workflows
+#                      that run the required checks, the release config
+#   /.repo/            the declarations: identity, outputs, and the waivers
+#                      that silence this repository's own findings
+#   /engineering-conventions/definitions/
+#                      the requirements, terms and profiles every consumer
+#                      inherits when it pins a release
+#   /.claude/hooks/, /.claude/settings.json
+#                      the hook and deny rules that stop an agent merging a
+#                      pull request or pushing to main
+#
+# Everything else is unowned on purpose. The checks and tooling are held to the
+# definitions by fixtures and CI, and pin, lock and vendored files
+# (.config/mise/, .devcontainer/devcontainer-lock.json, checks/data/vendor/,
+# checks/schemas/vendor/) stay unowned so bot pull requests merge on green CI.
 #
 # Syntax rules that bite:
 #   - LAST matching pattern wins — order from broad to specific.
 #   - ALL owners for a pattern go on ONE line.
 #   - Owners need EXPLICIT write access to this repo, or the entry is silently
-#     ignored and the path becomes unowned.
+#     ignored and the path becomes unowned. GitHub lists such lines at
+#     `gh api repos/musher-dev/engineering-conventions/codeowners/errors`.
+#   - A root-anchored path must exist (COMM-10): after a rename, the old line
+#     protects nothing.
 #   - Individual @handles until GitHub teams (@musher-dev/<team>) exist.
 
-*    @justinmerrell
+/.github/                                @justinmerrell
+/.repo/                                  @justinmerrell
+/engineering-conventions/definitions/    @justinmerrell
+/.claude/hooks/                          @justinmerrell
+/.claude/settings.json                   @justinmerrell

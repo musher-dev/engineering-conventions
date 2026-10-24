@@ -132,7 +132,10 @@ repository_name() {
 # Taskfile at any depth under an OpenTofu directory, where a root keeps the
 # Taskfile that names its state key (TOFU-01), the issue forms, template
 # chooser and discussion forms GitHub reads (COMM), and the environment
-# contract a service commits under contracts/env/ (ENVS-20).
+# contract a service commits under contracts/env/ (ENVS-20), and the YAML
+# and TOML tool configurations whose strictness the checks read (EC-0044):
+# yamllint's, markdownlint's in YAML, gitleaks' and a pyproject.toml's
+# [tool.pyright] and [tool.basedpyright].
 INPUTS='^\.github/workflows/[^/]+\.[Yy][Aa]?[Mm][Ll]$'
 INPUTS="${INPUTS}|"'^\.github/actions/.+/action\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/rulesets/[^/]+\.json$'
@@ -144,7 +147,7 @@ INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
 INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'
 INPUTS="${INPUTS}|"'^\.github/dependabot\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}[Tt]askfile(\.dist)?\.ya?ml$'
-INPUTS="${INPUTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}taskfiles/(tools/)?[^/]+\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/)?(terraform|tofu|opentofu)/(.+/)?[Tt]askfile(\.dist)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^(\.config/)?\.?lefthook(-local)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}env\.schema\.ya?ml$'
@@ -154,13 +157,23 @@ INPUTS="${INPUTS}|"'^\.config/security/trivyignore\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.devcontainer(/[^/]+)?/devcontainer-lock\.json$|^\.devcontainer-lock\.json$'
 INPUTS="${INPUTS}|"'^\.devcontainer/(.+/)?(docker-)?compose(\.[^/]+)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^\.github/(ISSUE|DISCUSSION)_TEMPLATE/[^/]+\.yml$'
+INPUTS="${INPUTS}|"'^(\.config/(.+/)?)?\.?yamllint\.ya?ml$'
+INPUTS="${INPUTS}|"'^(\.config/(.+/)?)?\.?markdownlint(-cli2)?\.ya?ml$'
+INPUTS="${INPUTS}|"'^(\.config/(.+/)?)?\.?gitleaks\.toml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}pyproject\.toml$'
 
 # Files conftest cannot choose a parser for by name, parsed before the check
 # with the parser named and added to the inventory (decision 0015):
 # devcontainer.json is JSON with comments, and a Dockerfile's name is often
-# build.Dockerfile, which conftest reads as an unknown extension.
+# build.Dockerfile, which conftest reads as an unknown extension. The tool
+# configurations whose strictness the checks read (EC-0044) are JSON with
+# comments too, whatever their extension: markdownlint's, tsconfig.json,
+# Biome's and pyrightconfig.json.
 JSONNET='^\.devcontainer(/[^/]+)?/devcontainer\.json$'
 JSONNET="${JSONNET}|"'^\.devcontainer\.json$'
+JSONNET="${JSONNET}|"'^(\.config/(.+/)?)?\.?markdownlint(-cli2)?\.jsonc?$'
+JSONNET="${JSONNET}|"'^([^/]+/){0,3}(tsconfig|pyrightconfig)\.json$'
+JSONNET="${JSONNET}|"'^([^/]+/){0,3}biome\.jsonc?$'
 DOCKERFILES='^([^/]+/){0,3}([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$'
 # BuildKit's per-Dockerfile ignore file (build.Dockerfile.dockerignore) is
 # named like a Dockerfile but is not one.
@@ -192,7 +205,7 @@ TEXTS="${TEXTS}|"'^(\.github/|docs/)?CODEOWNERS$'
 TEXTS="${TEXTS}|"'^(\.github/|docs/)?[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]\.([Mm][Dd]|[Mm][Aa][Rr][Kk][Dd][Oo][Ww][Nn]|[Aa][Dd][Oo][Cc]|[Rr][Ss][Tt])$'
 # A Taskfile fragment, for the comment it opens with, which YAML drops
 # (EC-0015).
-TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.Taskfile\.ya?ml$'
+TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/(tools/)?[^/]+\.Taskfile\.ya?ml$'
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'

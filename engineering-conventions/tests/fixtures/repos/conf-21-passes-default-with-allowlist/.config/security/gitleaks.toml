@@ -1,0 +1,9 @@
+title = "platform-api"
+
+[extend]
+useDefault = true
+
+# The test keys are generated for the test suite and accepted by nothing.
+[[allowlists]]
+description = "test keys"
+paths = ['''^tests/keys/''']

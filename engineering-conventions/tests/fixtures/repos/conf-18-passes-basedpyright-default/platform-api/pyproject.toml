@@ -1,0 +1,11 @@
+[project]
+name = "platform-api"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+# No typeCheckingMode: basedpyright's own default, recommended, is above strict.
+[tool.basedpyright]
+include = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F"]

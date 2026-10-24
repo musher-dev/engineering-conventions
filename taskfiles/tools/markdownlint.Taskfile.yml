@@ -1,0 +1,62 @@
+version: '3'
+
+# markdownlint: how markdownlint-cli2 runs. Its binary, config path and file
+# set are written here and nowhere else (TASK-26); lint:md calls
+# tool:markdownlint and lint:md:fix calls tool:markdownlint:fix. Given FILES, a
+# shell-quoted list such as the git hooks pass, the check lints those and
+# always runs (tool:markdownlint:files); without, it lints every Markdown file
+# and is skipped while its sources are unchanged since it last passed
+# (tool:markdownlint:all). Both share one command, so the two can never drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:markdownlint:
+    desc: Lint Markdown with markdownlint-cli2, FILES or every Markdown file.
+    cmds:
+      - task: tool:markdownlint:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:markdownlint:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:markdownlint:all:
+    desc: Lint every Markdown file, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - '**/*.md'
+      - exclude: CHANGELOG.md
+      - exclude: .github/pull_request_template.md
+      - exclude: engineering-conventions/tests/fixtures/**/*
+      - .config/markdown/markdownlint.jsonc
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/markdownlint.Taskfile.yml
+    vars: &vars
+      MARKDOWNLINT_CONFIG: .config/markdown/markdownlint.jsonc
+      # CHANGELOG.md is written by release-please, whose output markdownlint
+      # rejects and no commit can fix. The PR template is a PR body, whose H1
+      # is the PR title, so it starts at `##` by design (MD041). Fixtures are
+      # data for the checks under test. The git hook excludes the same files.
+      PATHSPEC: >-
+        '**/*.md' ':!:CHANGELOG.md' ':!:.github/pull_request_template.md'
+        ':!:engineering-conventions/tests/fixtures/**'
+    cmds: &cmds
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r markdownlint-cli2 --config {{.MARKDOWNLINT_CONFIG}}
+
+  tool:markdownlint:files:
+    desc: Lint the Markdown files FILES names.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds
+
+  tool:markdownlint:fix:
+    desc: Fix what markdownlint-cli2 can repair in FILES or every Markdown file, in place.
+    vars: *vars
+    cmds:
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r markdownlint-cli2 --config {{.MARKDOWNLINT_CONFIG}} --fix

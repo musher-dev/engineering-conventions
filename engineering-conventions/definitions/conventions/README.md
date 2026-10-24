@@ -53,6 +53,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0041](branch-protection/default-branch-protection.md) | Default-branch protection | branch-protection | draft |
 | [EC-0042](dependencies/automated-updates.md) | Automated dependency updates | dependencies | draft |
 | [EC-0043](container-images/image-publishing.md) | Publishing container images | container-images | draft |
+| [EC-0044](configuration/tool-strictness.md) | Tool strictness | configuration | draft |
 
 ## Requirements
 
@@ -100,6 +101,8 @@ ID is permanent: it is never renumbered or reused.
 | [COMM-06](community-files/community-files.md#comm-06) | The security policy scores 10 on OpenSSF Scorecard's Security-Policy check | EC-0036 | proposed | warning | delegated |
 | [COMM-07](community-files/community-files.md#comm-07) | A discussion category form is a .yml file valid against GitHub's discussion-forms schema | EC-0036 | proposed | warning | conftest |
 | [COMM-08](community-files/community-files.md#comm-08) | Every repository has a CODEOWNERS | EC-0036 | proposed | warning | conftest |
+| [COMM-09](community-files/community-files.md#comm-09) | CODEOWNERS has no catch-all rule that owns every path | EC-0036 | proposed | warning | conftest |
+| [COMM-10](community-files/community-files.md#comm-10) | Every root-anchored literal path in CODEOWNERS names a file or directory that exists | EC-0036 | proposed | warning | conftest |
 | [COMMIT-01](commits/commit-messages.md#commit-01) | .config/commits/committed.toml states the repository's commit rules | EC-0035 | proposed | warning | conftest |
 | [COMMIT-02](commits/commit-messages.md#commit-02) | committed is pinned in mise | EC-0035 | proposed | warning | conftest |
 | [COMMIT-03](commits/commit-messages.md#commit-03) | Lefthook's commit-msg hook runs committed on the message being written | EC-0035 | proposed | warning | conftest |
@@ -119,6 +122,16 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-13](configuration/tool-configuration.md#conf-13) | Every pattern in the root .gitattributes matches a file in the repository | EC-0011 | proposed | warning | conftest |
+| [CONF-14](configuration/tool-configuration.md#conf-14) | A .config/ subdirectory is a registered concern | EC-0011 | proposed | warning | conftest |
+| [CONF-15](configuration/tool-configuration.md#conf-15) | A known tool's configuration sits in its tool's concern | EC-0011 | proposed | warning | conftest |
+| [CONF-16](configuration/tool-strictness.md#conf-16) | A yamllint configuration extends the default preset | EC-0044 | proposed | warning | conftest |
+| [CONF-17](configuration/tool-strictness.md#conf-17) | A markdownlint configuration keeps the default rules on | EC-0044 | proposed | warning | conftest |
+| [CONF-18](configuration/tool-strictness.md#conf-18) | pyright and basedpyright check types at strict or above | EC-0044 | proposed | warning | conftest |
+| [CONF-19](configuration/tool-strictness.md#conf-19) | A tsconfig.json turns strict on | EC-0044 | proposed | warning | conftest |
+| [CONF-20](configuration/tool-strictness.md#conf-20) | A Biome configuration keeps the recommended rules on | EC-0044 | proposed | warning | conftest |
+| [CONF-21](configuration/tool-strictness.md#conf-21) | A gitleaks configuration that extends keeps the default rules | EC-0044 | proposed | warning | conftest |
+| [CONF-22](configuration/tool-strictness.md#conf-22) | A tool's warnings fail the gate that runs it | EC-0044 | proposed | warning | review |
+| [CONF-23](configuration/tool-strictness.md#conf-23) | Every departure from a tool's preset carries its reason beside it | EC-0044 | proposed | warning | review |
 | [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
 | [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
 | [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |
@@ -269,6 +282,7 @@ ID is permanent: it is never renumbered or reused.
 | [HOOKS-12](git-hooks/lefthook.md#hooks-12) | A pre-commit job that fixes files sets stage_fixed | EC-0014 | proposed | warning | conftest |
 | [HOOKS-13](git-hooks/lefthook.md#hooks-13) | No job runs the same command in pre-commit and pre-push | EC-0014 | proposed | warning | conftest |
 | [HOOKS-14](git-hooks/lefthook.md#hooks-14) | A job runs no one-shot package runner directly | EC-0014 | proposed | warning | conftest |
+| [HOOKS-15](git-hooks/lefthook.md#hooks-15) | Where a tool has a wrapper, a job runs a task rather than the tool | EC-0014 | proposed | warning | conftest |
 | [IFACE-01](interfaces/interfaces-declaration.md#iface-01) | Every file in the contracts directory belongs to a declared interface | EC-0030 | proposed | warning | conftest |
 | [IFACE-02](interfaces/interfaces-declaration.md#iface-02) | An interface's format, compatibility and audience are registered values | EC-0030 | proposed | warning | conftest |
 | [IFACE-03](interfaces/interfaces-declaration.md#iface-03) | Interface IDs are unique within a repository | EC-0030 | proposed | warning | conftest |
@@ -373,11 +387,15 @@ ID is permanent: it is never renumbered or reused.
 | [TASK-17](tasks/taskfile-style.md#task-17) | A task that destroys what nothing can restore declares a prompt | EC-0015 | proposed | warning | conftest |
 | [TASK-18](tasks/taskfile-style.md#task-18) | A fragment's silent task echoes what it is doing, and its internal task with commands of its own is silent | EC-0015 | proposed | warning | conftest |
 | [TASK-19](tasks/taskfile-style.md#task-19) | A fragment's task that only calls other tasks echoes nothing of its own | EC-0015 | proposed | warning | conftest |
-| [TASK-20](tasks/taskfile-style.md#task-20) | A Taskfile that flattens its fragments includes each with flatten, never optional, dir or internal | EC-0015 | proposed | warning | conftest |
+| [TASK-20](tasks/taskfile-style.md#task-20) | A Taskfile that flattens its fragments includes each area fragment with flatten, never optional, dir or internal | EC-0015 | proposed | warning | conftest |
 | [TASK-21](tasks/taskfile-style.md#task-21) | A fragment declares no top-level includes, vars, env or dotenv | EC-0015 | proposed | warning | conftest |
 | [TASK-22](tasks/taskfile-style.md#task-22) | A fragment opens with a comment that names its area | EC-0015 | proposed | warning | conftest |
 | [TASK-23](tasks/taskfile-style.md#task-23) | In prefixed output, every silent task sets a kebab-case prefix | EC-0015 | proposed | warning | conftest |
 | [TASK-24](tasks/taskfile-style.md#task-24) | In prefixed output, a task that runs a long-lived process is silent | EC-0015 | proposed | warning | conftest |
+| [TASK-25](tasks/taskfile-style.md#task-25) | A tool wrapper is included with flatten and internal, and names its tasks tool:\<tool\> | EC-0015 | proposed | warning | conftest |
+| [TASK-26](tasks/taskfile-style.md#task-26) | A tool that has a wrapper runs only in its wrapper | EC-0015 | proposed | warning | conftest |
+| [TASK-27](tasks/taskfile-style.md#task-27) | A flattened fragment's public tasks are named under its area | EC-0015 | proposed | warning | conftest |
+| [TASK-28](tasks/taskfile-style.md#task-28) | Every sources glob matches something the repository holds | EC-0015 | proposed | warning | conftest |
 | [TOFU-01](opentofu/state-keys.md#tofu-01) | An OpenTofu root's state key is tfstate/\<repository\>/\<root\>/terraform.tfstate | EC-0029 | proposed | warning | conftest |
 | [TOOL-01](toolchain/tool-pins.md#tool-01) | A repository has one mise configuration, at .config/mise/config.toml | EC-0017 | proposed | warning | conftest |
 | [TOOL-02](toolchain/tool-pins.md#tool-02) | Every tool in the mise configuration names its backend, except mise's core tools | EC-0017 | proposed | warning | conftest |

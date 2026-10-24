@@ -2,8 +2,9 @@
 id: EC-0011
 title: Tool configuration
 summary: >-
-  A tool's configuration lives in .config/<concern>/<tool>.<ext>, never at
-  the repository root, and is passed to the tool by path. .config/ holds
+  A tool's configuration lives in .config/<concern>/<tool>.<ext>, in a
+  registered concern named for the files the tool reads, never at the
+  repository root, and is passed to the tool by path. .config/ holds
   declarations only, is indexed in its README, and every file in it has a
   caller that names it, as every path a caller names exists, and every
   pattern in the root .gitattributes matches a file.
@@ -145,6 +146,22 @@ requirements:
       engine: conftest
       package: conventions.checks.configuration.tool_configuration
     aliases: ["development-container:PATH-01b"]
+  - id: CONF-14
+    title: A .config/ subdirectory is a registered concern
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.configuration.tool_configuration
+  - id: CONF-15
+    title: A known tool's configuration sits in its tool's concern
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.configuration.tool_configuration
 ---
 
 # Tool configuration
@@ -159,8 +176,15 @@ searching can pick up a stray file from anywhere on its path. This convention gi
 
 This convention covers the repository root and the `.config/` directory. A repository that keeps no tool
 configuration meets every requirement. Where a tool's *version* is pinned is a separate question; this convention
-decides only where its configuration lives and how the tool is pointed at it. Rules about what a configuration
-*contains* belong to the tool, except the suppressions governed by [EC-0012](suppressions.md).
+decides only where its configuration lives and how the tool is pointed at it. What a configuration *contains* belongs
+to the tool, except how strict it is ([EC-0044](tool-strictness.md)) and its suppressions
+([EC-0012](suppressions.md)).
+
+`.config/` is the repository's quality configuration: the linters, formatters, scanners and hooks that judge the
+whole repository, whatever product it holds. A product's language toolchain stays with the product, where that
+toolchain looks for it and where the code it checks lives: `[tool.ruff]` and `[tool.basedpyright]` in
+`pyproject.toml`, `tsconfig.json`, `[lints]` in `Cargo.toml`. Moving them into `.config/` would separate them from the
+package they configure and from every editor that finds them there.
 
 ## Status and authority
 
@@ -192,13 +216,31 @@ Its requirements are `proposed` at severity `warning`, like every requirement in
 ├── mise/config.toml           where mise reads project configuration unprompted
 ├── actions/actionlint.yaml
 ├── markdown/markdownlint.jsonc
+├── prose/vale.ini
 ├── security/gitleaks.toml
 └── yaml/yamllint.yaml
 ```
 
-A concern is a coarse bucket (`markdown`, `security`, `yaml`, `actions`), not a directory per tool. The file keeps its
-tool's usual name without the leading dot. Every caller passes the path with the tool's flag (`--config`, `-c`,
-`--ignorefile`), so nothing depends on where the tool would search.
+A **concern** is a coarse bucket, not a directory per tool, and it has one key: **the files its tool reads**. A tool
+that reads every file in the repository has no file type to be named for, so its concern is **what it looks for**.
+mise's directory is the one exception, named for the tool, because it is where mise looks by itself. The concerns are
+one list, kept in the check (CONF-14):
+
+| Kind | Concerns |
+| --- | --- |
+| The files a tool reads | `actions`, `commits`, `docker`, `json`, `markdown`, `openapi`, `opentofu`, `python`, `rego`, `shell`, `sql`, `toml`, `typescript`, `yaml` |
+| What a tool that reads every file looks for | `prose`, `security`, `spelling` |
+| Where the tool itself looks | `mise` |
+
+One key is what lets a reader find a file without the index: yamllint's rules are in `yaml/`, and Vale's are in
+`prose/` because Vale reads any file with words in it, not because it happens to run on Markdown. A directory keyed
+otherwise, by team (`platform/`), by tool (`biome/`) or by purpose (`linters/`, `scripts/`), is a second way to sort
+the same files, and two people sort the next file differently. A concern this list lacks is added here, by a change
+to the check, so every repository spells it the same way.
+
+The file keeps its tool's usual name without the leading dot. Every caller passes the path with the tool's flag
+(`--config`, `-c`, `--ignorefile`), so nothing depends on where the tool would search. How strict each tool's
+configuration must be is set in [EC-0044 Tool strictness](tool-strictness.md).
 
 Some files must stay at the root, because their tool finds them only there or because they are the entry point
 itself. None of them is reported:
@@ -410,7 +452,7 @@ legitimate configuration files have none. Move the program beside what runs it.
 
 ```text
 scripts/banner.sh
-.config/markdown/vale.ini
+.config/prose/vale.ini
 ```
 
 **Incorrect:**
@@ -452,8 +494,8 @@ on:
 - markdownlint-cli2 --config .config/markdownlint.jsonc "**/*.md"
 ```
 
-after the file moved to `.config/markdown/`, or a `paths` filter on `.config/rust/*.toml` when `.config/rust/` holds no
-TOML file.
+after the file moved to `.config/markdown/`, or a `paths` filter on `.config/python/*.toml` when `.config/python/` holds
+no TOML file.
 
 Checked by: conftest · Severity: warning · Since: 0.6.0 · Formerly: development-container CFG-09
 
@@ -485,6 +527,74 @@ checks/data/index.json linguist-generated=true   # moved under engineering-conve
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.9.1 · Formerly: development-container PATH-01 (in part)
+
+### CONF-14
+
+**A `.config/` subdirectory is a registered concern.**
+
+A concern directory that follows no rule is a guess the next contributor has to repeat: one repository's
+`.config/linters/` is another's `.config/quality/`, a tool lands wherever its author thought of first, and a reader
+cannot predict where to look. The check reports each directory directly under `.config/` whose name is not one of
+the concerns in [the layout](#the-layout). Move each file into the concern for the files its tool reads, or for what
+it looks for when it reads every file, and update its callers. A concern a repository needs and the list lacks is
+proposed here, not invented locally.
+
+**Correct:**
+
+```text
+.config/prose/vale.ini
+.config/typescript/biome.json
+```
+
+**Incorrect:**
+
+```text
+.config/linters/vale.ini
+.config/biome/biome.json
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
+
+### CONF-15
+
+**A known tool's configuration sits in its tool's concern.**
+
+A registered concern can still be the wrong one: a prose linter filed under `markdown/` because the first files it
+read were Markdown, or a security audit under `actions/` beside the linter it resembles. The check reports a known
+tool's configuration file, by its usual name with or without a leading dot or underscore, in any concern but its
+own:
+
+| Tool | Concern |
+| --- | --- |
+| Vale | `prose` |
+| gitleaks, Trivy (`trivyignore`, `trivy.yaml`) | `security` |
+| typos, codespell, cspell | `spelling` |
+| yamllint | `yaml` |
+| markdownlint | `markdown` |
+| actionlint, zizmor | `actions` |
+| hadolint | `docker` |
+| Regal | `rego` |
+| Taplo | `toml` |
+| committed | `commits` |
+| Spectral | `openapi` |
+
+zizmor is a security audit, but it reads only workflows and actions, so it sits in `actions/`. The tool list is kept
+in the check, like CONF-01's. A tool it does not name is placed by the rule in [the layout](#the-layout) and judged
+only by CONF-14.
+
+**Correct:**
+
+```text
+.config/prose/vale.ini              vale --config .config/prose/vale.ini
+```
+
+**Incorrect:**
+
+```text
+.config/markdown/vale.ini           vale --config .config/markdown/vale.ini
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
 
 ## Rationale
 

@@ -1,0 +1,3 @@
+# Everything is owned, so every pull request waits for review.
+*                  @your-org/maintainers
+/platform-api/     @your-org/api

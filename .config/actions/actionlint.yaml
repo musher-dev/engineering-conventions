@@ -15,3 +15,7 @@ config-variables:
   # The release App's client ID, an organization variable (decision 0017). A
   # client ID is not a secret; its private key is RELEASE_APP_PRIVATE_KEY.
   - RELEASE_APP_CLIENT_ID
+  # The pass-marker kill switch, a repository variable (decision 0040): `on`
+  # lets validate.yml record and prove pass markers; unset or anything else
+  # turns them off.
+  - CI_PASS_MARKERS

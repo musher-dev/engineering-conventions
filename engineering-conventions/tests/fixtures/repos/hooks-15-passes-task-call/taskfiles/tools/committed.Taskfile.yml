@@ -1,0 +1,9 @@
+version: '3'
+
+# committed: how commit messages are checked.
+
+tasks:
+  tool:committed:
+    desc: Check the commit messages on this branch with committed.
+    cmds:
+      - committed --config .config/commits/committed.toml

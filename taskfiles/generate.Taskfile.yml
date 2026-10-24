@@ -1,0 +1,30 @@
+version: '3'
+
+# Generate: the committed artifacts the conventions CLI writes from the
+# definitions (checks/data/index.json, the Vale styles and
+# definitions/conventions/README.md), and the check that they are current.
+# The check is skipped while the product is unchanged since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  generate:
+    desc: Regenerate index.json, the MusherConventions Vale style and definitions/conventions/README.md.
+    cmds:
+      - '{{.UV_RUN}} conventions generate'
+
+  generate:check:
+    desc: Fail if a committed generated artifact is stale (run `task generate` to fix).
+    method: checksum
+    sources:
+      - engineering-conventions/**/*
+      - exclude: '**/.venv/**/*'
+      - exclude: '**/__pycache__/**/*'
+      - exclude: '**/.pytest_cache/**/*'
+      - exclude: '**/.ruff_cache/**/*'
+      - exclude: '**/.coverage'
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/generate.Taskfile.yml
+    cmds:
+      - '{{.UV_RUN}} conventions generate --check'

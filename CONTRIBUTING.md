@@ -46,6 +46,11 @@ a native filesystem. Clone the repository inside the WSL filesystem (for example
 Containers: Clone Repository in Named Container Volume**, and reopen it in the container from there. The dev container
 already keeps the CLI's virtualenv on a volume of its own.
 
+`task check` skips a gate whose inputs are unchanged since it last passed in this checkout, and prints
+`is up to date` for it, so a second run after a small change reruns only the gates that change touches. Run
+`task --force check` to rerun every gate. The skip is a local convenience, never proof: CI runs every gate from a
+fresh checkout. Lint a few files by passing them after `--`, as the git hooks do: `task lint:md -- README.md`.
+
 On a slow disk the pre-push jobs also compete for it. Run them one at a time with a personal
 `.config/lefthook-local.yml`, which git ignores:
 

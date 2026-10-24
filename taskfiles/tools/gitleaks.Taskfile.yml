@@ -1,0 +1,23 @@
+version: '3'
+
+# gitleaks: how secrets are scanned for. The binary, its config path and its
+# flags are written here and nowhere else (TASK-26); secrets:scan and
+# secrets:scan:staged call it. Neither is ever skipped: the history scan reads
+# every commit, which no file fingerprint covers, and the staged scan reads the
+# index.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:gitleaks:
+    desc: Scan the git history for secrets with gitleaks.
+    vars: &vars
+      GITLEAKS_CONFIG: .config/security/gitleaks.toml
+    cmds:
+      - gitleaks git --redact --no-banner --config {{.GITLEAKS_CONFIG}} .
+
+  tool:gitleaks:staged:
+    desc: Scan the staged changes for secrets with gitleaks.
+    vars: *vars
+    cmds:
+      - gitleaks git --pre-commit --staged --redact --no-banner --config {{.GITLEAKS_CONFIG}}

@@ -1,0 +1,23 @@
+version: '3'
+
+# conftest: how the Rego unit tests run under conftest's embedded OPA.
+# Consumers run the rules with conftest, so this is what catches opa and
+# conftest drifting apart (.claude/rules/toolchain-pins.md) before a consumer
+# does. The binary and its flags are written here and nowhere else (TASK-26);
+# checks:test calls it. The run is skipped while its sources are unchanged
+# since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:conftest:
+    desc: Run the Rego unit tests under conftest verify, printing each failing test by name.
+    method: checksum
+    sources:
+      - engineering-conventions/checks/rego/**/*.rego
+      - engineering-conventions/checks/data/index.json
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/conftest.Taskfile.yml
+    cmds:
+      - conftest verify --no-color --policy {{.REGO_DIR}} --data {{.INDEX}}

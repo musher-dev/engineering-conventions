@@ -1,0 +1,61 @@
+version: '3'
+
+# vale: how this repository's prose is linted with the generated
+# MusherConventions style. The binary, its config path, its file set and the
+# rule that any alert fails are written here and nowhere else (TASK-26);
+# prose:lint calls tool:vale. Given FILES, a shell-quoted list such as the git
+# hooks pass, it lints those and always runs (tool:vale:files); without, it
+# lints the documentation and is skipped while its sources, the style
+# included, are unchanged since it last passed (tool:vale:all). Both share one
+# command, so the two can never drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:vale:
+    desc: Lint FILES or this repository's prose with Vale; any alert fails.
+    cmds:
+      - task: tool:vale:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:vale:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:vale:all:
+    desc: Lint this repository's prose with Vale, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - README.md
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - AGENTS.md
+      - docs/**/*
+      - engineering-conventions/definitions/conventions/**/*
+      - engineering-conventions/checks/vale/**/*
+      - .config/prose/vale.ini
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/vale.Taskfile.yml
+    vars: &vars
+      VALE_CONFIG: .config/prose/vale.ini
+      PROSE_PATHS: >-
+        README.md CONTRIBUTING.md SECURITY.md AGENTS.md docs
+        engineering-conventions/definitions/conventions
+    cmds: &cmds
+      # Vale exits non-zero only for error-level alerts, and the style ships
+      # its rules as warnings for consumers. Here every alert fails, since a
+      # gate that only prints is not a gate.
+      - |
+        alerts="$(vale --config {{.VALE_CONFIG}} --output=line {{if .FILES}}{{.FILES}}{{else}}{{.PROSE_PATHS}}{{end}})"
+        if [[ -n "${alerts}" ]]; then
+          printf '%s\n' "${alerts}"
+          echo "vale: fix the alerts above; the terms come from definitions/terminology/" >&2
+          exit 1
+        fi
+
+  tool:vale:files:
+    desc: Lint the prose in the files FILES names with Vale; any alert fails.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds

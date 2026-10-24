@@ -40,6 +40,9 @@ forms := {
 	".github/ISSUE_TEMPLATE/config.yml": chooser,
 }
 
+# Files the standard CODEOWNERS names, so its paths exist (COMM-10).
+tree := ["docs/index.md", "src/main.go", "src/generated/api.go"]
+
 standard_texts := {
 	".github/CODEOWNERS": codeowners,
 	"SECURITY.md": policy,
@@ -51,6 +54,7 @@ repository(documents, texts, extra) := array.concat(
 		"files": array.flatten([
 			[path | some path, contents in documents; contents != null],
 			[path | some path, body in texts; is_string(body)],
+			tree,
 			extra,
 		]),
 		"texts": {path: body | some path, body in texts; is_string(body)},
@@ -297,4 +301,75 @@ test_comm_08_any_location_counts if {
 		found := community.findings with input as [td.inventory([location])] with data.conventions.index as index
 		not "COMM-08" in {f.id | some f in found}
 	}
+}
+
+test_comm_09_catch_all if {
+	text := "# Owners\n* @alice\n/docs/ @your-org/docs\n**   @bob\n/** @alice @bob\n"
+	result := community.findings with input as changed({}, {".github/CODEOWNERS": text}, [])
+		with data.conventions.index as index
+	td.pairs(result) == {["COMM-09", ".github/CODEOWNERS"]}
+	messages(result, "COMM-09") == {
+		concat(" ", [
+			"line 2: the catch-all `*` owns every path, so where a code owner's review is required every",
+			"pull request waits for @alice, a bot's pin bump included; own only /.github/, /.repo/ and the",
+			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+		]),
+		concat(" ", [
+			"line 4: the catch-all `**` owns every path, so where a code owner's review is required every",
+			"pull request waits for @bob, a bot's pin bump included; own only /.github/, /.repo/ and the",
+			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+		]),
+		concat(" ", [
+			"line 5: the catch-all `/**` owns every path, so where a code owner's review is required every",
+			"pull request waits for @alice @bob, a bot's pin bump included; own only /.github/, /.repo/ and the",
+			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+		]),
+	}
+}
+
+# Narrower globs, and a catch-all that makes everything explicitly unowned,
+# gate nothing by themselves.
+test_comm_09_narrower_globs_and_an_unowned_catch_all if {
+	text := "*\n*.md @your-org/docs\n/docs/* @your-org/docs\n/docs/** @your-org/docs\n"
+	count(community.findings) == 0 with input as changed({}, {".github/CODEOWNERS": text}, [])
+		with data.conventions.index as index
+}
+
+test_comm_10_missing_paths if {
+	text := "/docs/ @alice\n/src/main.go/ @alice\n/lib/ @alice\n/README.md @alice\n/src/generated\n"
+	result := community.findings with input as changed({}, {".github/CODEOWNERS": text}, [])
+		with data.conventions.index as index
+	td.pairs(result) == {["COMM-10", ".github/CODEOWNERS"]}
+	messages(result, "COMM-10") == {
+		concat(" ", [
+			"line 2: `/src/main.go/` names no directory in the repository, so the line protects nothing;",
+			"point it at the path's current name or delete it",
+		]),
+		concat(" ", [
+			"line 3: `/lib/` names no directory in the repository, so the line protects nothing;",
+			"point it at the path's current name or delete it",
+		]),
+		concat(" ", [
+			"line 4: `/README.md` names no file or directory in the repository, so the line protects nothing;",
+			"point it at the path's current name or delete it",
+		]),
+	}
+}
+
+# Only a root-anchored literal is judged: a relative path, a glob or an
+# escape may match somewhere, and a fixture path is still in the tree.
+test_comm_10_judges_only_root_anchored_literals if {
+	text := concat("\n", [
+		"lib/ @alice",
+		"/lib/*.go @alice",
+		"/lib/?/ @alice",
+		`/docs/a\ b/ @alice`,
+		"/tests/fixtures/ @alice",
+		"/src/main.go @alice",
+		"/src @alice",
+	])
+	declaration := {".repo/conventions.toml": {"paths": {"fixtures": ["tests/fixtures/**"]}}}
+	found := community.findings with input as changed(declaration, {".github/CODEOWNERS": text}, ["tests/fixtures/a/x.md"])
+		with data.conventions.index as index
+	count(found) == 0
 }

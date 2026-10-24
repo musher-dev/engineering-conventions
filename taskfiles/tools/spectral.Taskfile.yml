@@ -1,0 +1,34 @@
+version: '3'
+
+# spectral: how an OpenAPI document is linted against a ruleset. The binary and
+# its flags are written here and nowhere else (TASK-26); checks:openapi calls
+# it. A ruleset may extend another by URL, so a run needs the network and is
+# never skipped. REPORT, when set, receives the findings as JSON for the
+# caller to read. EXPECT=findings turns the run around: it passes only when
+# Spectral exits 1, its exit status for findings at error severity, so a
+# ruleset Spectral cannot load (exit 2) still fails.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:spectral:
+    desc: Lint FILES with Spectral against RULESET.
+    silent: true
+    requires:
+      vars: [RULESET, FILES]
+    vars:
+      EXPECT: '{{.EXPECT | default "pass"}}'
+    cmds:
+      - echo "spectral lint against {{.RULESET}}, expecting {{.EXPECT}}"
+      - |
+        status=0
+        spectral lint --quiet --format json --ruleset {{.RULESET}} \
+          {{if .REPORT}}--output {{.REPORT}} {{end}}{{.FILES}} || status=$?
+        {{if eq .EXPECT "findings"}}
+        if [[ "${status}" != 1 ]]; then
+          echo "spectral: exited ${status}, not 1 for findings at error severity" >&2
+          exit 1
+        fi
+        {{else}}
+        exit "${status}"
+        {{end}}

@@ -1,0 +1,113 @@
+version: '3'
+
+# Schemas: the JSON Schemas in checks/schemas checked against their
+# metaschemas, and the content, frontmatter and GitHub and Task configuration
+# validated against theirs, all through
+# taskfiles/tools/check-jsonschema.Taskfile.yml. schemas:validate names each
+# schema and the files it governs, so it is fingerprinted here, as a whole: it
+# is skipped while every file it validates is unchanged since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  schemas:check:
+    desc: Check every JSON Schema in checks/schemas, the vendored ones included, against its metaschema.
+    cmds:
+      - task: tool:check-jsonschema:metaschema
+
+  schemas:validate:
+    desc: Validate content, frontmatter and GitHub/Task config against their JSON Schemas.
+    method: checksum
+    vars:
+      WORKFLOWS: "'.github/workflows/*.yml' '.github/workflows/*.yaml'"
+    sources:
+      - engineering-conventions/checks/schemas/**/*
+      - engineering-conventions/definitions/**/*
+      - engineering-conventions/examples/**/*
+      - .repo/*.toml
+      - docs/decisions/*.md
+      - .github/workflows/*
+      - .github/actions/**/*
+      - .github/dependabot.yml
+      - .github/ISSUE_TEMPLATE/*
+      - Taskfile.yml
+      - taskfiles/**/*.yml
+      - .config/mise/mise.lock
+    cmds:
+      - task: tool:check-jsonschema:files
+        vars:
+          SCHEMA: terminology
+          PATHSPEC: "'engineering-conventions/definitions/terminology/**/*.yml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          SCHEMA: profile
+          PATHSPEC: "'engineering-conventions/definitions/profiles/*.yml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          SCHEMA: families
+          PATHSPEC: "'engineering-conventions/definitions/conventions/families.yml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          SCHEMA: copy-style
+          PATHSPEC: "'engineering-conventions/definitions/copy/style.yml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          SCHEMA: env-grammar
+          PATHSPEC: "'engineering-conventions/definitions/environment/grammar.yml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          YQ_FLAGS: -p toml
+          SCHEMA: conventions-declaration
+          PATHSPEC: "'.repo/conventions.toml' 'engineering-conventions/examples/**/.repo/conventions.toml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          YQ_FLAGS: -p toml
+          SCHEMA: outputs
+          PATHSPEC: "'.repo/outputs.toml' 'engineering-conventions/examples/**/.repo/outputs.toml'"
+      - task: tool:check-jsonschema:files
+        vars:
+          YQ_FLAGS: -p toml
+          SCHEMA: repository
+          PATHSPEC: "'.repo/repository.toml' 'engineering-conventions/examples/**/.repo/repository.toml'"
+      # Topic READMEs and the generated index carry no frontmatter.
+      - task: tool:check-jsonschema:files
+        vars:
+          YQ_FLAGS: --front-matter=extract
+          SCHEMA: convention-frontmatter
+          PATHSPEC: >-
+            'engineering-conventions/definitions/conventions/*/*.md'
+            ':!:engineering-conventions/definitions/conventions/*/README.md'
+      - task: tool:check-jsonschema:files
+        vars:
+          YQ_FLAGS: --front-matter=extract
+          SCHEMA: decision
+          PATHSPEC: "'docs/decisions/[0-9]*.md'"
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: vendor.github-workflows
+          PATHSPEC: '{{.WORKFLOWS}}'
+      # GHA-29 for this repo's own workflows, checked a second, independent way.
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: custom.github-workflows-require-timeout
+          PATHSPEC: '{{.WORKFLOWS}}'
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: vendor.github-actions
+          PATHSPEC: "'.github/actions/*/action.yml' '.github/actions/*/action.yaml'"
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: vendor.dependabot
+          PATHSPEC: "'.github/dependabot.yml'"
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: vendor.github-issue-forms
+          PATHSPEC: "'.github/ISSUE_TEMPLATE/*.yml' ':!:.github/ISSUE_TEMPLATE/config.yml'"
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: vendor.github-issue-config
+          PATHSPEC: "'.github/ISSUE_TEMPLATE/config.yml'"
+      - task: tool:check-jsonschema:builtin
+        vars:
+          SCHEMA: vendor.taskfile
+          PATHSPEC: "'Taskfile.yml' 'taskfiles/**/*.yml'"

@@ -1,7 +1,8 @@
 # typos configuration: the spellchecker for every tracked file.
-# Read by: typos, via an explicit --config path (`task lint:spelling`, and the
-# lefthook `spelling` job with --force-exclude so the excludes below hold when
-# lefthook passes an excluded file by name).
+# Read by: typos, via an explicit --config path in
+# taskfiles/tools/typos.Taskfile.yml (`task lint:spelling`, and the lefthook
+# `spelling` job, whose files get --force-exclude so the excludes below hold
+# when lefthook passes an excluded file by name).
 # Docs: https://github.com/crate-ci/typos/blob/master/docs/reference.md
 
 [default]
@@ -9,7 +10,6 @@
 extend-ignore-identifiers-re = ["[A-Z]{2,}_[A-Z0-9_]+"]
 
 [default.extend-words]
-musher = "musher"
 # Both spellings are standard; this one is the usual one in programming prose.
 unparseable = "unparseable"
 

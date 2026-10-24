@@ -1,0 +1,23 @@
+version: '3'
+
+# regal: how the Rego rules are linted. The binary, its config path and its
+# severity flag (--fail-level warning: a warning fails) are written here and
+# nowhere else (TASK-26); checks:lint calls it. The check is skipped while its
+# sources are unchanged since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:regal:
+    desc: Lint the Rego rules with Regal; warnings fail.
+    method: checksum
+    vars:
+      REGAL_CONFIG: .config/rego/regal.yaml
+    sources:
+      - engineering-conventions/checks/rego/**/*.rego
+      - .config/rego/regal.yaml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/regal.Taskfile.yml
+    cmds:
+      - regal lint --config-file {{.REGAL_CONFIG}} --fail-level warning {{.REGO_DIR}}

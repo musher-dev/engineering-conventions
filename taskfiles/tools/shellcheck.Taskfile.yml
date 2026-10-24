@@ -1,0 +1,48 @@
+version: '3'
+
+# shellcheck: how shell scripts are checked. The binary, its flags and its file
+# set are written here and nowhere else (TASK-26); lint:shell calls
+# tool:shellcheck. Given FILES, a shell-quoted list such as the git hooks pass,
+# it checks those and always runs (tool:shellcheck:files); without, it checks
+# every script and is skipped while its sources are unchanged since it last
+# passed (tool:shellcheck:all). Both share one command, so the two can never
+# drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:shellcheck:
+    desc: Run ShellCheck on FILES or every shell script, following sourced libraries.
+    cmds:
+      - task: tool:shellcheck:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:shellcheck:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:shellcheck:all:
+    desc: Run ShellCheck on every shell script, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - '**/*.sh'
+      - engineering-conventions/bin/*
+      - exclude: engineering-conventions/bin/*.jq
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/shellcheck.Taskfile.yml
+    vars: &vars
+      # bin/ holds the launcher and the jq programs it renders with. The git
+      # hook selects the same files.
+      PATHSPEC: >-
+        '**/*.sh' 'engineering-conventions/bin/*' ':!:engineering-conventions/bin/*.jq'
+    cmds: &cmds
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r shellcheck -x -P SCRIPTDIR
+
+  tool:shellcheck:files:
+    desc: Run ShellCheck on the scripts FILES names.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds

@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  lint:
+    desc: Lint the API's workflows.
+    cmds:
+      - actionlint

@@ -44,10 +44,10 @@ conftest and nothing else, so what is written here is what a consumer executes.
 | Rule | How |
 | --- | --- |
 | Formatting | `task checks:fmt:check` (opa fmt) |
-| Lint, v1 syntax | `task checks:lint` (Regal), `task checks:check` (`opa check --strict`) |
+| Lint, v1 syntax | `task checks:lint` (Regal), `task checks:compile` (`opa check --strict`) |
 | Tests exist and cover | `task checks:test` (`conftest verify`, then one `opa test` pass with the coverage threshold and `--fail-on-empty`) |
-| Declared IDs, fixture per requirement | `task cli:test` (fixture repos), `task invariants` |
-| Near-miss per new requirement | `task invariants` |
+| Declared IDs, fixture per requirement | `task cli:test` (fixture repos), `task cli:invariants` |
+| Near-miss per new requirement | `task cli:invariants` |
 | Messages, links, duplicate findings | `task cli:test` (findings snapshot, per-finding checks in `fixtures.py`) |
 | Shared test index matches the real one | `task checks:test` (`lib/testdata_shape_test.rego`) |
 | Purity, actionable messages | Review |

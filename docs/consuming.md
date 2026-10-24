@@ -384,7 +384,7 @@ config package, `MusherProse.zip`, that installs the copy rules: the `MusherCopy
 your mise configuration pins, and apply the styles to the site's sources:
 
 ```ini
-# .config/markdown/vale.ini
+# .config/prose/vale.ini
 StylesPath = ../../.vale
 MinAlertLevel = warning
 # x-release-please-start-version
@@ -408,8 +408,8 @@ lint:copy:
   desc: Lint the site's copy with Vale.
   cmds:
     - mkdir -p .vale
-    - vale --config .config/markdown/vale.ini sync
-    - vale --config .config/markdown/vale.ini apps/site/src
+    - vale --config .config/prose/vale.ini sync
+    - vale --config .config/prose/vale.ini apps/site/src
 ```
 
 `conventions check` reports COPY-01 to COPY-03 on the config, and `conventions prose` runs `MusherCopy` from the

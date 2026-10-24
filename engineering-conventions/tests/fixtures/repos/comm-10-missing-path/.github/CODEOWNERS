@@ -1,0 +1,4 @@
+# platform-web/ was renamed, and its line still names the old path.
+/.github/          @your-org/maintainers
+/platform-api/     @your-org/api
+/platform-web/     @your-org/web

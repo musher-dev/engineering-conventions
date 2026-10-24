@@ -23,7 +23,7 @@ findings contains lib.finding("COPY-01", site_source, message) if {
 	publishes_site
 	count(config_files) == 0
 	message := concat(" ", [
-		"the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini",
+		"the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini",
 		sprintf("that installs %s and applies %s to the site's sources", [expected_url, based_on_text]),
 	])
 }

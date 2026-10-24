@@ -9,7 +9,6 @@
 extend-ignore-identifiers-re = ["[A-Z]{2,}_[A-Z0-9_]+"]
 
 [default.extend-words]
-musher = "musher"
 # Both spellings are standard; this one is the usual one in programming prose.
 unparseable = "unparseable"
 

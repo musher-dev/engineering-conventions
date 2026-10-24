@@ -119,6 +119,8 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-11](configuration/suppressions.md#conf-11) | Every entry in a .trivyignore has an expiry within the term and a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-12](configuration/suppressions.md#conf-12) | Every entry in a .gitleaksignore has a rationale above it | EC-0012 | proposed | warning | conftest |
 | [CONF-13](configuration/tool-configuration.md#conf-13) | Every pattern in the root .gitattributes matches a file in the repository | EC-0011 | proposed | warning | conftest |
+| [CONF-14](configuration/tool-configuration.md#conf-14) | A .config/ subdirectory is a registered concern | EC-0011 | proposed | warning | conftest |
+| [CONF-15](configuration/tool-configuration.md#conf-15) | A known tool's configuration sits in its tool's concern | EC-0011 | proposed | warning | conftest |
 | [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
 | [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
 | [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |

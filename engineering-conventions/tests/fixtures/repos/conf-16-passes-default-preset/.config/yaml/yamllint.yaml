@@ -1,0 +1,8 @@
+extends: default
+
+rules:
+  # GitHub Actions requires the key `on:`, which YAML 1.1 reads as boolean true.
+  truthy:
+    check-keys: false
+  # `---` is optional in single-document files.
+  document-start: disable

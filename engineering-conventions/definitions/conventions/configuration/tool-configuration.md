@@ -177,7 +177,8 @@ searching can pick up a stray file from anywhere on its path. This convention gi
 This convention covers the repository root and the `.config/` directory. A repository that keeps no tool
 configuration meets every requirement. Where a tool's *version* is pinned is a separate question; this convention
 decides only where its configuration lives and how the tool is pointed at it. What a configuration *contains* belongs
-to the tool, except the suppressions governed by [EC-0012](suppressions.md).
+to the tool, except how strict it is ([EC-0044](tool-strictness.md)) and its suppressions
+([EC-0012](suppressions.md)).
 
 `.config/` is the repository's quality configuration: the linters, formatters, scanners and hooks that judge the
 whole repository, whatever product it holds. A product's language toolchain stays with the product, where that
@@ -238,7 +239,8 @@ the same files, and two people sort the next file differently. A concern this li
 to the check, so every repository spells it the same way.
 
 The file keeps its tool's usual name without the leading dot. Every caller passes the path with the tool's flag
-(`--config`, `-c`, `--ignorefile`), so nothing depends on where the tool would search.
+(`--config`, `-c`, `--ignorefile`), so nothing depends on where the tool would search. How strict each tool's
+configuration must be is set in [EC-0044 Tool strictness](tool-strictness.md).
 
 Some files must stay at the root, because their tool finds them only there or because they are the entry point
 itself. None of them is reported:

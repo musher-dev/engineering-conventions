@@ -102,7 +102,9 @@ Five rules keep `.config/` predictable:
   is suppressed inline in the code it concerns.
 
 These are the published conventions [EC-0011 Tool configuration](../engineering-conventions/definitions/conventions/configuration/tool-configuration.md)
-and [EC-0012 Suppressions](../engineering-conventions/definitions/conventions/configuration/suppressions.md), and
+and [EC-0012 Suppressions](../engineering-conventions/definitions/conventions/configuration/suppressions.md), with
+the floor each tool's configuration keeps in
+[EC-0044 Tool strictness](../engineering-conventions/definitions/conventions/configuration/tool-strictness.md), and
 `task conventions:self` checks this repository against them.
 
 There is no `.editorconfig`. Editor settings live once, in `devcontainer.json` → `customizations.vscode.settings`.

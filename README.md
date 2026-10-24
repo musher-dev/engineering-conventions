@@ -102,7 +102,7 @@ Start from the part of your repository you are working on:
 | [Branch protection](engineering-conventions/definitions/conventions/branch-protection/README.md) | `.github/rulesets/`: the ruleset that protects the default branch | EC-0041 | BRANCH-01 – BRANCH-04 |
 | [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-06 |
 | [Community files](engineering-conventions/definitions/conventions/community-files/README.md) | `.github/ISSUE_TEMPLATE/`, `.github/DISCUSSION_TEMPLATE/`, `CODEOWNERS`, `SECURITY.md` | EC-0036 | COMM-01 – COMM-08 |
-| [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files | EC-0011, EC-0012 | CONF-01 – CONF-15 |
+| [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files, how strict each tool's configuration is | EC-0011, EC-0012, EC-0044 | CONF-01 – CONF-23 |
 | [Container images](engineering-conventions/definitions/conventions/container-images/README.md) | Dockerfiles, their ignore files and compose files in `docker/` directories, `.config/docker/hadolint.yaml` | EC-0039, EC-0040, EC-0043 | IMAGE-01 – IMAGE-12 |
 | [Copy](engineering-conventions/definitions/conventions/copy/README.md) | A site's copy and the Vale config that lints it: `.config/**/vale.ini` | EC-0038 | COPY-01 – COPY-04 |
 | [Decisions](engineering-conventions/definitions/conventions/decisions/README.md) | `docs/decisions/`, the decision records | EC-0021 | DEC-01 – DEC-07 |

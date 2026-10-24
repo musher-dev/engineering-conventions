@@ -53,6 +53,7 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0041](branch-protection/default-branch-protection.md) | Default-branch protection | branch-protection | draft |
 | [EC-0042](dependencies/automated-updates.md) | Automated dependency updates | dependencies | draft |
 | [EC-0043](container-images/image-publishing.md) | Publishing container images | container-images | draft |
+| [EC-0044](configuration/tool-strictness.md) | Tool strictness | configuration | draft |
 
 ## Requirements
 
@@ -121,6 +122,14 @@ ID is permanent: it is never renumbered or reused.
 | [CONF-13](configuration/tool-configuration.md#conf-13) | Every pattern in the root .gitattributes matches a file in the repository | EC-0011 | proposed | warning | conftest |
 | [CONF-14](configuration/tool-configuration.md#conf-14) | A .config/ subdirectory is a registered concern | EC-0011 | proposed | warning | conftest |
 | [CONF-15](configuration/tool-configuration.md#conf-15) | A known tool's configuration sits in its tool's concern | EC-0011 | proposed | warning | conftest |
+| [CONF-16](configuration/tool-strictness.md#conf-16) | A yamllint configuration extends the default preset | EC-0044 | proposed | warning | conftest |
+| [CONF-17](configuration/tool-strictness.md#conf-17) | A markdownlint configuration keeps the default rules on | EC-0044 | proposed | warning | conftest |
+| [CONF-18](configuration/tool-strictness.md#conf-18) | pyright and basedpyright check types at strict or above | EC-0044 | proposed | warning | conftest |
+| [CONF-19](configuration/tool-strictness.md#conf-19) | A tsconfig.json turns strict on | EC-0044 | proposed | warning | conftest |
+| [CONF-20](configuration/tool-strictness.md#conf-20) | A Biome configuration keeps the recommended rules on | EC-0044 | proposed | warning | conftest |
+| [CONF-21](configuration/tool-strictness.md#conf-21) | A gitleaks configuration that extends keeps the default rules | EC-0044 | proposed | warning | conftest |
+| [CONF-22](configuration/tool-strictness.md#conf-22) | A tool's warnings fail the gate that runs it | EC-0044 | proposed | warning | review |
+| [CONF-23](configuration/tool-strictness.md#conf-23) | Every departure from a tool's preset carries its reason beside it | EC-0044 | proposed | warning | review |
 | [COPY-01](copy/public-copy.md#copy-01) | A repository that publishes a site has a Vale config | EC-0038 | proposed | warning | conftest |
 | [COPY-02](copy/public-copy.md#copy-02) | The Vale config installs the MusherProse package from the release the repository pins, and no package by a bare name | EC-0038 | proposed | warning | conftest |
 | [COPY-03](copy/public-copy.md#copy-03) | The Vale config applies MusherCopy and the adopted packages, and maps each template extension under [formats] | EC-0038 | proposed | warning | conftest |

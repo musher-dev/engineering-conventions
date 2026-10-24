@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-16",
+    "path": ".config/yaml/yamllint.yaml",
+    "severity": "warning"
+  }
+]

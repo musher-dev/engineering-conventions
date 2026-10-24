@@ -1,0 +1,9 @@
+{
+  // No strict: null and implicit any pass.
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "paths": { "@/*": ["./src/*"] },
+  },
+  "include": ["src/**/*.ts"],
+}

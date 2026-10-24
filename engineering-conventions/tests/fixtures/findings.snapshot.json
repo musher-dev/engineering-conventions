@@ -253,6 +253,30 @@
   "conf-15-tool-in-another-concern": [
     [".config/markdown/vale.ini", "CONF-15", "warning", ".config/markdown/vale.ini is Vale configuration, which belongs in the prose concern; move it to .config/prose/vale.ini and update its callers", true]
   ],
+  "conf-16-passes-default-preset": [],
+  "conf-16-yamllint-without-preset": [
+    [".config/yaml/yamllint.yaml", "CONF-16", "warning", "the yamllint configuration does not extend a preset, so only the rules it lists run; add `extends: default` and turn off or relax a rule beside its reason", true]
+  ],
+  "conf-17-markdownlint-default-off": [
+    [".config/markdown/markdownlint.jsonc", "CONF-17", "warning", "the markdownlint configuration sets default to false, so only the rules it names run; remove it and turn off a rule by name beside its reason", true]
+  ],
+  "conf-17-passes-cli2-default-on": [],
+  "conf-18-passes-basedpyright-default": [],
+  "conf-18-pyright-basic": [
+    ["platform-api/pyproject.toml", "CONF-18", "warning", "pyright checks types at typeCheckingMode basic, below the floor; set it to strict (or basedpyright's recommended or all) and turn off a rule beside its reason", true]
+  ],
+  "conf-19-passes-extended-strict": [],
+  "conf-19-tsconfig-not-strict": [
+    ["platform-api/apps/web/tsconfig.json", "CONF-19", "warning", "the TypeScript configuration does not turn strict on, so the compiler skips its strict checks; set compilerOptions.strict to true and turn off a strict option beside its reason", true]
+  ],
+  "conf-20-biome-recommended-off": [
+    ["biome.json", "CONF-20", "warning", "the Biome configuration sets linter.rules.recommended to false, so only the rules it names run; remove it and turn off a rule by name beside its reason", true]
+  ],
+  "conf-20-passes-recommended-by-default": [],
+  "conf-21-gitleaks-extend-without-default": [
+    [".config/security/gitleaks.toml", "CONF-21", "warning", "the gitleaks configuration has an [extend] without useDefault = true, so the default rules are dropped; set useDefault = true and allowlist a finding beside its reason", true]
+  ],
+  "conf-21-passes-default-with-allowlist": [],
   "copy-01-passes-website-with-vale-config": [],
   "copy-01-site-without-vale-config": [
     [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]

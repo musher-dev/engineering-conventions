@@ -1,82 +1,74 @@
 version: '3'
 
-# The Rego rules: format, lint, type-check and unit-test
-# engineering-conventions/checks/rego, and the OpenAPI ruleset shape OAS-02
-# asks for. The fixture-repo pass (every requirement proved against a
-# miniature repository) runs under `cli:test`, because the CLI is what feeds
-# a repository to conftest.
+# Checks: the Rego rules in engineering-conventions/checks/rego, formatted,
+# linted, type-checked and unit-tested, and the OpenAPI ruleset shape OAS-02
+# asks for, each through its tool's wrapper in taskfiles/tools/. The
+# fixture-repo pass (every requirement proved against a miniature repository)
+# runs under `cli:test`, because the CLI is what feeds a repository to
+# conftest. checks:fmt:check reports; checks:fmt:fix writes.
 
 set: [errexit, nounset, pipefail]
 
 tasks:
-  checks:fmt:
-    desc: Format the Rego rules in place with opa fmt.
-    cmds:
-      - opa fmt --write {{.REGO_DIR}}
-
   checks:fmt:check:
     desc: Fail if any Rego file is not opa fmt-formatted (lists the files).
     cmds:
-      - opa fmt --fail --list {{.REGO_DIR}}
+      - task: tool:opa:fmt:check
+
+  checks:fmt:fix:
+    desc: Format the Rego rules in place with opa fmt (files after -- narrow it).
+    cmds:
+      - task: tool:opa:fmt:fix
+        vars: {FILES: '{{.CLI_ARGS}}'}
 
   checks:lint:
     desc: Lint the Rego rules with Regal (.config/rego/regal.yaml); warnings fail.
     cmds:
-      - regal lint --config-file {{.REGAL_CONFIG}} --fail-level warning {{.REGO_DIR}}
+      - task: tool:regal
 
-  checks:check:
+  checks:compile:
     desc: Parse and type-check the Rego rules against the generated index with opa check --strict.
     cmds:
-      - opa check --strict {{.REGO_DIR}} {{.INDEX}}
+      - task: tool:opa:check
 
   checks:test:
-    desc: Run the Rego unit tests under conftest and opa; fail below {{.COVERAGE_THRESHOLD}}% coverage or on zero tests.
+    desc: Run the Rego unit tests under conftest and opa; fail below the coverage threshold or on zero tests.
     cmds:
-      # The tests under conftest's embedded OPA: consumers run the rules with
-      # conftest, so this is what catches opa and conftest drifting apart
-      # (.claude/rules/toolchain-pins.md) before a consumer does. It prints
-      # each failing test by name.
-      - conftest verify --no-color --policy {{.REGO_DIR}} --data {{.INDEX}}
-      # The same tests under the pinned opa, in one pass that also measures
-      # coverage. A failing test still fails the run and prints its name.
-      # --fail-on-empty: without it `opa test` exits 0 when it finds no tests
-      # at all, so a renamed test package or a broken glob would pass
-      # silently. --coverage-runs= skips the extra annotation passes, which
-      # only label uncovered lines in a report nothing here reads.
-      - |
-        report="$(mktemp)"
-        trap 'rm -f "${report}"' EXIT
-        opa test --fail-on-empty --coverage --coverage-runs= --threshold {{.COVERAGE_THRESHOLD}} \
-          {{.REGO_DIR}} {{.INDEX}} > "${report}"
-        coverage="$(opa eval --stdin-input --format raw 'input.coverage' < "${report}")"
-        echo "Rego coverage: ${coverage}% (threshold {{.COVERAGE_THRESHOLD}}%)"
+      - task: tool:conftest
+      - task: tool:opa:test
 
   checks:openapi:
     desc: Test that a ruleset meeting OAS-02 loads both upstream rulesets, passes clean.yaml and reports insecure.yaml.
     vars:
-      RULESET: '{{.OPENAPI_FIXTURES}}/spectral.yaml'
+      OPENAPI_FIXTURES: '{{.PRODUCT_DIR}}/tests/fixtures/openapi'
+      REPORTS:
+        sh: mktemp -d
     cmds:
+      - defer: rm -rf "{{.REPORTS}}"
       # The ruleset extends the OWASP ruleset by URL, so this needs the
       # network. A ruleset Spectral cannot load exits 2 and fails the task.
+      - task: tool:spectral
+        vars:
+          RULESET: '{{.OPENAPI_FIXTURES}}/spectral.yaml'
+          FILES: '{{.OPENAPI_FIXTURES}}/clean.yaml'
+          REPORT: '{{.REPORTS}}/clean.json'
       - |
-        clean="$(spectral lint --quiet --format json --ruleset {{.RULESET}} {{.OPENAPI_FIXTURES}}/clean.yaml)"
-        if [[ "$(jq length <<< "${clean}")" != 0 ]]; then
-          jq -r '.[] | "clean.yaml: \(.code) at \(.path | join("."))"' <<< "${clean}" >&2
+        if [[ "$(jq length "{{.REPORTS}}/clean.json")" != 0 ]]; then
+          jq -r '.[] | "clean.yaml: \(.code) at \(.path | join("."))"' "{{.REPORTS}}/clean.json" >&2
           echo "checks:openapi: clean.yaml must pass every rule" >&2
           exit 1
         fi
+      - task: tool:spectral
+        vars:
+          RULESET: '{{.OPENAPI_FIXTURES}}/spectral.yaml'
+          FILES: '{{.OPENAPI_FIXTURES}}/insecure.yaml'
+          REPORT: '{{.REPORTS}}/insecure.json'
+          EXPECT: findings
       - |
-        status=0
-        found="$(spectral lint --quiet --format json --ruleset {{.RULESET}} {{.OPENAPI_FIXTURES}}/insecure.yaml)" \
-          || status=$?
-        if [[ "${status}" != 1 ]]; then
-          echo "checks:openapi: spectral exited ${status} on insecure.yaml, not 1 for its errors" >&2
-          exit 1
-        fi
         jq -e 'any(.[]; .code == "operation-description") and any(.[]; .code == "owasp:api2:2023-write-restricted")' \
-          <<< "${found}" > /dev/null || {
+          "{{.REPORTS}}/insecure.json" > /dev/null || {
           echo "checks:openapi: insecure.yaml must be reported by both spectral:oas and the OWASP ruleset" >&2
-          jq -c 'map(.code) | unique' <<< "${found}" >&2
+          jq -c 'map(.code) | unique' "{{.REPORTS}}/insecure.json" >&2
           exit 1
         }
         echo "checks:openapi: clean.yaml passes; spectral:oas and OWASP both report insecure.yaml"

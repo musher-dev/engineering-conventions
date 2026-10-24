@@ -1,0 +1,14 @@
+version: '3'
+
+# Prose: this repository's own documentation linted with the generated
+# MusherConventions Vale style, through taskfiles/tools/vale.Taskfile.yml. The
+# style is what `task generate` writes from definitions/terminology/.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  prose:lint:
+    desc: Lint this repository's prose with the generated MusherConventions Vale style; any alert fails.
+    cmds:
+      - task: tool:vale
+        vars: {FILES: '{{.CLI_ARGS}}'}

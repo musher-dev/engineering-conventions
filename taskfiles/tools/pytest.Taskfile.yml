@@ -1,0 +1,39 @@
+version: '3'
+
+# pytest: how the conventions CLI's test suite runs, with its coverage floor.
+# The command and the floor are written here and nowhere else (TASK-26);
+# cli:test calls it. It runs through UV_RUN with
+# `dir: engineering-conventions` so pytest finds its configuration in the
+# product's pyproject.toml (see taskfiles/tools/ruff.Taskfile.yml for why the
+# dir is relative). The suite runs every fixture repository through the
+# launcher and reads the repository's own pins, so its sources are every file
+# but the ones only a run writes; the run is skipped while they are unchanged
+# since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:pytest:
+    desc: Run the CLI's pytest suite with branch coverage and its floor.
+    dir: engineering-conventions
+    method: checksum
+    vars:
+      # Measured at 91% branch coverage when the floor was set; raise it as
+      # coverage rises, never lower it to let a change through.
+      COVERAGE_FLOOR: 89
+    sources:
+      - ../**/*
+      - exclude: ../.git/**/*
+      - exclude: ../.task/**/*
+      - exclude: ../dist/**/*
+      - exclude: '**/.venv/**/*'
+      - exclude: '**/__pycache__/**/*'
+      - exclude: '**/.pytest_cache/**/*'
+      - exclude: '**/.ruff_cache/**/*'
+      - exclude: '**/.coverage'
+    cmds:
+      # Coverage is measured here, not in addopts, so running one test stays
+      # fast and never fails on the floor.
+      - >-
+        {{.UV_RUN}} pytest --cov=conventions_tools --cov-branch
+        --cov-report=term-missing:skip-covered --cov-fail-under={{.COVERAGE_FLOOR}}

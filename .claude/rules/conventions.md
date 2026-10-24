@@ -44,6 +44,6 @@ as a public API.
 | --- | --- |
 | Frontmatter shape, profiles, decisions | `task schemas:validate` |
 | Decision records' names, numbers, links, sections and index | `task conventions:self` (DEC) |
-| IDs unique and append-only, one heading each, families registered | `task invariants` |
+| IDs unique and append-only, one heading each, families registered | `task cli:invariants` |
 | Generated files current | `task generate:check` |
 | Breaking change carries `!` | Review, with the PR template's Consumer impact section |

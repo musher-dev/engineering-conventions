@@ -12,9 +12,14 @@
 # Local overrides: .config/lefthook-local.yml (gitignored) is auto-merged.
 # Debug: lefthook run pre-commit | lefthook dump | lefthook validate
 #
-# Every job calls the same tool, with the same explicit config path, as the
-# task named in its fail_text; CI runs those tasks. The hooks are the early
-# copy of the gate, never a different gate.
+# Every job runs a task, never a tool binary (HOOKS-15): the binary, its
+# config path and its flags are written once, in the tool's wrapper under
+# taskfiles/tools/, and CI runs the same tasks. The hooks are the early copy
+# of the gate, never a different gate. A job on the staged files passes them
+# after `--`: lefthook shell-quotes each name and Task hands them on quoted,
+# so a name with a space or a quote survives, and a run given files is never
+# skipped by Task's cache. The one exception is the commit-msg job, which runs
+# committed itself because COMMIT-03 reads that command in this file.
 
 assert_lefthook_installed: true
 
@@ -40,43 +45,45 @@ pre-commit:
   jobs:
     - name: gitleaks
       # No glob: a secret can land in any file type.
-      run: gitleaks git --pre-commit --staged --redact --no-banner --config .config/security/gitleaks.toml
+      run: task secrets:scan:staged
       fail_text: >-
         A staged change looks like a secret. Remove it from the commit; never
         allowlist a real one. Full scan: 'task secrets:scan'.
 
     - name: markdown
       glob: "**/*.md"
-      # Same exclusions, and reasons, as MD_PATHSPEC in taskfiles/lint.Taskfile.yml.
+      # Same exclusions, and reasons, as the PATHSPEC in
+      # taskfiles/tools/markdownlint.Taskfile.yml.
       exclude:
         - "CHANGELOG.md"
         - ".github/pull_request_template.md"
         - "engineering-conventions/tests/fixtures/**"
-      run: markdownlint-cli2 --config .config/markdown/markdownlint.jsonc --fix {staged_files}
+      run: task lint:md:fix -- {staged_files}
       stage_fixed: true
       fail_text: "Markdown lint failed on what --fix cannot repair. Run 'task lint:md' for the report."
 
     - name: yaml
       glob: "**/*.{yml,yaml}"
-      # Same exclusion, and reason, as YAML_PATHSPEC in taskfiles/lint.Taskfile.yml.
+      # Same exclusion, and reason, as the PATHSPEC in
+      # taskfiles/tools/yamllint.Taskfile.yml.
       exclude:
         - "engineering-conventions/tests/fixtures/**"
-      run: yamllint -c .config/yaml/yamllint.yaml --strict {staged_files}
+      run: task lint:yaml -- {staged_files}
       fail_text: "YAML lint failed. Run 'task lint:yaml'; the rules are in .config/yaml/yamllint.yaml."
 
     - name: toml
       glob: "**/*.toml"
-      # Same exclusion, and reason, as TOML_PATHSPEC in taskfiles/lint.Taskfile.yml.
+      # Same exclusion, and reason, as the PATHSPEC in
+      # taskfiles/tools/taplo.Taskfile.yml.
       exclude:
         - "engineering-conventions/tests/fixtures/**"
-      run: taplo fmt --config .config/toml/taplo.toml {staged_files}
+      run: task lint:toml:fix -- {staged_files}
       stage_fixed: true
       fail_text: "taplo could not format a staged TOML file (a parse error). Run 'task lint:toml'."
 
     - name: spelling
-      # No glob: a typo can land in any file type. --force-exclude makes the
-      # config's excludes hold for files passed by name.
-      run: typos --config .config/spelling/typos.toml --force-exclude {staged_files}
+      # No glob: a typo can land in any file type.
+      run: task lint:spelling -- {staged_files}
       fail_text: >-
         Spelling check failed. Fix the word, or add a reasoned entry to
         .config/spelling/typos.toml. Run 'task lint:spelling'.
@@ -85,18 +92,20 @@ pre-commit:
       glob:
         - "**/*.sh"
         - "engineering-conventions/bin/*"
-      # report.jq is the launcher's jq program, not a shell script.
+      # The launcher's jq programs are not shell scripts; the same files as
+      # the PATHSPEC in taskfiles/tools/shellcheck.Taskfile.yml.
       exclude:
         - "engineering-conventions/bin/*.jq"
-      run: shellcheck -x -P SCRIPTDIR {staged_files}
+      run: task lint:shell -- {staged_files}
       fail_text: "ShellCheck failed. Run 'task lint:shell'."
 
     - name: dockerfile
       glob: "**/{Dockerfile,*.Dockerfile}"
-      # Same exclusion, and reason, as DOCKERFILE_PATHSPEC in Taskfile.yml.
+      # Same exclusion, and reason, as the PATHSPEC in
+      # taskfiles/tools/hadolint.Taskfile.yml.
       exclude:
         - "engineering-conventions/tests/fixtures/**"
-      run: hadolint --config .config/docker/hadolint.yaml {staged_files}
+      run: task lint:docker -- {staged_files}
       fail_text: "hadolint found a problem in a staged Dockerfile. Run 'task lint:docker'."
 
     - name: actions
@@ -109,66 +118,37 @@ pre-commit:
 
     - name: rego-fmt
       glob: "**/*.rego"
-      run: opa fmt --write {staged_files}
+      run: task checks:fmt:fix -- {staged_files}
       stage_fixed: true
       fail_text: "opa fmt could not format a staged Rego file (a parse error). Run 'task checks:fmt:check'."
 
     - name: rego-lint
       glob: "**/*.rego"
-      run: task checks:lint checks:check
-      fail_text: "Rego lint or type-check failed. Run 'task checks:lint checks:check'."
+      run: task checks:lint checks:compile
+      fail_text: "Rego lint or type-check failed. Run 'task checks:lint checks:compile'."
 
-    # The content schemas run as a whole, through the task: their files go
-    # through yq first, which a staged-file list cannot reproduce.
+    # The schemas run as a whole, through the task: the content goes through
+    # yq first, which a staged-file list cannot reproduce, and each file is
+    # matched to its schema there. The task is skipped while nothing it
+    # validates has changed since it last passed.
     - name: schemas
       glob:
-        - "engineering-conventions/checks/schemas/*.json"
+        - "engineering-conventions/checks/schemas/**/*.json"
         - "engineering-conventions/definitions/terminology/**/*.yml"
         - "engineering-conventions/definitions/profiles/*.yml"
         - "engineering-conventions/definitions/conventions/**/*.{md,yml}"
+        - "engineering-conventions/definitions/copy/*.yml"
+        - "engineering-conventions/definitions/environment/*.yml"
         - "docs/decisions/*.md"
         - ".repo/*.toml"
+        - ".github/workflows/*.{yml,yaml}"
+        - ".github/actions/*/action.{yml,yaml}"
+        - ".github/dependabot.yml"
+        - ".github/ISSUE_TEMPLATE/*.yml"
+        - "Taskfile.yml"
+        - "taskfiles/**/*.yml"
       run: task schemas:check schemas:validate
       fail_text: "Schema validation failed. Run 'task schemas:check schemas:validate'."
-
-    # GitHub and Task configuration is checked against check-jsonschema's
-    # built-in schemas, file by file, so these run on the staged files only:
-    # the same tool and schema as the matching step of `task schemas:validate`.
-    - name: workflow-schemas
-      glob: ".github/workflows/*.{yml,yaml}"
-      run: >-
-        check-jsonschema --builtin-schema vendor.github-workflows {staged_files} &&
-        check-jsonschema --builtin-schema custom.github-workflows-require-timeout {staged_files}
-      fail_text: "A workflow fails its schema. Run 'task schemas:validate'."
-
-    - name: action-schemas
-      glob: ".github/actions/*/action.{yml,yaml}"
-      run: check-jsonschema --builtin-schema vendor.github-actions {staged_files}
-      fail_text: "A composite action fails its schema. Run 'task schemas:validate'."
-
-    - name: dependabot-schema
-      glob: ".github/dependabot.yml"
-      run: check-jsonschema --builtin-schema vendor.dependabot {staged_files}
-      fail_text: "The Dependabot config fails its schema. Run 'task schemas:validate'."
-
-    - name: issue-form-schemas
-      glob: ".github/ISSUE_TEMPLATE/*.yml"
-      exclude:
-        - ".github/ISSUE_TEMPLATE/config.yml"
-      run: check-jsonschema --builtin-schema vendor.github-issue-forms {staged_files}
-      fail_text: "An issue form fails its schema. Run 'task schemas:validate'."
-
-    - name: issue-config-schema
-      glob: ".github/ISSUE_TEMPLATE/config.yml"
-      run: check-jsonschema --builtin-schema vendor.github-issue-config {staged_files}
-      fail_text: "The issue template config fails its schema. Run 'task schemas:validate'."
-
-    - name: taskfile-schemas
-      glob:
-        - "Taskfile.yml"
-        - "taskfiles/*.yml"
-      run: check-jsonschema --builtin-schema vendor.taskfile {staged_files}
-      fail_text: "A Taskfile fails its schema. Run 'task schemas:validate'."
 
     - name: generate
       # The generated files are outputs, never staged inputs, so stage_fixed
@@ -197,7 +177,7 @@ pre-commit:
         - "AGENTS.md"
         - "docs/**/*.md"
         - "engineering-conventions/definitions/conventions/**/*.md"
-      run: vale --config .config/markdown/vale.ini {staged_files}
+      run: task prose:lint -- {staged_files}
       fail_text: "Prose lint failed against the MusherConventions style. Run 'task prose:lint'."
 
 # A merge commit's generated message is not a Conventional Commit, and a

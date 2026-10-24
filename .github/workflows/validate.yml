@@ -81,7 +81,7 @@ jobs:
             pipx:yamllint aqua:tamasfe/taplo aqua:crate-ci/typos aqua:koalaman/shellcheck
             aqua:hadolint/hadolint
       - name: Lint Markdown, YAML, TOML, spelling, shell scripts and Dockerfiles
-        run: task lint
+        run: task lint:md lint:yaml lint:toml lint:spelling lint:shell lint:docker
 
   repository_secrets:
     name: Repository / Secrets
@@ -137,7 +137,7 @@ jobs:
             aqua:open-policy-agent/opa aqua:open-policy-agent/regal
             aqua:stoplightio/spectral aqua:mikefarah/yq aqua:jqlang/jq
       - name: Check, lint and test the Rego rules and the OpenAPI ruleset
-        run: task checks:fmt:check checks:lint checks:check checks:test checks:openapi
+        run: task checks:fmt:check checks:lint checks:compile checks:test checks:openapi
 
   content:
     name: Content
@@ -191,7 +191,7 @@ jobs:
             ${{ github.event.pull_request.base.sha
             || github.event.merge_group.base_sha
             || github.event.before }}
-        run: task invariants BASELINE="$BASELINE"
+        run: task cli:invariants BASELINE="$BASELINE"
 
   conventions:
     name: Conventions / Self

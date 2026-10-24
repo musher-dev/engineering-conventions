@@ -65,6 +65,12 @@ test_conf_01_root_configs if {
 	}
 }
 
+test_conf_01_terraform_tools if {
+	paths := array.concat(conforming_files, [".tflint.hcl", ".terraform-docs.yml"])
+	found := config.findings with input as repo(paths, {".config/README.md": index_text}, [taskfile])
+	ids_at(found) == {["CONF-01", ".tflint.hcl"], ["CONF-01", ".terraform-docs.yml"]}
+}
+
 test_conf_01_only_at_the_root if {
 	paths := array.concat(conforming_files, ["docs/.markdownlint.jsonc"])
 	count(config.findings) == 0 with input as repo(paths, {".config/README.md": index_text}, [taskfile])
@@ -339,8 +345,8 @@ test_conf_14_unregistered_concern if {
 	ids_at(found) == {["CONF-14", ".config/linters"]}
 	messages(found, "CONF-14") == {concat(" ", [
 		".config/linters/ is not a registered concern; name the directory for the files its tool reads",
-		"(actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml,",
-		"typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security,",
+		"(actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, terraform,",
+		"toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security,",
 		"spelling)",
 	])}
 }
@@ -389,4 +395,26 @@ test_conf_15_ignores_mise_locks_and_other_names if {
 	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/yaml/"]})]
 	index := {".config/README.md": concat("", [index_text, "`yaml/`"])}
 	count(config.findings) == 0 with input as repo(paths, index, docs)
+}
+
+# tflint and terraform-docs read .tf files whichever CLI applies them, so
+# either terraform/ or opentofu/ holds them.
+test_conf_15_terraform_tools_in_either_concern if {
+	extra := [".config/terraform/tflint.hcl", ".config/opentofu/terraform-docs.yml"]
+	paths := array.concat(conforming_files, extra)
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/terraform/", ".config/opentofu/"]})]
+	index := {".config/README.md": concat("", [index_text, "`terraform/` `opentofu/`"])}
+	count(config.findings) == 0 with input as repo(paths, index, docs)
+}
+
+test_conf_15_terraform_tool_elsewhere if {
+	paths := array.concat(conforming_files, [".config/yaml/.tflint.hcl"])
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/"]})]
+	index := {".config/README.md": concat("", [index_text, "`yaml/`"])}
+	found := config.findings with input as repo(paths, index, docs)
+	ids_at(found) == {["CONF-15", ".config/yaml/.tflint.hcl"], ["CONF-05", ".config/yaml/.tflint.hcl"]}
+	messages(found, "CONF-15") == {concat(" ", [
+		".config/yaml/.tflint.hcl is tflint configuration, which belongs in the terraform or opentofu concern;",
+		"move it to .config/terraform/tflint.hcl and update its callers",
+	])}
 }

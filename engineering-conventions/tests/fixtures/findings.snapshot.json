@@ -229,7 +229,7 @@
     [".config/markdownlint.jsonc", "CONF-07", "warning", ".config/markdownlint.jsonc sits at the top level of .config/, which holds only README.md, lefthook.yml and lefthook-local.yml; move it to .config/<concern>/markdownlint.jsonc", true]
   ],
   "conf-08-program": [
-    [".config/scripts", "CONF-14", "warning", ".config/scripts/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true],
+    [".config/scripts", "CONF-14", "warning", ".config/scripts/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, terraform, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true],
     [".config/scripts/banner.sh", "CONF-08", "warning", ".config/scripts/banner.sh is a program, and .config/ holds only declarations; move it beside what runs it, such as a scripts/ directory", true]
   ],
   "conf-09-missing-path": [
@@ -254,10 +254,15 @@
     [".gitattributes", "CONF-13", "warning", "line 5: the pattern /env.schema.yaml matches no file in the repository, so its attributes apply to nothing; point it at the files it is meant for, or delete the line", true]
   ],
   "conf-14-passes-registered-concerns": [],
+  "conf-14-passes-terraform-concern": [],
   "conf-14-unregistered-concern": [
-    [".config/linters", "CONF-14", "warning", ".config/linters/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true]
+    [".config/linters", "CONF-14", "warning", ".config/linters/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, terraform, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true]
   ],
+  "conf-15-passes-terraform-tools-in-opentofu": [],
   "conf-15-passes-tools-in-their-concerns": [],
+  "conf-15-tflint-in-another-concern": [
+    [".config/yaml/tflint.hcl", "CONF-15", "warning", ".config/yaml/tflint.hcl is tflint configuration, which belongs in the terraform or opentofu concern; move it to .config/terraform/tflint.hcl and update its callers", true]
+  ],
   "conf-15-tool-in-another-concern": [
     [".config/markdown/vale.ini", "CONF-15", "warning", ".config/markdown/vale.ini is Vale configuration, which belongs in the prose concern; move it to .config/prose/vale.ini and update its callers", true]
   ],

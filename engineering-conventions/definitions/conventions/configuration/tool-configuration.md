@@ -228,7 +228,7 @@ one list, kept in the check (CONF-14):
 
 | Kind | Concerns |
 | --- | --- |
-| The files a tool reads | `actions`, `commits`, `docker`, `json`, `markdown`, `openapi`, `opentofu`, `python`, `rego`, `shell`, `sql`, `toml`, `typescript`, `yaml` |
+| The files a tool reads | `actions`, `commits`, `docker`, `json`, `markdown`, `openapi`, `opentofu`, `python`, `rego`, `shell`, `sql`, `terraform`, `toml`, `typescript`, `yaml` |
 | What a tool that reads every file looks for | `prose`, `security`, `spelling` |
 | Where the tool itself looks | `mise` |
 
@@ -264,8 +264,8 @@ itself. None of them is reported:
 A configuration at the root works because the tool searches for it there, and so does the next one, until the root is
 a list of dotfiles and nobody can tell which are required. The check reports a root file that a known tool searches
 for: markdownlint, yamllint, codespell, typos, actionlint, zizmor, Prettier, ESLint, Stylelint, ShellCheck, hadolint,
-gitleaks, Trivy, Vale, Regal, Taplo, Ruff and lychee. Move the file to `.config/<concern>/`, drop its leading dot, and
-pass the new path from every caller.
+gitleaks, Trivy, Vale, Regal, Taplo, Ruff, lychee, tflint and terraform-docs. Move the file to `.config/<concern>/`,
+drop its leading dot, and pass the new path from every caller.
 
 **Correct:**
 
@@ -577,10 +577,12 @@ own:
 | Taplo | `toml` |
 | committed | `commits` |
 | Spectral | `openapi` |
+| tflint, terraform-docs | `terraform` or `opentofu` |
 
-zizmor is a security audit, but it reads only workflows and actions, so it sits in `actions/`. The tool list is kept
-in the check, like CONF-01's. A tool it does not name is placed by the rule in [the layout](#the-layout) and judged
-only by CONF-14.
+zizmor is a security audit, but it reads only workflows and actions, so it sits in `actions/`. tflint and
+terraform-docs read `.tf` files whichever CLI applies them, so either concern holds them: `terraform/`, or `opentofu/`
+in a repository that applies its configuration with OpenTofu. The tool list is kept in the check, like CONF-01's. A
+tool it does not name is placed by the rule in [the layout](#the-layout) and judged only by CONF-14.
 
 **Correct:**
 

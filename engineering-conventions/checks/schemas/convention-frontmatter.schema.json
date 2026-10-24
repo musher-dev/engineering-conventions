@@ -147,6 +147,10 @@
           "$ref": "common.schema.json#/definitions/version"
         },
         "validation": { "$ref": "#/definitions/validation" },
+        "waivable": {
+          "description": "false when no waiver may suppress the requirement's findings: a waiver naming it is itself reported (ADOPT-06). Omitted, a requirement is waivable unless its family never is (ADOPT). Only false is meaningful, so true is not accepted.",
+          "const": false
+        },
         "aliases": {
           "description": "Identifiers this requirement had elsewhere, as <repository-short-name>:<id>, e.g. platform:CI-14, or platform:CI-13b for one part of a check that did several things.",
           "type": "array",

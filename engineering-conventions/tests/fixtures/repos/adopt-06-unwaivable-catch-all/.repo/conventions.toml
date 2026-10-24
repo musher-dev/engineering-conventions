@@ -1,0 +1,10 @@
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
+
+[[waivers]]
+requirement = "COMM-09"
+reason = "Every change is reviewed by the maintainers until the team grows."
+tracking = "https://github.com/musher-dev/engineering-conventions/issues/1"
+expires = "2026-12-01"

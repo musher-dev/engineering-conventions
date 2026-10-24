@@ -130,6 +130,28 @@ jobs:
       - name: Scan the history for secrets
         run: task secrets:scan
 
+  # GitHub's own answer on whether every CODEOWNERS owner exists and has
+  # write access (COMM-11, decision 0041). It changes when a team does, with
+  # no file here changing, so this job never skips on a pass marker.
+  codeowners:
+    name: Repository / Code Owners
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-tools
+        with:
+          install-args: aqua:go-task/task aqua:jqlang/jq
+      # The pull request's head commit, which GitHub has for a fork's pull
+      # request too; on a push or merge-group run, the commit under test.
+      - name: Ask GitHub whether every CODEOWNERS owner resolves
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: task conventions:codeowners REF="$REF"
+
   workflows:
     name: Workflows
     runs-on: ubuntu-24.04
@@ -325,6 +347,7 @@ jobs:
       - detect
       - repository_lint
       - repository_secrets
+      - codeowners
       - workflows
       - checks
       - content

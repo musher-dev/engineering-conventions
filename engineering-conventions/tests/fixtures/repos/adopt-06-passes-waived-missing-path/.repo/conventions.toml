@@ -1,0 +1,13 @@
+profile = "base-repo"
+
+[conventions]
+version = "0.1.0"
+
+# COMM-10, beside the unwaivable COMM-09 in the same convention, can be
+# waived: the waiver suppresses its finding and is in use.
+[[waivers]]
+requirement = "COMM-10"
+paths = [".github/CODEOWNERS"]
+reason = "The web product moves into this repository with the next import."
+tracking = "https://github.com/musher-dev/engineering-conventions/issues/1"
+expires = "2026-12-01"

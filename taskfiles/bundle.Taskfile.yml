@@ -135,11 +135,13 @@ tasks:
         # report with report.jq; `conventions openapi` finds consumers'
         # documents with openapi.jq (decision 0023); `conventions check` and
         # `conventions env-contract` derive with env-contract.jq (decision 0026);
-        # `conventions waivers` lists the declaration's waivers with waivers.jq.
+        # `conventions waivers` lists the declaration's waivers with waivers.jq;
+        # `conventions codeowners` turns GitHub's CODEOWNERS errors into
+        # findings with codeowners.jq (decision 0041).
         # `conventions check` finds the files a binding is mirrored_in with
         # mirrors.jq (ENVS-34).
         for shipped in bin/inventory.jq bin/report.jq bin/openapi.jq bin/env-contract.jq bin/waivers.jq \
-          bin/mirrors.jq; do
+          bin/mirrors.jq bin/codeowners.jq; do
           tar -tzf "{{.TARBALL}}" "engineering-conventions/${shipped}" > /dev/null 2>&1 \
             || fail "engineering-conventions/${shipped} is missing"
         done

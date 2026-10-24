@@ -21,13 +21,14 @@ It delegates to industry definitions where they exist: SchemaStore's schemas for
 
 The `base-repo` profile selects the family, so every repository is checked. Every repository has a CODEOWNERS
 (COMM-08); each other file is checked only where the repository has one, and a repository without its own security
-policy relies on its organization's, which Scorecard judges (COMM-06).
+policy relies on its organization's, which Scorecard judges (COMM-06). Whether each CODEOWNERS owner resolves needs
+GitHub's API, so the repository asks it with `conventions codeowners` in its own validation (COMM-11).
 
 ## Reading order
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0036 Community files](community-files.md) | COMM-01 – COMM-10 | Issue forms and the template chooser, CODEOWNERS as a selective gate, the security policy, discussion forms |
+| [EC-0036 Community files](community-files.md) | COMM-01 – COMM-11 | Issue forms and the template chooser, CODEOWNERS as a selective gate, the security policy, discussion forms |
 
 ## Quick reference
 
@@ -35,6 +36,6 @@ policy relies on its organization's, which Scorecard judges (COMM-06).
 | --- | --- | --- |
 | Issue forms | `.github/ISSUE_TEMPLATE/*.yml` | SchemaStore `github-issue-forms.json` (COMM-01) |
 | Template chooser | `.github/ISSUE_TEMPLATE/config.yml`, setting `blank_issues_enabled` | SchemaStore `github-issue-config.json` (COMM-02) |
-| Code owners | `.github/CODEOWNERS`, the only copy, in every repository | GitHub's documented syntax (COMM-03, COMM-04); present (COMM-08); no catch-all (COMM-09); every root-anchored path exists (COMM-10) |
+| Code owners | `.github/CODEOWNERS`, the only copy, in every repository | GitHub's documented syntax (COMM-03, COMM-04); present (COMM-08); no catch-all, never waived (COMM-09); every root-anchored path exists (COMM-10); every owner resolves on GitHub (COMM-11) |
 | Security policy | `SECURITY.md` at the root, in `.github/` or in `docs/`, else the organization's | A reporting heading (COMM-05); Scorecard Security-Policy at 10 (COMM-06) |
 | Discussion forms | `.github/DISCUSSION_TEMPLATE/<category-slug>.yml` | SchemaStore `github-discussion.json` (COMM-07) |

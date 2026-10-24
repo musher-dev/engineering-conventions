@@ -55,6 +55,9 @@ class Requirement:
     replaced_by: tuple[str, ...]
     convention: str
     path: str
+    # False when the frontmatter says `waivable: false`; the generated index
+    # also makes every requirement of a never-waivable family unwaivable.
+    waivable: bool = True
 
     @property
     def family(self) -> str:
@@ -233,6 +236,7 @@ def _requirement(data: dict[str, object], convention: str, path: str) -> Require
         replaced_by=get_str_list(data, "replaced_by"),
         convention=convention,
         path=path,
+        waivable=data.get("waivable") is not False,
     )
 
 

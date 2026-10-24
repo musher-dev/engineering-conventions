@@ -20,8 +20,13 @@
   "adopt-05-waiver-too-long": [
     [".repo/conventions.toml", "ADOPT-05", "warning", "waiver 1 (GHA-07) expires on 2027-06-01, more than 180 days away; set expires to 2027-03-22 or earlier and renew it if the work is still open then", true]
   ],
+  "adopt-06-passes-waived-missing-path": [],
   "adopt-06-stale-waiver": [
     [".repo/conventions.toml", "ADOPT-06", "warning", "waiver 1 (GHA-08) matches no finding, so it suppresses nothing; delete it", true]
+  ],
+  "adopt-06-unwaivable-catch-all": [
+    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; delete it and own only /.github/, /.repo/ and the paths whose change needs that review (to have every change reviewed, require approvals in the ruleset instead; no waiver suppresses this)", true],
+    [".repo/conventions.toml", "ADOPT-06", "warning", "waiver 1 (COMM-09) names a requirement that cannot be waived; delete it", true]
   ],
   "adopt-07-unknown-profile": [
     [".repo/conventions.toml", "ADOPT-07", "warning", "profile \"base-repository\" is not defined by this release, so service applies instead; use one of \"base-repo\", \"content\", \"documentation\", \"infrastructure\", \"library\", \"service\", \"specification\", \"template\", \"tool\", \"website\"", true]
@@ -170,7 +175,7 @@
     ["CODEOWNERS", "COMM-03", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true]
   ],
   "comm-09-catch-all": [
-    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; own only /.github/, /.repo/ and the paths whose change needs that review, or record a waiver in .repo/conventions.toml", true]
+    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; delete it and own only /.github/, /.repo/ and the paths whose change needs that review (to have every change reviewed, require approvals in the ruleset instead; no waiver suppresses this)", true]
   ],
   "comm-09-passes-narrow-globs": [],
   "comm-10-missing-path": [
@@ -229,7 +234,7 @@
     [".config/markdownlint.jsonc", "CONF-07", "warning", ".config/markdownlint.jsonc sits at the top level of .config/, which holds only README.md, lefthook.yml and lefthook-local.yml; move it to .config/<concern>/markdownlint.jsonc", true]
   ],
   "conf-08-program": [
-    [".config/scripts", "CONF-14", "warning", ".config/scripts/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true],
+    [".config/scripts", "CONF-14", "warning", ".config/scripts/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, terraform, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true],
     [".config/scripts/banner.sh", "CONF-08", "warning", ".config/scripts/banner.sh is a program, and .config/ holds only declarations; move it beside what runs it, such as a scripts/ directory", true]
   ],
   "conf-09-missing-path": [
@@ -254,10 +259,15 @@
     [".gitattributes", "CONF-13", "warning", "line 5: the pattern /env.schema.yaml matches no file in the repository, so its attributes apply to nothing; point it at the files it is meant for, or delete the line", true]
   ],
   "conf-14-passes-registered-concerns": [],
+  "conf-14-passes-terraform-concern": [],
   "conf-14-unregistered-concern": [
-    [".config/linters", "CONF-14", "warning", ".config/linters/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true]
+    [".config/linters", "CONF-14", "warning", ".config/linters/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, terraform, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true]
   ],
+  "conf-15-passes-terraform-tools-in-opentofu": [],
   "conf-15-passes-tools-in-their-concerns": [],
+  "conf-15-tflint-in-another-concern": [
+    [".config/yaml/tflint.hcl", "CONF-15", "warning", ".config/yaml/tflint.hcl is tflint configuration, which belongs in the terraform or opentofu concern; move it to .config/terraform/tflint.hcl and update its callers", true]
+  ],
   "conf-15-tool-in-another-concern": [
     [".config/markdown/vale.ini", "CONF-15", "warning", ".config/markdown/vale.ini is Vale configuration, which belongs in the prose concern; move it to .config/prose/vale.ini and update its callers", true]
   ],

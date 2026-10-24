@@ -181,13 +181,13 @@ findings contains lib.finding("CONF-15", path, message) if {
 	count(parts) > 2
 	some tool in concern_tools
 	regex.match(tool.pattern, files.basename(path))
-	parts[1] != tool.concern
+	not parts[1] in tool.concerns
 	message := sprintf(
 		concat(" ", [
 			"%s is %s configuration, which belongs in the %s concern;",
 			"move it to .config/%s/%s and update its callers",
 		]),
-		[path, tool.tool, tool.concern, tool.concern, trim_left(files.basename(path), "._")],
+		[path, tool.tool, concat(" or ", tool.concerns), tool.concerns[0], trim_left(files.basename(path), "._")],
 	)
 }
 
@@ -202,7 +202,7 @@ concerns_in_use contains parts[1] if {
 # reads every file is named for what it looks for; mise is where mise looks.
 file_concerns := {
 	"actions", "commits", "docker", "json", "markdown", "openapi", "opentofu",
-	"python", "rego", "shell", "sql", "toml", "typescript", "yaml",
+	"python", "rego", "shell", "sql", "terraform", "toml", "typescript", "yaml",
 }
 
 whole_repository_concerns := {"prose", "security", "spelling"}
@@ -210,23 +210,27 @@ whole_repository_concerns := {"prose", "security", "spelling"}
 registered_concerns := (file_concerns | whole_repository_concerns) | {"mise"}
 
 # Each known tool's configuration file, by name with or without a leading dot
-# or underscore, and the concern it belongs in.
+# or underscore, and the concerns it may sit in, the one to suggest first. A
+# tool that reads .tf files whichever CLI applies them (tflint, terraform-docs)
+# may sit in terraform/ or opentofu/.
 concern_tools := [
-	{"tool": "Vale", "concern": "prose", "pattern": `^[._]?vale\.ini$`},
-	{"tool": "gitleaks", "concern": "security", "pattern": `^\.?gitleaks(\.toml|ignore)$`},
-	{"tool": "Trivy", "concern": "security", "pattern": `^\.?trivy(ignore(\.ya?ml)?|\.ya?ml)$`},
-	{"tool": "typos", "concern": "spelling", "pattern": `^[._]?typos\.toml$`},
-	{"tool": "codespell", "concern": "spelling", "pattern": `^\.?codespell(rc|\.cfg)$`},
-	{"tool": "cspell", "concern": "spelling", "pattern": `^\.?cspell(\.config)?\.(jsonc?|ya?ml)$`},
-	{"tool": "yamllint", "concern": "yaml", "pattern": `^\.?yamllint(\.ya?ml)?$`},
-	{"tool": "markdownlint", "concern": "markdown", "pattern": `^\.?markdownlint(-cli2)?\.(jsonc?|ya?ml)$`},
-	{"tool": "actionlint", "concern": "actions", "pattern": `^\.?actionlint\.ya?ml$`},
-	{"tool": "zizmor", "concern": "actions", "pattern": `^\.?zizmor\.ya?ml$`},
-	{"tool": "hadolint", "concern": "docker", "pattern": `^\.?hadolint\.ya?ml$`},
-	{"tool": "Regal", "concern": "rego", "pattern": `^\.?regal\.ya?ml$`},
-	{"tool": "Taplo", "concern": "toml", "pattern": `^\.?taplo\.toml$`},
-	{"tool": "committed", "concern": "commits", "pattern": `^\.?committed\.toml$`},
-	{"tool": "Spectral", "concern": "openapi", "pattern": `^\.?spectral\.(ya?ml|json)$`},
+	{"tool": "Vale", "concerns": ["prose"], "pattern": `^[._]?vale\.ini$`},
+	{"tool": "gitleaks", "concerns": ["security"], "pattern": `^\.?gitleaks(\.toml|ignore)$`},
+	{"tool": "Trivy", "concerns": ["security"], "pattern": `^\.?trivy(ignore(\.ya?ml)?|\.ya?ml)$`},
+	{"tool": "typos", "concerns": ["spelling"], "pattern": `^[._]?typos\.toml$`},
+	{"tool": "codespell", "concerns": ["spelling"], "pattern": `^\.?codespell(rc|\.cfg)$`},
+	{"tool": "cspell", "concerns": ["spelling"], "pattern": `^\.?cspell(\.config)?\.(jsonc?|ya?ml)$`},
+	{"tool": "yamllint", "concerns": ["yaml"], "pattern": `^\.?yamllint(\.ya?ml)?$`},
+	{"tool": "markdownlint", "concerns": ["markdown"], "pattern": `^\.?markdownlint(-cli2)?\.(jsonc?|ya?ml)$`},
+	{"tool": "actionlint", "concerns": ["actions"], "pattern": `^\.?actionlint\.ya?ml$`},
+	{"tool": "zizmor", "concerns": ["actions"], "pattern": `^\.?zizmor\.ya?ml$`},
+	{"tool": "hadolint", "concerns": ["docker"], "pattern": `^\.?hadolint\.ya?ml$`},
+	{"tool": "Regal", "concerns": ["rego"], "pattern": `^\.?regal\.ya?ml$`},
+	{"tool": "Taplo", "concerns": ["toml"], "pattern": `^\.?taplo\.toml$`},
+	{"tool": "committed", "concerns": ["commits"], "pattern": `^\.?committed\.toml$`},
+	{"tool": "Spectral", "concerns": ["openapi"], "pattern": `^\.?spectral\.(ya?ml|json)$`},
+	{"tool": "tflint", "concerns": ["terraform", "opentofu"], "pattern": `^\.?tflint\.hcl$`},
+	{"tool": "terraform-docs", "concerns": ["terraform", "opentofu"], "pattern": `^\.?terraform-docs\.ya?ml$`},
 ]
 
 gitattributes_path := ".gitattributes"
@@ -478,4 +482,6 @@ root_configs := {
 	"ruff.toml": "Ruff",
 	".lychee.toml": "lychee",
 	"lychee.toml": "lychee",
+	".tflint.hcl": "tflint",
+	".terraform-docs.yml": "terraform-docs",
 }

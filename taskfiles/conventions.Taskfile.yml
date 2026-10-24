@@ -4,7 +4,9 @@ version: '3'
 # as a consumer would run them, against its own declaration
 # (.repo/conventions.toml). The rules read the whole repository, so the check
 # is skipped only while no file but the ones a run writes has changed since it
-# last passed.
+# last passed. conventions:codeowners asks GitHub instead (COMM-11, decision
+# 0041); its answer changes without any file here changing, so it is never
+# skipped as unchanged.
 
 set: [errexit, nounset, pipefail]
 
@@ -27,3 +29,17 @@ tasks:
       # The same check through the launcher consumers run, so a release never
       # ships a bin/conventions that this repository has not exercised.
       - '{{.PRODUCT_DIR}}/bin/conventions check --fail-on warning'
+
+  conventions:codeowners:
+    desc: Ask GitHub whether every owner in this repository's CODEOWNERS resolves; any error fails.
+    vars:
+      # A branch, tag or commit GitHub has; empty for the default branch, since
+      # a local commit may not be pushed. CI passes the pull request's head.
+      REF: '{{.REF | default ""}}'
+    cmds:
+      - |
+        if [ -z "${CI:-}" ] && [ -z "${GH_TOKEN:-}" ] && ! gh auth status > /dev/null 2>&1; then
+          echo "conventions:codeowners: skipped: gh is not signed in (CI always runs it)"
+          exit 0
+        fi
+        {{.PRODUCT_DIR}}/bin/conventions codeowners --fail-on warning {{if .REF}}--ref {{shellQuote .REF}}{{end}}

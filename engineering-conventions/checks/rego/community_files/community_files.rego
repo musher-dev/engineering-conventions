@@ -312,8 +312,9 @@ findings contains lib.finding("COMM-09", path, message) if {
 	message := sprintf(
 		concat(" ", [
 			"line %d: the catch-all `%s` owns every path, so where a code owner's review is required every",
-			"pull request waits for %s, a bot's pin bump included; own only /.github/, /.repo/ and the",
-			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+			"pull request waits for %s, a bot's pin bump included; delete it and own only /.github/, /.repo/",
+			"and the paths whose change needs that review (to have every change reviewed, require approvals",
+			"in the ruleset instead; no waiver suppresses this)",
 		]),
 		[rule.line, rule.pattern, concat(" ", rule.owners)],
 	)

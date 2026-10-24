@@ -17,6 +17,10 @@
 # findings with --output json; any other format is conftest's own. The report
 # goes to stdout; progress goes to stderr, and only on a terminal.
 #
+# `check` never reaches the network. Two commands do, through the GitHub CLI:
+# `waivers --check-tracking`, and `codeowners`, which asks GitHub for the
+# errors it finds in the repository's CODEOWNERS (COMM-11, decision 0041).
+#
 # The repository's actual name, which REPO-07 compares with the declared one,
 # comes from --repository or CONVENTIONS_REPOSITORY, else GITHUB_REPOSITORY
 # when the checked directory is GITHUB_WORKSPACE, else the origin remote
@@ -30,6 +34,7 @@
 #   conventions env-contract [-C DIR] SCHEMA
 #   conventions env-file [-C DIR] [--force | --update] [--backup] SCHEMA
 #   conventions waivers [-C DIR] [--check-tracking]
+#   conventions codeowners [--repository OWNER/NAME] [--ref REF] [--fail-on error|warning] [--output text|json] [-C DIR]
 #   conventions version
 set -eu
 
@@ -799,6 +804,100 @@ waivers() {
   fi
 }
 
+# owner_and_name URL: OWNER/NAME from a GitHub remote URL, in any of the
+# forms remote_name reads, or nothing for a remote on another host.
+owner_and_name() {
+  url=${1%/}
+  url=${url%.git}
+  case ${url} in
+    https://github.com/*) url=${url#https://github.com/} ;;
+    git@github.com:*) url=${url#git@github.com:} ;;
+    ssh://git@github.com/*) url=${url#ssh://git@github.com/} ;;
+    *) return 0 ;;
+  esac
+  printf '%s\n' "${url}"
+}
+
+# Ask GitHub for the errors it finds in the repository's CODEOWNERS (COMM-11):
+# an owner that does not exist or has no write access, and any line it cannot
+# parse. GitHub judges the file as it judges a pull request's reviewers, so
+# its answer is the authority; this only reports it in the shape of
+# `conventions check`. The repository is --repository, else GITHUB_REPOSITORY,
+# else the origin remote; the file is the one at --ref, else on the default
+# branch. Needs gh, signed in, or GH_TOKEN with read access to the contents.
+codeowners() {
+  fail_on=error output=text given='' slug='' ref=''
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --repository) slug=${2:?--repository needs OWNER/NAME}; shift 2 ;;
+      --ref) ref=${2:?--ref needs a branch, tag or commit}; shift 2 ;;
+      --fail-on) fail_on=${2:?--fail-on needs error or warning}; shift 2 ;;
+      --output | -o) output=${2:?--output needs text or json}; shift 2 ;;
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  case ${fail_on} in
+    error | warning) ;;
+    *) die "--fail-on must be error or warning, not ${fail_on}" ;;
+  esac
+  case ${output} in
+    text | json) ;;
+    *) die "--output must be text or json, not ${output}" ;;
+  esac
+  find_root
+  if [ -z "${slug}" ]; then slug=${GITHUB_REPOSITORY:-}; fi
+  if [ -z "${slug}" ]; then
+    slug=$(owner_and_name "$(git -C "${root}" remote get-url origin 2> /dev/null || true)")
+  fi
+  case ${slug} in
+    '' ) die "no repository to ask about: pass --repository OWNER/NAME" ;;
+    */*/* | */ | /* | *[!A-Za-z0-9._/-]*) die "--repository must be OWNER/NAME, not ${slug}" ;;
+    */*) ;;
+    *) die "--repository must be OWNER/NAME, not ${slug}" ;;
+  esac
+  command -v gh > /dev/null 2>&1 ||
+    die "codeowners needs the GitHub CLI: install gh (https://cli.github.com) and run gh auth login, or set GH_TOKEN"
+
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+  # The repository first, so a name gh cannot read is not mistaken for a
+  # repository without a CODEOWNERS: GitHub answers 404 to both.
+  gh api "repos/${slug}" --jq .full_name < /dev/null > /dev/null 2> "${scratch}/stderr" ||
+    die "cannot read ${slug} on GitHub: $(head -n 1 "${scratch}/stderr")"
+  set -- "repos/${slug}/codeowners/errors"
+  if [ -n "${ref}" ]; then set -- "$@" -X GET -f "ref=${ref}"; fi
+  if ! gh api "$@" < /dev/null > "${scratch}/errors.json" 2> "${scratch}/stderr"; then
+    if grep -q 'HTTP 404' "${scratch}/stderr"; then
+      # COMM-08 reports a repository without one, offline.
+      printf 'conventions: GitHub finds no CODEOWNERS in %s at %s\n' "${slug}" "${ref:-its default branch}" >&2
+      printf '{"errors": []}\n' > "${scratch}/errors.json"
+    else
+      die "GitHub did not report the CODEOWNERS errors of ${slug}: $(head -n 1 "${scratch}/stderr")"
+    fi
+  fi
+
+  release="${bundle}/checks/data/release.json"
+  url_ref=main
+  if [ -f "${release}" ]; then url_ref="v$(version)"; fi
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" --arg ref "${url_ref}" --slurpfile index "${bundle}/checks/data/index.json" \
+    -f "${bundle}/bin/codeowners.jq" "${scratch}/errors.json" > "${scratch}/results.json" ||
+    die "cannot read GitHub's answer for ${slug}"
+  printf '{"conventions_inventory": {"unparsed": []}}\n' > "${scratch}/inventory.json"
+
+  colour=false
+  if [ "${output}" = text ] && [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != dumb ]; then
+    colour=true
+  fi
+  case ${output} in
+    text) report -r text ;;
+    json) report -Sa json ;;
+  esac
+  if report -e fails > /dev/null; then
+    return 1
+  fi
+}
+
 version() {
   release="${bundle}/checks/data/release.json"
   if [ -f "${release}" ]; then
@@ -818,6 +917,7 @@ case ${command} in
   env-contract) env_contract "$@" ;;
   env-file) env_file "$@" ;;
   waivers) waivers "$@" ;;
+  codeowners) codeowners "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

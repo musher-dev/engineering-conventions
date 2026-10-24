@@ -89,6 +89,17 @@ def test_requirement_entry(content: Content) -> None:
     assert retired["replaced_by"] == ["ADOPT-09"]
 
 
+def test_a_requirement_can_be_made_unwaivable(content: Content) -> None:
+    # `waivable: false` in the frontmatter, beside a family rule that still
+    # applies to every ADOPT requirement.
+    requirements = as_map(_index(content)["requirements"])
+    assert as_map(requirements["COMM-09"])["waivable"] is False
+    assert as_map(requirements["COMM-10"])["waivable"] is True
+    # A delegated requirement whose command applies no waivers.
+    assert as_map(requirements["COMM-11"])["waivable"] is False
+    assert as_map(requirements["ADOPT-02"])["waivable"] is False
+
+
 def test_index_carries_a_self_contained_declaration_schema(content: Content) -> None:
     schema = as_map(_index(content)["declaration_schema"])
     refs = json.dumps(schema)

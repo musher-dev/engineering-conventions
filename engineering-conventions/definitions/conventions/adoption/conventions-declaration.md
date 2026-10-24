@@ -383,6 +383,11 @@ A waiver that matches no finding is stale: the problem was fixed, the path moved
 from the start. Left in place, a stale waiver would silently suppress the next unrelated finding on that path. The
 check reports each waiver that matched no finding in the run.
 
+A waiver that names a requirement no waiver can suppress also suppresses nothing, and is reported the same way. Those
+are the `ADOPT` requirements, which police the waivers themselves, and each requirement whose own section says
+`Waivable: no`, such as [COMM-09](../community-files/community-files.md#comm-09). The index marks them
+`"waivable": false`.
+
 **Correct:**
 
 ```toml

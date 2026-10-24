@@ -688,6 +688,140 @@ def test_waivers_check_tracking_reports_closed_work(tmp_path: Path) -> None:
     assert closed in completed.stderr
 
 
+# A stand-in for gh: it logs each call, reads the repository only when
+# `readable` exists, and answers the CODEOWNERS errors from errors.json, or
+# 404 as GitHub does for a repository without a CODEOWNERS.
+GH_STUB = """#!/bin/sh
+here=$(dirname "$0")
+printf '%s\\n' "$*" >> "${here}/calls"
+case $2 in
+  */codeowners/errors)
+    if [ -f "${here}/errors.json" ]; then cat "${here}/errors.json"; exit 0; fi ;;
+  repos/*)
+    if [ -f "${here}/readable" ]; then echo owner/name; exit 0; fi ;;
+esac
+echo 'gh: Not Found (HTTP 404)' >&2
+exit 1
+"""
+
+CODEOWNERS_ERRORS = {
+    "errors": [
+        {
+            "line": 3,
+            "column": 16,
+            "kind": "Unknown owner",
+            "source": "/platform-api/  @your-org/api\n",
+            "suggestion": None,
+            "message": (
+                "Unknown owner on line 3: make sure @your-org/api exists and has write access"
+                " to the repository\n\n  /platform-api/  @your-org/api\n                 ^"
+            ),
+            "path": ".github/CODEOWNERS",
+        }
+    ]
+}
+
+
+def _gh(
+    tmp_path: Path, *, readable: bool = True, errors: object = None
+) -> tuple[Path, dict[str, str]]:
+    stub = tmp_path / "stub"
+    stub.mkdir()
+    (stub / "gh").write_text(GH_STUB)
+    (stub / "gh").chmod(0o755)
+    if readable:
+        (stub / "readable").write_text("")
+    if errors is not None:
+        (stub / "errors.json").write_text(json.dumps(errors))
+    return stub, {"PATH": f"{stub}{os.pathsep}{os.environ['PATH']}"}
+
+
+def test_codeowners_reports_githubs_errors_as_findings(tmp_path: Path) -> None:
+    stub, env = _gh(tmp_path, errors=CODEOWNERS_ERRORS)
+    arguments = ("codeowners", "--repository", "your-org/your-repo", "--ref", "abc123")
+    completed = _launch(*arguments, cwd=tmp_path, env=env)
+    # A warning does not fail the run unless --fail-on warning says so.
+    assert completed.returncode == 0, completed.stderr
+    lines = completed.stdout.splitlines()
+    assert lines[:5] == [
+        "COMM-11  warning  1 finding",
+        "GitHub reports no errors in CODEOWNERS",
+        "https://github.com/musher-dev/engineering-conventions/blob/main/engineering-conventions/"
+        "definitions/conventions/community-files/community-files.md#comm-11",
+        "  .github/CODEOWNERS",
+        "    line 3: unknown owner: make sure @your-org/api exists and has write access to the"
+        " repository",
+    ]
+    calls = (stub / "calls").read_text().splitlines()
+    assert calls == [
+        "api repos/your-org/your-repo --jq .full_name",
+        "api repos/your-org/your-repo/codeowners/errors -X GET -f ref=abc123",
+    ]
+    failing = _launch(*arguments, "--fail-on", "warning", cwd=tmp_path, env=env)
+    assert failing.returncode == 1
+
+
+def test_codeowners_prints_json_like_check(tmp_path: Path) -> None:
+    _, env = _gh(tmp_path, errors=CODEOWNERS_ERRORS)
+    env["GITHUB_REPOSITORY"] = "your-org/your-repo"
+    completed = _launch("codeowners", "--output", "json", cwd=tmp_path, env=env)
+    assert completed.returncode == 0, completed.stderr
+    [finding] = json.loads(completed.stdout)
+    assert finding["id"] == "COMM-11"
+    assert finding["convention"] == "EC-0036"
+    assert finding["path"] == ".github/CODEOWNERS"
+    assert finding["severity"] == "warning"
+    assert finding["enforced"] is True
+    assert finding["url"].endswith("community-files.md#comm-11")
+
+
+def test_codeowners_reads_the_repository_from_origin(tmp_path: Path) -> None:
+    stub, env = _gh(tmp_path, errors={"errors": []})
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    remote = "git@github.com:your-org/your-repo.git"
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", remote], check=True)
+    completed = _launch("codeowners", cwd=repo, env=env)
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout == "No findings.\n"
+    # No --ref: GitHub reads the file on the default branch.
+    assert (stub / "calls").read_text().splitlines()[-1] == (
+        "api repos/your-org/your-repo/codeowners/errors"
+    )
+
+
+def test_codeowners_without_a_codeowners_has_no_findings(tmp_path: Path) -> None:
+    _, env = _gh(tmp_path)
+    completed = _launch(
+        "codeowners",
+        "--repository",
+        "your-org/your-repo",
+        "--fail-on",
+        "warning",
+        cwd=tmp_path,
+        env=env,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout == "No findings.\n"
+    assert "GitHub finds no CODEOWNERS in your-org/your-repo" in completed.stderr
+
+
+def test_codeowners_cannot_check_a_repository_it_cannot_read(tmp_path: Path) -> None:
+    _, env = _gh(tmp_path, readable=False)
+    completed = _launch("codeowners", "--repository", "your-org/your-repo", cwd=tmp_path, env=env)
+    assert completed.returncode == 2
+    assert "cannot read your-org/your-repo on GitHub: gh: Not Found (HTTP 404)" in completed.stderr
+
+
+@pytest.mark.parametrize("name", ["your-repo", "your-org/your-repo/extra", "your org/your-repo"])
+def test_codeowners_refuses_a_name_that_is_not_owner_and_name(tmp_path: Path, name: str) -> None:
+    _, env = _gh(tmp_path)
+    completed = _launch("codeowners", "--repository", name, cwd=tmp_path, env=env)
+    assert completed.returncode == 2
+    assert "--repository must be OWNER/NAME" in completed.stderr
+
+
 OPENAPI_FIXTURES = PRODUCT / "tests" / "fixtures" / "openapi"
 
 

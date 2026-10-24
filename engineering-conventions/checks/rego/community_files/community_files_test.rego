@@ -311,18 +311,21 @@ test_comm_09_catch_all if {
 	messages(result, "COMM-09") == {
 		concat(" ", [
 			"line 2: the catch-all `*` owns every path, so where a code owner's review is required every",
-			"pull request waits for @alice, a bot's pin bump included; own only /.github/, /.repo/ and the",
-			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+			"pull request waits for @alice, a bot's pin bump included; delete it and own only /.github/, /.repo/",
+			"and the paths whose change needs that review (to have every change reviewed, require approvals",
+			"in the ruleset instead; no waiver suppresses this)",
 		]),
 		concat(" ", [
 			"line 4: the catch-all `**` owns every path, so where a code owner's review is required every",
-			"pull request waits for @bob, a bot's pin bump included; own only /.github/, /.repo/ and the",
-			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+			"pull request waits for @bob, a bot's pin bump included; delete it and own only /.github/, /.repo/",
+			"and the paths whose change needs that review (to have every change reviewed, require approvals",
+			"in the ruleset instead; no waiver suppresses this)",
 		]),
 		concat(" ", [
 			"line 5: the catch-all `/**` owns every path, so where a code owner's review is required every",
-			"pull request waits for @alice @bob, a bot's pin bump included; own only /.github/, /.repo/ and the",
-			"paths whose change needs that review, or record a waiver in .repo/conventions.toml",
+			"pull request waits for @alice @bob, a bot's pin bump included; delete it and own only /.github/, /.repo/",
+			"and the paths whose change needs that review (to have every change reviewed, require approvals",
+			"in the ruleset instead; no waiver suppresses this)",
 		]),
 	}
 }

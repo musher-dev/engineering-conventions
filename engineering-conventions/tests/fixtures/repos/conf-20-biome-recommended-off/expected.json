@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-20",
+    "path": "biome.json",
+    "severity": "warning"
+  }
+]

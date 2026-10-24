@@ -10,7 +10,7 @@
     "vscode": {
       "settings": {
         "markdownlint.configFile": ".config/markdown/markdownlint.jsonc",
-        "vale.valeCLI.config": "${workspaceFolder}/.config/markdown/vale.ini"
+        "vale.valeCLI.config": "${workspaceFolder}/.config/prose/vale.ini"
       }
     }
   }

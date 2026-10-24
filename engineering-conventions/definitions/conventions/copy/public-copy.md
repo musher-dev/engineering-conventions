@@ -121,7 +121,7 @@ lints, whichever section applies the styles. Keep that config for public copy.
 A consumer's config looks like this, with the release in the URL equal to the release its mise configuration pins:
 
 ```ini
-# .config/markdown/vale.ini
+# .config/prose/vale.ini
 StylesPath = ../../.vale
 MinAlertLevel = warning
 Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.7.1/MusherProse.zip
@@ -143,8 +143,8 @@ lint:copy:
   desc: Lint the site's copy with Vale.
   cmds:
     - mkdir -p .vale
-    - vale --config .config/markdown/vale.ini sync
-    - vale --config .config/markdown/vale.ini apps/marketing/src
+    - vale --config .config/prose/vale.ini sync
+    - vale --config .config/prose/vale.ini apps/marketing/src
 ```
 
 `conventions prose` also runs `MusherCopy` from the bundle, offline, over every section of the repository's Vale
@@ -168,7 +168,7 @@ A repository publishes a site when `.repo/outputs.toml` declares an output with 
 
 ```text
 .repo/outputs.toml           [[outputs]] kind = "site"
-.config/markdown/vale.ini
+.config/prose/vale.ini
 ```
 
 **Incorrect:**

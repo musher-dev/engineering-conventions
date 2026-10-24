@@ -741,7 +741,7 @@ def test_openapi_with_no_interface_has_nothing_to_check(tmp_path: Path) -> None:
 
 
 def test_prose_runs_the_copy_style_where_the_vale_config_applies_it(tmp_path: Path) -> None:
-    config = tmp_path / ".config" / "markdown" / "vale.ini"
+    config = tmp_path / ".config" / "prose" / "vale.ini"
     config.parent.mkdir(parents=True)
     config.write_text(
         "StylesPath = styles\n"

@@ -77,7 +77,9 @@ Within the repository level:
 | Need | Home |
 | --- | --- |
 | A tool that loads only from the root (Task, git) | The root: `Taskfile.yml`, `.gitattributes`, `.gitignore` |
-| A linter, formatter, rule tool or git hooks | `.config/<concern>/<tool>.<ext>` |
+| A linter, formatter, scanner or rule tool that judges the whole repository | `.config/<concern>/<tool>.<ext>` |
+| The git hooks | `.config/lefthook.yml`, the one flat file, where lefthook's search stops |
+| The product's language toolchain: ruff, basedpyright, pytest | The product's `pyproject.toml`, beside the code it checks |
 | A CLI version | `.config/mise/config.toml`, locked by `.config/mise/mise.lock` |
 | The container: Features, mounts, editor settings, environment | `.devcontainer/devcontainer.json` |
 | GitHub's own configuration | `.github/`: workflows, rulesets, Dependabot, release-please |
@@ -85,9 +87,11 @@ Within the repository level:
 
 Five rules keep `.config/` predictable:
 
-- **Bucket by concern.** Use `.config/<concern>/<tool>.<ext>`, with no leading dot on the filename. Two files sit
-  where their tool's own search looks instead: `lefthook.yml` at the top level, because lefthook's search stops at
-  `.config/lefthook.*`, and `mise/config.toml` with its `mise.lock`, the path mise reads without being told.
+- **Bucket by concern.** Use `.config/<concern>/<tool>.<ext>`, with no leading dot on the filename. A concern names
+  the files its tool reads (`yaml`, `actions`, `rego`), or, for a tool that reads every file, what it looks for
+  (`prose`, `security`, `spelling`); the registered list is in EC-0011. Two files sit where their tool's own search
+  looks instead: `lefthook.yml` at the top level, because lefthook's search stops at `.config/lefthook.*`, and
+  `mise/config.toml` with its `mise.lock`, the path mise reads without being told.
 - **Pass the path explicitly.** Every caller names its config with the tool's flag (`--config`, `-c`); only lefthook
   and mise discover their files, and each from inside `.config/`. Relying on a tool's search of the root is what
   scatters dotfiles across it.
@@ -95,10 +99,13 @@ Five rules keep `.config/` predictable:
   configures and its caller.
 - **Every config has a caller**: its tool's wrapper in `taskfiles/tools/`, the one place the tool is run. The
   git hooks and CI reach it through the same tasks.
-- **Every ignore has a reason** beside it. Nothing is suppressed inline in the code it concerns.
+- **Every ignore has a reason** beside it, as does every rule turned off or relaxed from the tool's preset. Nothing
+  is suppressed inline in the code it concerns.
 
 These are the published conventions [EC-0011 Tool configuration](../engineering-conventions/definitions/conventions/configuration/tool-configuration.md)
-and [EC-0012 Suppressions](../engineering-conventions/definitions/conventions/configuration/suppressions.md), and
+and [EC-0012 Suppressions](../engineering-conventions/definitions/conventions/configuration/suppressions.md), with
+the floor each tool's configuration keeps in
+[EC-0044 Tool strictness](../engineering-conventions/definitions/conventions/configuration/tool-strictness.md), and
 `task conventions:self` checks this repository against them.
 
 There is no `.editorconfig`. Editor settings live once, in `devcontainer.json` → `customizations.vscode.settings`.

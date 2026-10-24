@@ -1,0 +1,8 @@
+{
+  // strict comes from the base configuration.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "es2022",
+    "noUncheckedIndexedAccess": true,
+  },
+}

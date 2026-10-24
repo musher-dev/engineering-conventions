@@ -160,6 +160,75 @@ findings contains lib.finding("CONF-13", gitattributes_path, message) if {
 	)
 }
 
+# CONF-14
+findings contains lib.finding("CONF-14", concat("/", [".config", concern]), message) if {
+	some concern in concerns_in_use
+	not concern in registered_concerns
+	message := sprintf(
+		concat(" ", [
+			".config/%s/ is not a registered concern; name the directory for the files its tool reads",
+			"(%s) or, for a tool that reads every file, for what it looks for (%s)",
+		]),
+		[concern, concat(", ", sort(file_concerns)), concat(", ", sort(whole_repository_concerns))],
+	)
+}
+
+# CONF-15
+findings contains lib.finding("CONF-15", path, message) if {
+	some path in config_files
+	not startswith(path, ".config/mise/locks/")
+	parts := split(path, "/")
+	count(parts) > 2
+	some tool in concern_tools
+	regex.match(tool.pattern, files.basename(path))
+	parts[1] != tool.concern
+	message := sprintf(
+		concat(" ", [
+			"%s is %s configuration, which belongs in the %s concern;",
+			"move it to .config/%s/%s and update its callers",
+		]),
+		[path, tool.tool, tool.concern, tool.concern, trim_left(files.basename(path), "._")],
+	)
+}
+
+# The first directory under .config/ of every file in a subdirectory.
+concerns_in_use contains parts[1] if {
+	some path in config_files
+	parts := split(path, "/")
+	count(parts) > 2
+}
+
+# The concerns, in one list. Most name the files a tool reads; a tool that
+# reads every file is named for what it looks for; mise is where mise looks.
+file_concerns := {
+	"actions", "commits", "docker", "json", "markdown", "openapi", "opentofu",
+	"python", "rego", "shell", "sql", "toml", "typescript", "yaml",
+}
+
+whole_repository_concerns := {"prose", "security", "spelling"}
+
+registered_concerns := (file_concerns | whole_repository_concerns) | {"mise"}
+
+# Each known tool's configuration file, by name with or without a leading dot
+# or underscore, and the concern it belongs in.
+concern_tools := [
+	{"tool": "Vale", "concern": "prose", "pattern": `^[._]?vale\.ini$`},
+	{"tool": "gitleaks", "concern": "security", "pattern": `^\.?gitleaks(\.toml|ignore)$`},
+	{"tool": "Trivy", "concern": "security", "pattern": `^\.?trivy(ignore(\.ya?ml)?|\.ya?ml)$`},
+	{"tool": "typos", "concern": "spelling", "pattern": `^[._]?typos\.toml$`},
+	{"tool": "codespell", "concern": "spelling", "pattern": `^\.?codespell(rc|\.cfg)$`},
+	{"tool": "cspell", "concern": "spelling", "pattern": `^\.?cspell(\.config)?\.(jsonc?|ya?ml)$`},
+	{"tool": "yamllint", "concern": "yaml", "pattern": `^\.?yamllint(\.ya?ml)?$`},
+	{"tool": "markdownlint", "concern": "markdown", "pattern": `^\.?markdownlint(-cli2)?\.(jsonc?|ya?ml)$`},
+	{"tool": "actionlint", "concern": "actions", "pattern": `^\.?actionlint\.ya?ml$`},
+	{"tool": "zizmor", "concern": "actions", "pattern": `^\.?zizmor\.ya?ml$`},
+	{"tool": "hadolint", "concern": "docker", "pattern": `^\.?hadolint\.ya?ml$`},
+	{"tool": "Regal", "concern": "rego", "pattern": `^\.?regal\.ya?ml$`},
+	{"tool": "Taplo", "concern": "toml", "pattern": `^\.?taplo\.toml$`},
+	{"tool": "committed", "concern": "commits", "pattern": `^\.?committed\.toml$`},
+	{"tool": "Spectral", "concern": "openapi", "pattern": `^\.?spectral\.(ya?ml|json)$`},
+]
+
 gitattributes_path := ".gitattributes"
 
 # Each pattern of the root .gitattributes with its line number. A blank

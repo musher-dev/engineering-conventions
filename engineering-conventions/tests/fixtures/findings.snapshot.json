@@ -221,10 +221,11 @@
     [".config/markdownlint.jsonc", "CONF-07", "warning", ".config/markdownlint.jsonc sits at the top level of .config/, which holds only README.md, lefthook.yml and lefthook-local.yml; move it to .config/<concern>/markdownlint.jsonc", true]
   ],
   "conf-08-program": [
+    [".config/scripts", "CONF-14", "warning", ".config/scripts/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true],
     [".config/scripts/banner.sh", "CONF-08", "warning", ".config/scripts/banner.sh is a program, and .config/ holds only declarations; move it beside what runs it, such as a scripts/ directory", true]
   ],
   "conf-09-missing-path": [
-    [".devcontainer/devcontainer.json", "CONF-09", "warning", "names .config/markdown/vale.ini, which does not exist; correct the path or remove the reference", true]
+    [".devcontainer/devcontainer.json", "CONF-09", "warning", "names .config/prose/vale.ini, which does not exist; correct the path or remove the reference", true]
   ],
   "conf-09-passes-glob": [],
   "conf-09-unmatched-glob": [
@@ -244,17 +245,49 @@
     [".gitattributes", "CONF-13", "warning", "line 4: the pattern .env matches no file in the repository, so its attributes apply to nothing; point it at the files it is meant for, or delete the line", true],
     [".gitattributes", "CONF-13", "warning", "line 5: the pattern /env.schema.yaml matches no file in the repository, so its attributes apply to nothing; point it at the files it is meant for, or delete the line", true]
   ],
+  "conf-14-passes-registered-concerns": [],
+  "conf-14-unregistered-concern": [
+    [".config/linters", "CONF-14", "warning", ".config/linters/ is not a registered concern; name the directory for the files its tool reads (actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security, spelling)", true]
+  ],
+  "conf-15-passes-tools-in-their-concerns": [],
+  "conf-15-tool-in-another-concern": [
+    [".config/markdown/vale.ini", "CONF-15", "warning", ".config/markdown/vale.ini is Vale configuration, which belongs in the prose concern; move it to .config/prose/vale.ini and update its callers", true]
+  ],
+  "conf-16-passes-default-preset": [],
+  "conf-16-yamllint-without-preset": [
+    [".config/yaml/yamllint.yaml", "CONF-16", "warning", "the yamllint configuration does not extend a preset, so only the rules it lists run; add `extends: default` and turn off or relax a rule beside its reason", true]
+  ],
+  "conf-17-markdownlint-default-off": [
+    [".config/markdown/markdownlint.jsonc", "CONF-17", "warning", "the markdownlint configuration sets default to false, so only the rules it names run; remove it and turn off a rule by name beside its reason", true]
+  ],
+  "conf-17-passes-cli2-default-on": [],
+  "conf-18-passes-basedpyright-default": [],
+  "conf-18-pyright-basic": [
+    ["platform-api/pyproject.toml", "CONF-18", "warning", "pyright checks types at typeCheckingMode basic, below the floor; set it to strict (or basedpyright's recommended or all) and turn off a rule beside its reason", true]
+  ],
+  "conf-19-passes-extended-strict": [],
+  "conf-19-tsconfig-not-strict": [
+    ["platform-api/apps/web/tsconfig.json", "CONF-19", "warning", "the TypeScript configuration does not turn strict on, so the compiler skips its strict checks; set compilerOptions.strict to true and turn off a strict option beside its reason", true]
+  ],
+  "conf-20-biome-recommended-off": [
+    ["biome.json", "CONF-20", "warning", "the Biome configuration sets linter.rules.recommended to false, so only the rules it names run; remove it and turn off a rule by name beside its reason", true]
+  ],
+  "conf-20-passes-recommended-by-default": [],
+  "conf-21-gitleaks-extend-without-default": [
+    [".config/security/gitleaks.toml", "CONF-21", "warning", "the gitleaks configuration has an [extend] without useDefault = true, so the default rules are dropped; set useDefault = true and allowlist a finding beside its reason", true]
+  ],
+  "conf-21-passes-default-with-allowlist": [],
   "copy-01-passes-website-with-vale-config": [],
   "copy-01-site-without-vale-config": [
-    [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
+    [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
   ],
   "copy-02-package-by-name": [
-    [".config/markdown/vale.ini", "COPY-02", "warning", "Packages names MusherProse by name, which installs whatever release is latest when vale sync runs; use https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip", true]
+    [".config/prose/vale.ini", "COPY-02", "warning", "Packages names MusherProse by name, which installs whatever release is latest when vale sync runs; use https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip", true]
   ],
   "copy-02-passes-pinned-urls": [],
   "copy-03-passes-markdown-only": [],
   "copy-03-unmapped-svelte": [
-    [".config/markdown/vale.ini", "COPY-03", "warning", "[site/src/**/*.{md,svelte}] matches .svelte files, which Vale skips without a format; add svelte = html under [formats]", true]
+    [".config/prose/vale.ini", "COPY-03", "warning", "[site/src/**/*.{md,svelte}] matches .svelte files, which Vale skips without a format; add svelte = html under [formats]", true]
   ],
   "dec-01-directory-form": [
     ["docs/adrs/0002-loose.md", "DEC-01", "warning", "docs/adrs/0002-loose.md is a file in docs/adrs, whose records are directories; move it to docs/adrs/NNNN-slug/+page.md, or out of the decisions directory", true]
@@ -1050,7 +1083,7 @@
     [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"deploy.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
   ],
   "out-06-passes-deploy-site": [
-    [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
+    [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
   ],
   "out-06-passes-release-workflow": [
     [".github/workflows/release.yml", "REL-02", "warning", "step \"release\" in job \"release\" runs release-please, but the repository has no release-please config; add .github/release-please/config.json and .github/release-please/manifest.json", true],
@@ -1061,7 +1094,7 @@
     [".repo/outputs.toml", "OUT-06", "warning", "output \"api-image\" names \"validate.yml\", whose responsibility is neither publish nor release; name the workflow that publishes it", true]
   ],
   "out-12-site-location": [
-    [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true],
+    [".repo/outputs.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true],
     [".repo/outputs.toml", "OUT-12", "warning", "output \"docs-site\" is a site but its location \"docs.example.com\" is not an https:// origin; give the URL people and tools fetch it from", true]
   ],
   "out-13-passes-metadata-labels": [
@@ -1208,7 +1241,7 @@
     [".github/dependabot.yml", "REPO-22", "warning", "the github-actions update names the directory \"/.github/actions/setup\", which does not exist; correct it, or remove it", true]
   ],
   "repository-github-exempt": [
-    [".repo/repository.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/markdown/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
+    [".repo/repository.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
   ],
   "task-01-version": [
     ["tools/Taskfile.yml", "TASK-01", "warning", "version is the number 3; quote it as version: '3', the schema version Task reads", true]

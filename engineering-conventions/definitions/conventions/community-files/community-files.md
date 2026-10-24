@@ -6,7 +6,7 @@ summary: >-
   reads them and in the form it honours: issue and discussion forms valid
   against GitHub's form schemas, a template chooser that decides blank
   issues, at most one CODEOWNERS, at .github/CODEOWNERS, in syntax GitHub
-  does not skip, owning selected paths rather than every path, and naming
+  does not skip, owning selected paths and never every path, and naming
   only paths that exist, and a security policy that says how to report a
   vulnerability and passes OpenSSF Scorecard's Security-Policy check.
 status: draft
@@ -115,6 +115,7 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.community_files.community_files
+    waivable: false
   - id: COMM-10
     title: Every root-anchored literal path in CODEOWNERS names a file or directory that exists
     status: proposed
@@ -163,7 +164,7 @@ Where an industry schema or tool already defines the rule, this convention deleg
 | Issue forms, the template chooser, discussion forms | [SchemaStore](https://github.com/SchemaStore/schemastore)'s schemas (Apache-2.0) | Vendored unmodified under `checks/schemas/vendor/schemastore/`, and validated in Rego |
 | What makes a security policy useful | [OpenSSF Scorecard](https://github.com/ossf/scorecard)'s Security-Policy check | Delegated: the repository runs it (COMM-06) |
 | CODEOWNERS syntax | GitHub's documentation | Checked in Rego (COMM-03, COMM-04, COMM-10): no maintained offline validator exists |
-| CODEOWNERS as a selective gate | The standard `musher-dev/platform` set, which it, `musher-dev/platform-api` and `musher-dev/specifications` follow | Checked in Rego (COMM-09) |
+| CODEOWNERS as a selective gate | The standard `musher-dev/platform` set, which it, `musher-dev/platform-api` and `musher-dev/specifications` follow | Checked in Rego (COMM-09), and never waived |
 
 ## Requirements
 
@@ -249,7 +250,7 @@ CODEOWNERS decides who is asked to review a change, and with a ruleset that requ
 approve it. GitHub looks for it in `.github/`, then the root, then `docs/`, and reads only the first it finds, so a
 second CODEOWNERS is silently ignored and its rules apply nowhere. One file in one place, beside the rest of GitHub's
 configuration, is the one a reviewer edits. Every repository has one ([COMM-08](#comm-08)), and it lists only the
-paths that need a code owner's review, with no catch-all ([COMM-09](#comm-09)).
+paths that need a code owner's review, never a catch-all ([COMM-09](#comm-09)).
 
 **Correct:**
 
@@ -282,8 +283,7 @@ reports, with the line number:
 - a pattern written on two lines: the later line wins and replaces the earlier one's owners entirely, so the owners
   on the first line are silently dropped.
 
-Whether an owner exists and has write access needs GitHub's API, and is not checked offline; see
-[COMM-09](#comm-09).
+Whether an owner exists and has write access needs GitHub's API, and is not checked offline.
 
 **Correct:**
 
@@ -420,33 +420,32 @@ Checked by: conftest · Severity: warning · Since: 0.8.0
 
 **CODEOWNERS has no catch-all rule that owns every path.**
 
-With a ruleset that requires a code owner's review ([BRANCH-03](../branch-protection/default-branch-protection.md#branch-03)),
-a `*` line turns CODEOWNERS from a gate on what matters into a gate on everything: a bot's pin bump, a lock file and a
-typo fix all wait for the same person, who learns to approve without reading. The selective gate is the standard
-`musher-dev/platform` set for every repository. CODEOWNERS owns the gate itself, `/.github/` and `/.repo/` where it
-exists, plus a short list of paths whose change carries trust or a wide blast radius. Pin, lock and vendored files
-stay unowned, so a bot's pull request merges on green checks. The ruleset pairs `required_approving_review_count: 0`
-with `require_code_owner_review: true`, so a pull request that touches no owned path needs no review.
+CODEOWNERS names the gate: the few paths whose change carries trust or a wide blast radius, and who must approve a
+change to them. A `*` line names everything, so it gates nothing in particular. With a ruleset that requires a code
+owner's review ([BRANCH-03](../branch-protection/default-branch-protection.md#branch-03)), every pull request waits for
+the same person, a bot's pin bump, a lock file and a typo fix included, and that person learns to approve without
+reading. The paths that matter are then reviewed no more carefully than the rest. So a catch-all is banned outright:
+**COMM-09 cannot be waived**, and a waiver that names it is itself reported ([ADOPT-06](../adoption/conventions-declaration.md#adopt-06)).
+
+The selective gate is the standard `musher-dev/platform` set for every repository. CODEOWNERS owns the gate itself,
+`/.github/` and `/.repo/` where it exists, plus a short list of paths whose change carries trust or a wide blast
+radius, such as authentication, the release machinery or a published interface. Pin, lock and vendored files stay
+unowned, so a bot's pull request merges on green checks. The ruleset pairs `required_approving_review_count: 0` with
+`require_code_owner_review: true`, so a pull request that touches no owned path needs no review.
+
+A repository that wants every change reviewed by someone says so where review is configured, not in CODEOWNERS: it
+raises `required_approving_review_count` in the default branch's ruleset, and lets GitHub's review assignment for a
+team spread the requests. That asks for a review on every pull request without making one person the owner of every
+path.
 
 The check reports, with the line number, a rule whose pattern is `*`, `**` or `/**` and names an owner. A narrower
 glob, such as `*.md` or `/docs/**`, is a selection, not a catch-all, and a catch-all with no owner leaves every path
-explicitly unowned. A repository that does want every path owned, for a reason it can state, records a waiver for
-COMM-09 in `.repo/conventions.toml`; the waivers are the allowlist, each with a reason, a tracking issue and an expiry.
-
-Two more failures leave a CODEOWNERS line protecting nothing without a warning: an owner that does not exist, and an
-owner without explicit write access to the repository. Both need GitHub's API, so this convention does not check them
-offline. The repository checks them against GitHub, which lists every line it could not apply:
-
-```sh
-gh api repos/{owner}/{repo}/codeowners/errors --jq .errors
-```
-
-An empty list (`[]`) means every owner resolved.
+explicitly unowned. Whether each owner exists and has write access needs GitHub's API, and is not checked offline.
 
 **Correct:**
 
 ```text
-# .github/CODEOWNERS: the gate, and what every consumer inherits
+# .github/CODEOWNERS: the gate, and the paths with real blast radius
 /.github/              @your-org/maintainers
 /.repo/                @your-org/maintainers
 /src/auth/             @your-org/security
@@ -459,7 +458,7 @@ An empty list (`[]`) means every owner resolved.
 *                      @your-org/maintainers
 ```
 
-Checked by: conftest · Severity: warning · Since: 0.9.2
+Checked by: conftest · Severity: warning · Since: 0.9.2 · Waivable: no
 
 ### COMM-10
 

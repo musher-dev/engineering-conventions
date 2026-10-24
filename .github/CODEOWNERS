@@ -3,8 +3,10 @@
 # Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
 # A selective gate, the standard musher-dev/platform set for every repository:
-# no `*` catch-all (COMM-09), and owners only on the paths whose change alters
-# what this repository enforces or what every consumer inherits.
+# no `*` catch-all (COMM-09, which no waiver lifts), and owners only on the
+# paths whose change alters what this repository enforces or what every
+# consumer inherits. To have every change reviewed, raise the ruleset's
+# required approvals instead.
 # .github/rulesets/main-branch.json pairs `required_approving_review_count: 0`
 # with `require_code_owner_review: true`, so a pull request that touches an
 # owned path waits for its owner and any other pull request merges on green

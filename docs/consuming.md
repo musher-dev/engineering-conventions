@@ -565,8 +565,9 @@ Quote the date. An unquoted `expires = 2026-12-31` is a TOML date rather than a 
 
 A waiver needs a reason of at least 20 characters, a tracking issue URL and an expiry at most 180 days away. It
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.
-A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
-are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
+A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived, and neither can
+a requirement whose section says `Waivable: no`, such as COMM-09; ADOPT-06 reports a waiver that names one. The full
+rules are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
 
 To review them, `conventions waivers` lists each waiver with its expiry, how many days remain, its tracking URL and
 the paths it covers. With `--check-tracking` it also asks the GitHub CLI (`gh`, signed in) for the state of each

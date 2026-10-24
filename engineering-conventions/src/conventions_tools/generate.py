@@ -55,7 +55,7 @@ def _requirement_entry(req: Requirement) -> dict[str, object]:
         "since": req.since,
         "status": req.status,
         "title": req.title,
-        "waivable": req.family not in NOT_WAIVABLE_FAMILIES,
+        "waivable": req.waivable and req.family not in NOT_WAIVABLE_FAMILIES,
     }
     if req.package is not None:
         entry["package"] = req.package

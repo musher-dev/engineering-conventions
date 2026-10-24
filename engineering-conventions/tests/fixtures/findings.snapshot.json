@@ -20,8 +20,13 @@
   "adopt-05-waiver-too-long": [
     [".repo/conventions.toml", "ADOPT-05", "warning", "waiver 1 (GHA-07) expires on 2027-06-01, more than 180 days away; set expires to 2027-03-22 or earlier and renew it if the work is still open then", true]
   ],
+  "adopt-06-passes-waived-missing-path": [],
   "adopt-06-stale-waiver": [
     [".repo/conventions.toml", "ADOPT-06", "warning", "waiver 1 (GHA-08) matches no finding, so it suppresses nothing; delete it", true]
+  ],
+  "adopt-06-unwaivable-catch-all": [
+    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; delete it and own only /.github/, /.repo/ and the paths whose change needs that review (to have every change reviewed, require approvals in the ruleset instead; no waiver suppresses this)", true],
+    [".repo/conventions.toml", "ADOPT-06", "warning", "waiver 1 (COMM-09) names a requirement that cannot be waived; delete it", true]
   ],
   "adopt-07-unknown-profile": [
     [".repo/conventions.toml", "ADOPT-07", "warning", "profile \"base-repository\" is not defined by this release, so service applies instead; use one of \"base-repo\", \"content\", \"documentation\", \"infrastructure\", \"library\", \"service\", \"specification\", \"template\", \"tool\", \"website\"", true]
@@ -170,7 +175,7 @@
     ["CODEOWNERS", "COMM-03", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true]
   ],
   "comm-09-catch-all": [
-    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; own only /.github/, /.repo/ and the paths whose change needs that review, or record a waiver in .repo/conventions.toml", true]
+    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; delete it and own only /.github/, /.repo/ and the paths whose change needs that review (to have every change reviewed, require approvals in the ruleset instead; no waiver suppresses this)", true]
   ],
   "comm-09-passes-narrow-globs": [],
   "comm-10-missing-path": [

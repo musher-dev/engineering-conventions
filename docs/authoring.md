@@ -58,6 +58,7 @@ repository, the proposal carries `authority` pointing there
    | `since` | The release that will first contain the requirement. |
    | `validation.engine` | `conftest` (with `package`), `jsonschema` (with `schema`), `vale` (with `style`), `delegated` (with `tool` and `check`) or `review` |
    | `aliases` | `<repo>:<ID>` of any existing check this requirement ports, such as `platform:CI-14` |
+   | `waivable` | `false` when no waiver may suppress the requirement, because a deviation from it is never legitimate. Rare: a ban, such as COMM-09. ADOPT-06 then reports a waiver naming it, and the body's last line ends `· Waivable: no`. Omit it otherwise |
 
 3. **Write the body section** below the frontmatter, in ID order:
 

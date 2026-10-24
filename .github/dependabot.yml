@@ -9,13 +9,14 @@
 # them by hand, with the lockstep pins in .claude/rules/toolchain-pins.md.
 version: 2
 updates:
-  # SHA pins in the workflows, plus the one composite action that installs
-  # the toolchain (Dependabot does not look inside .github/actions/ by itself),
-  # and the example consumers' workflows, which consumers copy pins from.
+  # SHA pins in the workflows, plus each composite action (Dependabot does
+  # not look inside .github/actions/ by itself), and the example consumers'
+  # workflows, which consumers copy pins from.
   - package-ecosystem: "github-actions"
     directories:
       - "/"
       - "/.github/actions/setup-tools"
+      - "/.github/actions/sync-pass-marker"
       - "/engineering-conventions/examples/consumer"
       - "/engineering-conventions/examples/staged-consumer"
     schedule:

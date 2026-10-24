@@ -29,12 +29,22 @@ jobs:
   # job runs on every change. A push to main or a merge-group run always builds
   # it, so the default branch is proved in full whatever the pull request diff
   # said.
+  #
+  # It also names the jobs a verified earlier run already passed on identical
+  # inputs (decision 0040). Off unless the repository variable CI_PASS_MARKERS
+  # is `on`, and only on a same-repository pull request: a push to main, a
+  # merge-group run and a fork's run read no markers and run every job.
   detect:
     name: Detect Changes
     runs-on: ubuntu-slim
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read  # to list the ci-pass- caches and read the runs they name
     outputs:
       devcontainer: ${{ steps.scope.outputs.devcontainer }}
+      # A JSON array of job IDs; `[]` when the step is off or proves nothing.
+      passed_jobs: ${{ steps.markers.outputs.passed_jobs || '[]' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -65,9 +75,24 @@ jobs:
           else
             echo "devcontainer=false" >> "$GITHUB_OUTPUT"
           fi
+      - name: Find the jobs a verified run already passed on these inputs
+        id: markers
+        if: >-
+          vars.CI_PASS_MARKERS == 'on'
+          && github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          passed="$(bash .github/scripts/ci-pass.sh prove)"
+          echo "passed_jobs=${passed}" >> "$GITHUB_OUTPUT"
 
   repository_lint:
     name: Repository / Lint
+    needs: detect
+    if: ${{ !contains(fromJSON(needs.detect.outputs.passed_jobs), 'repository_lint') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -82,6 +107,11 @@ jobs:
             aqua:hadolint/hadolint
       - name: Lint Markdown, YAML, TOML, spelling, shell scripts and Dockerfiles
         run: task lint
+
+      # Last, so it runs only when every check above passed (decision 0040).
+      - name: Record that this job passed on these inputs
+        if: vars.CI_PASS_MARKERS == 'on'
+        uses: ./.github/actions/sync-pass-marker
 
   repository_secrets:
     name: Repository / Secrets
@@ -124,6 +154,8 @@ jobs:
 
   checks:
     name: Checks
+    needs: detect
+    if: ${{ !contains(fromJSON(needs.detect.outputs.passed_jobs), 'checks') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -139,8 +171,15 @@ jobs:
       - name: Check, lint and test the Rego rules and the OpenAPI ruleset
         run: task checks:fmt:check checks:lint checks:check checks:test checks:openapi
 
+      # Last, so it runs only when every check above passed (decision 0040).
+      - name: Record that this job passed on these inputs
+        if: vars.CI_PASS_MARKERS == 'on'
+        uses: ./.github/actions/sync-pass-marker
+
   content:
     name: Content
+    needs: detect
+    if: ${{ !contains(fromJSON(needs.detect.outputs.passed_jobs), 'content') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -157,6 +196,11 @@ jobs:
           # Generating needs the CLI, not its linters and test runner.
           UV_NO_DEV: "1"
         run: task schemas:check schemas:validate generate:check prose:lint
+
+      # Last, so it runs only when every check above passed (decision 0040).
+      - name: Record that this job passed on these inputs
+        if: vars.CI_PASS_MARKERS == 'on'
+        uses: ./.github/actions/sync-pass-marker
 
   cli:
     name: CLI
@@ -195,6 +239,8 @@ jobs:
 
   conventions:
     name: Conventions / Self
+    needs: detect
+    if: ${{ !contains(fromJSON(needs.detect.outputs.passed_jobs), 'conventions') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -211,8 +257,15 @@ jobs:
           UV_NO_DEV: "1"
         run: task conventions:self
 
+      # Last, so it runs only when every check above passed (decision 0040).
+      - name: Record that this job passed on these inputs
+        if: vars.CI_PASS_MARKERS == 'on'
+        uses: ./.github/actions/sync-pass-marker
+
   bundle:
     name: Bundle
+    needs: detect
+    if: ${{ !contains(fromJSON(needs.detect.outputs.passed_jobs), 'bundle') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -226,6 +279,11 @@ jobs:
             aqua:open-policy-agent/opa aqua:vale-cli/vale aqua:jqlang/jq
       - name: Build the release bundle and verify it
         run: task bundle:build bundle:verify
+
+      # Last, so it runs only when every check above passed (decision 0040).
+      - name: Record that this job passed on these inputs
+        if: vars.CI_PASS_MARKERS == 'on'
+        uses: ./.github/actions/sync-pass-marker
 
   devcontainer:
     name: Dev Container
@@ -280,14 +338,19 @@ jobs:
       # Anything other than success is a failure: a skipped or cancelled job
       # has proved nothing. A per-job exception needs its reason written next
       # to it, because a gate that can skip itself is the shape that reports
-      # green forever. There is one:
+      # green forever. There are two:
       # - devcontainer may skip, but only when detect succeeded and said this
       #   pull request touched none of the files the image is built from. A
       #   skip for any other reason (detect failed, or said true) still fails.
+      # - a job detect listed in passed_jobs may skip, but only when detect
+      #   succeeded: detect lists a job only after proving a marker from an
+      #   earlier run in which it passed on identical inputs (decision 0040).
+      #   A skip of any job detect did not list still fails.
       - name: Classify every job result
         env:
           RESULTS: ${{ toJSON(needs) }}
           DEVCONTAINER_SCOPED: ${{ needs.detect.result == 'success' && needs.detect.outputs.devcontainer == 'false' }}
+          PASSED_JOBS: ${{ needs.detect.result == 'success' && needs.detect.outputs.passed_jobs || '[]' }}
         run: |
           set -euo pipefail
           failed=0
@@ -295,6 +358,11 @@ jobs:
             printf '%-20s %s\n' "$job" "$result"
             if [ "$job" = "devcontainer" ] && [ "$result" = "skipped" ] && [ "$DEVCONTAINER_SCOPED" = "true" ]; then
               echo "  skipped as planned: no dev container input changed"
+              continue
+            fi
+            if [ "$result" = "skipped" ] \
+              && jq -e --arg job "$job" 'any(.[]; . == $job)' <<<"$PASSED_JOBS" >/dev/null; then
+              echo "  skipped as planned: inputs identical to a verified passing run"
               continue
             fi
             if [ "$result" != "success" ]; then

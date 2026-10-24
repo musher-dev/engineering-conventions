@@ -67,3 +67,4 @@ python = "3.13.15"
 [settings]
 # pipx tools install through uv rather than a system pipx.
 pipx.uvx = true
+# Trial comment for the pass-marker pilot (PR closed unmerged).

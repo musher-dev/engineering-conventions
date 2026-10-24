@@ -289,7 +289,7 @@ glob_pattern(path) if regex.match(`[*?\[]`, path)
 # The documents that run tools, and so name their configuration.
 caller_patterns := [
 	`(^|/)[Tt]askfile(\.dist)?\.ya?ml$`,
-	`(^|/)taskfiles/[^/]+\.ya?ml$`,
+	`(^|/)taskfiles/(tools/)?[^/]+\.ya?ml$`,
 	`^(\.config/)?\.?lefthook(-local)?\.ya?ml$`,
 	`^\.github/workflows/[^/]+\.(?i:ya?ml)$`,
 	`^\.github/actions/.+/action\.ya?ml$`,

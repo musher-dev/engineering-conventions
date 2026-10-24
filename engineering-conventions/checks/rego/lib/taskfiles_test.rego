@@ -47,6 +47,17 @@ test_documents_are_taskfiles_only if {
 	} with input as repository
 }
 
+# A tool wrapper in taskfiles/tools/ is a Taskfile; a deeper directory is not.
+test_documents_include_tool_wrappers if {
+	wrapper := {"version": "3", "tasks": {"tool:yamllint": {"desc": "Lint YAML."}}}
+	nested := [
+		td.inventory(["taskfiles/tools/yamllint.Taskfile.yml", "taskfiles/other/x.Taskfile.yml"]),
+		td.file("taskfiles/tools/yamllint.Taskfile.yml", wrapper),
+		td.file("taskfiles/other/x.Taskfile.yml", wrapper),
+	]
+	object.keys(taskfiles.documents) == {"taskfiles/tools/yamllint.Taskfile.yml"} with input as nested
+}
+
 test_root_path_follows_task_order if {
 	taskfiles.root_path == "Taskfile.yml" with input as [td.inventory(["taskfile.yaml", "Taskfile.yml"])]
 	taskfiles.root_path == "taskfile.yaml" with input as [td.inventory(["taskfile.yaml"])]

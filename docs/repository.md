@@ -93,7 +93,8 @@ Five rules keep `.config/` predictable:
   scatters dotfiles across it.
 - **Index every file.** [`.config/README.md`](../.config/README.md) has one row per file: the tool, what it
   configures and its caller.
-- **Every config has a caller** in `taskfiles/` or `.config/lefthook.yml`, and CI runs the same tasks.
+- **Every config has a caller**: its tool's wrapper in `taskfiles/tools/`, the one place the tool is run. The
+  git hooks and CI reach it through the same tasks.
 - **Every ignore has a reason** beside it. Nothing is suppressed inline in the code it concerns.
 
 These are the published conventions [EC-0011 Tool configuration](../engineering-conventions/definitions/conventions/configuration/tool-configuration.md)

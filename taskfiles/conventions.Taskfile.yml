@@ -1,13 +1,27 @@
 version: '3'
 
-# Dogfooding: this repository run through its own rules, exactly as a consumer
-# would run them, against its own declaration (.repo/conventions.toml).
+# Conventions: dogfooding. This repository run through its own rules, exactly
+# as a consumer would run them, against its own declaration
+# (.repo/conventions.toml). The rules read the whole repository, so the check
+# is skipped only while no file but the ones a run writes has changed since it
+# last passed.
 
 set: [errexit, nounset, pipefail]
 
 tasks:
   conventions:self:
     desc: Check this repository against its own conventions; any finding fails, warnings included.
+    method: checksum
+    sources:
+      - '**/*'
+      - exclude: .git/**/*
+      - exclude: .task/**/*
+      - exclude: dist/**/*
+      - exclude: '**/.venv/**/*'
+      - exclude: '**/__pycache__/**/*'
+      - exclude: '**/.pytest_cache/**/*'
+      - exclude: '**/.ruff_cache/**/*'
+      - exclude: '**/.coverage'
     cmds:
       - '{{.UV_RUN}} conventions check . --fail-on warning'
       # The same check through the launcher consumers run, so a release never

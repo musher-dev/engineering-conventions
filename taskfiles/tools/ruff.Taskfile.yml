@@ -1,0 +1,36 @@
+version: '3'
+
+# ruff: how the conventions CLI's Python is linted and formatted. The command
+# is written here and nowhere else (TASK-26); cli:lint and cli:lint:fix call
+# it. It runs through UV_RUN, so the version is the one uv.lock records, and
+# with `dir: engineering-conventions` so ruff finds its configuration in the
+# product's pyproject.toml. The dir is relative on purpose: Task 3.53 joins an
+# absolute `dir:` in an included Taskfile onto the root, while a relative one
+# resolves from the root as intended. Sources resolve from that dir too. The
+# check is skipped while its sources are unchanged since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:ruff:
+    desc: Lint and format-check the CLI with ruff.
+    dir: engineering-conventions
+    method: checksum
+    sources:
+      - '**/*.py'
+      - exclude: '.venv/**/*'
+      - pyproject.toml
+      - uv.lock
+      - ../.config/mise/mise.lock
+      - ../Taskfile.yml
+      - ../taskfiles/tools/ruff.Taskfile.yml
+    cmds:
+      - '{{.UV_RUN}} ruff check .'
+      - '{{.UV_RUN}} ruff format --check .'
+
+  tool:ruff:fix:
+    desc: Fix what ruff can repair, and format the CLI, in place.
+    dir: engineering-conventions
+    cmds:
+      - '{{.UV_RUN}} ruff check --fix .'
+      - '{{.UV_RUN}} ruff format .'

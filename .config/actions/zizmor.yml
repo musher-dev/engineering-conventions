@@ -1,7 +1,8 @@
 # zizmor configuration: the GitHub Actions security audit.
-# Read by: zizmor, via an explicit --config path (taskfiles/lint.Taskfile.yml,
+# Read by: zizmor, via an explicit --config path (taskfiles/tools/zizmor.Taskfile.yml,
 # `task lint:actions:security`). The severity floor (medium, persona regular)
-# is set on the command line to match GHA-33, which states it for consumers.
+# is set on its command line there, to match GHA-33, which states it for
+# consumers.
 # Docs: https://docs.zizmor.sh/configuration/
 
 rules:

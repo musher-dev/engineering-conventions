@@ -140,7 +140,7 @@ A new topic or family needs three things besides its conventions:
    topic's conventions and each family's first and last ID, retired ones included.
 3. **A `families.yml` entry** for each new ID prefix, naming its topic.
 
-`task invariants` fails on a missing README, a missing or stale row and an unregistered family, and names the row to
+`task cli:invariants` fails on a missing README, a missing or stale row and an unregistered family, and names the row to
 fix.
 
 ## Adding or changing a term
@@ -171,7 +171,7 @@ what the change does to a consumer, using the one classification table in
 
 The pull request template asks for the requirement IDs touched, the change class, and whether it is breaking.
 
-`Validate Pull Request / Title` also runs `task classify`, which diffs `checks/data/index.json` against the pull
+`Validate Pull Request / Title` also runs `task cli:classify`, which diffs `checks/data/index.json` against the pull
 request's base and fails when the title's type is weaker than what that diff shows. It is a lower bound: a diagnostic
 message or a check's logic is not in the index, so the table still decides.
 

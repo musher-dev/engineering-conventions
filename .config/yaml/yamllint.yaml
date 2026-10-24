@@ -1,6 +1,7 @@
 # yamllint rules for this repo's YAML (workflows, taskfiles, terminology,
-# profiles). The fixture repos are left out (YAML_PATHSPEC in Taskfile.yml):
-# some carry deliberate faults for the checks under test.
+# profiles). The fixture repos are left out (the PATHSPEC in
+# taskfiles/tools/yamllint.Taskfile.yml): some carry deliberate faults for the
+# checks under test.
 # Read by: yamllint, via an explicit -c path. Never auto-discovered.
 # Rule reference: https://yamllint.readthedocs.io/en/stable/rules.html
 

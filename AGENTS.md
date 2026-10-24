@@ -54,7 +54,15 @@ from version 2.1.277; there is no `CLAUDE.md` (AGENT-16).
 ## Verification
 
 `task check` runs every gate CI runs except the dev container build.
-`task --list` enumerates the rest.
+`task --list` enumerates the rest. A gate whose inputs are unchanged since it
+last passed in this checkout is skipped and says "is up to date"; `task --force
+check` reruns every gate. A local up-to-date is a convenience, never proof: CI
+runs every gate from a fresh checkout.
+
+Each tool runs only through its wrapper in `taskfiles/tools/`, which holds its
+binary, config path, flags and file set. Taskfiles and lefthook jobs call a
+task, never the tool. A task that changes files ends in `:fix`; `task lint:fix`
+runs them all.
 
 ## Commits
 

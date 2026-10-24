@@ -144,7 +144,7 @@ INPUTS="${INPUTS}|"'^(\.?mise|\.config/mise|\.devcontainer/mise)\.toml$'
 INPUTS="${INPUTS}|"'^(\.config/mise|mise)/config\.toml$'
 INPUTS="${INPUTS}|"'^\.github/dependabot\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}[Tt]askfile(\.dist)?\.ya?ml$'
-INPUTS="${INPUTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.ya?ml$'
+INPUTS="${INPUTS}|"'^([^/]+/){0,2}taskfiles/(tools/)?[^/]+\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/)?(terraform|tofu|opentofu)/(.+/)?[Tt]askfile(\.dist)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^(\.config/)?\.?lefthook(-local)?\.ya?ml$'
 INPUTS="${INPUTS}|"'^([^/]+/){0,2}env\.schema\.ya?ml$'
@@ -192,7 +192,7 @@ TEXTS="${TEXTS}|"'^(\.github/|docs/)?CODEOWNERS$'
 TEXTS="${TEXTS}|"'^(\.github/|docs/)?[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]\.([Mm][Dd]|[Mm][Aa][Rr][Kk][Dd][Oo][Ww][Nn]|[Aa][Dd][Oo][Cc]|[Rr][Ss][Tt])$'
 # A Taskfile fragment, for the comment it opens with, which YAML drops
 # (EC-0015).
-TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/[^/]+\.Taskfile\.ya?ml$'
+TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/(tools/)?[^/]+\.Taskfile\.ya?ml$'
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'

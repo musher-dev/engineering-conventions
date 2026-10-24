@@ -145,4 +145,4 @@ jobs:
           TITLE: ${{ github.event.pull_request.title }}
           # Classifying needs the CLI, not its linters and test runner.
           UV_NO_DEV: "1"
-        run: task classify
+        run: task cli:classify

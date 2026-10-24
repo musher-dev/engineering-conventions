@@ -1,7 +1,7 @@
 // markdownlint rules for this repo's Markdown.
 // Read by: markdownlint-cli2, via an explicit --config path. Never
-// auto-discovered; see taskfiles/lint.Taskfile.yml and .config/lefthook.yml
-// for the call sites.
+// auto-discovered; see taskfiles/tools/markdownlint.Taskfile.yml, the one call
+// site, which `task lint:md` and the lefthook `markdown` job reach.
 // Rule reference: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 {
   "default": true,

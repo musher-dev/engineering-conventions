@@ -95,6 +95,8 @@ def test_a_requirement_can_be_made_unwaivable(content: Content) -> None:
     requirements = as_map(_index(content)["requirements"])
     assert as_map(requirements["COMM-09"])["waivable"] is False
     assert as_map(requirements["COMM-10"])["waivable"] is True
+    # A delegated requirement whose command applies no waivers.
+    assert as_map(requirements["COMM-11"])["waivable"] is False
     assert as_map(requirements["ADOPT-02"])["waivable"] is False
 
 

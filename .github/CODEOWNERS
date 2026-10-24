@@ -33,8 +33,9 @@
 #   - LAST matching pattern wins — order from broad to specific.
 #   - ALL owners for a pattern go on ONE line.
 #   - Owners need EXPLICIT write access to this repo, or the entry is silently
-#     ignored and the path becomes unowned. GitHub lists such lines at
-#     `gh api repos/musher-dev/engineering-conventions/codeowners/errors`.
+#     ignored and the path becomes unowned. `task conventions:codeowners`
+#     asks GitHub for such lines (COMM-11), and Validate runs it on every
+#     pull request.
 #   - A root-anchored path must exist (COMM-10): after a rename, the old line
 #     protects nothing.
 #   - Individual @handles until GitHub teams (@musher-dev/<team>) exist.

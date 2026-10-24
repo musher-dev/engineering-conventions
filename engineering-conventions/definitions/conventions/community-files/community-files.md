@@ -6,8 +6,8 @@ summary: >-
   reads them and in the form it honours: issue and discussion forms valid
   against GitHub's form schemas, a template chooser that decides blank
   issues, at most one CODEOWNERS, at .github/CODEOWNERS, in syntax GitHub
-  does not skip, owning selected paths and never every path, and naming
-  only paths that exist, and a security policy that says how to report a
+  does not skip, owning selected paths and never every path, naming only
+  paths that exist and owners GitHub can resolve, and a security policy that says how to report a
   vulnerability and passes OpenSSF Scorecard's Security-Policy check.
 status: draft
 topic: community-files
@@ -35,6 +35,8 @@ references:
     url: https://docs.github.com/en/discussions/managing-discussions-for-your-community/creating-discussion-category-forms
   - title: "GitHub Docs: About code owners"
     url: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+  - title: "GitHub REST API: List CODEOWNERS errors"
+    url: https://docs.github.com/en/rest/repos/repos#list-codeowners-errors
   - title: "GitHub Docs: Adding a security policy to your repository"
     url: https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository
   - title: "OpenSSF Scorecard: Security-Policy"
@@ -124,6 +126,16 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.community_files.community_files
+  - id: COMM-11
+    title: GitHub reports no errors in CODEOWNERS
+    status: proposed
+    severity: warning
+    since: 0.9.3
+    validation:
+      engine: delegated
+      tool: gh
+      check: conventions codeowners
+    waivable: false
 ---
 
 # Community files
@@ -164,6 +176,7 @@ Where an industry schema or tool already defines the rule, this convention deleg
 | Issue forms, the template chooser, discussion forms | [SchemaStore](https://github.com/SchemaStore/schemastore)'s schemas (Apache-2.0) | Vendored unmodified under `checks/schemas/vendor/schemastore/`, and validated in Rego |
 | What makes a security policy useful | [OpenSSF Scorecard](https://github.com/ossf/scorecard)'s Security-Policy check | Delegated: the repository runs it (COMM-06) |
 | CODEOWNERS syntax | GitHub's documentation | Checked in Rego (COMM-03, COMM-04, COMM-10): no maintained offline validator exists |
+| Whether each CODEOWNERS owner resolves | GitHub's CODEOWNERS errors API | Delegated: `conventions codeowners` asks GitHub (COMM-11) |
 | CODEOWNERS as a selective gate | The standard `musher-dev/platform` set, which it, `musher-dev/platform-api` and `musher-dev/specifications` follow | Checked in Rego (COMM-09), and never waived |
 
 ## Requirements
@@ -283,7 +296,8 @@ reports, with the line number:
 - a pattern written on two lines: the later line wins and replaces the earlier one's owners entirely, so the owners
   on the first line are silently dropped.
 
-Whether an owner exists and has write access needs GitHub's API, and is not checked offline.
+Whether an owner exists and has write access needs GitHub's API, and is not checked offline; see
+[COMM-11](#comm-11).
 
 **Correct:**
 
@@ -440,7 +454,7 @@ path.
 
 The check reports, with the line number, a rule whose pattern is `*`, `**` or `/**` and names an owner. A narrower
 glob, such as `*.md` or `/docs/**`, is a selection, not a catch-all, and a catch-all with no owner leaves every path
-explicitly unowned. Whether each owner exists and has write access needs GitHub's API, and is not checked offline.
+explicitly unowned. Whether each owner exists and can approve is [COMM-11](#comm-11).
 
 **Correct:**
 
@@ -486,12 +500,64 @@ such as `docs/`, and a glob may match anywhere and are not judged. The check rep
 
 Checked by: conftest · Severity: warning · Since: 0.9.2
 
+### COMM-11
+
+**GitHub reports no errors in CODEOWNERS.**
+
+A CODEOWNERS line whose owner GitHub cannot use is skipped as quietly as one it cannot parse. An owner that does not
+exist, a team that was renamed, a person who left the organization, and an owner without explicit write access to the
+repository all leave the line's paths with no code owner, so a ruleset that requires a code owner's review
+([BRANCH-03](../branch-protection/default-branch-protection.md#branch-03)) no longer asks anyone for them. None of
+that is in the repository: it depends on the organization's people and teams, which change without a commit. GitHub
+lists every line it could not apply, with the reason, through its CODEOWNERS errors API, and is the authority on what
+it honours, so this requirement delegates to it rather than guessing offline.
+
+`conventions check` never reaches the network, so this is its own command. It asks GitHub, through the GitHub CLI,
+for the errors in the CODEOWNERS of a repository at a ref, and prints them as `conventions check` prints findings,
+with `--output json` and `--fail-on` alike. It needs `gh`, signed in or given `GH_TOKEN`, with read access to the
+repository's contents. Run it in validation against the pull request's head, so a change that names an owner GitHub
+cannot use fails before it merges:
+
+```sh
+conventions codeowners --repository your-org/your-repo --ref "$HEAD_SHA" --fail-on warning
+```
+
+Each finding gives the line and GitHub's reason, such as `line 3: unknown owner: make sure @mona exists and has
+write access to the repository`. Give a team write access in the repository's settings, or a person through a team
+that has it, and name an owner that exists. A repository without a CODEOWNERS gets no findings here;
+[COMM-08](#comm-08) reports it. A waiver cannot suppress a finding that `conventions check` does not produce, so
+COMM-11 is not waivable.
+
+**Correct:** GitHub's API reports no errors.
+
+```json
+{ "errors": [] }
+```
+
+**Incorrect:** `@your-org/api` was renamed, so line 3 protects nothing.
+
+```json
+{
+  "errors": [
+    {
+      "line": 3,
+      "kind": "Unknown owner",
+      "path": ".github/CODEOWNERS",
+      "message": "Unknown owner on line 3: make sure @your-org/api exists and has write access to the repository"
+    }
+  ]
+}
+```
+
+Checked by: gh (delegated) · Severity: warning · Since: 0.9.3 · Waivable: no
+
 ## References
 
 - [GitHub Docs: Syntax for issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms)
 - [GitHub Docs: Configuring the template chooser](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository#configuring-the-template-chooser)
 - [GitHub Docs: Creating discussion category forms](https://docs.github.com/en/discussions/managing-discussions-for-your-community/creating-discussion-category-forms)
 - [GitHub Docs: About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
+- [GitHub REST API: List CODEOWNERS errors](https://docs.github.com/en/rest/repos/repos#list-codeowners-errors)
 - [GitHub Docs: Adding a security policy to your repository](https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository)
 - [OpenSSF Scorecard: Security-Policy](https://github.com/ossf/scorecard/blob/main/docs/checks.md#security-policy)
 - [SchemaStore](https://github.com/SchemaStore/schemastore), and `checks/schemas/vendor/schemastore/README.md` for the

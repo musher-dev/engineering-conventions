@@ -43,6 +43,7 @@ conventions hadolint                   # lint every Dockerfile with .config/dock
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
 conventions waivers                    # list the waivers in .repo/conventions.toml with their expiry
+conventions codeowners                 # ask GitHub whether every CODEOWNERS owner resolves (online)
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -485,6 +486,25 @@ With no files named, it lints every document the `openapi` interfaces in `.repo/
 `spectral lint --ruleset .config/openapi/spectral.yaml` directly is as good. Add the repository's own API-design rules
 to the same ruleset, and turn a rule off there, or for one place in its `overrides`, with the reason beside it
 ([EC-0037](../engineering-conventions/definitions/conventions/openapi/openapi-documents.md)).
+
+COMM-11 is delegated to GitHub. Whether a CODEOWNERS owner exists and has write access depends on the organization,
+not the repository, so `conventions check` cannot see it. `conventions codeowners` asks GitHub's CODEOWNERS errors
+API through the GitHub CLI and prints each error as a COMM-11 finding, in the same report, `--output json` and
+`--fail-on` as `conventions check`
+([decision 0041](decisions/0041-github-judges-codeowners-owners.md)). Run it in validation against the pull request's
+head, with the job's token; `contents: read` is all it needs, and the runner images include `gh`:
+
+```yaml
+- name: Ask GitHub whether every CODEOWNERS owner resolves
+  env:
+    GH_TOKEN: ${{ github.token }}
+    REF: ${{ github.event.pull_request.head.sha || github.sha }}
+  run: conventions codeowners --ref "$REF" --fail-on warning
+```
+
+It reads the repository from `GITHUB_REPOSITORY`, or from `--repository OWNER/NAME`, and checks the default branch
+when no `--ref` is given. Run it in a job that a cache never skips: a team renamed in the organization breaks the file
+without any commit.
 
 ## Reading the report
 

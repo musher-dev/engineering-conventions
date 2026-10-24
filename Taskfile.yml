@@ -183,6 +183,7 @@ tasks:
       - task: cli:test
       - task: cli:invariants
       - task: conventions:self
+      - task: conventions:codeowners
       - task: bundle:build
       - task: bundle:verify
 

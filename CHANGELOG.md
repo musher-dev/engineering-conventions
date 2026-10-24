@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.2](https://github.com/musher-dev/engineering-conventions/compare/v0.9.1...v0.9.2) (2026-10-24)
+
+
+### Features
+
+* **checks:** read the Taskfiles in taskfiles/tools/ ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+* **conventions:** add TASK-25 to TASK-28 and HOOKS-15 for tool wrappers ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+* **conventions:** forbid a CODEOWNERS catch-all and dead paths ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+* **conventions:** key .config/ concerns on the files a tool reads ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+* **conventions:** set a strictness floor for tool configuration ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+
+
+### Bug Fixes
+
+* **checks:** let a tool wrapper's include set internal under TASK-20 ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+* **conventions:** judge only stack ports in DEVC-21; date to 0.9.1 ([#115](https://github.com/musher-dev/engineering-conventions/issues/115)) ([479e047](https://github.com/musher-dev/engineering-conventions/commit/479e047c1c084e16ea56eea1916650f3457e8b34))
+* **conventions:** name .config/prose/vale.ini in the COPY message ([4265dfe](https://github.com/musher-dev/engineering-conventions/commit/4265dfe0a478417b497c00b41ec59a34ac9c0b18))
+
 ## [0.9.1](https://github.com/musher-dev/engineering-conventions/compare/v0.9.0...v0.9.1) (2026-10-15)
 
 

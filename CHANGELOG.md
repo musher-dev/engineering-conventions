@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.3](https://github.com/musher-dev/engineering-conventions/compare/v0.9.2...v0.9.3) (2026-10-24)
+
+
+### Features
+
+* **conventions:** ask GitHub whether CODEOWNERS owners resolve (COMM-11) ([641b3bf](https://github.com/musher-dev/engineering-conventions/commit/641b3bf41c04133f798abb145111c40b4cf9f755))
+* **conventions:** ban the CODEOWNERS catch-all; no waiver lifts COMM-09 ([641b3bf](https://github.com/musher-dev/engineering-conventions/commit/641b3bf41c04133f798abb145111c40b4cf9f755))
+* **conventions:** register terraform as a .config/ concern ([641b3bf](https://github.com/musher-dev/engineering-conventions/commit/641b3bf41c04133f798abb145111c40b4cf9f755))
+
 ## [0.9.2](https://github.com/musher-dev/engineering-conventions/compare/v0.9.1...v0.9.2) (2026-10-24)
 
 

@@ -5,7 +5,10 @@
 #   flattens its fragments includes them alike, and each keeps to itself and
 #   names its area (TASK-20 to TASK-22). Where a Taskfile opts into prefixed
 #   output, silent tasks are labeled and long-running ones are silent
-#   (TASK-23, TASK-24).
+#   (TASK-23, TASK-24). A tool wrapper is included flattened and internal and
+#   names its tasks for its tool (TASK-25), a wrapped tool runs only in its
+#   wrapper (TASK-26), and a flattened fragment's public tasks are named
+#   under its area (TASK-27).
 # scope: package
 # custom:
 #   convention: EC-0015
@@ -13,11 +16,12 @@ package conventions.checks.tasks.taskfile_fragments
 
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.taskfile_layers as layers
 import data.conventions.lib.taskfiles
 
 # TASK-18. A silent task with commands of its own says what it does.
 findings contains lib.finding("TASK-18", path, message) if {
-	some path, _ in taskfiles.fragments
+	some path, _ in layers.all_fragments
 	some name, task in taskfiles.tasks(path)
 	taskfiles.silent(path, task)
 	count(taskfiles.command_lines(task)) > 0
@@ -33,7 +37,7 @@ findings contains lib.finding("TASK-18", path, message) if {
 
 # TASK-18. An internal task that runs commands of its own is silent.
 findings contains lib.finding("TASK-18", path, message) if {
-	some path, _ in taskfiles.fragments
+	some path, _ in layers.all_fragments
 	some name, task in taskfiles.tasks(path)
 	taskfiles.is_internal(task)
 	count(taskfiles.shell_lines(task)) > 0
@@ -50,7 +54,7 @@ findings contains lib.finding("TASK-18", path, message) if {
 # TASK-19. A composite: every command a task: call or a line that only
 # prints, with at least one call.
 findings contains lib.finding("TASK-19", path, message) if {
-	some path, _ in taskfiles.fragments
+	some path, _ in layers.all_fragments
 	some name, task in taskfiles.tasks(path)
 	composite(task)
 	some item in task.cmds
@@ -91,7 +95,7 @@ findings contains lib.finding("TASK-20", include.from, message) if {
 
 # TASK-21
 findings contains lib.finding("TASK-21", path, message) if {
-	some path, _ in taskfiles.flattened_fragments
+	some path, _ in layers.layout_fragments
 	some key, consequence in fragment_keys
 	key in object.keys(taskfiles.documents[path])
 	message := sprintf("the fragment declares a top-level %s:, %s", [key, consequence])
@@ -99,7 +103,7 @@ findings contains lib.finding("TASK-21", path, message) if {
 
 # TASK-22. Read from the raw text: a comment before the tasks: key.
 findings contains lib.finding("TASK-22", path, message) if {
-	some path, area in taskfiles.flattened_fragments
+	some path, area in layers.layout_fragments
 	text := files.texts[path]
 	not names_area(header_comment(text), area)
 	message := sprintf(
@@ -156,6 +160,94 @@ findings contains lib.finding("TASK-24", path, message) if {
 	)
 }
 
+# TASK-25. A wrapper is included flattened and internal.
+findings contains lib.finding("TASK-25", include.from, message) if {
+	some include in layers.wrapper_includes
+	some key, consequence in wrapper_flags
+	not include.entry[key] == true
+	message := sprintf("include %q loads tool wrapper %q without %s: true, so %s; set %s: true", [
+		include.namespace, include.entry.taskfile, key, consequence, key,
+	])
+}
+
+findings contains lib.finding("TASK-25", include.from, message) if {
+	some include in layers.wrapper_includes
+	some key, consequence in include_keys
+	key != "internal"
+	key in object.keys(include.entry)
+	message := sprintf("include %q of tool wrapper %q sets %s:, so %s; remove it", [
+		include.namespace, include.entry.taskfile, key, consequence,
+	])
+}
+
+# TASK-25. A wrapper's tasks are named tool:<stem> or tool:<stem>:<detail>.
+findings contains lib.finding("TASK-25", path, message) if {
+	some path, stem in layers.wrappers
+	some name, _ in taskfiles.tasks(path)
+	not wrapper_task_name(name, stem)
+	message := sprintf(
+		concat(" ", [
+			"task %q in the wrapper for %s is not named for its tool; name it %q, or",
+			"%q for a second way to run it",
+		]),
+		[name, stem, concat(":", ["tool", stem]), concat(":", ["tool", stem, "<detail>"])],
+	)
+}
+
+# TASK-26. Once a tool has a wrapper, no other Taskfile starts its binary.
+findings contains lib.finding("TASK-26", path, message) if {
+	some path, _ in taskfiles.documents
+	some name, task in taskfiles.tasks(path)
+	some line in taskfiles.shell_lines(task)
+	tool := layers.program(line)
+	wrapper := layers.wrapped_tools[tool]
+	wrapper != path
+	layers.callable_from(path, wrapper)
+	message := sprintf(
+		concat(" ", [
+			"task %q runs %s directly, while %s holds how it runs; call task: %s instead, so its",
+			"configuration, flags and cache sources stay in one place",
+		]),
+		[name, tool, wrapper, concat(":", ["tool", tool])],
+	)
+}
+
+# TASK-27. A flattened area fragment's public tasks are named under its
+# area; a namespaced one's names already carry its namespace.
+findings contains lib.finding("TASK-27", path, message) if {
+	some include in taskfiles.fragment_includes
+	include.entry.flatten == true
+	path := taskfiles.target(include)
+	area := taskfiles.fragments[path]
+	some name, task in taskfiles.tasks(path)
+	not startswith(name, "_")
+	not taskfiles.is_internal(task)
+	not under_area(name, area)
+	message := sprintf(
+		concat(" ", [
+			"task %q is in the %s fragment but not named under its area, so its name does not say",
+			"which file holds it; rename it %q or %q, or move it to the fragment its name gives",
+		]),
+		[name, area, area, concat(":", [area, "<name>"])],
+	)
+}
+
+wrapper_flags := {
+	"flatten": "its tasks answer to a namespace on top of the tool: name they already carry",
+	"internal": "its tasks are listed and can be run around the area tasks that should call them",
+}
+
+wrapper_task_name(name, stem) if name == concat(":", ["tool", stem])
+
+wrapper_task_name(name, stem) if {
+	startswith(name, concat("", ["tool:", stem, ":"]))
+	count(name) > count(stem) + 6
+}
+
+under_area(name, area) if name == area
+
+under_area(name, area) if startswith(name, concat("", [area, ":"]))
+
 # A task that only calls other tasks and prints: every cmds item a task:
 # call or text that only prints, at least one of each.
 composite(task) if {
@@ -186,7 +278,10 @@ only_prints(item) if {
 include_keys := {
 	"optional": "a fragment that goes missing drops its tasks without a word",
 	"dir": "its tasks run somewhere other than every other fragment's, from the same Taskfile",
-	"internal": "every task in it is hidden and cannot be run",
+	"internal": concat(" ", [
+		"every task in it is hidden and cannot be run; only a tool wrapper under taskfiles/tools/",
+		"is included internal",
+	]),
 }
 
 fragment_keys := {

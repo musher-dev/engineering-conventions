@@ -18,7 +18,7 @@ They adopt the Taskfile rules of `musher-dev/platform` (TF-*) and one path rule 
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0015 Taskfile style](taskfile-style.md) | TASK-01 – TASK-09, TASK-14 – TASK-24 | Version, names, templates, descriptions, internal tasks, output prefixes, paths, includes and sources that exist, the default task, machine-specific paths, prompts before destroying data, fragments, silent tasks and opt-in prefixed output |
+| [EC-0015 Taskfile style](taskfile-style.md) | TASK-01 – TASK-09, TASK-14 – TASK-28 | Version, names, templates, descriptions, internal tasks, output prefixes, paths, includes and sources that exist, the default task, machine-specific paths, prompts before destroying data, fragments, tool wrappers, silent tasks, opt-in prefixed output and caching with `sources` |
 | [EC-0016 Task interface](task-interface.md) | TASK-10 – TASK-13 | The verbs the root Taskfile defines, by kind of repository, and what `check` runs |
 
 ## Quick reference
@@ -28,6 +28,11 @@ They adopt the Taskfile rules of `musher-dev/platform` (TF-*) and one path rule 
 | `setup`, `check`, `lint` | yes | yes | yes |
 | `build`, `test` | | yes | yes |
 | `dev` | | | yes |
+
+A repository with several tools may split its Taskfiles into [layers](taskfile-style.md#layers): rules in
+`.config/<concern>/`, one internal wrapper per tool in `taskfiles/tools/<tool>.Taskfile.yml` named `tool:<tool>`
+(TASK-25), area fragments in `taskfiles/<area>.Taskfile.yml` whose tasks are named for the area (TASK-27), and the
+verbs at the root. Once a tool has a wrapper, nothing else runs its binary (TASK-26, HOOKS-15).
 
 Layout (key order, indentation, blank lines) follows [Task's style guide](https://taskfile.dev/docs/styleguide) and is
 left to a formatter; it is not a requirement.

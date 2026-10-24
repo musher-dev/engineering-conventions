@@ -6,7 +6,7 @@
 #   (TASK-03), writes templates without inner spaces (TASK-04), describes
 #   every public task (TASK-05), calls every internal task (TASK-06), sets
 #   prefix only where output is prefixed (TASK-07), names only paths,
-#   includes and sources that exist (TASK-08, TASK-09, TASK-14), keeps its
+#   includes and sources that exist (TASK-08, TASK-09, TASK-14, TASK-28), keeps its
 #   default task to listing (TASK-15), names no machine-specific path
 #   (TASK-16) and prompts before destroying data (TASK-17).
 # scope: package
@@ -16,6 +16,7 @@ package conventions.checks.tasks.taskfile_style
 
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.taskfile_layers as layers
 import data.conventions.lib.taskfiles
 
 # TASK-01
@@ -161,6 +162,25 @@ findings contains lib.finding("TASK-14", path, message) if {
 		concat(" ", [
 			"task %q lists source %q, which does not exist; Task ignores a source that matches",
 			"nothing, so the task stops noticing changes to it; correct the path or remove it",
+		]),
+		[name, source],
+	)
+}
+
+# TASK-28. A glob is judged only under a directory the repository holds.
+findings contains lib.finding("TASK-28", path, message) if {
+	some path, _ in taskfiles.documents
+	some name, task in taskfiles.tasks(path)
+	is_object(task)
+	not "dir" in object.keys(task)
+	some source in object.get(task, "sources", [])
+	is_string(source)
+	layers.unmatched_glob(path, source)
+	message := sprintf(
+		concat(" ", [
+			"task %q lists source glob %q, which matches no file in the repository, so Task",
+			"fingerprints nothing for it and the task never reruns for the files it was meant",
+			"to watch; correct the pattern or remove it",
 		]),
 		[name, source],
 	)

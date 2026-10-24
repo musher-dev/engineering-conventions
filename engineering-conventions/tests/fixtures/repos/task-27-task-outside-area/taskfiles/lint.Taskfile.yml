@@ -1,0 +1,13 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:workflows:
+    desc: Lint the workflows.
+    cmds:
+      - actionlint
+  secrets:scan:
+    desc: Scan the history for secrets.
+    cmds:
+      - gitleaks git

@@ -169,6 +169,14 @@
   "comm-08-passes-root-codeowners": [
     ["CODEOWNERS", "COMM-03", "warning", "keep the repository's one CODEOWNERS at .github/CODEOWNERS; move CODEOWNERS there", true]
   ],
+  "comm-09-catch-all": [
+    [".github/CODEOWNERS", "COMM-09", "warning", "line 2: the catch-all `*` owns every path, so where a code owner's review is required every pull request waits for @your-org/maintainers, a bot's pin bump included; own only /.github/, /.repo/ and the paths whose change needs that review, or record a waiver in .repo/conventions.toml", true]
+  ],
+  "comm-09-passes-narrow-globs": [],
+  "comm-10-missing-path": [
+    [".github/CODEOWNERS", "COMM-10", "warning", "line 4: `/platform-web/` names no directory in the repository, so the line protects nothing; point it at the path's current name or delete it", true]
+  ],
+  "comm-10-passes-existing-paths": [],
   "commit-01-capitalized-by-default": [
     [".config/commits/committed.toml", "COMMIT-01", "warning", "subject_capitalized is true, so committed rejects a lower-case description such as \"feat: add x\"; set subject_capitalized = false", true]
   ],

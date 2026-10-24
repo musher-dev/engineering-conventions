@@ -1,0 +1,8 @@
+# A directory, a directory without its slash, a file, and patterns that are
+# not root-anchored literals, which may match anywhere.
+/.github/                @your-org/maintainers
+/docs                    @your-org/docs
+/platform-api/go.mod     @your-org/api
+platform-web/            @your-org/web
+/platform-*/             @your-org/api
+/platform-web/?/         @your-org/web

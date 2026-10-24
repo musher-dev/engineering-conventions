@@ -58,3 +58,5 @@ the same requirement, and a retired requirement's tombstone names its replacemen
 
 A diagnostic from a release bundle links to `blob/v<version>/...`, the text of the release the repository pinned. A
 diagnostic from a checkout of this repository, which has no release data, links to `blob/main/...`.
+
+Trial line for the pass-marker pilot; this pull request is closed without merging.

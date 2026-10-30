@@ -34,7 +34,10 @@
   "init": true,
   "shutdownAction": "stopContainer",
 
-  // Named volumes so a rebuild costs neither a re-auth nor agent history.
+  // Named volumes, so logins, agent sessions, shell history and download
+  // caches survive a rebuild. Each target's parent already exists in the
+  // image, so Docker creates no root-owned directory on the way; post-create
+  // takes ownership of the volumes themselves.
   // The CLI's virtualenv gets one too: its ~11,000 files stay on the
   // container's own disk instead of the workspace bind mount, which on a
   // Windows drive (9p) makes every import a network round trip. The path is
@@ -43,6 +46,8 @@
     "source=musher-${devcontainerId}-gh-config,target=/home/vscode/.config/gh,type=volume",
     "source=musher-${devcontainerId}-claude-config,target=/home/vscode/.claude,type=volume",
     "source=musher-${devcontainerId}-codex-config,target=/home/vscode/.codex,type=volume",
+    "source=musher-${devcontainerId}-shell-history,target=/home/vscode/.shell-history,type=volume",
+    "source=musher-${devcontainerId}-cache,target=/home/vscode/.cache,type=volume",
     "source=musher-${devcontainerId}-venv,target=/workspaces/${localWorkspaceFolderBasename}/engineering-conventions/.venv,type=volume"
   ],
 
@@ -50,6 +55,20 @@
     // mise discovers .config/mise/config.toml on its own; trusting the
     // workspace lets `mise install` and the shims load it without a prompt.
     "MISE_TRUSTED_CONFIG_PATHS": "${containerWorkspaceFolder}",
+
+    // Claude keeps .claude.json beside its config dir, so without this it
+    // lands in ~/ -- outside the claude volume -- and is lost on every rebuild.
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+
+    // Every Claude Code session starts at max effort. An env var because the
+    // settings file's effortLevel has no "max"; it also outranks /effort, so
+    // start a lighter session as `CLAUDE_CODE_EFFORT_LEVEL=auto claude`.
+    "CLAUDE_CODE_EFFORT_LEVEL": "max",
+
+    // REPL histories join the shell's on its volume; post-create points zsh
+    // and bash there. Python's needs 3.13, which mise pins.
+    "NODE_REPL_HISTORY": "/home/vscode/.shell-history/node_repl_history",
+    "PYTHON_HISTORY": "/home/vscode/.shell-history/python_history",
 
     // Bytecode is cached, but outside the workspace: no __pycache__ in the
     // checkout, and no recompiling the virtualenv on every run.
@@ -63,17 +82,27 @@
   "remoteEnv": {
     // mise shims (every pinned CLI) + ~/.local/bin (Claude Code). mise itself
     // is baked into /usr/local/bin and is already on PATH.
-    "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
+    "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}",
+
+    // The host's GH_TOKEN, when it exports one: the first credential
+    // lib/github-auth.sh offers gh. Not GH_TOKEN itself, which would override
+    // gh's stored login on every call.
+    "MUSHER_HOST_GH_TOKEN": "${localEnv:GH_TOKEN}"
   },
 
   "waitFor": "postCreateCommand",
   // Line endings are enforced repo-wide by .gitattributes (`* text=auto eol=lf`),
   // so scripts arrive with LF on every platform and need no CRLF fixup.
   "postCreateCommand": ["bash", ".devcontainer/scripts/post-create.sh"],
+  // post-attach finishes the GitHub credential once VS Code has copied the
+  // host's ~/.gitconfig, which happens only after post-create.
+  "postAttachCommand": ["bash", ".devcontainer/scripts/post-attach.sh"],
 
   "customizations": {
     "vscode": {
       "extensions": [
+        // Claude Code's editor integration; the CLI comes from post-create.
+        "anthropic.claude-code",
         "redhat.vscode-yaml",
         "tsandall.opa",
         "chrischinchilla.vale-vscode",

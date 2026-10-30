@@ -34,7 +34,8 @@ base_setup_config_dirs() {
   setup_config_dirs \
     "gh config:${_HOME}/.config/gh" \
     "claude:${_HOME}/.claude" \
-    "codex:${_HOME}/.codex"
+    "codex:${_HOME}/.codex" \
+    "shell history:${_HOME}/.shell-history"
 }
 
 # --- Cache directories ---
@@ -51,6 +52,49 @@ base_setup_cache_dirs() {
     "xdg cache:${_HOME}/.cache" \
     "uv cache:${_HOME}/.cache/uv" \
     "npm cache:${_HOME}/.cache/npm"
+}
+
+# --- GitHub ---
+
+# Stores a GitHub token in gh when one has reached the container, and writes
+# no git config: VS Code copies the host's ~/.gitconfig only after
+# post-create. post-attach.sh finishes the job (lib/github-auth.sh). After the
+# config and cache dirs, because gh writes to both.
+#
+# Outputs:
+#   Writes progress to stderr
+base_setup_github_seed() {
+  # shellcheck source=github-auth.sh
+  source "${_LIB_DIR}/github-auth.sh"
+  github_auth_seed
+}
+
+# --- Shell history ---
+
+# Points zsh and bash at the shell-history volume, so history survives a
+# rebuild. Each line goes at the end of its rc file, because VS Code's shell
+# integration sets HISTFILE before it sources ~/.zshrc and oh-my-zsh keeps a
+# value already set. Not exported, so a child shell keeps its own file. The
+# dollar signs are escaped: the shell that reads the rc file expands them.
+#
+# Globals:
+#   _HOME — read, user home directory
+# Outputs:
+#   Writes progress to stderr via log()
+base_setup_shell_history() {
+  local marker="# musher devcontainer history (post-create)"
+  local rc line
+  [[ -d "${_HOME}/.shell-history" ]] || return 0
+  for rc in "${_HOME}/.zshrc" "${_HOME}/.bashrc"; do
+    [[ -f "${rc}" ]] || continue
+    grep -qxF "${marker}" "${rc}" && continue
+    case "${rc}" in
+      *zshrc) line="HISTFILE=\"\$HOME/.shell-history/zsh_history\"" ;;
+      *) line="HISTFILE=\"\$HOME/.shell-history/bash_history\"; PROMPT_COMMAND=\"history -a\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}\"" ;;
+    esac
+    log "Keeping $(basename "${rc}") history on the shell-history volume..."
+    printf '\n%s\n%s\n' "${marker}" "${line}" >> "${rc}"
+  done
 }
 
 # --- mise (installs every CLI pinned in .config/mise/config.toml) ---
@@ -148,6 +192,8 @@ base_setup() {
   log "Running base setup..."
   base_setup_config_dirs
   base_setup_cache_dirs
+  base_setup_github_seed
+  base_setup_shell_history
   base_setup_path
   base_install_tools
   base_install_claude

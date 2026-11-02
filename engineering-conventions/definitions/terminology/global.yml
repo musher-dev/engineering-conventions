@@ -642,6 +642,15 @@ terms:
       semantics are what the code depends on. A Redis server is a different engine, not this one.
     tags: [runtime.capability]
     stability: provisional
+  - id: runtime.capability.kafka
+    display_name: Apache Kafka
+    token: kafka
+    definition: >-
+      A Kafka cluster the process produces records to or consumes from over the Kafka protocol. It names the engine,
+      as postgresql and valkey do, because the protocol's per-partition order, acknowledgement and consumer-group
+      semantics are what the code depends on.
+    tags: [runtime.capability]
+    stability: provisional
 
   # Deployment environments: the tier a running process, a deploy or a
   # record belongs to (decision 0034). The token is the name everywhere a

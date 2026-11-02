@@ -445,8 +445,8 @@ that is a fact of each environment, held in its configuration. Several bindings 
 URL and its admin URL), and each names it.
 
 The capabilities are terms tagged `runtime.capability` in `definitions/terminology/global.yml`, so a new one is a
-terminology change. A capability that names an engine, such as `postgresql` or `valkey`, means that engine: its
-protocol and semantics are what the code depends on, and a compatible server from another project is a different
+terminology change. A capability that names an engine, such as `postgresql`, `valkey` or `kafka`, means that engine:
+its protocol and semantics are what the code depends on, and a compatible server from another project is a different
 engine. `cdn` covers content delivery only; an edge platform's key-value store or functions are `edge-compute`.
 
 | Capability | Is |
@@ -469,6 +469,7 @@ engine. `cdn` covers content delivery only; an edge platform's key-value store o
 | `edge-compute` | An edge platform's key-value store or functions the process writes to or deploys |
 | `access-proxy` | An identity-aware proxy in front of services the process calls, presenting a service credential |
 | `valkey` | A Valkey key-value server the process reads from and writes to over its Redis-compatible protocol: a cache, counters, short-lived state |
+| `kafka` | A Kafka cluster the process produces records to or consumes from over the Kafka protocol |
 
 ### Runtime requirements
 

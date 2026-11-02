@@ -575,7 +575,7 @@
     ["platform-api/env.schema.yaml", "ENVS-22", "warning", "binding DATABASE_URL names capability \"postgresql\" inline; declare the instance under requires, with the versions the code works with, and write requires: <instance> on the binding", true]
   ],
   "envs-18-unregistered-capability": [
-    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"access-proxy\", \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"container-registry\", \"dns\", \"edge-compute\", \"email-delivery\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"valkey\", \"vpn-mesh\", \"web-search\", or propose a new one", true],
+    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"access-proxy\", \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"container-registry\", \"dns\", \"edge-compute\", \"email-delivery\", \"kafka\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"valkey\", \"vpn-mesh\", \"web-search\", or propose a new one", true],
     ["platform-api/env.schema.yaml", "ENVS-22", "warning", "binding DATABASE_URL names capability \"postgres\" inline; declare the instance under requires, with the versions the code works with, and write requires: <instance> on the binding", true]
   ],
   "envs-20-missing-contract": [
@@ -595,6 +595,7 @@
   ],
   "envs-22-passes-requires": [],
   "envs-23-passes-every-instance-reached": [],
+  "envs-23-passes-kafka-cluster": [],
   "envs-23-undeclared-instance": [
     ["platform-api/env.schema.yaml", "ENVS-23", "warning", "binding CACHE_URL requires \"kv\", which is not declared under requires; declare it, or name a declared instance", true],
     ["platform-api/env.schema.yaml", "ENVS-23", "warning", "requires declares cache, which no binding reaches; name it with requires: cache on the binding that does, or remove it", true]

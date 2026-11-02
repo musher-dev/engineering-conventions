@@ -17485,6 +17485,7 @@
           "dns",
           "edge-compute",
           "email-delivery",
+          "kafka",
           "llm",
           "oauth-identity",
           "object-storage",

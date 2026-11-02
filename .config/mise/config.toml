@@ -64,6 +64,16 @@ python = "3.13.15"
 "aqua:mikefarah/yq" = "4.53.6"
 "aqua:jqlang/jq" = "1.8.2"
 
+# --- Coding agents ---------------------------------------------------------
+# Codex, the coding agent the dev container offers beside Claude Code; its
+# login lives on the container's codex-config volume. No gate runs it, and
+# every CI job installs a named subset of this file, so CI downloads it only
+# inside the dev container. The release binary rather than npm's package, so
+# node stays a runtime for markdownlint-cli2 alone. Bump it only to a current
+# release: mise 2026.9.12 can lock an aqua codex release only while it is
+# among openai/codex's 100 newest, alphas included.
+"aqua:openai/codex" = "0.163.0"
+
 [settings]
 # pipx tools install through uv rather than a system pipx.
 pipx.uvx = true

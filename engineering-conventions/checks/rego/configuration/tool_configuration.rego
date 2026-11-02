@@ -160,6 +160,79 @@ findings contains lib.finding("CONF-13", gitattributes_path, message) if {
 	)
 }
 
+# CONF-14
+findings contains lib.finding("CONF-14", concat("/", [".config", concern]), message) if {
+	some concern in concerns_in_use
+	not concern in registered_concerns
+	message := sprintf(
+		concat(" ", [
+			".config/%s/ is not a registered concern; name the directory for the files its tool reads",
+			"(%s) or, for a tool that reads every file, for what it looks for (%s)",
+		]),
+		[concern, concat(", ", sort(file_concerns)), concat(", ", sort(whole_repository_concerns))],
+	)
+}
+
+# CONF-15
+findings contains lib.finding("CONF-15", path, message) if {
+	some path in config_files
+	not startswith(path, ".config/mise/locks/")
+	parts := split(path, "/")
+	count(parts) > 2
+	some tool in concern_tools
+	regex.match(tool.pattern, files.basename(path))
+	not parts[1] in tool.concerns
+	message := sprintf(
+		concat(" ", [
+			"%s is %s configuration, which belongs in the %s concern;",
+			"move it to .config/%s/%s and update its callers",
+		]),
+		[path, tool.tool, concat(" or ", tool.concerns), tool.concerns[0], trim_left(files.basename(path), "._")],
+	)
+}
+
+# The first directory under .config/ of every file in a subdirectory.
+concerns_in_use contains parts[1] if {
+	some path in config_files
+	parts := split(path, "/")
+	count(parts) > 2
+}
+
+# The concerns, in one list. Most name the files a tool reads; a tool that
+# reads every file is named for what it looks for; mise is where mise looks.
+file_concerns := {
+	"actions", "commits", "docker", "json", "markdown", "openapi", "opentofu",
+	"python", "rego", "shell", "sql", "terraform", "toml", "typescript", "yaml",
+}
+
+whole_repository_concerns := {"prose", "security", "spelling"}
+
+registered_concerns := (file_concerns | whole_repository_concerns) | {"mise"}
+
+# Each known tool's configuration file, by name with or without a leading dot
+# or underscore, and the concerns it may sit in, the one to suggest first. A
+# tool that reads .tf files whichever CLI applies them (tflint, terraform-docs)
+# may sit in terraform/ or opentofu/.
+concern_tools := [
+	{"tool": "Vale", "concerns": ["prose"], "pattern": `^[._]?vale\.ini$`},
+	{"tool": "gitleaks", "concerns": ["security"], "pattern": `^\.?gitleaks(\.toml|ignore)$`},
+	{"tool": "Trivy", "concerns": ["security"], "pattern": `^\.?trivy(ignore(\.ya?ml)?|\.ya?ml)$`},
+	{"tool": "typos", "concerns": ["spelling"], "pattern": `^[._]?typos\.toml$`},
+	{"tool": "codespell", "concerns": ["spelling"], "pattern": `^\.?codespell(rc|\.cfg)$`},
+	{"tool": "cspell", "concerns": ["spelling"], "pattern": `^\.?cspell(\.config)?\.(jsonc?|ya?ml)$`},
+	{"tool": "yamllint", "concerns": ["yaml"], "pattern": `^\.?yamllint(\.ya?ml)?$`},
+	{"tool": "markdownlint", "concerns": ["markdown"], "pattern": `^\.?markdownlint(-cli2)?\.(jsonc?|ya?ml)$`},
+	{"tool": "actionlint", "concerns": ["actions"], "pattern": `^\.?actionlint\.ya?ml$`},
+	{"tool": "zizmor", "concerns": ["actions"], "pattern": `^\.?zizmor\.ya?ml$`},
+	{"tool": "hadolint", "concerns": ["docker"], "pattern": `^\.?hadolint\.ya?ml$`},
+	{"tool": "Regal", "concerns": ["rego"], "pattern": `^\.?regal\.ya?ml$`},
+	{"tool": "Taplo", "concerns": ["toml"], "pattern": `^\.?taplo\.toml$`},
+	{"tool": "committed", "concerns": ["commits"], "pattern": `^\.?committed\.toml$`},
+	{"tool": "Spectral", "concerns": ["openapi"], "pattern": `^\.?spectral\.(ya?ml|json)$`},
+	{"tool": "tflint", "concerns": ["terraform", "opentofu"], "pattern": `^\.?tflint\.hcl$`},
+	{"tool": "terraform-docs", "concerns": ["terraform", "opentofu"], "pattern": `^\.?terraform-docs\.ya?ml$`},
+]
+
 gitattributes_path := ".gitattributes"
 
 # Each pattern of the root .gitattributes with its line number. A blank
@@ -289,7 +362,7 @@ glob_pattern(path) if regex.match(`[*?\[]`, path)
 # The documents that run tools, and so name their configuration.
 caller_patterns := [
 	`(^|/)[Tt]askfile(\.dist)?\.ya?ml$`,
-	`(^|/)taskfiles/[^/]+\.ya?ml$`,
+	`(^|/)taskfiles/(tools/)?[^/]+\.ya?ml$`,
 	`^(\.config/)?\.?lefthook(-local)?\.ya?ml$`,
 	`^\.github/workflows/[^/]+\.(?i:ya?ml)$`,
 	`^\.github/actions/.+/action\.ya?ml$`,
@@ -409,4 +482,6 @@ root_configs := {
 	"ruff.toml": "Ruff",
 	".lychee.toml": "lychee",
 	"lychee.toml": "lychee",
+	".tflint.hcl": "tflint",
+	".terraform-docs.yml": "terraform-docs",
 }

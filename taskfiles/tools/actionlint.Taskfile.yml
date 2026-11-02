@@ -1,0 +1,27 @@
+version: '3'
+
+# actionlint: how the workflows are linted. The binary and its config path are
+# written here and nowhere else (TASK-26); lint:actions calls it. actionlint
+# finds the workflows itself and resolves composite actions and reusable
+# workflows across files, and lints `run:` scripts with the pinned shellcheck,
+# so its sources are all of .github/workflows and .github/actions and the
+# toolchain lockfile. The check is skipped while they are unchanged since it
+# last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:actionlint:
+    desc: Lint the workflows with actionlint.
+    method: checksum
+    vars:
+      ACTIONLINT_CONFIG: .config/actions/actionlint.yaml
+    sources:
+      - .github/workflows/*
+      - .github/actions/**/*
+      - .config/actions/actionlint.yaml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/actionlint.Taskfile.yml
+    cmds:
+      - actionlint -config-file {{.ACTIONLINT_CONFIG}}

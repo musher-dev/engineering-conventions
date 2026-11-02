@@ -6,7 +6,7 @@ configuration and one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.9.1 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.9.3 -- conventions check  # x-release-please-version
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
@@ -27,7 +27,7 @@ being told ([EC-0017](../engineering-conventions/definitions/conventions/toolcha
 min_version = "2026.9.12"   # the mise that CI and the dev container install
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.9.1"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.9.3"  # x-release-please-version
 ```
 
 Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:
@@ -43,6 +43,7 @@ conventions hadolint                   # lint every Dockerfile with .config/dock
 conventions env-contract SCHEMA        # print the environment contract derived from an env.schema.yaml
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
 conventions waivers                    # list the waivers in .repo/conventions.toml with their expiry
+conventions codeowners                 # ask GitHub whether every CODEOWNERS owner resolves (online)
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -384,11 +385,11 @@ config package, `MusherProse.zip`, that installs the copy rules: the `MusherCopy
 your mise configuration pins, and apply the styles to the site's sources:
 
 ```ini
-# .config/markdown/vale.ini
+# .config/prose/vale.ini
 StylesPath = ../../.vale
 MinAlertLevel = warning
 # x-release-please-start-version
-Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.9.1/MusherProse.zip
+Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.9.3/MusherProse.zip
 # x-release-please-end
 
 [formats]
@@ -408,8 +409,8 @@ lint:copy:
   desc: Lint the site's copy with Vale.
   cmds:
     - mkdir -p .vale
-    - vale --config .config/markdown/vale.ini sync
-    - vale --config .config/markdown/vale.ini apps/site/src
+    - vale --config .config/prose/vale.ini sync
+    - vale --config .config/prose/vale.ini apps/site/src
 ```
 
 `conventions check` reports COPY-01 to COPY-03 on the config, and `conventions prose` runs `MusherCopy` from the
@@ -425,7 +426,7 @@ Download the release tarball, verify it, and run its launcher with conftest and 
 Spectral for `openapi`, hadolint for `hadolint`):
 
 ```sh
-version=0.9.1  # x-release-please-version
+version=0.9.3  # x-release-please-version
 gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
 gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
   --signer-workflow musher-dev/engineering-conventions/.github/workflows/release.yml \
@@ -485,6 +486,25 @@ With no files named, it lints every document the `openapi` interfaces in `.repo/
 `spectral lint --ruleset .config/openapi/spectral.yaml` directly is as good. Add the repository's own API-design rules
 to the same ruleset, and turn a rule off there, or for one place in its `overrides`, with the reason beside it
 ([EC-0037](../engineering-conventions/definitions/conventions/openapi/openapi-documents.md)).
+
+COMM-11 is delegated to GitHub. Whether a CODEOWNERS owner exists and has write access depends on the organization,
+not the repository, so `conventions check` cannot see it. `conventions codeowners` asks GitHub's CODEOWNERS errors
+API through the GitHub CLI and prints each error as a COMM-11 finding, in the same report, `--output json` and
+`--fail-on` as `conventions check`
+([decision 0041](decisions/0041-github-judges-codeowners-owners.md)). Run it in validation against the pull request's
+head, with the job's token; `contents: read` is all it needs, and the runner images include `gh`:
+
+```yaml
+- name: Ask GitHub whether every CODEOWNERS owner resolves
+  env:
+    GH_TOKEN: ${{ github.token }}
+    REF: ${{ github.event.pull_request.head.sha || github.sha }}
+  run: conventions codeowners --ref "$REF" --fail-on warning
+```
+
+It reads the repository from `GITHUB_REPOSITORY`, or from `--repository OWNER/NAME`, and checks the default branch
+when no `--ref` is given. Run it in a job that a cache never skips: a team renamed in the organization breaks the file
+without any commit.
 
 ## Reading the report
 
@@ -565,8 +585,9 @@ Quote the date. An unquoted `expires = 2026-12-31` is a TOML date rather than a 
 
 A waiver needs a reason of at least 20 characters, a tracking issue URL and an expiry at most 180 days away. It
 suppresses matching findings until the expiry date; after that, the findings return along with an ADOPT-03 finding.
-A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived. The full rules
-are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
+A waiver that matches nothing is reported as stale (ADOPT-06). `ADOPT` requirements cannot be waived, and neither can
+a requirement whose section says `Waivable: no`, such as COMM-09; ADOPT-06 reports a waiver that names one. The full
+rules are in [EC-0001](../engineering-conventions/definitions/conventions/adoption/conventions-declaration.md).
 
 To review them, `conventions waivers` lists each waiver with its expiry, how many days remain, its tracking URL and
 the paths it covers. With `--check-tracking` it also asks the GitHub CLI (`gh`, signed in) for the state of each

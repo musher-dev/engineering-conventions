@@ -364,3 +364,26 @@ loss_message(name, loss) := sprintf(
 	]),
 	[name, loss],
 )
+
+test_task_28_unmatched_glob if {
+	sources := [
+		"app/**/*.ts", "**/*.ts", "{{.ROOT_DIR}}/app/*.go", "app/**",
+		"dist/**/*.js", "{{.SRC}}/*.go", {"exclude": "app/*.ts"},
+	]
+	found := style.findings with input as with_task("build", {"desc": "Build.", "sources": sources})
+	messages(found, "TASK-28") == {glob_message("app/**/*.ts"), glob_message("**/*.ts")}
+}
+
+test_task_28_skips_a_task_with_its_own_dir if {
+	found := style.findings with input as with_task("build", {"desc": "Build.", "dir": "app", "sources": ["*.ts"]})
+	not "TASK-28" in td.ids(found)
+}
+
+glob_message(pattern) := sprintf(
+	concat("", [
+		"task \"build\" lists source glob %q, which matches no file in the repository, so Task fingerprints ",
+		"nothing for it and the task never reruns for the files it was meant to watch; correct the pattern ",
+		"or remove it",
+	]),
+	[pattern],
+)

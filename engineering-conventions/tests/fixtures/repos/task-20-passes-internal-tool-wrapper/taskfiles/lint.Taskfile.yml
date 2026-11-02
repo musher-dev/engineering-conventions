@@ -1,0 +1,9 @@
+version: '3'
+
+# Lint: the linters, each run through its tool wrapper.
+
+tasks:
+  lint:workflows:
+    desc: Lint the workflows.
+    cmds:
+      - task: tool:actionlint

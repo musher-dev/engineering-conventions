@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-19",
+    "path": "platform-api/apps/web/tsconfig.json",
+    "severity": "warning"
+  }
+]

@@ -1,0 +1,27 @@
+version: '3'
+
+# basedpyright: how the conventions CLI is type-checked. The command is written
+# here and nowhere else (TASK-26); cli:typecheck calls it. It runs through
+# UV_RUN, so the version is the one uv.lock records, and with
+# `dir: engineering-conventions` so it finds its configuration in the
+# product's pyproject.toml (see taskfiles/tools/ruff.Taskfile.yml for why the
+# dir is relative). Sources resolve from that dir too. The check is skipped
+# while its sources are unchanged since it last passed.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:basedpyright:
+    desc: Type-check the CLI with basedpyright.
+    dir: engineering-conventions
+    method: checksum
+    sources:
+      - '**/*.py'
+      - exclude: '.venv/**/*'
+      - pyproject.toml
+      - uv.lock
+      - ../.config/mise/mise.lock
+      - ../Taskfile.yml
+      - ../taskfiles/tools/basedpyright.Taskfile.yml
+    cmds:
+      - '{{.UV_RUN}} basedpyright'

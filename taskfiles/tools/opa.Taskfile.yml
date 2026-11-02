@@ -1,0 +1,65 @@
+version: '3'
+
+# opa: how the Rego rules are formatted, type-checked and unit-tested with the
+# pinned OPA. The binary, its flags and the coverage threshold are written
+# here and nowhere else (TASK-26); the checks area calls it. A check is
+# skipped while its sources are unchanged since it last passed; given FILES, a
+# shell-quoted list such as the git hooks pass, the formatter touches only
+# those files.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:opa:fmt:check:
+    desc: Fail if any Rego file is not opa fmt-formatted, listing the files.
+    method: checksum
+    sources:
+      - engineering-conventions/checks/rego/**/*.rego
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/opa.Taskfile.yml
+    cmds:
+      - opa fmt --fail --list {{.REGO_DIR}}
+
+  tool:opa:fmt:fix:
+    desc: Format Rego in place with opa fmt.
+    cmds:
+      - opa fmt --write {{if .FILES}}{{.FILES}}{{else}}{{.REGO_DIR}}{{end}}
+
+  tool:opa:check:
+    desc: Parse and type-check the Rego rules against the generated index with opa check --strict.
+    method: checksum
+    sources:
+      - engineering-conventions/checks/rego/**/*.rego
+      - engineering-conventions/checks/data/index.json
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/opa.Taskfile.yml
+    cmds:
+      - opa check --strict {{.REGO_DIR}} {{.INDEX}}
+
+  tool:opa:test:
+    desc: Run the Rego unit tests under the pinned opa; fail below the coverage threshold or on zero tests.
+    method: checksum
+    vars:
+      COVERAGE_THRESHOLD: 80
+    sources:
+      - engineering-conventions/checks/rego/**/*.rego
+      - engineering-conventions/checks/data/index.json
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/opa.Taskfile.yml
+    cmds:
+      # One pass that also measures coverage. A failing test still fails the
+      # run and prints its name. --fail-on-empty: without it `opa test` exits
+      # 0 when it finds no tests at all, so a renamed test package or a broken
+      # glob would pass silently. --coverage-runs= skips the extra annotation
+      # passes, which only label uncovered lines in a report nothing here
+      # reads.
+      - |
+        report="$(mktemp)"
+        trap 'rm -f "${report}"' EXIT
+        opa test --fail-on-empty --coverage --coverage-runs= --threshold {{.COVERAGE_THRESHOLD}} \
+          {{.REGO_DIR}} {{.INDEX}} > "${report}"
+        coverage="$(opa eval --stdin-input --format raw 'input.coverage' < "${report}")"
+        echo "Rego coverage: ${coverage}% (threshold {{.COVERAGE_THRESHOLD}}%)"

@@ -1,0 +1,5 @@
+# Only the rules listed here run: there is no preset under them.
+rules:
+  line-length:
+    max: 120
+  trailing-spaces: enable

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-15",
+    "path": ".config/yaml/tflint.hcl",
+    "severity": "warning"
+  }
+]

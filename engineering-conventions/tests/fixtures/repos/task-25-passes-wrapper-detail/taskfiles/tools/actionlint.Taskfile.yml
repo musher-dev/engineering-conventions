@@ -1,0 +1,14 @@
+version: '3'
+
+# actionlint: how actionlint runs, over every workflow.
+
+tasks:
+  tool:actionlint:
+    desc: Lint the workflows with actionlint.
+    cmds:
+      - actionlint
+
+  tool:actionlint:verbose:
+    desc: Lint the workflows with actionlint, verbosely.
+    cmds:
+      - actionlint -verbose

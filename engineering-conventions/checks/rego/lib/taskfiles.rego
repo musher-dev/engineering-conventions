@@ -18,8 +18,8 @@ default_names := [
 
 # The Taskfiles bin/conventions passes to conftest that this library reads:
 # one at the root or up to two directories deep, and the YAML files in a
-# taskfiles/ directory at those depths.
-path_pattern := `^([^/]+/){0,2}([Tt]askfile(\.dist)?\.ya?ml|taskfiles/[^/]+\.ya?ml)$`
+# taskfiles/ directory at those depths, or in its tools/ subdirectory.
+path_pattern := `^([^/]+/){0,2}([Tt]askfile(\.dist)?\.ya?ml|taskfiles/(tools/)?[^/]+\.ya?ml)$`
 
 # Every Taskfile outside the fixtures. A YAML file under taskfiles/ counts
 # only when it has a Taskfile's top-level keys.

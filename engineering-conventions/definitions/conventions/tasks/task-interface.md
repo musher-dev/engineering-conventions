@@ -79,6 +79,12 @@ a task from an internal include, does not count, because it cannot be run from t
 
 How each task is written is [EC-0015](taskfile-style.md).
 
+The verbs belong to the root Taskfile. Where a repository splits its Taskfile into [layers](taskfile-style.md#layers),
+the root keeps the verbs and the tasks that manage the environment itself, such as installing the toolchain and the
+git hooks; an area fragment (`taskfiles/lint.Taskfile.yml`) holds the tasks a verb runs (`lint:yaml`), and a tool
+wrapper (`taskfiles/tools/yamllint.Taskfile.yml`) holds how one tool runs. A verb composes area tasks and never
+writes a tool's command line itself, so `task lint`, a git hook and CI run each tool the same way.
+
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`). It replaces the verb taxonomy in

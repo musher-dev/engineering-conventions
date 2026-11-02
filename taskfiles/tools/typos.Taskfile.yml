@@ -1,0 +1,48 @@
+version: '3'
+
+# typos: how spelling is checked. The binary and its config path are written
+# here and nowhere else (TASK-26); lint:spelling calls tool:typos. Given FILES,
+# a shell-quoted list such as the git hooks pass, it checks those and always
+# runs (tool:typos:files). Without, typos walks the repository itself,
+# skipping what git ignores, so its sources are every file but the ones a run
+# writes, and it is skipped while they are unchanged since it last passed
+# (tool:typos:all). Both share one command, so the two can never drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:typos:
+    desc: Spellcheck with typos, FILES or every file.
+    cmds:
+      - task: tool:typos:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:typos:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:typos:all:
+    desc: Spellcheck every file, unless none has changed since it last passed.
+    method: checksum
+    sources:
+      - '**/*'
+      - exclude: .git/**/*
+      - exclude: .task/**/*
+      - exclude: dist/**/*
+      - exclude: '**/.venv/**/*'
+      - exclude: '**/__pycache__/**/*'
+      - exclude: '**/.pytest_cache/**/*'
+      - exclude: '**/.ruff_cache/**/*'
+      - exclude: '**/.coverage'
+    vars: &vars
+      TYPOS_CONFIG: .config/spelling/typos.toml
+    cmds: &cmds
+      # --force-exclude makes the config's excludes hold for files passed by
+      # name.
+      - typos --config {{.TYPOS_CONFIG}}{{if .FILES}} --force-exclude {{.FILES}}{{end}}
+
+  tool:typos:files:
+    desc: Spellcheck the files FILES names.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds

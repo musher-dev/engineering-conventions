@@ -1,0 +1,14 @@
+assert_lefthook_installed: true
+min_version: "2.1.14"
+glob_matcher: doublestar
+pre-commit:
+  jobs:
+    - name: workflows
+      glob: ".github/**/*.yml"
+      run: task lint -- {staged_files}
+      fail_text: "Workflow lint failed. Run 'task lint'."
+commit-msg:
+  jobs:
+    - name: committed
+      run: committed --config .config/commits/committed.toml --commit-file {1}
+      fail_text: "The message must pass .config/commits/committed.toml."

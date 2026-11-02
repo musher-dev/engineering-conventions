@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ADOPT-06",
+    "path": ".repo/conventions.toml",
+    "severity": "warning"
+  },
+  {
+    "id": "COMM-09",
+    "path": ".github/CODEOWNERS",
+    "severity": "warning"
+  }
+]

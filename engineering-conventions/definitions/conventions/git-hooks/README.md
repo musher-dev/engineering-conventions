@@ -19,7 +19,7 @@ The convention is a **draft**, owned by this repository, and every requirement i
 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
-| [EC-0014 Lefthook configuration](lefthook.md) | HOOKS-01 – HOOKS-14 | The settings every configuration carries, its globs, its jobs, what may run before a commit, and how a job restages, which stage it runs in and what it calls |
+| [EC-0014 Lefthook configuration](lefthook.md) | HOOKS-01 – HOOKS-15 | The settings every configuration carries, its globs, its jobs, what may run before a commit, and how a job restages, which stage it runs in and what it calls |
 
 The reasoning for adopting these from `musher-dev/platform` and `musher-dev/development-container` is recorded in
 [decision 0016](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md).
@@ -47,4 +47,5 @@ pre-push:
       fail_text: "Tests failed. Run 'task test'."
 ```
 
-No `remotes:` or `extends:` (HOOKS-09), and no `|| true` in a `run:` (HOOKS-10).
+No `remotes:` or `extends:` (HOOKS-09), no `|| true` in a `run:` (HOOKS-10), and no tool that has a wrapper in
+`taskfiles/tools/` run directly: run the task that calls it (HOOKS-15).

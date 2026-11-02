@@ -1,0 +1,51 @@
+version: '3'
+
+# yamllint: how YAML is linted. The binary, its config path, its severity flag
+# (--strict: a warning fails) and its file set are written here and nowhere
+# else (TASK-26); lint:yaml calls tool:yamllint. Given FILES, a shell-quoted
+# list such as the git hooks pass, it lints those and always runs
+# (tool:yamllint:files); without, it lints every YAML file and is skipped while
+# its sources are unchanged since it last passed (tool:yamllint:all). Both
+# share one command, so the two can never drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:yamllint:
+    desc: Lint YAML with yamllint, FILES or every YAML file; warnings fail.
+    cmds:
+      - task: tool:yamllint:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:yamllint:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:yamllint:all:
+    desc: Lint every YAML file with yamllint, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - '**/*.yml'
+      - '**/*.yaml'
+      - exclude: engineering-conventions/tests/fixtures/**/*
+      - .config/yaml/yamllint.yaml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/yamllint.Taskfile.yml
+    vars: &vars
+      YAMLLINT_CONFIG: .config/yaml/yamllint.yaml
+      # Fixture repos are linted by the checks they exist to exercise, and
+      # some carry deliberate faults; the product's own YAML is otherwise in
+      # scope. The git hook excludes the same files.
+      PATHSPEC: >-
+        '**/*.yml' '**/*.yaml' ':!:engineering-conventions/tests/fixtures/**'
+    cmds: &cmds
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r yamllint -c {{.YAMLLINT_CONFIG}} --strict
+
+  tool:yamllint:files:
+    desc: Lint the YAML files FILES names with yamllint.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds

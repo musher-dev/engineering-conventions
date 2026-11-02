@@ -7,7 +7,8 @@ summary: >-
   way they read, defines its hooks as jobs that say how to fix a failure,
   keeps tests out of pre-commit, never lets a hook pass on a failure,
   stages the fixes it makes, runs each check in one stage, calls package
-  runners only through tasks, and takes its hooks from no other repository.
+  runners and wrapped tools only through tasks, and takes its hooks from no
+  other repository.
 status: draft
 topic: git-hooks
 applies_to:
@@ -172,6 +173,14 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.git_hooks.lefthook
+  - id: HOOKS-15
+    title: Where a tool has a wrapper, a job runs a task rather than the tool
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.git_hooks.lefthook
 ---
 
 # Lefthook configuration
@@ -228,6 +237,10 @@ the same binary in a hook and in CI, and only a package runner chooses its versi
 other request, that every hook check has a CI counterpart, is not checked: a hook usually runs a fixing or
 file-scoped variant (`fmt:files`) of the task CI runs (`fmt:check`), often from a subdirectory or through a
 workflow matrix, so no reliable mapping from one to the other can be read from the files.
+
+HOOKS-15 asks for the guide's rule where a repository has made it checkable: once a tool has a [tool
+wrapper](../tasks/taskfile-style.md#layers), its command line is written there, and a hook that runs the binary
+itself is a second copy.
 
 ## Requirements
 
@@ -638,9 +651,50 @@ pre-commit:
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
 
+### HOOKS-15
+
+**Where a tool has a wrapper, a job runs a task rather than the tool.**
+
+A [tool wrapper](../tasks/taskfile-style.md#layers) holds how a tool runs: its configuration path, its severity flags
+and the files it reads. A hook job that starts the binary itself writes a second command line, which drifts from the
+wrapper's, so the hook passes a file that `task lint` and CI fail, or the other way round. The job runs the area task
+that calls the wrapper instead, passing the staged files, so it runs exactly what CI runs over fewer files. The
+requirement applies only to a tool the root Taskfile wraps (`taskfiles/tools/yamllint.Taskfile.yml` wraps
+`yamllint`). The check reads each line of the job's `run` and reports one whose program, its first word after any
+`NAME=value` assignments, is a wrapped tool; a tool without a wrapper, a runner (`uv run ruff`) and a `script:` are
+not judged. The files go after `--`, which lefthook fills with each staged name quoted, and the area task passes them
+on as `FILES: '{{.CLI_ARGS}}'`; a name with a space or a quote survives, where `FILES='{staged_files}'` breaks it.
+`committed` in a `commit-msg` job is left to [COMMIT-03](../commits/commit-messages.md#commit-03), which asks for
+that command in the hook. A package runner is [HOOKS-14](#hooks-14).
+
+**Correct:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: yaml
+      glob: "**/*.{yml,yaml}"
+      run: task lint:yaml -- {staged_files}
+      fail_text: "YAML lint failed. Run 'task lint:yaml'."
+```
+
+**Incorrect:**
+
+```yaml
+pre-commit:
+  jobs:
+    - name: yaml
+      glob: "**/*.{yml,yaml}"
+      run: yamllint --strict --config-file .config/yaml/yamllint.yaml {staged_files}
+      fail_text: "YAML lint failed. Run 'task lint:yaml'."
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
+
 ## References
 
 - [Decision 0016: Rules adopted from other repositories get new families](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0016-adopted-rules-get-new-families.md)
+- [EC-0015 Taskfile style: Layers](../tasks/taskfile-style.md#layers)
 - [Lefthook: Configuration](https://lefthook.dev/configuration/)
 - [Lefthook: glob_matcher](https://lefthook.dev/configuration/glob_matcher/)
 - [Lefthook: jobs](https://lefthook.dev/configuration/jobs/)

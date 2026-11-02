@@ -1,0 +1,58 @@
+version: '3'
+
+# taplo: how TOML formatting is checked and fixed. The binary, its config path
+# and its file set are written here and nowhere else (TASK-26); lint:toml calls
+# tool:taplo and lint:toml:fix calls tool:taplo:fix. Given FILES, a
+# shell-quoted list such as the git hooks pass, the check covers those and
+# always runs (tool:taplo:files); without, it covers every TOML file and is
+# skipped while its sources are unchanged since it last passed
+# (tool:taplo:all). Both share one command, so the two can never drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:taplo:
+    desc: Check TOML formatting with taplo, FILES or every TOML file.
+    cmds:
+      - task: tool:taplo:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:taplo:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:taplo:all:
+    desc: Check every TOML file's formatting, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - '**/*.toml'
+      - exclude: engineering-conventions/tests/fixtures/**/*
+      - .config/toml/taplo.toml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/taplo.Taskfile.yml
+    vars: &vars
+      TAPLO_CONFIG: .config/toml/taplo.toml
+      # Fixture repos carry TOML exactly as a consumer might write it; the
+      # same exclusion is in .config/toml/taplo.toml for the editor, and in
+      # the git hook.
+      PATHSPEC: >-
+        '**/*.toml' ':!:engineering-conventions/tests/fixtures/**'
+    cmds: &cmds
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r taplo fmt --config {{.TAPLO_CONFIG}} --check
+
+  tool:taplo:files:
+    desc: Check the formatting of the TOML files FILES names.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds
+
+  tool:taplo:fix:
+    desc: Format FILES or every TOML file in place with taplo.
+    vars: *vars
+    cmds:
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r taplo fmt --config {{.TAPLO_CONFIG}}

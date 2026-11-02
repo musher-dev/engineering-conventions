@@ -7,9 +7,10 @@ summary: >-
   spaces, describes every public task and calls every internal one,
   names only includes, paths and sources that exist, keeps its default
   task to listing, names no machine-specific path, and prompts before
-  destroying data. A fragment flattened into its Taskfile keeps to itself
-  and says what it does, and a Taskfile that opts into prefixed output
-  labels its silent tasks.
+  destroying data. A fragment flattened into its Taskfile keeps to itself,
+  says what it does and names its tasks for its area; a tool wrapper is
+  the one place its tool runs; a sources glob matches something; and a
+  Taskfile that opts into prefixed output labels its silent tasks.
 status: draft
 topic: tasks
 applies_to:
@@ -18,6 +19,7 @@ applies_to:
     - "*/Taskfile.yml"
     - "*/*/Taskfile.yml"
     - "**/taskfiles/*.yml"
+    - "**/taskfiles/tools/*.yml"
 created: 2026-09-28
 owners:
   - "@justinmerrell"
@@ -160,7 +162,7 @@ requirements:
       engine: conftest
       package: conventions.checks.tasks.taskfile_fragments
   - id: TASK-20
-    title: A Taskfile that flattens its fragments includes each with flatten, never optional, dir or internal
+    title: A Taskfile that flattens its fragments includes each area fragment with flatten, never optional, dir or internal
     status: proposed
     severity: warning
     since: 0.7.1
@@ -199,6 +201,38 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-25
+    title: A tool wrapper is included with flatten and internal, and names its tasks tool:<tool>
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-26
+    title: A tool that has a wrapper runs only in its wrapper
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-27
+    title: A flattened fragment's public tasks are named under its area
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_fragments
+  - id: TASK-28
+    title: Every sources glob matches something the repository holds
+    status: proposed
+    severity: warning
+    since: 0.9.2
+    validation:
+      engine: conftest
+      package: conventions.checks.tasks.taskfile_style
 ---
 
 # Taskfile style
@@ -228,13 +262,97 @@ can only be known when the task runs.
 
 ### Fragments
 
-A **fragment** is a Taskfile named `<area>.Taskfile.yml` (or `.yaml`) in a `taskfiles/` directory, at the root or up
-to two directories below it, that another Taskfile includes: `taskfiles/lint.Taskfile.yml` holds the `lint` area.
-A repository splits a long Taskfile this way and, usually, flattens the fragments back into it, so each task keeps
-the full name its fragment writes. TASK-18 and TASK-19 apply to every fragment. TASK-20 to TASK-22 hold the layout
-to one shape, and apply to the fragments of a Taskfile that flattens at least one of them; a Taskfile that namespaces
-every fragment is not affected. A Taskfile with another name, or one nothing includes, is not a fragment. TASK-05
-already asks every public task in a fragment for a `desc`.
+A **fragment** is a Taskfile named `<area>.Taskfile.yml` (or `.yaml`) in a `taskfiles/` directory, at the root or up to
+two directories below it, that another Taskfile includes: `taskfiles/lint.Taskfile.yml` holds the `lint` area. A
+repository splits a long Taskfile this way and, usually, flattens the fragments back into it, so each task keeps the
+full name its fragment writes. TASK-18 and TASK-19 apply to every fragment. TASK-20 to TASK-22 hold the layout to one
+shape, and apply to the fragments of a Taskfile that flattens at least one of them; TASK-27 applies to each fragment
+included with `flatten: true`. A Taskfile that namespaces every fragment is not affected. A Taskfile with another name,
+or one nothing includes, is not a fragment. TASK-05 already asks every public task in a fragment for a `desc`.
+
+### Layers
+
+A repository that runs several tools splits what it says about each into layers, each with one job:
+
+| Layer | Holds | Example |
+| --- | --- | --- |
+| `.config/<concern>/` | What counts as wrong: the tool's rules ([EC-0011](../configuration/tool-configuration.md)) | `.config/yaml/yamllint.yaml` |
+| `taskfiles/tools/<tool>.Taskfile.yml` | How one tool runs: its binary, its `--config` path, its severity flags, the files it reads by default and its cache `sources` | `tool:yamllint` |
+| `taskfiles/<area>.Taskfile.yml` | Which tools make up an area, and the names people and hooks call | `lint:yaml` calls `tool:yamllint` |
+| The root `Taskfile.yml` | The shared verbs ([EC-0016](task-interface.md)) and the tasks that manage the environment itself, such as installing the toolchain and the git hooks | `lint`, `check`, `setup` |
+
+A **tool wrapper** is a Taskfile named `<tool>.Taskfile.yml` in a `taskfiles/tools/` directory that another Taskfile
+includes, its stem the name of the binary it runs. There is one per tool. It is included with `flatten: true` and
+`internal: true` (TASK-25), so its tasks are hidden from `task --list`, cannot be run from the command line, and are
+called by the area tasks as `tool:<tool>`. Once a tool has a wrapper, every other Taskfile and every git hook calls
+the wrapper rather than the binary (TASK-26, [HOOKS-15](../git-hooks/lefthook.md#hooks-15)), so a flag or a
+configuration path is changed in one place and the hook, the area task and CI run the tool the same way. A wrapper
+is a fragment too: TASK-18, TASK-19, TASK-21 and TASK-22 apply to it, its area being its tool.
+
+The layers are optional. A repository with a few tools may keep each command in its area fragment; TASK-25, TASK-26
+and HOOKS-15 apply only once a repository has a wrapper.
+
+### Caching with sources
+
+Task skips a task whose `sources` have not changed since it last succeeded, which can save a gate minutes of work.
+What it compares is narrow. With the default `method: checksum`, the fingerprint is the contents of the files
+`sources` matches, each by its base name. These checks held with Task 3.53.1:
+
+- A changed command line, variable, `CLI_ARGS` value or environment variable does not change the fingerprint. A task
+  that runs a tool therefore lists, beside the files the tool reads, the tool's configuration file, the toolchain's
+  lockfile (`.config/mise/mise.lock`, so a new tool version reruns it) and the Taskfiles that define the task and the
+  wrapper it calls.
+- A file moved to another directory under the same base name does not change it either. A whole-repository check
+  that must notice moves is left uncached.
+- A task that reads the network or the git history, such as an online audit or a secret scan of every commit, has
+  inputs no file list describes, and is left uncached. So is a task that publishes.
+- A glob in `sources` that matches nothing adds nothing, and a task whose sources match nothing is up to date after
+  its first run whatever changes (TASK-14, TASK-28).
+
+A run a git hook makes over the staged files should neither skip nor record a fingerprint for the whole repository,
+since it checked only some files. Task's schema allows `method` only as `none`, `checksum` or `timestamp`, so a wrapper
+splits the two runs into tasks that share one command through a YAML anchor: `tool:<tool>:all` checks the whole file
+set and is cached, `tool:<tool>:files` requires `FILES` and is not, and `tool:<tool>` calls one or the other. An area
+task passes on what follows `--` (`FILES: '{{.CLI_ARGS}}'`), which a hook fills with `-- {staged_files}`; lefthook
+quotes each name, so a name with a space or a quote survives.
+
+```yaml
+tasks:
+  tool:yamllint:
+    desc: Lint YAML with yamllint, FILES or every YAML file.
+    cmds:
+      - task: tool:yamllint:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:yamllint:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:yamllint:all:
+    desc: Lint every YAML file, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - '**/*.yml'
+      - .config/yaml/yamllint.yaml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/yamllint.Taskfile.yml
+    cmds: &cmds
+      - yamllint --strict --config-file .config/yaml/yamllint.yaml {{if .FILES}}{{.FILES}}{{else}}.{{end}}
+
+  tool:yamllint:files:
+    desc: Lint the YAML files FILES names.
+    requires:
+      vars: [FILES]
+    cmds: *cmds
+```
+
+A cached task is not `silent`: silence also hides Task's "is up to date" line, which is how a reader learns a gate
+was skipped. The tasks of a wrapper are hidden by its include rather than by `internal: true` on each, so TASK-18 does
+not ask them to be silent.
+
+`task --force <task>` runs a task whatever its fingerprint says, and the tasks it calls too. Task keeps its
+fingerprints in `.task/` at the root; list it in `.gitignore`. An up-to-date result on one machine is a convenience,
+not evidence: CI runs every gate, or skips one only on a record that CI itself wrote.
 
 ### Prefixed output
 
@@ -271,9 +389,9 @@ Every requirement is `proposed` at severity `warning`.
 | TF-19, TF-20 | [EC-0016](task-interface.md) | Superseded: a small shared set of verbs replaces one repository's allow-list. |
 | TF-22 (`ansible-galaxy --no-cache`) | Not adopted | Applies only to a repository that runs Ansible. |
 
-TASK-06 and TASK-09 are new. TASK-15 to TASK-17 put into checks what the platform's Taskfile authoring guide
-asked of every Taskfile in prose: a `default` task that only lists, no machine-specific paths, and a prompt before
-destroying data. Task's schema does not check any of them.
+TASK-06, TASK-09 and TASK-25 to TASK-28 are new. TASK-15 to TASK-17 put into checks what the platform's Taskfile
+authoring guide asked of every Taskfile in prose: a `default` task that only lists, no machine-specific paths, and a
+prompt before destroying data. Task's schema does not check any of them.
 
 ## Not required
 
@@ -535,8 +653,7 @@ Checked by: conftest · Severity: warning · Since: 0.6.0
 
 Task fingerprints a task's `sources` to decide whether it can skip it. An entry that matches nothing is not an error:
 it adds nothing to the fingerprint, so the task stops noticing changes to the file it was meant to watch, and nothing
-says so. A glob is not checked, because it may match nothing until the first build, and neither is an entry in a
-task with its own `dir:`.
+says so. A glob is [TASK-28](#task-28)'s, and an entry in a task with its own `dir:` is not checked.
 
 **Correct:**
 
@@ -697,7 +814,9 @@ larger one, and its raw command lines bury the output a reader is waiting for; a
 leaves the reader with no sign of what is running, or where it stalled. The two halves only work together. A task
 is silent when it sets `silent: true`, or its Taskfile does and it does not set `silent: false`. It echoes when a
 line of its commands, or of a `cmd:`, starts with `echo` or `printf`. A task with commands of its own runs a shell
-line that is not a `task:` call; a silent task that only calls other tasks has nothing to echo.
+line that is not a `task:` call; a silent task that only calls other tasks has nothing to echo. A task is internal when
+it sets `internal: true` itself: the tasks of a [tool wrapper](#layers), hidden by its include, are not asked to be
+silent, since a cached task that is silent hides Task's "is up to date" line.
 
 **Correct:**
 
@@ -764,7 +883,7 @@ Checked by: conftest · Severity: warning · Since: 0.7.1
 
 ### TASK-20
 
-**A Taskfile that flattens its fragments includes each with `flatten`, never `optional`, `dir` or `internal`.**
+**A Taskfile that flattens its fragments includes each area fragment with `flatten`, never `optional`, `dir` or `internal`.**
 
 Flattened fragments read as one Taskfile: every task is called by the name its fragment writes, and runs where every
 other task runs. One fragment included without `flatten: true` puts its tasks under a namespace no one wrote down.
@@ -773,7 +892,9 @@ tasks away from its siblings', so the same relative path means two things. `inte
 fragment and makes none of them runnable. A Taskfile's fragments are the ones in the `taskfiles/` directory beside
 it. A Taskfile that includes none of them with `flatten: true` is not affected: namespacing every fragment is a choice
 this requirement leaves alone. Neither is a shared fragment elsewhere, such as the repository root's
-`taskfiles/knip.Taskfile.yml` that each app includes under a namespace.
+`taskfiles/knip.Taskfile.yml` that each app includes under a namespace. A [tool wrapper](#layers) in
+`taskfiles/tools/` is not an area fragment: it is meant to be hidden, and TASK-25 asks for its include to set both
+`flatten: true` and `internal: true`.
 
 **Correct:**
 
@@ -785,6 +906,10 @@ includes:
   test:
     taskfile: taskfiles/test.Taskfile.yml
     flatten: true
+  tool-yamllint:
+    taskfile: taskfiles/tools/yamllint.Taskfile.yml
+    flatten: true
+    internal: true                        # a tool wrapper, hidden on purpose
 ```
 
 **Incorrect:**
@@ -958,6 +1083,163 @@ tasks:
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### TASK-25
+
+**A tool wrapper is included with `flatten` and `internal`, and names its tasks `tool:<tool>`.**
+
+A [tool wrapper](#layers) is the one place a tool's command line is written, and the area tasks call it. Included
+without `internal: true`, its tasks are listed beside the area tasks and can be run around them, with none of what the
+area adds; included without `flatten: true`, they answer to a namespace on top of the name they already carry
+(`tool-yamllint:tool:yamllint`). `optional` and `dir` are refused for the reasons TASK-20 gives. Each of its tasks is
+named `tool:<tool>`, its stem, or `tool:<tool>:<detail>` for a second way to run the same tool (`tool:ruff:format`, or
+`tool:yamllint:all` and `tool:yamllint:files` for a [cached and a file-scoped run](#caching-with-sources)), so a call
+says which tool runs and which file holds it, and two wrappers never define the same name. The finding for an include is
+reported on the including Taskfile; the finding for a name, on the wrapper.
+
+**Correct:**
+
+```yaml
+# Taskfile.yml
+includes:
+  tool-yamllint:
+    taskfile: taskfiles/tools/yamllint.Taskfile.yml
+    flatten: true
+    internal: true
+```
+
+```yaml
+# taskfiles/tools/yamllint.Taskfile.yml
+version: '3'
+
+# yamllint: how yamllint runs, with its configuration from .config/yaml/.
+
+tasks:
+  tool:yamllint:
+    desc: Lint YAML with yamllint.
+    cmds:
+      - yamllint --strict --config-file .config/yaml/yamllint.yaml {{if .FILES}}{{.FILES}}{{else}}.{{end}}
+```
+
+**Incorrect:**
+
+```yaml
+# Taskfile.yml
+includes:
+  tool-yamllint:
+    taskfile: taskfiles/tools/yamllint.Taskfile.yml
+    flatten: true                         # listed and runnable on its own
+```
+
+```yaml
+# taskfiles/tools/yamllint.Taskfile.yml
+tasks:
+  yaml:                                   # say tool:yamllint
+    desc: Lint YAML with yamllint.
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
+
+### TASK-26
+
+**A tool that has a wrapper runs only in its wrapper.**
+
+A wrapper exists so that a tool's configuration path, flags, default files and cache sources are written once. A
+second command line for the same binary in an area task drifts from the wrapper's the first time one of them changes,
+and the two then judge the same files differently. This requirement applies only once a repository has a [tool
+wrapper](#layers), and only to the tools that have one: the binary is the wrapper's stem
+(`taskfiles/tools/yamllint.Taskfile.yml` wraps `yamllint`). The check reads each shell line of every other Taskfile
+that is run together with the wrapper, and reports a line whose program, its first word after any `NAME=value`
+assignments, is that binary. A binary started through a runner (`uv run ruff`), a template (`{{.UV_RUN}} ruff`), a
+pipe or `xargs`, or later in a line after `&&` is not judged. The line in a git hook is
+[HOOKS-15](../git-hooks/lefthook.md#hooks-15).
+
+**Correct:**
+
+```yaml
+# taskfiles/lint.Taskfile.yml
+tasks:
+  lint:yaml:
+    desc: Lint YAML.
+    cmds:
+      - task: tool:yamllint
+```
+
+**Incorrect:**
+
+```yaml
+# taskfiles/lint.Taskfile.yml
+tasks:
+  lint:yaml:
+    desc: Lint YAML.
+    cmds:
+      - yamllint --strict .               # a second yamllint command line
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
+
+### TASK-27
+
+**A flattened fragment's public tasks are named under its area.**
+
+A flattened fragment's tasks show up in `task --list` with nothing to say which file holds them; the name is the only
+pointer. A task in `taskfiles/lint.Taskfile.yml` named `lint` or `lint:<name>` is found where its name says. One named
+`secrets:scan` sends its reader to a `secrets` fragment that does not exist, and the area's opening comment (TASK-22) no
+longer describes what the file holds. An internal task, one named with a leading `_` or set `internal: true`, is called
+by name from other tasks only and is not judged, nor is an alias, nor a fragment included under a namespace, whose names
+already carry it. A [tool wrapper](#layers) is named for its tool instead (TASK-25).
+
+**Correct:**
+
+```yaml
+# taskfiles/secrets.Taskfile.yml
+tasks:
+  secrets:scan:
+    desc: Scan the history for secrets.
+```
+
+**Incorrect:**
+
+```yaml
+# taskfiles/lint.Taskfile.yml
+tasks:
+  secrets:scan:                           # move it to taskfiles/secrets.Taskfile.yml
+    desc: Scan the history for secrets.
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
+
+### TASK-28
+
+**Every `sources` glob matches something the repository holds.**
+
+Task adds nothing to a task's fingerprint for a glob that matches nothing, so the task stops noticing the files the
+glob was meant to cover, and a task whose every source matches nothing is up to date after its first run whatever
+changes. Nothing says so. TASK-14 judges a literal entry; this requirement judges a glob, resolved from the directory
+the task runs in, once the directory it starts from is in the repository: `src/**/*.go` is judged when `src/` exists,
+and `**/*.go` always. A glob under a directory the repository does not hold, such as build output, may match nothing
+until a first build, and is not judged; nor is a glob in a task with its own `dir:`, a templated one or an `exclude:`
+entry. A glob ending in `/**` matches every file below its directory, as `/**/*` does.
+
+**Correct:**
+
+```yaml
+tasks:
+  lint:go:
+    desc: Lint the Go code.
+    sources: ['server/**/*.go', go.mod, .config/go/golangci.yml]
+```
+
+**Incorrect:**
+
+```yaml
+tasks:
+  lint:go:
+    desc: Lint the Go code.
+    sources: ['server/**/*.golang']      # matches nothing, so the task never reruns for the code
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.2
 
 ## References
 

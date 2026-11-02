@@ -65,6 +65,12 @@ test_conf_01_root_configs if {
 	}
 }
 
+test_conf_01_terraform_tools if {
+	paths := array.concat(conforming_files, [".tflint.hcl", ".terraform-docs.yml"])
+	found := config.findings with input as repo(paths, {".config/README.md": index_text}, [taskfile])
+	ids_at(found) == {["CONF-01", ".tflint.hcl"], ["CONF-01", ".terraform-docs.yml"]}
+}
+
 test_conf_01_only_at_the_root if {
 	paths := array.concat(conforming_files, ["docs/.markdownlint.jsonc"])
 	count(config.findings) == 0 with input as repo(paths, {".config/README.md": index_text}, [taskfile])
@@ -137,6 +143,10 @@ test_conf_04_callers_of_every_kind if {
 		td.file(".github/actions/lint/action.yml", {"runs": {"steps": [{"run": "yamllint -c .config/yaml/yamllint.yaml"}]}}),
 		td.file(".devcontainer/devcontainer.json", {"settings": {"yaml": "${workspaceFolder}/.config/yaml/yamllint.yaml"}}),
 		td.file("taskfiles/lint.Taskfile.yml", {"vars": {"C": "{{.ROOT_DIR}}/.config/yaml"}}),
+		td.file(
+			"taskfiles/tools/yamllint.Taskfile.yml",
+			{"tasks": {"tool:yamllint": {"vars": {"YAMLLINT_CONFIG": ".config/yaml/yamllint.yaml"}}}},
+		),
 	]
 	count(config.findings) == 0 with input as repo(conforming_files, {".config/README.md": index_text}, [caller])
 }
@@ -232,7 +242,7 @@ test_conf_08_programs if {
 	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", "sh .config/scripts/banner.SH"]})]
 	index := {".config/README.md": concat("", [index_text, "`scripts/banner.SH`"])}
 	found := config.findings with input as repo(paths, index, docs)
-	ids_at(found) == {["CONF-08", ".config/scripts/banner.SH"]}
+	ids_at(found) == {["CONF-08", ".config/scripts/banner.SH"], ["CONF-14", ".config/scripts"]}
 }
 
 test_conf_09_dangling_reference if {
@@ -325,4 +335,86 @@ test_conf_13_pattern_for_a_missing_file if {
 
 test_conf_13_no_gitattributes if {
 	conf_13(config.findings) == set() with input as conforming
+}
+
+test_conf_14_unregistered_concern if {
+	paths := array.concat(conforming_files, [".config/linters/biome.json", ".config/linters/other.toml"])
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/linters/"]})]
+	index := {".config/README.md": concat("", [index_text, "`linters/`"])}
+	found := config.findings with input as repo(paths, index, docs)
+	ids_at(found) == {["CONF-14", ".config/linters"]}
+	messages(found, "CONF-14") == {concat(" ", [
+		".config/linters/ is not a registered concern; name the directory for the files its tool reads",
+		"(actions, commits, docker, json, markdown, openapi, opentofu, python, rego, shell, sql, terraform,",
+		"toml, typescript, yaml) or, for a tool that reads every file, for what it looks for (prose, security,",
+		"spelling)",
+	])}
+}
+
+test_conf_14_registered_concerns_pass if {
+	extra := [".config/prose/vale.ini", ".config/prose/styles/Local/Rule.yml", ".config/security/gitleaks.toml"]
+	paths := array.concat(conforming_files, extra)
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/prose/", ".config/security/"]})]
+	index := {".config/README.md": concat("", [index_text, "`prose/` `security/`"])}
+	count(config.findings) == 0 with input as repo(paths, index, docs)
+}
+
+test_conf_15_tool_in_another_concern if {
+	extra := [".config/markdown/vale.ini", ".config/actions/.gitleaks.toml", ".config/prose/_typos.toml"]
+	paths := array.concat(conforming_files, extra)
+	docs := [td.file("Taskfile.yml", {"cmds": [
+		".config/yaml/yamllint.yaml", ".config/markdown/", ".config/actions/", ".config/prose/",
+	]})]
+	index := {".config/README.md": concat("", [index_text, "`markdown/` `actions/` `prose/`"])}
+	found := config.findings with input as repo(paths, index, docs)
+	ids_at(found) == {
+		["CONF-15", ".config/markdown/vale.ini"],
+		["CONF-15", ".config/actions/.gitleaks.toml"],
+		["CONF-15", ".config/prose/_typos.toml"],
+		["CONF-05", ".config/actions/.gitleaks.toml"],
+	}
+	messages(found, "CONF-15") == {
+		concat(" ", [
+			".config/markdown/vale.ini is Vale configuration, which belongs in the prose concern;",
+			"move it to .config/prose/vale.ini and update its callers",
+		]),
+		concat(" ", [
+			".config/actions/.gitleaks.toml is gitleaks configuration, which belongs in the security concern;",
+			"move it to .config/security/gitleaks.toml and update its callers",
+		]),
+		concat(" ", [
+			".config/prose/_typos.toml is typos configuration, which belongs in the spelling concern;",
+			"move it to .config/spelling/typos.toml and update its callers",
+		]),
+	}
+}
+
+test_conf_15_ignores_mise_locks_and_other_names if {
+	extra := [".config/mise/locks/pipx-yamllint/1.38.0/yamllint.yaml", ".config/yaml/yamllint-rules.md"]
+	paths := array.concat(conforming_files, extra)
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/yaml/"]})]
+	index := {".config/README.md": concat("", [index_text, "`yaml/`"])}
+	count(config.findings) == 0 with input as repo(paths, index, docs)
+}
+
+# tflint and terraform-docs read .tf files whichever CLI applies them, so
+# either terraform/ or opentofu/ holds them.
+test_conf_15_terraform_tools_in_either_concern if {
+	extra := [".config/terraform/tflint.hcl", ".config/opentofu/terraform-docs.yml"]
+	paths := array.concat(conforming_files, extra)
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/yamllint.yaml", ".config/terraform/", ".config/opentofu/"]})]
+	index := {".config/README.md": concat("", [index_text, "`terraform/` `opentofu/`"])}
+	count(config.findings) == 0 with input as repo(paths, index, docs)
+}
+
+test_conf_15_terraform_tool_elsewhere if {
+	paths := array.concat(conforming_files, [".config/yaml/.tflint.hcl"])
+	docs := [td.file("Taskfile.yml", {"cmds": [".config/yaml/"]})]
+	index := {".config/README.md": concat("", [index_text, "`yaml/`"])}
+	found := config.findings with input as repo(paths, index, docs)
+	ids_at(found) == {["CONF-15", ".config/yaml/.tflint.hcl"], ["CONF-05", ".config/yaml/.tflint.hcl"]}
+	messages(found, "CONF-15") == {concat(" ", [
+		".config/yaml/.tflint.hcl is tflint configuration, which belongs in the terraform or opentofu concern;",
+		"move it to .config/terraform/tflint.hcl and update its callers",
+	])}
 }

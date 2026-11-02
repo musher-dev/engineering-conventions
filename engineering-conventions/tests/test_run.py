@@ -271,6 +271,40 @@ def test_input_files(tmp_path: Path) -> None:
     ]
 
 
+def test_selection_reads_the_tool_configurations_strictness_judges(product: Path) -> None:
+    """EC-0044: YAML and TOML by name; JSON with comments through jsonnet."""
+    chosen = run.selection(product)
+    for name in (
+        ".config/yaml/yamllint.yaml",
+        ".yamllint.yml",
+        ".config/markdown/markdownlint-cli2.yaml",
+        ".config/security/gitleaks.toml",
+        ".gitleaks.toml",
+        "pyproject.toml",
+        "platform-api/pyproject.toml",
+        "services/api/pyproject.toml",
+    ):
+        assert chosen.inputs.search(name), name
+    for name in (
+        ".config/markdown/markdownlint.jsonc",
+        ".markdownlint-cli2.jsonc",
+        "tsconfig.json",
+        "apps/web/tsconfig.json",
+        "platform-api/scripts/pyrightconfig.json",
+        "biome.json",
+        "apps/site/biome.jsonc",
+    ):
+        assert chosen.jsonnet.search(name), name
+    for name in (
+        ".config/mise/locks/pipx-yamllint/1.38.0/pyproject.toml",
+        "a/b/c/pyproject.toml",
+        "docs/yamllint.yaml",
+    ):
+        assert not chosen.inputs.search(name), name
+    for name in ("a/b/c/d/tsconfig.json", "tsconfig.build.json", "docs/markdownlint.jsonc"):
+        assert not chosen.jsonnet.search(name), name
+
+
 def test_selection_is_read_from_the_launcher(product: Path) -> None:
     chosen = run.selection(product)
     assert chosen.jsonnet.search(".devcontainer/devcontainer.json")

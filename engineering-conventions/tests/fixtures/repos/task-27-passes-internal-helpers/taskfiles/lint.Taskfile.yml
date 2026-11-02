@@ -1,0 +1,14 @@
+version: '3'
+
+# Lint: the linters, each with its configuration from .config/.
+
+tasks:
+  lint:workflows:
+    desc: Lint the workflows.
+    deps: [_actionlint]
+  _actionlint:
+    internal: true
+    silent: true
+    cmds:
+      - echo "Linting the workflows with actionlint"
+      - actionlint

@@ -1,0 +1,52 @@
+version: '3'
+
+# zizmor: how the workflows, composite actions and Dependabot config are
+# audited for security. The binary, its config path and its severity floor
+# (GHA-33: --min-severity medium, --persona regular) are written here and
+# nowhere else (TASK-26); lint:actions:security calls tool:zizmor. With
+# GH_TOKEN set, as in CI, its online audits run too (impostor commits, stale
+# version comments, known-vulnerable actions); their answer changes without
+# any file here changing, so that run is never skipped (tool:zizmor:online).
+# An offline run is skipped while its sources are unchanged since it last
+# passed (tool:zizmor:offline). Both share one command, so the two can never
+# drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:zizmor:
+    desc: Audit the workflows, composite actions and Dependabot config with zizmor.
+    cmds:
+      - task: tool:zizmor:offline
+        if: '{{if .GH_TOKEN}}false{{else}}true{{end}}'
+      - task: tool:zizmor:online
+        if: '{{if .GH_TOKEN}}true{{else}}false{{end}}'
+
+  tool:zizmor:offline:
+    desc: Audit with zizmor offline, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - .github/workflows/*
+      - .github/actions/**/*
+      - .github/dependabot.yml
+      - .config/actions/zizmor.yml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/zizmor.Taskfile.yml
+    vars: &vars
+      ZIZMOR_CONFIG: .config/actions/zizmor.yml
+      # Explicit files rather than `zizmor .`: a directory walk would also
+      # collect the deliberately non-conforming fixture repos under tests/.
+      PATHSPEC: >-
+        '.github/workflows/*.yml' '.github/workflows/*.yaml'
+        '.github/actions/*/action.yml' '.github/actions/*/action.yaml' '.github/dependabot.yml'
+    cmds: &cmds
+      - >-
+        {{.LIST_FILES}} {{.PATHSPEC}}
+        | xargs -0 -r zizmor --config {{.ZIZMOR_CONFIG}} {{if not .GH_TOKEN}}--offline {{end}}--min-severity medium
+        --persona regular
+
+  tool:zizmor:online:
+    desc: Audit with zizmor, its online audits included (GH_TOKEN set).
+    vars: *vars
+    cmds: *cmds

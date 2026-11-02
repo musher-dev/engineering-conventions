@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-18",
+    "path": "platform-api/pyproject.toml",
+    "severity": "warning"
+  }
+]

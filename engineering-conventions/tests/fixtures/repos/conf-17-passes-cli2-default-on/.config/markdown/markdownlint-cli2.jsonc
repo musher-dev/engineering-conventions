@@ -1,0 +1,11 @@
+// markdownlint-cli2 holds the rules under "config"; the top-level
+// "default" below is not a markdownlint option and is ignored.
+{
+  "default": false,
+  "config": {
+    "default": true,
+    // Bare URLs are fine in reference docs where the URL is the content.
+    "MD034": false,
+  },
+  "globs": ["**/*.md"],
+}

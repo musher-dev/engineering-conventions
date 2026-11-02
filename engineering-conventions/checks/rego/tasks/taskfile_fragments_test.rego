@@ -144,7 +144,10 @@ test_task_20_fragment_includes if {
 			"lint", "lint", "dir",
 			"its tasks run somewhere other than every other fragment's, from the same Taskfile",
 		),
-		include_message("ops", "ops", "internal", "every task in it is hidden and cannot be run"),
+		include_message(
+			"ops", "ops", "internal",
+			"every task in it is hidden and cannot be run; only a tool wrapper under taskfiles/tools/ is included internal",
+		),
 	}
 
 	namespaced := {
@@ -273,3 +276,158 @@ long_message(name) := sprintf(
 	]),
 	[name],
 )
+
+# A root that flattens the lint fragment and includes the yamllint wrapper,
+# with the wrapper given as a document and as its raw text.
+wrapper_text := "version: '3'\n\n# yamllint: how yamllint runs.\n\ntasks:\n"
+
+wrapper := {"version": "3", "tasks": {"tool:yamllint": {
+	"desc": "Lint YAML with yamllint.",
+	"cmds": ["yamllint --strict {{.FILES | default \".\"}}"],
+}}}
+
+wrapper_include := {"taskfile": "taskfiles/tools/yamllint.Taskfile.yml", "flatten": true, "internal": true}
+
+wrapped_repo(root_tasks, include, wrapper_doc, lint_doc) := texts_repo(
+	root_tasks, include, wrapper_doc, lint_doc,
+	wrapper_text,
+)
+
+texts_repo(root_tasks, include, wrapper_doc, lint_doc, text) := [
+	td.file("/tmp/inventory.json", {"conventions_inventory": {
+		"files": array.concat(paths, ["taskfiles/tools/yamllint.Taskfile.yml"]),
+		"texts": {"taskfiles/lint.Taskfile.yml": lint_text, "taskfiles/tools/yamllint.Taskfile.yml": text},
+	}}),
+	td.file("Taskfile.yml", object.union(conforming, {
+		"includes": object.union(conforming.includes, {"tool-yamllint": include}),
+		"tasks": object.union(conforming.tasks, root_tasks),
+	})),
+	td.file("taskfiles/lint.Taskfile.yml", lint_doc),
+	td.file("taskfiles/tools/yamllint.Taskfile.yml", wrapper_doc),
+]
+
+calls_wrapper := {"version": "3", "tasks": {"lint": {"desc": "Lint.", "cmds": [{"task": "tool:yamllint"}]}}}
+
+test_wrapped_layout_conforms if {
+	count(fragments.findings) == 0 with input as wrapped_repo({}, wrapper_include, wrapper, calls_wrapper)
+}
+
+test_task_20_leaves_wrappers_to_task_25 if {
+	found := fragments.findings with input as wrapped_repo({}, wrapper_include, wrapper, calls_wrapper)
+	not "TASK-20" in td.ids(found)
+}
+
+test_task_21_and_22_hold_wrappers if {
+	doc := object.union(wrapper, {"vars": {"CONFIG": ".config/yaml/yamllint.yaml"}})
+	found := fragments.findings with input as texts_repo({}, wrapper_include, doc, calls_wrapper, "tasks:\n")
+	{f.path | some f in found; f.id in {"TASK-21", "TASK-22"}} == {"taskfiles/tools/yamllint.Taskfile.yml"}
+	count({f | some f in found; f.id == "TASK-21"}) == 1
+	count({f | some f in found; f.id == "TASK-22"}) == 1
+}
+
+test_task_25_include_flags if {
+	include := {"taskfile": "taskfiles/tools/yamllint.Taskfile.yml", "optional": true}
+	found := fragments.findings with input as wrapped_repo({}, include, wrapper, calls_wrapper)
+	messages(found, "TASK-25") == {
+		concat("", [
+			`include "tool-yamllint" loads tool wrapper "taskfiles/tools/yamllint.Taskfile.yml" without flatten: true, `,
+			"so its tasks answer to a namespace on top of the tool: name they already carry; set flatten: true",
+		]),
+		concat("", [
+			`include "tool-yamllint" loads tool wrapper "taskfiles/tools/yamllint.Taskfile.yml" without internal: true, `,
+			"so its tasks are listed and can be run around the area tasks that should call them; set internal: true",
+		]),
+		concat("", [
+			`include "tool-yamllint" of tool wrapper "taskfiles/tools/yamllint.Taskfile.yml" sets optional:, `,
+			"so a fragment that goes missing drops its tasks without a word; remove it",
+		]),
+	}
+}
+
+test_task_25_task_names if {
+	doc := {"version": "3", "tasks": {
+		"tool:yamllint": {"desc": "Lint."},
+		"tool:yamllint:fix": {"desc": "Fix."},
+		"tool:yamllint-extra": {"desc": "Other."},
+		"yaml": {"desc": "Lint."},
+	}}
+	found := fragments.findings with input as wrapped_repo({}, wrapper_include, doc, calls_wrapper)
+	messages(found, "TASK-25") == {wrapper_name_message("tool:yamllint-extra"), wrapper_name_message("yaml")}
+}
+
+wrapper_name_message(name) := sprintf(
+	concat("", [
+		"task %q in the wrapper for yamllint is not named for its tool; name it \"tool:yamllint\", ",
+		"or \"tool:yamllint:<detail>\" for a second way to run it",
+	]),
+	[name],
+)
+
+test_task_26_binary_outside_its_wrapper if {
+	root_tasks := {"lint:yaml": {"desc": "Lint YAML.", "cmds": [
+		"NO_COLOR=1 yamllint --strict .",
+		"uv run yamllint .",
+		"{{.RUN}} yamllint .",
+		"echo yamllint",
+		"git ls-files | xargs yamllint",
+	]}}
+	found := fragments.findings with input as wrapped_repo(root_tasks, wrapper_include, wrapper, calls_wrapper)
+	messages(found, "TASK-26") == {concat("", [
+		`task "lint:yaml" runs yamllint directly, while taskfiles/tools/yamllint.Taskfile.yml holds how it runs; `,
+		"call task: tool:yamllint instead, so its configuration, flags and cache sources stay in one place",
+	])}
+}
+
+test_task_26_needs_a_wrapper if {
+	lint_doc := {"version": "3", "tasks": {"lint": {"desc": "Lint.", "cmds": ["yamllint ."]}}}
+	found := fragments.findings with input as fragment_repo(conforming.includes, lint_doc, lint_text, {})
+	not "TASK-26" in td.ids(found)
+}
+
+test_task_27_tasks_named_for_their_area if {
+	lint_doc := {"version": "3", "tasks": {
+		"lint": {"desc": "Lint.", "cmds": [{"task": "tool:yamllint"}]},
+		"lint:md": {"desc": "Lint Markdown."},
+		"linter": {"desc": "Not under lint."},
+		"secrets:scan": {"desc": "Scan."},
+		"_helper": {"internal": true},
+		"helper": {"internal": true},
+	}}
+	found := fragments.findings with input as wrapped_repo({}, wrapper_include, wrapper, lint_doc)
+	messages(found, "TASK-27") == {area_message("linter"), area_message("secrets:scan")}
+}
+
+area_message(name) := sprintf(
+	concat("", [
+		"task %q is in the lint fragment but not named under its area, so its name does not say which file ",
+		"holds it; rename it \"lint\" or \"lint:<name>\", or move it to the fragment its name gives",
+	]),
+	[name],
+)
+
+test_task_27_skips_a_namespaced_fragment_beside_flattened_ones if {
+	lint_doc := {"version": "3", "tasks": {"lint": {"desc": "Lint."}}}
+	includes := object.union(conforming.includes, {"docs": "taskfiles/docs.Taskfile.yml"})
+	extra := {"taskfiles/docs.Taskfile.yml": {"version": "3", "tasks": {"build": {"desc": "Docs."}}}}
+	found := fragments.findings with input as fragment_repo(includes, lint_doc, lint_text, extra)
+	not "TASK-27" in td.ids(found)
+}
+
+test_task_27_only_flattened_fragments if {
+	lint_doc := {"version": "3", "tasks": {"md": {"desc": "Lint Markdown."}}}
+	namespaced := {"lint": "taskfiles/lint.Taskfile.yml"}
+	found := fragments.findings with input as fragment_repo(namespaced, lint_doc, lint_text, {})
+	not "TASK-27" in td.ids(found)
+}
+
+test_task_18_leaves_cached_wrapper_tasks_loud if {
+	doc := {"version": "3", "tasks": {
+		"tool:yamllint": {"desc": "Lint.", "cmds": [{"task": "tool:yamllint:all"}]},
+		"tool:yamllint:all": {
+			"desc": "Lint every YAML file.", "method": "checksum",
+			"sources": ["**/*.yml"], "cmds": ["yamllint ."],
+		},
+	}}
+	found := fragments.findings with input as wrapped_repo({}, wrapper_include, doc, calls_wrapper)
+	not "TASK-18" in td.ids(found)
+}

@@ -355,12 +355,12 @@ def test_a_stale_topic_row_names_the_row_and_the_fix(
     content: Content, product: Path, tmp_path: Path
 ) -> None:
     text = _root_readme(product).replace(
-        f"| EC-0014 | HOOKS-01{R}HOOKS-14 |", f"| EC-0014 | HOOKS-01{R}HOOKS-11 |"
+        f"| EC-0014 | HOOKS-01{R}HOOKS-15 |", f"| EC-0014 | HOOKS-01{R}HOOKS-11 |"
     )
     copy = _readme_beside(product, tmp_path, text)
     [problem] = invariants.topic_table_current(replace(content, product=copy))
     assert f"(git-hooks row): the Requirements column says 'HOOKS-01{R}HOOKS-11'" in problem
-    assert problem.endswith(f"write 'HOOKS-01{R}HOOKS-14'")
+    assert problem.endswith(f"write 'HOOKS-01{R}HOOKS-15'")
 
 
 def test_conventions_column_lists_runs_as_ranges(

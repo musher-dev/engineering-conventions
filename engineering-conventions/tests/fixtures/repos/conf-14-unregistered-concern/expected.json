@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CONF-14",
+    "path": ".config/linters",
+    "severity": "warning"
+  }
+]

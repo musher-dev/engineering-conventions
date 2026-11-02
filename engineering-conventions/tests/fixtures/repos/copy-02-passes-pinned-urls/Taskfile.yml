@@ -20,8 +20,8 @@ tasks:
     cmds:
       - actionlint
       - mkdir -p .vale
-      - vale --config .config/markdown/vale.ini sync
-      - vale --config .config/markdown/vale.ini site/src
+      - vale --config .config/prose/vale.ini sync
+      - vale --config .config/prose/vale.ini site/src
 
   build:
     desc: Build the image.

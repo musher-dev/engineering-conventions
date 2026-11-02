@@ -58,6 +58,7 @@ requirements:
       engine: delegated
       tool: actionlint
       check: actionlint
+    waivable: false
   - id: EXA-05
     title: A retired requirement
     status: retired

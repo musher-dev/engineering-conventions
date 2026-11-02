@@ -18,3 +18,7 @@ __pycache__/
 # Claude local preferences and runtime state
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Task's fingerprints for skipping unchanged gates (`task check`); local
+# only, so CI always runs every gate from a fresh checkout.
+/.task/

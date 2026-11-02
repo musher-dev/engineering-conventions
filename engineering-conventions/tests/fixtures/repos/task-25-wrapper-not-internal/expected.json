@@ -1,0 +1,12 @@
+[
+  {
+    "id": "TASK-25",
+    "path": "Taskfile.yml",
+    "severity": "warning"
+  },
+  {
+    "id": "TASK-25",
+    "path": "taskfiles/tools/actionlint.Taskfile.yml",
+    "severity": "warning"
+  }
+]

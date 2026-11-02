@@ -1,0 +1,9 @@
+{
+  "linter": {
+    "enabled": true,
+    "rules": {
+      // Generated route files use default exports.
+      "style": { "noDefaultExport": "off" },
+    },
+  },
+}

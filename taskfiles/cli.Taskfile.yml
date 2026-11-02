@@ -1,15 +1,12 @@
 version: '3'
 
-# The conventions CLI (engineering-conventions/src/conventions_tools): the
-# authoring tool that generates the committed artifacts, checks invariants and
-# runs a repository through the rules. Consumers never need it: everything it
-# generates is committed, and the bundle excludes it.
-#
-# Lint and tests run with `dir: engineering-conventions` so ruff, basedpyright
-# and pytest find their configuration in the product's pyproject.toml. The dir
-# is relative on purpose: Task 3.53 joins an absolute `dir:` in an included
-# Taskfile onto the root (so '{{.PRODUCT_DIR}}' becomes a new, empty
-# directory), while a relative one resolves from the root as intended.
+# CLI: the conventions CLI (engineering-conventions/src/conventions_tools),
+# the authoring tool that generates the committed artifacts, checks
+# invariants and runs a repository through the rules. Consumers never need it:
+# everything it generates is committed, and the bundle excludes it. Its lint,
+# type check and tests run through the ruff, basedpyright and pytest wrappers
+# in taskfiles/tools/. cli:invariants and cli:classify compare against a git
+# ref, which no file fingerprint covers, so they are never skipped.
 
 set: [errexit, nounset, pipefail]
 
@@ -21,32 +18,25 @@ tasks:
 
   cli:lint:
     desc: Lint and format-check the CLI with ruff.
-    dir: engineering-conventions
     cmds:
-      - '{{.UV_RUN}} ruff check .'
-      - '{{.UV_RUN}} ruff format --check .'
+      - task: tool:ruff
+
+  cli:lint:fix:
+    desc: Fix what ruff can repair, and format the CLI, in place.
+    cmds:
+      - task: tool:ruff:fix
 
   cli:typecheck:
     desc: Type-check the CLI with basedpyright.
-    dir: engineering-conventions
     cmds:
-      - '{{.UV_RUN}} basedpyright'
+      - task: tool:basedpyright
 
   cli:test:
     desc: Run the CLI's pytest suite, which covers the content invariants and every fixture repo.
-    dir: engineering-conventions
-    vars:
-      # Measured at 91% branch coverage when the floor was set; raise it as
-      # coverage rises, never lower it to let a change through.
-      COVERAGE_FLOOR: 89
     cmds:
-      # Coverage is measured here, not in addopts, so running one test stays
-      # fast and never fails on the floor.
-      - >-
-        {{.UV_RUN}} pytest --cov=conventions_tools --cov-branch
-        --cov-report=term-missing:skip-covered --cov-fail-under={{.COVERAGE_FLOOR}}
+      - task: tool:pytest
 
-  invariants:
+  cli:invariants:
     desc: Check the content invariants, with IDs append-only against BASELINE (a git ref; default HEAD).
     vars:
       # CI passes the merge base (e.g. BASELINE=origin/main), so a PR that
@@ -55,7 +45,7 @@ tasks:
     cmds:
       - '{{.UV_RUN}} conventions invariants --baseline {{.BASELINE}}'
 
-  classify:
+  cli:classify:
     desc: Fail when TITLE's commit type is below the change class the index.json diff against BASELINE implies.
     requires:
       vars: [BASELINE, TITLE]

@@ -1,5 +1,10 @@
 [
   {
+    "id": "CONF-14",
+    "path": ".config/scripts",
+    "severity": "warning"
+  },
+  {
     "id": "CONF-08",
     "path": ".config/scripts/banner.sh",
     "severity": "warning"

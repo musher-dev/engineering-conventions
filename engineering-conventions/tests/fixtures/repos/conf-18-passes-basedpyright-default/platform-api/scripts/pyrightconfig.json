@@ -1,0 +1,5 @@
+// The scripts are checked on their own, at strict.
+{
+  "typeCheckingMode": "strict",
+  "reportMissingTypeStubs": false,
+}

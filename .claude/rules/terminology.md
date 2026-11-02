@@ -38,7 +38,7 @@ style, and the words the conventions use. Change it here and regenerate; never e
 | Rule | How |
 | --- | --- |
 | Shape | `task schemas:validate` |
-| Overlays never redefine a global term | `task invariants` |
+| Overlays never redefine a global term | `task cli:invariants` |
 | Vale style and index current | `task generate:check` |
 | This repository's prose uses the terms | `task prose:lint` |
 | Collision check, what not to mirror | Review |

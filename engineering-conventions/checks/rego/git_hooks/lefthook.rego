@@ -6,8 +6,9 @@
 #   (HOOKS-03) and anchors them (HOOKS-04), defines jobs (HOOKS-05) that say
 #   how to fix a failure (HOOKS-06), restage only what they fix (HOOKS-07),
 #   keep test runners out of pre-commit (HOOKS-08), federate nothing
-#   (HOOKS-09), never swallow an exit code (HOOKS-10), and glob only files
-#   that exist (HOOKS-11).
+#   (HOOKS-09), never swallow an exit code (HOOKS-10), glob only files
+#   that exist (HOOKS-11), and run a wrapped tool only through a task
+#   (HOOKS-15).
 # scope: package
 # custom:
 #   convention: EC-0014
@@ -16,6 +17,7 @@ package conventions.checks.git_hooks.lefthook
 import data.conventions.lib.doublestar
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
+import data.conventions.lib.taskfile_layers as layers
 
 # The committed configurations lefthook reads: lefthook.yml, .lefthook.yml
 # and .config/lefthook.yml. lefthook-local.yml is a personal override.
@@ -309,6 +311,25 @@ findings contains lib.finding("HOOKS-14", entry.path, message) if {
 			"different one; put the command in a task and run that task here and in CI",
 		]),
 		[label(entry), regex.replace(match[2], `\s+`, " ")],
+	)
+}
+
+# HOOKS-15. Only a tool the root Taskfile wraps is judged: each line of the
+# job's shell is read for the program it starts. committed in a commit-msg
+# job is COMMIT-03's, which asks for that command in the hook.
+findings contains lib.finding("HOOKS-15", entry.path, message) if {
+	some entry in jobs
+	is_string(entry.job.run)
+	some raw in split(body(entry.job), "\n")
+	tool := layers.program(trim_space(raw))
+	wrapper := layers.root_wrapped_tools[tool]
+	not [entry.hook, tool] == ["commit-msg", "committed"]
+	message := sprintf(
+		concat(" ", [
+			"%s runs %s directly, while %s holds how it runs; run the task that calls it,",
+			"passing the files, such as task <area task> -- {staged_files}",
+		]),
+		[label(entry), tool, wrapper],
 	)
 }
 

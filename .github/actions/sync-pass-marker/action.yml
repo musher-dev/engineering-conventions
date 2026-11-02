@@ -1,0 +1,49 @@
+name: Sync Pass Marker
+description: >-
+  Record that the calling job passed on its inputs, as a ci-pass- entry in the
+  repository's Actions cache, so a later Validate run with identical inputs can
+  skip the job on proof (decision 0040). The last step of every eligible job.
+
+# The caller gates this step on the kill switch, `vars.CI_PASS_MARKERS == 'on'`,
+# and, like any step without a status function, runs it only when every
+# earlier step succeeded: a failed or cancelled job records nothing. Markers
+# are written only where they can later be proved: a same-repository
+# pull_request run, or a push to main. A fork's run and a merge-group run
+# write none.
+#
+# The run ID and attempt go into the key, not only the file, because the
+# caches API lists keys and never contents; detect reads them back from the
+# key to prove the marker (.github/scripts/ci-pass.sh prove).
+
+runs:
+  using: composite
+  steps:
+    - name: Compute the pass marker key
+      id: marker
+      if: >-
+        (github.event_name == 'pull_request'
+        && github.event.pull_request.head.repo.full_name == github.repository)
+        || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      shell: bash
+      env:
+        JOB_ID: ${{ github.job }}
+        RUN_ID: ${{ github.run_id }}
+        RUN_ATTEMPT: ${{ github.run_attempt }}
+      run: |
+        set -euo pipefail
+        key="$(bash .github/scripts/ci-pass.sh key "$JOB_ID")"
+        dir="${RUNNER_TEMP}/ci-pass"
+        mkdir -p "$dir"
+        jq -cn --arg job "$JOB_ID" --arg run_id "$RUN_ID" --arg run_attempt "$RUN_ATTEMPT" \
+          '{job: $job, run_id: $run_id, run_attempt: $run_attempt}' > "${dir}/marker.json"
+        {
+          echo "path=${dir}/marker.json"
+          echo "key=ci-pass-${key}-${RUN_ID}-${RUN_ATTEMPT}"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Save the pass marker
+      if: steps.marker.outcome == 'success'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+      with:
+        path: ${{ steps.marker.outputs.path }}
+        key: ${{ steps.marker.outputs.key }}

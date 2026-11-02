@@ -1,0 +1,50 @@
+version: '3'
+
+# hadolint: how Dockerfiles are linted (IMAGE-06). The binary, its config path
+# and its file set are written here and nowhere else (TASK-26); the failure
+# threshold is in the config. lint:docker calls tool:hadolint. Given FILES, a
+# shell-quoted list such as the git hooks pass, it lints those and always runs
+# (tool:hadolint:files); without, it lints every Dockerfile and is skipped
+# while its sources are unchanged since it last passed (tool:hadolint:all).
+# Both share one command, so the two can never drift.
+
+set: [errexit, nounset, pipefail]
+
+tasks:
+  tool:hadolint:
+    desc: Lint FILES or every Dockerfile with hadolint.
+    cmds:
+      - task: tool:hadolint:all
+        if: '{{if .FILES}}false{{else}}true{{end}}'
+      - task: tool:hadolint:files
+        if: '{{if .FILES}}true{{else}}false{{end}}'
+        vars: {FILES: '{{.FILES}}'}
+
+  tool:hadolint:all:
+    desc: Lint every Dockerfile, unless its sources are unchanged since it last passed.
+    method: checksum
+    sources:
+      - '**/Dockerfile'
+      - '**/*.Dockerfile'
+      - exclude: engineering-conventions/tests/fixtures/**/*
+      - .config/docker/hadolint.yaml
+      - .config/mise/mise.lock
+      - Taskfile.yml
+      - taskfiles/tools/hadolint.Taskfile.yml
+    vars: &vars
+      HADOLINT_CONFIG: .config/docker/hadolint.yaml
+      # The fixture repos' Dockerfiles break hadolint's rules on purpose. The
+      # git hook excludes the same files.
+      PATHSPEC: >-
+        '**/Dockerfile' '**/*.Dockerfile' ':!:engineering-conventions/tests/fixtures/**'
+    cmds: &cmds
+      - >-
+        {{if .FILES}}printf '%s\0' {{.FILES}}{{else}}{{.LIST_FILES}} {{.PATHSPEC}}{{end}}
+        | xargs -0 -r hadolint --config {{.HADOLINT_CONFIG}}
+
+  tool:hadolint:files:
+    desc: Lint the Dockerfiles FILES names.
+    requires:
+      vars: [FILES]
+    vars: *vars
+    cmds: *cmds

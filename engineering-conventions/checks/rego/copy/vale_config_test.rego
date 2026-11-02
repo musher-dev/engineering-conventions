@@ -38,7 +38,7 @@ repo(configs) := [site, td.pin, texts(configs)]
 floats := "which installs whatever release is latest when vale sync runs"
 
 test_a_conforming_config_passes if {
-	count(vale_config.findings) == 0 with input as repo({".config/markdown/vale.ini": conforming})
+	count(vale_config.findings) == 0 with input as repo({".config/prose/vale.ini": conforming})
 }
 
 test_a_site_without_a_config_is_reported_on_its_outputs_declaration if {
@@ -126,7 +126,7 @@ test_a_config_that_applies_nothing_is_reported if {
 
 test_a_site_config_with_neither_package_nor_style_is_judged if {
 	text := concat("\n", ["[*.md]", "BasedOnStyles = Vale"])
-	found := vale_config.findings with input as repo({".config/markdown/vale.ini": text})
+	found := vale_config.findings with input as repo({".config/prose/vale.ini": text})
 	td.ids(found) == {"COPY-02", "COPY-03"}
 }
 

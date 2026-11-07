@@ -105,7 +105,8 @@ the names of what a repository publishes: a package, an image or a binary is nam
 [outputs declaration](../outputs/outputs-declaration.md), and keeps its name when the repository is renamed.
 
 GitHub reserves `.github` and `.github-private` for an organization's default community health files and profile.
-They are exempt from every requirement here, and so is an archived repository, which the checks never run on.
+They are exempt from every requirement here, and so is an archived repository, which the checks never run on. A
+[kept name](#kept-names) is exempt from REPO-08 only.
 
 ## Status and authority
 
@@ -136,6 +137,29 @@ the current name only.
 A waiver's reason and its tracking issue say that the repository will be renamed, never what it will be renamed to. A
 planned name belongs to whoever plans it until the rename is applied, and a declaration, a waiver, an issue or a CI log
 in the repository is readable by everyone who can read the repository.
+
+## Kept names
+
+A few organization-wide repositories keep a single-token name for good. Each name is already the repository's identity
+in more places than a rename could reach, or is the name of the system the repository founds, so it is never going to
+become `<system>-<component>`. A waiver would say otherwise, and would have to be renewed against a rename nobody
+plans ([ADOPT-05](../adoption/conventions-declaration.md#adopt-05)). REPO-08 accepts these names as they are:
+
+| Kept name | Declared system | Why it is kept |
+| --- | --- | --- |
+| `infra` | `infra` | The estate's infrastructure-as-code; the name is the system it founds |
+| `pelorus` | `platform` | The design model and its decision records; the name is the project's own |
+| `platform` | `platform` | The platform monorepo; the name is the system it founds |
+| `specifications` | `platform` | A public, released specification whose tags and release assets are pinned by repository path |
+
+A kept name is exempt from REPO-08 and nothing else. REPO-07 still compares it with the declared name, a kept name is
+not compared with its system and component ([REPO-04](identity-declaration.md#repo-04)), and REPO-09 to REPO-11 judge
+only a name that follows the grammar. If a kept repository is ever renamed, REPO-13 applies and the kept name leaves
+this list; it is never reused.
+
+The list is part of this convention, so a name joins it only through a reviewed change to this repository, never
+through a consumer's declaration. A new repository never joins it: it is named `<system>-<component>` from the start.
+Every other single-token name is a [legacy name](#legacy-names).
 
 ## Requirements
 
@@ -173,8 +197,8 @@ Checked by: conftest · Severity: warning · Since: 0.5.0
 The name ends up in places with stricter rules than GitHub's: image paths are lowercase, and a Kubernetes object, a
 DNS label or a hostname derived from the name allows at most 63 characters of lowercase letters, digits and hyphens.
 A name that already fits them is used as it is everywhere, instead of being translated a little differently in each
-place. It has at least two tokens, so it always carries both a system and a component. When the name only differs in
-case or separators, the message gives the corrected name.
+place. It has at least two tokens, so it always carries both a system and a component, unless it is one of the
+[kept names](#kept-names). When the name only differs in case or separators, the message gives the corrected name.
 
 **Correct:**
 
@@ -187,7 +211,7 @@ platform-operator-console
 
 ```text
 Platform_API                  # use platform-api
-platform                      # no component
+gadgets                       # no component, and not a kept name
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.5.0
@@ -361,12 +385,14 @@ A retired system keeps its term, marked deprecated, and leaves this list: REPO-0
 ([decision 0036](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0036-ownership-moves-out-of-company-and-platform.md)).
 
 Which repository belongs to which system, and the name each existing repository moves to, is organization data rather
-than a convention. It is kept, with the renames still to come, in `config/repositories.yaml` in
-`musher-dev/infra-github`, the repository that applies names and properties to the organization.
+than a convention. It is kept in `musher-dev/infra-github`, the repository that applies names and properties to the
+organization: the repositories in `infra-github/data/managed-repositories.yaml`, and the renames still to
+come in `infra-github/data/rename-map.yaml`.
 
 ## References
 
 - [EC-0009 Identity declaration](identity-declaration.md)
 - [Decision 0012: A repository is named `<system>-<component>`, from a registered system](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0012-repository-names.md)
+- [Decision 0042: A few organization-wide repositories keep a single-token name](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0042-kept-repository-names.md)
 - [GitHub: Renaming a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository)
 - [Backstage: System model](https://backstage.io/docs/features/software-catalog/system-model/)

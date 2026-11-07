@@ -54,6 +54,7 @@ decisions about why Musher exists and what it designs are in `musher-dev/pelorus
 | [0039](0039-each-tool-runs-from-one-wrapper.md) | Each tool runs from one internal wrapper task, and a cached task lists every input it has | accepted |
 | [0040](0040-a-job-skips-on-proof-of-an-identical-passing-run.md) | A job skips on proof of an identical passing run, behind a kill switch | accepted |
 | [0041](0041-github-judges-codeowners-owners.md) | GitHub judges whether CODEOWNERS owners resolve, through its own command | accepted |
+| [0042](0042-kept-repository-names.md) | A few organization-wide repositories keep a single-token name, from a reviewed list in EC-0010 | accepted |
 
 ## Writing a decision
 

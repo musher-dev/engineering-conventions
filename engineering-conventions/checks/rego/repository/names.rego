@@ -2,9 +2,9 @@
 # title: Repository names
 # description: >-
 #   The declared name is the actual one (REPO-07), and the name is
-#   <system>-<component> in lowercase kebab-case (REPO-08), starts with a
-#   registered system (REPO-09), holds no banned token or version (REPO-10)
-#   and is short (REPO-11). Every finding is on the identity declaration.
+#   <system>-<component> in lowercase kebab-case or a kept name (REPO-08),
+#   starts with a registered system (REPO-09), holds no banned token or
+#   version (REPO-10) and is short (REPO-11). Every finding is on the identity declaration.
 # scope: package
 # custom:
 #   convention: EC-0010
@@ -30,9 +30,10 @@ findings contains lib.finding("REPO-07", files.repository_path, message) if {
 	)
 }
 
-# REPO-08
+# REPO-08. A kept name (EC-0010, Kept names) is accepted as it is.
 findings contains lib.finding("REPO-08", files.repository_path, message) if {
 	not repository.exempt
+	not repository.kept
 	name := repository.judged_name
 	not repository.well_formed(name)
 	message := sprintf("repository name %q %s", [name, malformed(name)])

@@ -42,6 +42,13 @@ exempt_names := {".github", ".github-private"}
 
 exempt if judged_name in exempt_names
 
+# Single-token names that REPO-08 accepts permanently: organization-wide
+# repositories whose name is already their identity (EC-0010, Kept names).
+# Only REPO-08 is lifted; the other naming checks judge a well-formed name.
+kept_names := {"infra", "pelorus", "platform", "specifications"}
+
+kept if judged_name in kept_names
+
 # Lowercase kebab-case with at least two tokens: a system, then a component.
 name_pattern := `^[a-z][a-z0-9]*(-[a-z0-9]+)+$`
 

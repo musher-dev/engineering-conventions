@@ -1218,6 +1218,7 @@
   "repo-08-legacy-name": [
     [".repo/repository.toml", "REPO-08", "warning", "repository name \"gadgets\" is not <system>-<component>: a registered system, a hyphen and a component, in lowercase letters, digits and hyphens", true]
   ],
+  "repo-08-passes-kept-name": [],
   "repo-09-unregistered-system": [
     [".repo/repository.toml", "REPO-07", "warning", "the declaration names the repository \"platform-api\", but it is \"widgets-api\"; set name to \"widgets-api\", with system and component to match, or rename the repository and its declaration together", true],
     [".repo/repository.toml", "REPO-09", "warning", "repository name \"widgets-api\" starts with \"widgets\", which is not a registered system; start it with one of \"brand\", \"catalog\", \"engineering\", \"host\", \"infra\", \"observability\", \"platform\", \"sdk\"", true]

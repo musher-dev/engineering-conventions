@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "repository": "specifications",
+  "output": "schemas",
+  "version": "1.6.0",
+  "tag": "schemas/v1.6.0",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "interfaces": [
+    {
+      "id": "component-schema",
+      "format": "json-schema",
+      "compatibility": "versioned",
+      "files": [
+        {
+          "path": "component/component.v1.schema.json",
+          "sha256": "0ac9dac9527eaa3f2c1a5bf6999c900e74328f1b94495297909d0f97adeb97f0"
+        }
+      ]
+    },
+    {
+      "id": "listing-schema",
+      "format": "json-schema",
+      "compatibility": "versioned",
+      "files": [
+        {
+          "path": "listing/listing.v1.schema.json",
+          "sha256": "3e358c07c567c00db7faa97eee7dbbbfb40d3e6a7f6c78b77c2b36254b1373a6"
+        }
+      ]
+    }
+  ]
+}

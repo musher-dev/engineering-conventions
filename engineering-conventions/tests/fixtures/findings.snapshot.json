@@ -377,10 +377,6 @@
   "deps-09-validate-without-check": [
     [".repo/dependencies.toml", "DEPS-09", "warning", "the repository vendors dependencies but no validate workflow runs `task deps:check`; run it in a validate workflow, so an edited or half-updated copy cannot merge", true]
   ],
-  "deps-10-no-maintain-workflow": [
-    [".repo/dependencies.toml", "DEPS-10", "warning", "the repository vendors dependencies but has no maintain-dependencies.yml; add it, on a schedule, to run `task deps:sync` and open a pull request for each new release", true]
-  ],
-  "deps-10-passes-schedule-only": [],
   "deps-11-action-not-updated": [
     [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true]
   ],
@@ -392,6 +388,19 @@
   "deps-13-passes-renovate": [],
   "deps-13-product-not-updated": [
     [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies platform-api/go.mod declares; add an update with package-ecosystem gomod and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true]
+  ],
+  "deps-15-missing-badge": [
+    ["README.md", "DEPS-15", "warning", ".repo/dependencies.toml pins specifications schemas but README.md shows no currency badge for it; add ![specifications schemas](https://github.com/musher-dev/<this-repository>/raw/badges/specifications-schemas.svg), so a reader sees when the pin falls behind", true]
+  ],
+  "deps-15-passes-conventions-pin": [],
+  "deps-16-no-badge-workflow": [
+    [".repo/dependencies.toml", "DEPS-16", "warning", "the repository pins specifications schemas but has no maintain-dependency-badges.yml; add it, on a schedule and on a dependency-released repository_dispatch, calling musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml, so its currency badges stay fresh", true]
+  ],
+  "deps-16-passes-badges-command": [],
+  "deps-17-passes-security-only-and-quarterly": [],
+  "deps-17-weekly-update": [
+    [".github/dependabot.yml", "DEPS-17", "warning", "the github-actions update for /, /.github/actions/* runs weekly and groups nothing; set schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull request a month", true],
+    [".github/dependabot.yml", "DEPS-17", "warning", "the gomod update for /platform-api groups nothing; set schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull request a month", true]
   ],
   "devc-01-passes-named-config": [],
   "devc-01-root-config": [

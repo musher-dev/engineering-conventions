@@ -153,11 +153,14 @@ ID is permanent: it is never renumbered or reused.
 | [DEPS-07](dependencies/dependencies-declaration.md#deps-07) | A pin lives in the dependencies declaration or a package manifest, never in a file of its own | EC-0032 | proposed | warning | conftest |
 | [DEPS-08](dependencies/keeping-dependencies-current.md#deps-08) | A repository that vendors dependencies defines deps:check and deps:sync | EC-0033 | proposed | warning | conftest |
 | [DEPS-09](dependencies/keeping-dependencies-current.md#deps-09) | A validate workflow runs deps:check | EC-0033 | proposed | warning | conftest |
-| [DEPS-10](dependencies/keeping-dependencies-current.md#deps-10) | A scheduled maintain-dependencies workflow runs deps:sync | EC-0033 | proposed | warning | conftest |
+| [DEPS-10](dependencies/keeping-dependencies-current.md#deps-10) | A scheduled maintain-dependencies workflow runs deps:sync | EC-0033 | retired | warning | conftest |
 | [DEPS-11](dependencies/automated-updates.md#deps-11) | An updater keeps the actions of every workflow and composite action current | EC-0042 | proposed | warning | conftest |
 | [DEPS-12](dependencies/automated-updates.md#deps-12) | An updater keeps the base images of every Dockerfile current | EC-0042 | proposed | warning | conftest |
 | [DEPS-13](dependencies/automated-updates.md#deps-13) | An updater keeps the product's dependencies current from the product directory | EC-0042 | proposed | warning | conftest |
 | [DEPS-14](dependencies/dependencies-declaration.md#deps-14) | Repositories depend on each other without a cycle | EC-0032 | proposed | warning | review |
+| [DEPS-15](dependencies/keeping-dependencies-current.md#deps-15) | The README shows a currency badge for each pin of another Musher release | EC-0033 | proposed | warning | conftest |
+| [DEPS-16](dependencies/keeping-dependencies-current.md#deps-16) | A maintain-dependency-badges workflow refreshes the currency badges on a schedule and on each release | EC-0033 | proposed | warning | conftest |
+| [DEPS-17](dependencies/automated-updates.md#deps-17) | Every Dependabot version update runs monthly or less often and groups every dependency | EC-0042 | proposed | warning | conftest |
 | [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
 | [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
 | [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |

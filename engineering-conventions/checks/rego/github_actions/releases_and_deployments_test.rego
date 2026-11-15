@@ -265,6 +265,20 @@ test_gha_52_app_token_steps if {
 	}
 }
 
+test_gha_52_kebab_secret_in_a_called_workflow if {
+	steps := [
+		app_token({"client-id": "${{ vars.BADGES_APP_CLIENT_ID }}", "private-key": "${{ secrets.badges-app-private-key }}"}),
+		app_token({"client-id": "${{ vars.DEPLOY_APP_CLIENT_ID }}", "private-key": "${{ secrets.badges-app-private-key }}"}),
+	]
+	docs := [wf("reusable-maintain-badges.yml", workflow("workflow_call", {"a": job({"steps": steps})}))]
+	results := checks.findings with input as docs with data.conventions.index as td.index
+	messages(results, "GHA-52") == {concat(" ", [
+		`step "Mint" in job "a" mints a GitHub App token with a client ID for DEPLOY and a private key for BADGES;`,
+		"name the App with client-id: ${{ vars.<PURPOSE>_APP_CLIENT_ID }} and sign with private-key:",
+		"${{ secrets.<PURPOSE>_APP_PRIVATE_KEY }}, one purpose for both",
+	])}
+}
+
 test_gha_52_release_token_steps_are_rel_16s if {
 	steps := [app_token({"app-id": "${{ secrets.AUTOMATION_APP_ID }}"})]
 	docs := [wf("release.yml", workflow("push", {"a": job({"steps": steps})}))]

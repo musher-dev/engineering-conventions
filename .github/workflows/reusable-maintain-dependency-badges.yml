@@ -1,0 +1,146 @@
+name: Reusable Maintain Dependency Badges
+
+# Renders a currency badge for each pin of another Musher release the caller
+# holds (EC-0033, DEPS-15 and DEPS-16, decision 0042) and publishes them on an
+# orphan `badges` branch of the caller, which its README links. A consumer
+# calls it from its own maintain-dependency-badges.yml, on a schedule and on
+# a producer's dependency-released dispatch:
+#
+#   jobs:
+#     badges:
+#       name: Badges
+#       permissions:
+#         contents: write  # push the badges branch
+#       # vX.Y.Z, the release whose commit <sha> is
+#       uses: musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml@<sha>
+#       secrets:
+#         release-app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+#
+# It runs the `conventions` the caller's .config/mise/config.toml pins, which
+# must be 0.9.4 or later. The producers' releases are read with a token from
+# the release App, which is installed on every repository and needs only read
+# access to their contents:
+# its client ID is the variable RELEASE_APP_CLIENT_ID and its key the
+# secret passed above (GHA-52). Without the key, the job's own token reads
+# only public producers, and the rest are grey. A behind or unreadable pin
+# never fails the run: showing it is the point.
+
+on:
+  workflow_call:
+    secrets:
+      release-app-private-key:
+        description: >-
+          The private key of a GitHub App that can read the producers'
+          releases; its client ID is the caller's RELEASE_APP_CLIENT_ID
+          variable. Without it, only public producers are read.
+        required: false
+
+permissions: {}
+
+jobs:
+  badges:
+    name: Badges
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write  # push the badges branch with the job's own token
+    env:
+      HAS_APP_KEY: ${{ secrets.release-app-private-key != '' }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The caller's mise configuration says which mise, and which conventions
+      # release, to run (TOOL-04).
+      - name: Read the caller's mise version
+        id: mise_version
+        run: |
+          set -euo pipefail
+          config=.config/mise/config.toml
+          if [[ ! -f "${config}" ]]; then
+            echo "::error::${config} does not exist: pin github:musher-dev/engineering-conventions there (ADOPT-09)"
+            exit 1
+          fi
+          pattern='s/^[[:space:]]*min_version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p'
+          version="$(sed -n "${pattern}" "${config}" | head -n 1)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "MISE_TRUSTED_CONFIG_PATHS=${GITHUB_WORKSPACE}" >> "$GITHUB_ENV"
+
+      - name: Install the pinned conventions release
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
+        with:
+          version: ${{ steps.mise_version.outputs.version }}
+          install: true
+          install_args: github:musher-dev/engineering-conventions
+          cache: false
+
+      # The token reaches only the producers: each [[dependencies]] entry's
+      # repository, and engineering-conventions when mise pins it.
+      - name: List the producers
+        id: producers
+        run: |
+          set -euo pipefail
+          python3 - >> "$GITHUB_OUTPUT" << 'EOF'
+          import pathlib, tomllib
+          names = set()
+          declaration = pathlib.Path(".repo/dependencies.toml")
+          if declaration.is_file():
+              for entry in tomllib.loads(declaration.read_text()).get("dependencies", []):
+                  if isinstance(entry, dict) and isinstance(entry.get("repository"), str):
+                      names.add(entry["repository"])
+          tools = tomllib.loads(pathlib.Path(".config/mise/config.toml").read_text()).get("tools", {})
+          if "github:musher-dev/engineering-conventions" in tools:
+              names.add("engineering-conventions")
+          print("repositories=" + ",".join(sorted(names)))
+          EOF
+
+      - name: Mint the release App token
+        id: app_token
+        if: env.HAS_APP_KEY == 'true' && steps.producers.outputs.repositories != ''
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.release-app-private-key }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ steps.producers.outputs.repositories }}
+          permission-contents: read
+
+      - name: Render the badges
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token || github.token }}
+          OUT: ${{ runner.temp }}/badges
+        run: conventions dependencies badges --out "${OUT}"
+
+      # One commit on an orphan branch, replaced only when a badge changed, so
+      # the branch never grows. The lease names the commit read here (GHA-46).
+      - name: Publish the badges branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUT: ${{ runner.temp }}/badges
+          REPOSITORY: ${{ github.repository }}
+          SERVER: ${{ github.server_url }}
+        run: |
+          set -euo pipefail
+          remote="${SERVER}/${REPOSITORY}.git"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 -w0)"
+          echo "::add-mask::${auth#AUTHORIZATION: basic }"
+          expected="$(git -c "http.extraheader=${auth}" ls-remote "${remote}" refs/heads/badges | cut -f1)"
+          cd "${OUT}"
+          git init -q -b badges
+          git add -A
+          tree="$(git write-tree)"
+          if [[ -n "${expected}" ]]; then
+            git -c "http.extraheader=${auth}" fetch -q --depth=1 "${remote}" "${expected}"
+            if [[ "$(git rev-parse "${expected}^{tree}")" == "${tree}" ]]; then
+              echo "The badges are unchanged"
+              exit 0
+            fi
+          fi
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "chore: render the dependency badges"
+          git -c "http.extraheader=${auth}" push -q --force-with-lease="badges:${expected}" \
+            "${remote}" HEAD:refs/heads/badges
+          echo "Pushed the badges to the badges branch"

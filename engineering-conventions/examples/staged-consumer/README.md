@@ -1,5 +1,7 @@
 # Example staged consumer
 
+[![engineering-conventions](https://github.com/musher-dev/platform-api/raw/badges/engineering-conventions.svg)](https://github.com/musher-dev/platform-api/tree/badges)
+
 The [example consumer](../consumer/README.md) part-way through adopting the conventions. Its build enforces four
 families and reports the rest without failing, and it holds one waiver. Copy the declaration from it when your
 repository adopts a release one family at a time

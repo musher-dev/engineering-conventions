@@ -1,5 +1,7 @@
 # Example consumer
 
+[![engineering-conventions](https://github.com/musher-dev/platform-api/raw/badges/engineering-conventions.svg)](https://github.com/musher-dev/platform-api/tree/badges)
+
 A miniature repository that meets every GitHub Actions, adoption, repository, output, release, task, environment,
 toolchain, commit and dev container requirement in this release. Copy from it; the comments explain the choices that
 are not obvious.
@@ -25,6 +27,7 @@ are not obvious.
 | [`.config/README.md`](.config/README.md) | The index of `.config/`: each file, its tool and its caller ([EC-0011](../../definitions/conventions/configuration/tool-configuration.md)) |
 | [`.github/rulesets/main-branch.json`](.github/rulesets/main-branch.json) | The default branch's ruleset ([EC-0041](../../definitions/conventions/branch-protection/default-branch-protection.md)): no deletion or force push, a pull request with an approval from a code owner in [`CODEOWNERS`](.github/CODEOWNERS) (COMM-08), and only aggregates (`Validate / Required`) and single-job workflows as required checks |
 | [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) | A dev container ([EC-0027](../../definitions/conventions/dev-containers/dev-container-configuration.md)): an image with a fixed tag, its one Feature locked in [`devcontainer-lock.json`](.devcontainer/devcontainer-lock.json), a user other than root, a volume named for the container, and a post-create script the repository holds. It shows what the requirements accept; it is not a template to copy, and the organization's scaffold is `musher-dev/development-container` |
+| [`.github/workflows/maintain-dependency-badges.yml`](.github/workflows/maintain-dependency-badges.yml) | The currency badge above, for the release pin, rendered by the reusable workflow on a schedule and on a producer's `dependency-released` dispatch, and kept on the `badges` branch ([EC-0033](../../definitions/conventions/dependencies/keeping-dependencies-current.md), DEPS-15 and DEPS-16). Nothing opens a pull request per release |
 | [`.github/renovate.json`](.github/renovate.json) | Renovate, whose managers raise the actions' SHA pins, the Dockerfile's base image, the Go modules, the dev container's image and Features, and the release pin (DEVC-09, DEPS-11 to DEPS-13) |
 
 ## What the Validate workflow runs

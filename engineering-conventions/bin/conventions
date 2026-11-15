@@ -17,9 +17,10 @@
 # findings with --output json; any other format is conftest's own. The report
 # goes to stdout; progress goes to stderr, and only on a terminal.
 #
-# `check` never reaches the network. Two commands do, through the GitHub CLI:
-# `waivers --check-tracking`, and `codeowners`, which asks GitHub for the
-# errors it finds in the repository's CODEOWNERS (COMM-11, decision 0041).
+# `check` never reaches the network. Three commands do, through the GitHub
+# CLI: `waivers --check-tracking`; `codeowners`, which asks GitHub for the
+# errors it finds in the repository's CODEOWNERS (COMM-11, decision 0041);
+# and `dependencies`, which reads each producer's releases (decision 0042).
 #
 # The repository's actual name, which REPO-07 compares with the declared one,
 # comes from --repository or CONVENTIONS_REPOSITORY, else GITHUB_REPOSITORY
@@ -35,6 +36,8 @@
 #   conventions env-file [-C DIR] [--force | --update] [--backup] SCHEMA
 #   conventions waivers [-C DIR] [--check-tracking]
 #   conventions codeowners [--repository OWNER/NAME] [--ref REF] [--fail-on error|warning] [--output text|json] [-C DIR]
+#   conventions dependencies status [--json] [-C DIR]
+#   conventions dependencies badges --out DIR [--status FILE] [-C DIR]
 #   conventions version
 set -eu
 
@@ -214,6 +217,8 @@ TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/(tools/)?[^/]+\.Taskfile\.ya?ml$'
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'
+# The root README, for the currency badge of each pin (DEPS-15).
+TEXTS="${TEXTS}|"'^README\.md$'
 # A .gitignore, for whether it ignores a product's local .env (ENVS-27).
 TEXTS="${TEXTS}|"'(^|/)\.gitignore$'
 # The root .gitattributes, for whether each pattern matches a file (CONF-13).
@@ -898,6 +903,139 @@ codeowners() {
   fi
 }
 
+# The pins of other Musher releases, as bin/pins.jq writes them, into
+# ${scratch}/pins.json: each [[dependencies]] entry, with the tag line its
+# vendored release record names, and the conventions release
+# .config/mise/config.toml pins.
+read_pins() {
+  printf '{}\n' > "${scratch}/dependencies.json"
+  printf '{}\n' > "${scratch}/mise.json"
+  if [ -f .repo/dependencies.toml ]; then
+    tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse .repo/dependencies.toml \
+      > "${scratch}/dependencies.json" || die "cannot read .repo/dependencies.toml"
+  fi
+  if [ -f .config/mise/config.toml ]; then
+    tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse .config/mise/config.toml \
+      > "${scratch}/mise.json" || die "cannot read .config/mise/config.toml"
+  fi
+  set --
+  while IFS= read -r file; do
+    if [ -n "${file}" ]; then set -- "$@" --slurpfile "record:${file}" "${file}"; fi
+  done << EOF
+$(list_files | grep -E '^([^/]+/)?contracts/vendor/[^/]+/[^/]+/release\.json$' || true)
+EOF
+  # conftest parse of one file is the document itself; jq slurps it as [doc].
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -n --slurpfile dependencies "${scratch}/dependencies.json" \
+    --slurpfile mise "${scratch}/mise.json" "$@" -f "${bundle}/bin/pins.jq" > "${scratch}/pins.json" ||
+    die "cannot read the pins"
+}
+
+# Each pin against its producer's releases, as bin/currency.jq writes them,
+# into ${scratch}/status.json. A producer gh cannot read leaves its pins
+# `unknown`, with the reason on stderr: a behind or unreadable pin is a
+# state, never a failure.
+read_status() {
+  read_pins
+  command -v gh > /dev/null 2>&1 ||
+    die "dependencies needs the GitHub CLI: install gh (https://cli.github.com) and run gh auth login, or set GH_TOKEN"
+  mkdir -p "${scratch}/tags"
+  set --
+  while IFS= read -r producer; do
+    case ${producer} in
+      '' | . | .. | *[!A-Za-z0-9._-]*) continue ;;
+    esac
+    if gh api "repos/musher-dev/${producer}/releases" --paginate < /dev/null \
+      > "${scratch}/releases.json" 2> "${scratch}/stderr" &&
+      tool jq aqua:jqlang/jq "${JQ_VERSION}" -s \
+        '[.[] | if type == "array" then .[] else empty end | select((.draft or .prerelease) | not) | .tag_name]' \
+        "${scratch}/releases.json" > "${scratch}/tags/${producer}.json" 2> /dev/null; then
+      set -- "$@" --slurpfile "tags:${producer}" "${scratch}/tags/${producer}.json"
+    else
+      printf 'conventions: cannot read the releases of musher-dev/%s, so its pins are unknown: %s\n' \
+        "${producer}" "$(head -n 1 "${scratch}/stderr")" >&2
+    fi
+  done << EOF
+$(tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '[.[].repository] | unique | .[]' "${scratch}/pins.json")
+EOF
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" "$@" -f "${bundle}/bin/currency.jq" "${scratch}/pins.json" \
+    > "${scratch}/status.json" || die "cannot compare the pins with their releases"
+}
+
+# `dependencies status` prints each pin's currency; `dependencies badges`
+# renders a badge per pin, an index.json and a README.md into --out, from
+# --status (a saved `status --json`) or from the producers' releases (EC-0033,
+# decision 0042). Neither fails because a pin is behind.
+dependencies() {
+  action=${1:-}
+  [ $# -gt 0 ] && shift
+  json='' out='' status_file='' given=''
+  # --out and --status are relative to where the command was run, not -C.
+  here=$(pwd)
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --json) json=1; shift ;;
+      --out) out=${2:?--out needs a directory}; shift 2 ;;
+      --status) status_file=${2:?--status needs a file}; shift 2 ;;
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  case ${action} in
+    status) [ -z "${out}" ] && [ -z "${status_file}" ] || usage ;;
+    badges) [ -n "${out}" ] && [ -z "${json}" ] || usage ;;
+    *) usage ;;
+  esac
+  case ${out} in '' | /*) ;; *) out="${here}/${out}" ;; esac
+  case ${status_file} in '' | /*) ;; *) status_file="${here}/${status_file}" ;; esac
+  find_root
+  cd "${root}"
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+
+  if [ -n "${status_file}" ]; then
+    [ -f "${status_file}" ] || die "${status_file} does not exist"
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -e 'type == "array"' "${status_file}" > /dev/null 2>&1 ||
+      die "${status_file} is not what \`conventions dependencies status --json\` prints"
+    cp -- "${status_file}" "${scratch}/status.json"
+  else
+    read_status
+  fi
+
+  if [ "${action}" = status ]; then
+    if [ -n "${json}" ]; then
+      tool jq aqua:jqlang/jq "${JQ_VERSION}" . "${scratch}/status.json"
+    else
+      tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '
+        if length == 0 then "no pins of another Musher release"
+        else .[] | "\(.label)  \(.pinned // "?")  \(.state)\(
+          if .state == "behind-minor" then "  \(.latestInMajor) is out"
+          elif .state == "behind-major" then "  \(.latest) is out" else "" end)" end' "${scratch}/status.json"
+    fi
+    return 0
+  fi
+
+  mkdir -p -- "${out}"
+  count=$(tool jq aqua:jqlang/jq "${JQ_VERSION}" length "${scratch}/status.json")
+  at=0
+  while [ "${at}" -lt "${count}" ]; do
+    badge=$(tool jq aqua:jqlang/jq "${JQ_VERSION}" -r ".[${at}].badge // \"\"" "${scratch}/status.json")
+    case ${badge} in
+      .* | *[!A-Za-z0-9._-]*)
+        printf 'conventions: skipping a pin whose badge name %s is not a plain file name\n' "${badge}" >&2 ;;
+      ?*.svg)
+        tool jq aqua:jqlang/jq "${JQ_VERSION}" -j --arg part svg --argjson at "${at}" -f "${bundle}/bin/badges.jq" \
+          "${scratch}/status.json" > "${out}/${badge}" || die "cannot render ${badge}"
+        printf '\n' >> "${out}/${badge}" ;;
+      *) printf 'conventions: skipping a pin with no badge name\n' >&2 ;;
+    esac
+    at=$((at + 1))
+  done
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" . "${scratch}/status.json" > "${out}/index.json"
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -r --arg part readme --argjson at 0 -f "${bundle}/bin/badges.jq" \
+    "${scratch}/status.json" > "${out}/README.md" || die "cannot write the badges' README.md"
+  printf 'wrote %s badges to %s\n' "${count}" "${out}" >&2
+}
+
 version() {
   release="${bundle}/checks/data/release.json"
   if [ -f "${release}" ]; then
@@ -918,6 +1056,7 @@ case ${command} in
   env-file) env_file "$@" ;;
   waivers) waivers "$@" ;;
   codeowners) codeowners "$@" ;;
+  dependencies) dependencies "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

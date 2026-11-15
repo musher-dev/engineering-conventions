@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.5](https://github.com/musher-dev/engineering-conventions/compare/v0.9.4...v0.9.5) (2026-11-15)
+
+
+### Features
+
+* **conventions:** show a newer major on badges and read with either app ([#141](https://github.com/musher-dev/engineering-conventions/issues/141)) ([8c48aea](https://github.com/musher-dev/engineering-conventions/commit/8c48aea86633a4ebbb048070f44b2277a5019366))
+
 ## [0.9.4](https://github.com/musher-dev/engineering-conventions/compare/v0.9.3...v0.9.4) (2026-11-15)
 
 

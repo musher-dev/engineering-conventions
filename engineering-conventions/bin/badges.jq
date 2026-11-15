@@ -32,9 +32,10 @@ def width:
 def colour:
   {"current": "#4c1", "behind-minor": "#dfb317", "behind-major": "#fe7d37"}[.state] // "#9f9f9f";
 
+# A behind pin names the newest release, so a newer major is never hidden
+# behind a newer patch of the pinned one (decision 0043).
 def message:
-  if .state == "behind-minor" then "\(.pinned) → \(.latestInMajor)"
-  elif .state == "behind-major" then "\(.pinned) → \(.latest)"
+  if .state == "behind-minor" or .state == "behind-major" then "\(.pinned) → \(.latest)"
   else .pinned // "unknown" end;
 
 def text($x; $length; $content):

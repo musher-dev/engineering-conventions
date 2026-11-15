@@ -13,9 +13,14 @@
 #
 # state is
 #   current        no newer release in the line
-#   behind-minor   a newer release exists in the pinned major
-#   behind-major   the pin is the newest of its major, and a newer major exists
-#   unknown        the releases could not be read, or the pin is not X.Y.Z
+#   behind-minor   a newer release exists, and it is in the pinned major
+#   behind-major   a newer major exists, wherever the pin stands in its own
+#                  (latestInMajor says how far behind that is; decision 0043)
+#   unknown        the releases could not be read, the line has no release,
+#                  the pin is not X.Y.Z, or the pin is newer than every release
+#
+# Below 1.0.0 the minor is the breaking part (decision 0005), so there a
+# "major" is the 0.minor series: 0.9.4 against 0.10.0 is behind-major.
 
 # A version as a sortable key, [major, minor, patch, 1 for a release or 0 for
 # a prerelease], or null when it is not semantic.
@@ -40,13 +45,16 @@ def line($tags; $prefix):
 
 def newest: if length == 0 then null else max_by(.key) end;
 
+# The breaking series a key belongs to: [major], or [0, minor] below 1.0.0.
+def series: if .[0] > 0 then [.[0]] else [0, .[1]] end;
+
 map(
   . as $pin
   | releases_of($pin.repository) as $tags
   | (($pin.pinned // "") | key) as $pinned
   | (if $tags == null or $pinned == null then [] else line($tags; $pin.prefix) end) as $line
   | ($line | newest) as $latest
-  | ($line | map(select(.key[0] == $pinned[0])) | newest) as $in_major
+  | ($line | map(select((.key | series) == ($pinned | series))) | newest) as $in_major
   | {
       repository: $pin.repository,
       output: $pin.output,
@@ -55,9 +63,10 @@ map(
       latestInMajor: $in_major.version,
       state: (
         if $tags == null or $pinned == null or $latest == null then "unknown"
-        elif $in_major != null and $in_major.key > $pinned then "behind-minor"
-        elif $latest.key[0] > $pinned[0] then "behind-major"
-        else "current" end
+        elif ($latest.key | series) > ($pinned | series) then "behind-major"
+        elif $latest.key > $pinned then "behind-minor"
+        elif $latest.key == $pinned then "current"
+        else "unknown" end
       ),
       label: $pin.label,
       badge: $pin.badge

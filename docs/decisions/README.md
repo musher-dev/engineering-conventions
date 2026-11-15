@@ -55,6 +55,7 @@ decisions about why Musher exists and what it designs are in `musher-dev/pelorus
 | [0040](0040-a-job-skips-on-proof-of-an-identical-passing-run.md) | A job skips on proof of an identical passing run, behind a kill switch | accepted |
 | [0041](0041-github-judges-codeowners-owners.md) | GitHub judges whether CODEOWNERS owners resolve, through its own command | accepted |
 | [0042](0042-dependency-currency-is-shown-not-proposed.md) | Dependency currency is shown as README badges, not proposed as a pull request per release | accepted |
+| [0043](0043-a-newer-major-always-shows-on-a-currency-badge.md) | A newer major always shows on a currency badge, and the badge workflow reads with either App | accepted |
 
 ## Writing a decision
 

@@ -1008,8 +1008,8 @@ dependencies() {
       tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '
         if length == 0 then "no pins of another Musher release"
         else .[] | "\(.label)  \(.pinned // "?")  \(.state)\(
-          if .state == "behind-minor" then "  \(.latestInMajor) is out"
-          elif .state == "behind-major" then "  \(.latest) is out" else "" end)" end' "${scratch}/status.json"
+          if .state == "behind-minor" or .state == "behind-major" then "  \(.latest) is out"
+          else "" end)" end' "${scratch}/status.json"
     fi
     return 0
   fi

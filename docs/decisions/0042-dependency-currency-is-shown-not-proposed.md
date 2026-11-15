@@ -5,6 +5,7 @@ status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
 amends: ["0022", "0032"]
+amended_by: ["0043"]
 ---
 
 # 0042 — Dependency currency is shown as README badges, not proposed as a pull request per release

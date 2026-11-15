@@ -17,6 +17,12 @@ on:
   # minutes of a release rather than by the next schedule.
   repository_dispatch:
     types: [dependency-released]
+  # A merged pin change turns its badge at once.
+  push:
+    branches: [main]
+    paths:
+      - .repo/dependencies.toml
+      - .config/mise/config.toml
   workflow_dispatch:
 
 permissions: {}
@@ -30,8 +36,8 @@ jobs:
     name: Badges
     permissions:
       contents: write  # push the badges branch
-    # v0.9.3. The comment sits above the pin, which is longer than a line.
-    uses: musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml@7f839d0207bf5d99bb5c31a548d9ed8a4c2c943f
+    # v0.9.4. The comment sits above the pin, which is longer than a line.
+    uses: musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml@fa33c68ee4776d9dac32e562d8d2a7cb8678047c
     # The release App reads private producers' releases; its client ID
     # is the variable RELEASE_APP_CLIENT_ID (GHA-52).
     secrets:

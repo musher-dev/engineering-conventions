@@ -166,18 +166,64 @@ def test_status_compares_each_pin_with_its_tag_line(tmp_path: Path) -> None:
     )
 
 
-def test_status_reports_a_newer_major_only_from_the_newest_of_its_own(tmp_path: Path) -> None:
+def test_status_reports_a_newer_major_wherever_the_pin_stands_in_its_own(tmp_path: Path) -> None:
+    # Decision 0043: a newer major is never hidden behind a newer patch of the
+    # pinned one; latestInMajor still says how far behind the pin is in its own.
     stub = _gh(tmp_path)
     (stub / "engineering-conventions.json").write_text(
         json.dumps([_release("v0.9.3"), _release("v0.9.4"), _release("v1.0.0")])
     )
-    newest = _launch("status", "--json", cwd=_repository(tmp_path, conventions="0.9.4"), stub=stub)
-    [conventions] = [pin for pin in json.loads(newest.stdout) if pin["output"] is None]
-    assert (conventions["state"], conventions["latest"], conventions["latestInMajor"]) == (
-        "behind-major",
-        "1.0.0",
-        "0.9.4",
+    for pinned, in_major in (("0.9.4", "0.9.4"), ("0.9.3", "0.9.4")):
+        repo = _repository(tmp_path / pinned, conventions=pinned)
+        completed = _launch("status", "--json", cwd=repo, stub=stub)
+        assert completed.returncode == 0, completed.stderr
+        [conventions] = [pin for pin in json.loads(completed.stdout) if pin["output"] is None]
+        assert (conventions["state"], conventions["latest"], conventions["latestInMajor"]) == (
+            "behind-major",
+            "1.0.0",
+            in_major,
+        )
+        text = _launch("status", cwd=repo, stub=stub).stdout.splitlines()
+        assert f"engineering-conventions  {pinned}  behind-major  1.0.0 is out" in text
+
+
+@pytest.mark.parametrize(
+    ("pinned", "tags", "expected"),
+    [
+        # Below 1.0.0 the minor is the breaking part (decision 0005).
+        ("0.9.4", ["v0.9.4", "v0.10.0"], ("behind-major", "0.10.0", "0.9.4")),
+        ("0.9.3", ["v0.9.3", "v0.9.4"], ("behind-minor", "0.9.4", "0.9.4")),
+        # A pin newer than every release, such as a typo or a draft, is not current.
+        ("0.9.9", ["v0.9.3", "v0.9.4"], ("unknown", "0.9.4", "0.9.4")),
+        ("1.2.0", ["v1.2.0", "v1.3.1", "v2.0.0"], ("behind-major", "2.0.0", "1.3.1")),
+    ],
+)
+def test_status_judges_the_breaking_series(
+    tmp_path: Path, pinned: str, tags: list[str], expected: tuple[str, str, str]
+) -> None:
+    stub = _gh(tmp_path)
+    (stub / "engineering-conventions.json").write_text(json.dumps([_release(tag) for tag in tags]))
+    repo = _repository(tmp_path, conventions=pinned)
+    completed = _launch("status", "--json", cwd=repo, stub=stub)
+    assert completed.returncode == 0, completed.stderr
+    [conventions] = [pin for pin in json.loads(completed.stdout) if pin["output"] is None]
+    assert (conventions["state"], conventions["latest"], conventions["latestInMajor"]) == expected
+
+
+def test_badges_name_the_newest_release_when_a_newer_major_is_out(tmp_path: Path) -> None:
+    # Decision 0043: behind in its own major and a major behind, the badge is
+    # orange and points at the newest release, not the newest of the pinned major.
+    stub = _gh(tmp_path)
+    (stub / "engineering-conventions.json").write_text(
+        json.dumps([_release("v1.2.0"), _release("v1.3.1"), _release("v2.0.0")])
     )
+    repo = _repository(tmp_path, conventions="1.2.0")
+    out = tmp_path / "out"
+    completed = _launch("badges", "--out", str(out), cwd=repo, stub=stub)
+    assert completed.returncode == 0, completed.stderr
+    svg = (out / "engineering-conventions.svg").read_text()
+    assert 'fill="#fe7d37"' in svg
+    assert "<title>engineering-conventions: 1.2.0 → 2.0.0</title>" in svg
 
 
 def test_status_prints_a_line_per_pin(tmp_path: Path) -> None:
@@ -222,8 +268,8 @@ STATES = [
         "repository": "platform-api",
         "output": "contracts",
         "pinned": "0.36.1",
-        "latest": "1.2.0",
-        "latestInMajor": "0.38.0",
+        "latest": "0.36.4",
+        "latestInMajor": "0.36.4",
         "state": "behind-minor",
         "label": "platform-api contracts",
         "badge": "platform-api-contracts.svg",
@@ -273,7 +319,7 @@ def test_badges_match_their_snapshots(tmp_path: Path) -> None:
 def test_badges_show_the_colour_and_target_of_each_state() -> None:
     expected = {
         "engineering-conventions.svg": ("#4c1", "engineering-conventions: 0.9.4"),
-        "platform-api-contracts.svg": ("#dfb317", "platform-api contracts: 0.36.1 → 0.38.0"),
+        "platform-api-contracts.svg": ("#dfb317", "platform-api contracts: 0.36.1 → 0.36.4"),
         "specifications-schemas.svg": ("#fe7d37", "specifications schemas: 1.6.0 → 2.0.0"),
         "topicgraph-events-release.svg": ("#9f9f9f", "topicgraph events-release: 0.4.0"),
     }

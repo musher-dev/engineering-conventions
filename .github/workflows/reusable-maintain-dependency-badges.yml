@@ -3,8 +3,9 @@ name: Reusable Maintain Dependency Badges
 # Renders a currency badge for each pin of another Musher release the caller
 # holds (EC-0033, DEPS-15 and DEPS-16, decision 0042) and publishes them on an
 # orphan `badges` branch of the caller, which its README links. A consumer
-# calls it from its own maintain-dependency-badges.yml, on a schedule and on
-# a producer's dependency-released dispatch:
+# calls it from its own maintain-dependency-badges.yml, on a schedule, on a
+# producer's dependency-released dispatch, and on a push to main that changes
+# a pin:
 #
 #   jobs:
 #     badges:
@@ -17,22 +18,34 @@ name: Reusable Maintain Dependency Badges
 #         release-app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 #
 # It runs the `conventions` the caller's .config/mise/config.toml pins, which
-# must be 0.9.4 or later. The producers' releases are read with a token from
-# the release App, which is installed on every repository and needs only read
-# access to their contents:
-# its client ID is the variable RELEASE_APP_CLIENT_ID and its key the
-# secret passed above (GHA-52). Without the key, the job's own token reads
-# only public producers, and the rest are grey. A behind or unreadable pin
-# never fails the run: showing it is the point.
+# must be 0.9.4 or later, so that pin, not this workflow's SHA, decides how a
+# badge is judged (0.9.5 and later: decision 0043). The
+# automation-app-private-key secret needs this workflow at 0.9.5 or later.
+# The producers' releases are read with a token, scoped
+# to them and to contents: read, from the release App: its client ID is the
+# variable RELEASE_APP_CLIENT_ID and its key the secret passed above (GHA-52).
+# A repository that holds the musher-automation App's pair instead passes
+# automation-app-private-key, read with AUTOMATION_APP_CLIENT_ID (decision
+# 0043); both Apps are installed on every repository. Without either key,
+# the job's own token reads only public producers, and the rest are grey. A
+# behind or unreadable pin never fails the run: showing it is the point, so a
+# token that cannot be minted is a warning, and its pins read grey.
 
 on:
   workflow_call:
     secrets:
       release-app-private-key:
         description: >-
-          The private key of a GitHub App that can read the producers'
-          releases; its client ID is the caller's RELEASE_APP_CLIENT_ID
-          variable. Without it, only public producers are read.
+          The musher-release App's private key; its client ID is the
+          caller's RELEASE_APP_CLIENT_ID variable. Without it or the
+          automation App's key, only public producers are read.
+        required: false
+      automation-app-private-key:
+        description: >-
+          The musher-automation App's private key, for a repository that
+          holds that App's pair rather than the release App's; its client ID
+          is the caller's AUTOMATION_APP_CLIENT_ID variable. The release
+          App's key is used when both are passed.
         required: false
 
 permissions: {}
@@ -45,7 +58,8 @@ jobs:
     permissions:
       contents: write  # push the badges branch with the job's own token
     env:
-      HAS_APP_KEY: ${{ secrets.release-app-private-key != '' }}
+      HAS_RELEASE_KEY: ${{ secrets.release-app-private-key != '' }}
+      HAS_AUTOMATION_KEY: ${{ secrets.automation-app-private-key != '' }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -97,8 +111,11 @@ jobs:
           EOF
 
       - name: Mint the release App token
-        id: app_token
-        if: env.HAS_APP_KEY == 'true' && steps.producers.outputs.repositories != ''
+        id: release_token
+        if: >-
+          env.HAS_RELEASE_KEY == 'true' && vars.RELEASE_APP_CLIENT_ID != ''
+          && steps.producers.outputs.repositories != ''
+        continue-on-error: true
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
         with:
           client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
@@ -107,9 +124,40 @@ jobs:
           repositories: ${{ steps.producers.outputs.repositories }}
           permission-contents: read
 
+      - name: Mint the automation App token
+        id: automation_token
+        if: >-
+          steps.release_token.outputs.token == '' && env.HAS_AUTOMATION_KEY == 'true'
+          && vars.AUTOMATION_APP_CLIENT_ID != '' && steps.producers.outputs.repositories != ''
+        continue-on-error: true
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
+        with:
+          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.automation-app-private-key }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ steps.producers.outputs.repositories }}
+          permission-contents: read
+
+      # A token that cannot be minted, or a key without its client ID, leaves
+      # the job's own token: the run stays green and says why its private
+      # producers' pins read grey (GHA-41).
+      - name: Warn when no App token reads the producers
+        if: >-
+          steps.release_token.outcome == 'failure' || steps.automation_token.outcome == 'failure'
+          || ((env.HAS_RELEASE_KEY == 'true' || env.HAS_AUTOMATION_KEY == 'true')
+          && steps.release_token.outputs.token == '' && steps.automation_token.outputs.token == '')
+        env:
+          RELEASE_OUTCOME: ${{ steps.release_token.outcome }}
+          AUTOMATION_OUTCOME: ${{ steps.automation_token.outcome }}
+        run: >-
+          echo "::warning::release App token: ${RELEASE_OUTCOME:-skipped}, automation App token:
+          ${AUTOMATION_OUTCOME:-skipped}; check the key and its *_APP_CLIENT_ID variable. Private
+          producers' pins read grey."
+
       - name: Render the badges
         env:
-          GH_TOKEN: ${{ steps.app_token.outputs.token || github.token }}
+          GH_TOKEN: >-
+            ${{ steps.release_token.outputs.token || steps.automation_token.outputs.token || github.token }}
           OUT: ${{ runner.temp }}/badges
         run: conventions dependencies badges --out "${OUT}"
 

@@ -44,6 +44,8 @@ conventions env-contract SCHEMA        # print the environment contract derived 
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
 conventions waivers                    # list the waivers in .repo/conventions.toml with their expiry
 conventions codeowners                 # ask GitHub whether every CODEOWNERS owner resolves (online)
+conventions dependencies status        # compare each pin of a Musher release with its producer's releases (online)
+conventions dependencies badges --out DIR  # render a currency badge per pin, with index.json and README.md (online)
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -103,7 +105,16 @@ review, and `required_status_checks` naming the validate workflow's aggregate (B
 
 Let Renovate, or a Dependabot update per ecosystem, propose every update: the actions in the workflows and each
 composite action, the base image of every Dockerfile, and the product's manifest in the product directory (DEPS-11 to
-DEPS-13, [EC-0042](../engineering-conventions/definitions/conventions/dependencies/automated-updates.md)).
+DEPS-13, [EC-0042](../engineering-conventions/definitions/conventions/dependencies/automated-updates.md)). Keep
+Dependabot quiet: each version update monthly, with one group whose `patterns` are `["*"]`, so it opens at most one
+pull request per ecosystem a month (DEPS-17). Security updates ignore the schedule; enable them in the repository's
+settings.
+
+Show the conventions pin's currency, and each vendored dependency's, as a README badge (DEPS-15), rendered by a
+`maintain-dependency-badges.yml` that calls the reusable `reusable-maintain-dependency-badges.yml` on a schedule and
+on a `dependency-released` dispatch (DEPS-16). Nothing opens a pull request per release: when a badge turns yellow or
+orange, run `task deps:sync`, or change the pin, and open one yourself. The caller and the README snippet are in
+[EC-0033](../engineering-conventions/definitions/conventions/dependencies/keeping-dependencies-current.md#currency-badges).
 
 ## Declare the repository's identity
 
@@ -371,9 +382,9 @@ version = "0.36.1"
 
 That file is the only place the pin lives: no `config/<repository>.ref`, no hand-kept lock. Packages and tools keep
 their pins in their own manifests, at exact versions. Define `deps:check` and `deps:sync`, run `deps:check` in your
-validate workflow, and run `deps:sync` from a scheduled `maintain-dependencies.yml`. At runtime, name what each
-environment binding reaches: `target = "platform-api#public-http"` for another service, or a registered `capability`
-such as `postgresql`. The rules are the [dependencies](../engineering-conventions/definitions/conventions/dependencies/README.md)
+validate workflow, and run `deps:sync` yourself when the dependency's currency badge says it is behind. At runtime,
+name what each environment binding reaches: `target = "platform-api#public-http"` for another service, or a
+registered `capability` such as `postgresql`. The rules are the [dependencies](../engineering-conventions/definitions/conventions/dependencies/README.md)
 topic and [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md).
 
 ## Lint a site's copy
@@ -630,5 +641,6 @@ adds is not enforced until you list it. The rules are in
 
 ## Upgrading
 
-Change the version in `.config/mise/config.toml` and run `mise lock`, or accept Renovate's pull request that does. Read
+When the `engineering-conventions` badge says a release is out, change the version in `.config/mise/config.toml` and
+run `mise lock`, or accept Renovate's pull request that does. Read
 the release notes first: what each kind of release can change is in [versioning](versioning.md).

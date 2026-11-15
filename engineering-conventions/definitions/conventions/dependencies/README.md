@@ -2,13 +2,14 @@
 
 These conventions govern how a repository depends on another Musher repository's release: where it pins the version,
 how it keeps a copy of the interfaces it builds against, how that copy proves it is exactly what was released, and
-how it is kept current; and what keeps every other dependency current: the updater that watches its actions, images
-and packages.
+how a reader sees that it has fallen behind; and what keeps every other dependency current: the updater that watches
+its actions, images and packages.
 
 The governing rule, in one sentence:
 
-> **Pin every release in one place and one form, vendor only released bytes with their release record, and let a
-> scheduled workflow, Renovate or Dependabot propose each update.**
+> **Pin every release in one place and one form, vendor only released bytes with their release record, show each
+> Musher pin's currency as a README badge, and let a monthly, grouped Dependabot or Renovate propose every other
+> update.**
 
 Every dependency has exactly one written pin:
 
@@ -28,8 +29,8 @@ The conventions are **drafts**, owned by this repository, and every requirement 
 | Convention | Requirements | Covers |
 | --- | --- | --- |
 | [EC-0032 Dependencies declaration](dependencies-declaration.md) | DEPS-01 – DEPS-07, DEPS-14 | The file, exact pins, the vendored copy and its release record, and no cycle between repositories |
-| [EC-0033 Keeping dependencies current](keeping-dependencies-current.md) | DEPS-08 – DEPS-10 | The `deps:*` tasks, validation, the scheduled update |
-| [EC-0042 Automated dependency updates](automated-updates.md) | DEPS-11 – DEPS-13 | Renovate or Dependabot for the actions, the Dockerfiles and the product's manifest |
+| [EC-0033 Keeping dependencies current](keeping-dependencies-current.md) | DEPS-08 – DEPS-10 (retired), DEPS-15, DEPS-16 | The `deps:*` tasks, validation, and a currency badge per pin |
+| [EC-0042 Automated dependency updates](automated-updates.md) | DEPS-11 – DEPS-13, DEPS-17 | Renovate or Dependabot for the actions, the Dockerfiles and the product's manifest, monthly and grouped |
 
 What a producer declares and ships is the [interfaces](../interfaces/README.md) topic. Runtime edges and capabilities
 are fields of an environment binding ([EC-0020](../environment/env-schema.md)). The reasoning is recorded in
@@ -56,3 +57,4 @@ web/contracts/vendor/platform-api/contracts/
 | --- | --- |
 | `deps:check` | Verifies every vendored copy against its release record, offline, and that code generated from it is current |
 | `deps:sync` | Fetches each pinned release, verifies it against the release's `SHA256SUMS`, and replaces the copy |
+| `conventions dependencies badges` | Renders a currency badge per pin, which the README shows |

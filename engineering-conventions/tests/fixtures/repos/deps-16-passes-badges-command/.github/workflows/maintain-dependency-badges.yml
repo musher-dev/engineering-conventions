@@ -1,0 +1,27 @@
+name: Maintain Dependency Badges
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  repository_dispatch:
+    types: [dependency-released]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  badges:
+    name: Badges
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Render the badges
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: conventions dependencies badges --out "${RUNNER_TEMP}/badges"

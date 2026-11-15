@@ -176,8 +176,8 @@ A suite that reads a large corpus at test time, such as a specification release'
 files in a vendored copy for no review to read. Such a dependency is declared with `fetched = true`: the repository
 downloads the pinned release's assets when it tests or builds, and checks each against the `SHA256SUMS` the release
 attaches ([REL-18](../releases/release-workflows.md#rel-18)) before it reads them. The pin still lives here, as an exact
-release, so the scheduled update raises it and the graph shows the edge; there is no vendored copy, so DEPS-05 and
-DEPS-06 do not apply to it.
+release, so its currency badge shows when it falls behind, `deps:sync` raises it, and the graph shows the edge; there
+is no vendored copy, so DEPS-05 and DEPS-06 do not apply to it.
 
 **Correct:**
 
@@ -205,8 +205,9 @@ without `fetched`, and the copy proves its bytes offline.
 
 **Every vendored copy is declared as a dependency.**
 
-An undeclared copy is a dependency nothing pins: nobody can tell which release it came from, the scheduled update
-never touches it, and the dependency graph never shows it. The finding is reported on the copy's directory.
+An undeclared copy is a dependency nothing pins: nobody can tell which release it came from, no currency badge shows it
+falling behind, `deps:sync` never touches it, and the dependency graph never shows it. The finding is reported on the
+copy's directory.
 
 **Correct:**
 
@@ -370,8 +371,8 @@ Checked by: conftest · Severity: warning · Since: 0.7.0
 
 A `config/<repository>.ref` or a hand-kept `*.lock.json` is a second place a pin can live, in a form no tool
 recognises and no check reads, and in practice it often holds a commit SHA. Moving the pin into the declaration puts
-every vendored dependency in one file, in one form, where the scheduled update and the graph both read it. A release
-whose assets are fetched at test or build time is pinned there too, as a
+every vendored dependency in one file, in one form, where `deps:sync`, the currency badges and the graph all read it. A
+release whose assets are fetched at test or build time is pinned there too, as a
 [fetched dependency](#fetched-dependencies).
 
 **Correct:**

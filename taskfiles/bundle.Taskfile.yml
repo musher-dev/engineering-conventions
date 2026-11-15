@@ -139,9 +139,11 @@ tasks:
         # `conventions codeowners` turns GitHub's CODEOWNERS errors into
         # findings with codeowners.jq (decision 0041).
         # `conventions check` finds the files a binding is mirrored_in with
-        # mirrors.jq (ENVS-34).
+        # mirrors.jq (ENVS-34). `conventions dependencies` reads the pins with
+        # pins.jq, compares them with currency.jq and renders the badges with
+        # badges.jq (decision 0042).
         for shipped in bin/inventory.jq bin/report.jq bin/openapi.jq bin/env-contract.jq bin/waivers.jq \
-          bin/mirrors.jq bin/codeowners.jq; do
+          bin/mirrors.jq bin/codeowners.jq bin/pins.jq bin/currency.jq bin/badges.jq; do
           tar -tzf "{{.TARBALL}}" "engineering-conventions/${shipped}" > /dev/null 2>&1 \
             || fail "engineering-conventions/${shipped} is missing"
         done

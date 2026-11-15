@@ -111,9 +111,10 @@ pull request per ecosystem a month (DEPS-17). Security updates ignore the schedu
 settings.
 
 Show the conventions pin's currency, and each vendored dependency's, as a README badge (DEPS-15), rendered by a
-`maintain-dependency-badges.yml` that calls the reusable `reusable-maintain-dependency-badges.yml` on a schedule and
-on a `dependency-released` dispatch (DEPS-16). Nothing opens a pull request per release: when a badge turns yellow or
-orange, run `task deps:sync`, or change the pin, and open one yourself. The caller and the README snippet are in
+`maintain-dependency-badges.yml` that calls the reusable `reusable-maintain-dependency-badges.yml` on a schedule, on a
+`dependency-released` dispatch (DEPS-16), and on a push to `main` that changes a pin. Nothing opens a pull request per
+release: when a badge turns yellow or orange, run `task deps:sync`, or change the pin, and open one yourself. The
+caller and the README snippet are in
 [EC-0033](../engineering-conventions/definitions/conventions/dependencies/keeping-dependencies-current.md#currency-badges).
 
 ## Declare the repository's identity

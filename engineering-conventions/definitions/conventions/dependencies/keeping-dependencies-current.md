@@ -125,10 +125,15 @@ reads the release first.
 
 | Badge | State | Means |
 | --- | --- | --- |
-| green, `0.36.1` | `current` | The pin is the newest release of its line |
-| yellow, `0.36.1 → 0.38.0` | `behind-minor` | A newer release exists in the pinned major |
-| orange, `1.4.2 → 2.0.0` | `behind-major` | The pin is the newest of its major, and a newer major exists |
-| grey, `0.36.1` | `unknown` | The producer's releases could not be read |
+| green, `1.4.2` | `current` | The pin is the newest release of its line |
+| yellow, `1.4.2 → 1.6.0` | `behind-minor` | A newer release exists, and it is in the pinned major |
+| orange, `1.4.2 → 2.0.0` | `behind-major` | A newer major exists, wherever the pin stands in its own ([decision 0043](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0043-a-newer-major-always-shows-on-a-currency-badge.md)) |
+| grey, `1.4.2` | `unknown` | The producer's releases could not be read, its line has no release, the pin is not `X.Y.Z`, or the pin is newer than every release |
+
+Below 1.0.0 the minor is the breaking part ([decision
+0005](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0005-status-severity-and-versioning.md)),
+so there a major is the `0.<minor>` series: `0.9.4 → 0.10.0` is orange. How a badge is judged follows the
+`conventions` release the caller's mise configuration pins; these states are 0.9.5's.
 
 A vendored dependency's badge is `<repository>-<output>.svg`; the conventions pin's is `engineering-conventions.svg`.
 Both commands read the producers' releases with `gh api`, so the token needs read access to every producer. Neither
@@ -148,6 +153,9 @@ on:
     - cron: "23 5 * * *"
   repository_dispatch:
     types: [dependency-released]
+  push:
+    branches: [main]
+    paths: [.repo/dependencies.toml, .config/mise/config.toml]
   workflow_dispatch:
 permissions: {}
 concurrency:
@@ -166,8 +174,12 @@ jobs:
 The token comes from the release App, installed on every repository. Its client ID is the Actions variable
 `RELEASE_APP_CLIENT_ID` and its private key the secret `RELEASE_APP_PRIVATE_KEY`
 ([GHA-52](../github-actions/releases-and-deployments.md#gha-52)); the App needs only read access to the producers'
-contents. Without the secret, the workflow reads the producers with the job's own token, which sees only public
-producers, and every other badge is grey. Then add a badge per pin to the README:
+contents. A repository that holds the musher-automation App's pair instead passes `automation-app-private-key: ${{
+secrets.AUTOMATION_APP_PRIVATE_KEY }}`, read with `AUTOMATION_APP_CLIENT_ID`, with the workflow pinned at 0.9.5 or
+later; that App is installed on every repository too. A token that cannot be minted is a warning, not a failure, and
+the private producers' pins read grey. Without either secret, the workflow reads the producers with the job's own
+token, which sees only public producers, and every other badge is grey. The push trigger turns a badge as soon as a
+pin change merges. Then add a badge per pin to the README:
 
 ```markdown
 [![engineering-conventions](https://github.com/musher-dev/web/raw/badges/engineering-conventions.svg)](https://github.com/musher-dev/web/tree/badges)

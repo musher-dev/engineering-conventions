@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.4](https://github.com/musher-dev/engineering-conventions/compare/v0.9.3...v0.9.4) (2026-11-15)
+
+
+### Features
+
+* **conventions:** show dependency currency as badges, not bump PRs ([#138](https://github.com/musher-dev/engineering-conventions/issues/138)) ([a2998ab](https://github.com/musher-dev/engineering-conventions/commit/a2998abc8916e25de50cb2e377defc6d7f3f29f4))
+
 ## [0.9.3](https://github.com/musher-dev/engineering-conventions/compare/v0.9.2...v0.9.3) (2026-10-24)
 
 

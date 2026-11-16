@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # post-create.sh — DevContainer post-create command hook.
 #
-# Runs once after the container is created: installs the pinned toolchain,
-# then the git hooks. `task setup` repeats the same steps outside a container.
+# Runs once after the container is created: takes ownership of the volumes,
+# stores a token for gh, points shell history at its volume, installs the
+# pinned toolchain, then the git hooks. `task setup` repeats the toolchain and
+# the hooks outside a container. post-attach.sh finishes the GitHub
+# credential once an editor attaches.
 #
 #   post-create.sh           entry point (installs the hooks)
-#     └── lib/base-setup.sh  config and cache dirs, mise install, Claude Code
-#           └── lib/common.sh  log, retry, has_cmd, ensure_writable_dir
+#     └── lib/base-setup.sh  config and cache dirs, gh's token, shell history,
+#           │                mise install, Claude Code
+#           ├── lib/common.sh       log, retry, has_cmd, ensure_writable_dir
+#           └── lib/github-auth.sh  github_auth_seed (canonical copy)
 #
 # Usage: Called automatically by devcontainer.json postCreateCommand.
 set -euo pipefail

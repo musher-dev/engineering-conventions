@@ -1,0 +1,7 @@
+[
+  {
+    "id": "STATUS-06",
+    "path": "platform-api/pyproject.toml",
+    "severity": "warning"
+  }
+]

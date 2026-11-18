@@ -117,6 +117,7 @@ Start from the part of your repository you are working on:
 | [Outputs](engineering-conventions/definitions/conventions/outputs/README.md) | `.repo/outputs.toml`, publish workflows | EC-0007, EC-0008 | OUT-01 – OUT-14 |
 | [Releases](engineering-conventions/definitions/conventions/releases/README.md) | `.github/release-please/`, the release tag ruleset, `release.yml` | EC-0024 – EC-0026 | REL-01 – REL-20 |
 | [Repository](engineering-conventions/definitions/conventions/repository/README.md) | `.repo/repository.toml`, the repository's name, where the product lives | EC-0009, EC-0010, EC-0018 | REPO-01 – REPO-22 |
+| [Source code](engineering-conventions/definitions/conventions/source-code/README.md) | Code that reports a resource's health, readiness or status, retries, waits, overrides a hold or receives untrusted input; pyright's `reportMatchNotExhaustive` | EC-0045 – EC-0047 | RETRY-01 – RETRY-05, STATUS-01 – STATUS-08, TRUST-01 |
 | [Tasks](engineering-conventions/definitions/conventions/tasks/README.md) | `Taskfile.yml`, `taskfiles/` | EC-0015, EC-0016 | TASK-01 – TASK-28 |
 | [Toolchain](engineering-conventions/definitions/conventions/toolchain/README.md) | `.config/mise/config.toml` and every version pinned outside it | EC-0017 | TOOL-01 – TOOL-11 |
 

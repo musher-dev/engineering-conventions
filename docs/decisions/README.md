@@ -56,6 +56,7 @@ decisions about why Musher exists and what it designs are in `musher-dev/pelorus
 | [0041](0041-github-judges-codeowners-owners.md) | GitHub judges whether CODEOWNERS owners resolve, through its own command | accepted |
 | [0042](0042-dependency-currency-is-shown-not-proposed.md) | Dependency currency is shown as README badges, not proposed as a pull request per release | accepted |
 | [0043](0043-a-newer-major-always-shows-on-a-currency-badge.md) | A newer major always shows on a currency badge, and the badge workflow reads with either App | accepted |
+| [0044](0044-source-code-behaviour-is-a-topic-of-its-own.md) | Conventions about what source code does live in a source-code topic, with a family per concern | accepted |
 
 ## Writing a decision
 

@@ -149,6 +149,9 @@ jobs:
       - name: Ask GitHub whether every CODEOWNERS owner resolves
         env:
           GH_TOKEN: ${{ github.token }}
+          # The CLI runs jq through `mise exec`, and mise-action keeps its
+          # token to its own step (GHA-55).
+          MISE_GITHUB_TOKEN: ${{ github.token }}
           REF: ${{ github.event.pull_request.head.sha || github.sha }}
         run: task conventions:codeowners REF="$REF"
 
@@ -277,6 +280,9 @@ jobs:
         env:
           # The check needs the CLI, not its linters and test runner.
           UV_NO_DEV: "1"
+          # bin/conventions runs its engines through `mise exec`, and
+          # mise-action keeps its token to its own step (GHA-55).
+          MISE_GITHUB_TOKEN: ${{ github.token }}
         run: task conventions:self
 
       # Last, so it runs only when every check above passed (decision 0040).

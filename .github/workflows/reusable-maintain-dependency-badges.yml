@@ -158,6 +158,9 @@ jobs:
         env:
           GH_TOKEN: >-
             ${{ steps.release_token.outputs.token || steps.automation_token.outputs.token || github.token }}
+          # The CLI runs jq through `mise exec`, and mise-action keeps its
+          # token to its own step (GHA-55).
+          MISE_GITHUB_TOKEN: ${{ github.token }}
           OUT: ${{ runner.temp }}/badges
         run: conventions dependencies badges --out "${OUT}"
 

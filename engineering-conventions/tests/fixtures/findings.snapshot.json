@@ -845,6 +845,10 @@
   "gha-54-unmatched-filter": [
     [".github/workflows/validate.yml", "GHA-54", "warning", "step \"changes\" in job \"lint\": the pattern \"services/api/**\" in paths-filter filter \"api\" matches no file in the repository, so the filter never reports a change; point it at the files it is meant to watch, or delete it", true]
   ],
+  "gha-55-anonymous-mise-install": [
+    [".github/workflows/validate.yml", "GHA-55", "warning", "step \"Check the repository against its conventions\" in job \"lint\" runs \"conventions check --fail-on warning\" after jdx/mise-action, which keeps its GitHub token to its own step, so what mise installs here goes to the GitHub API unauthenticated and fails once the runner's shared 60-call hourly limit is spent; set env: {MISE_GITHUB_TOKEN: ${{ github.token }}} on the step or the job", true]
+  ],
+  "gha-55-passes-token-and-order": [],
   "hooks-01-assert-installed": [
     [".config/lefthook.yml", "HOOKS-01", "warning", "assert_lefthook_installed is not true, so where the lefthook executable is missing the hooks skip without a word; set assert_lefthook_installed: true", true]
   ],

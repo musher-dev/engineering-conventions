@@ -110,7 +110,7 @@ Start from the part of your repository you are working on:
 | [Dev containers](engineering-conventions/definitions/conventions/dev-containers/README.md) | `.devcontainer/`: `devcontainer.json`, its lockfile, its Dockerfile and compose stacks | EC-0027, EC-0028 | DEVC-01 – DEVC-23 |
 | [Environment](engineering-conventions/definitions/conventions/environment/README.md) | `<product>/env.schema.yaml`, `.devcontainer/env.schema.yaml`, what each binding reaches, the contract derived from them, and the local `.env` that is never committed | EC-0019, EC-0020 | ENVS-01 – ENVS-34 |
 | [Git hooks](engineering-conventions/definitions/conventions/git-hooks/README.md) | `.config/lefthook.yml` | EC-0014 | HOOKS-01 – HOOKS-15 |
-| [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-54 |
+| [GitHub Actions](engineering-conventions/definitions/conventions/github-actions/README.md) | `.github/workflows/`, `.github/actions/` | EC-0002 – EC-0006, EC-0022, EC-0023 | GHA-01 – GHA-55 |
 | [Interfaces](engineering-conventions/definitions/conventions/interfaces/README.md) | `[[interfaces]]` in `.repo/outputs.toml`, `<product>/contracts/` | EC-0030, EC-0031 | IFACE-01 – IFACE-14 |
 | [OpenAPI](engineering-conventions/definitions/conventions/openapi/README.md) | OpenAPI interface documents, `.config/openapi/spectral.yaml` | EC-0037 | OAS-01 – OAS-03 |
 | [OpenTofu](engineering-conventions/definitions/conventions/opentofu/README.md) | Each OpenTofu root's state key, stated in its Taskfile | EC-0029 | TOFU-01 |

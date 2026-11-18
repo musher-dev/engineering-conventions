@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.7](https://github.com/musher-dev/engineering-conventions/compare/v0.9.6...v0.9.7) (2026-11-18)
+
+
+### Features
+
+* **conventions:** give mise a token after jdx/mise-action (GHA-55) ([#149](https://github.com/musher-dev/engineering-conventions/issues/149)) ([8eb52c0](https://github.com/musher-dev/engineering-conventions/commit/8eb52c03494afcafe2966a0c214874afcaa31f11))
+
 ## [0.9.6](https://github.com/musher-dev/engineering-conventions/compare/v0.9.5...v0.9.6) (2026-11-18)
 
 

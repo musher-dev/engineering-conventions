@@ -1278,6 +1278,70 @@ terms:
     tags: [governance]
     stability: stable
 
+  # Source-code words: how EC-0045 to EC-0047 talk about the status a
+  # resource reports, the retries and waits that decide it, and the holds a
+  # retry may not override. A condition is the Kubernetes API conventions'
+  # and is pointed at, not restated.
+  - id: source-code.derived-status
+    display_name: derived status
+    definition: >-
+      A resource's health, readiness or explanatory status text, computed
+      from its current facts by the one function that owns it each time it
+      is read. It is not stored as a value of its own, and a client shows
+      it as derived rather than computing it again.
+    tags: [source-code]
+    stability: provisional
+  - id: source-code.condition
+    display_name: condition
+    authority:
+      repo: kubernetes/community
+      path: contributors/devel/sig-architecture/api-conventions.md
+      anchor: typical-status-properties
+    tags: [source-code]
+    stability: provisional
+  - id: source-code.snapshot
+    display_name: snapshot
+    definition: >-
+      The facts about a resource as one consistent read observed them, with
+      the time they were observed. Every claim a response makes about the
+      resource is taken from the same snapshot.
+    tags: [source-code]
+    stability: provisional
+  - id: source-code.observation
+    display_name: observation
+    definition: >-
+      A fact only the observed system knows, reported by it as its current
+      state with the generation or lease it was observed under and when.
+      It explains a condition; the owner's own facts decide it.
+    tags: [source-code]
+    stability: provisional
+  - id: source-code.retry-budget
+    display_name: retry budget
+    definition: >-
+      The limit a retry loop declares on itself: consecutive failures of one
+      class, a total time, or a share of requests that may be retries. When
+      it is spent the loop is exhausted, which is surfaced as a condition
+      and a signal an alert can fire on; the loop stops only if no retry can
+      succeed without new inputs.
+    tags: [source-code]
+    stability: provisional
+  - id: source-code.deadline
+    display_name: deadline
+    definition: >-
+      The point after which a wait stops waiting and reports that it lapsed.
+      An inner deadline falls inside the one that contains it, and only the
+      outermost ends the operation as failed.
+    tags: [source-code]
+    stability: provisional
+  - id: source-code.fence
+    display_name: fence
+    definition: >-
+      Proof that a previous holder of a hold can no longer act: its machine
+      confirmed off or isolated, a lease it honours having lapsed, or a
+      token the protected resource checks to reject a stale holder.
+    tags: [source-code]
+    stability: provisional
+
 display_forms:
   - token: api
     display: API

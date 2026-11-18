@@ -293,6 +293,12 @@ raw_findings contains finding if {
 	some finding in package_findings
 }
 
+raw_findings contains finding if {
+	some convention
+	package_findings := data.conventions.checks.source_code[convention].findings
+	some finding in package_findings
+}
+
 requirements := object.get(data.conventions.index, "requirements", {})
 
 known(id) if requirements[id].status != "retired"

@@ -54,6 +54,9 @@ ID is permanent: it is never renumbered or reused.
 | [EC-0042](dependencies/automated-updates.md) | Automated dependency updates | dependencies | draft |
 | [EC-0043](container-images/image-publishing.md) | Publishing container images | container-images | draft |
 | [EC-0044](configuration/tool-strictness.md) | Tool strictness | configuration | draft |
+| [EC-0045](source-code/derived-status.md) | Derived status | source-code | draft |
+| [EC-0046](source-code/bounded-retries.md) | Bounded retries and waits | source-code | draft |
+| [EC-0047](source-code/trust-boundaries.md) | Trust boundaries | source-code | draft |
 
 ## Requirements
 
@@ -373,6 +376,19 @@ ID is permanent: it is never renumbered or reused.
 | [REPO-20](repository/layout.md#repo-20) | Dependabot updates the product's dependencies in the product directory, not the root | EC-0018 | proposed | warning | conftest |
 | [REPO-21](repository/layout.md#repo-21) | The Taskfile's PRODUCT_DIR is the declared product directory | EC-0018 | proposed | warning | conftest |
 | [REPO-22](repository/layout.md#repo-22) | Every directory a Dependabot update names exists | EC-0018 | proposed | warning | conftest |
+| [RETRY-01](source-code/bounded-retries.md#retry-01) | A retry loop counts failures by class against a budget, paced by one jittered backoff at one layer | EC-0046 | proposed | warning | review |
+| [RETRY-02](source-code/bounded-retries.md#retry-02) | An exhausted retry budget is surfaced, and stops the loop only when no retry can succeed without new inputs | EC-0046 | proposed | warning | review |
+| [RETRY-03](source-code/bounded-retries.md#retry-03) | Every wait has a deadline from measured latency that fits inside the deadline containing it | EC-0046 | proposed | warning | review |
+| [RETRY-04](source-code/bounded-retries.md#retry-04) | A client never retries sooner than Retry-After asks | EC-0046 | proposed | warning | review |
+| [RETRY-05](source-code/bounded-retries.md#retry-05) | An action that overrides a safety hold requires a fence proving the previous holder can no longer act | EC-0046 | proposed | warning | review |
+| [STATUS-01](source-code/derived-status.md#status-01) | One owning function derives each resource's status from current facts | EC-0045 | proposed | warning | review |
+| [STATUS-02](source-code/derived-status.md#status-02) | Derived status is not persisted as free-form text | EC-0045 | proposed | warning | review |
+| [STATUS-03](source-code/derived-status.md#status-03) | Status is reported as conditions, with Unknown when the facts are missing | EC-0045 | proposed | warning | review |
+| [STATUS-04](source-code/derived-status.md#status-04) | A client shows the status its owner derived and does not re-aggregate it | EC-0045 | proposed | warning | review |
+| [STATUS-05](source-code/derived-status.md#status-05) | Code that maps a state to a health value handles every state, with no default that reports success | EC-0045 | proposed | warning | review |
+| [STATUS-06](source-code/derived-status.md#status-06) | pyright's match exhaustiveness check is not turned off | EC-0045 | proposed | warning | conftest |
+| [STATUS-07](source-code/derived-status.md#status-07) | A response's claims about one resource come from one snapshot that states when it was observed | EC-0045 | proposed | warning | review |
+| [STATUS-08](source-code/derived-status.md#status-08) | A fact only the observed system knows is reported as an observation that explains but never decides | EC-0045 | proposed | warning | review |
 | [TASK-01](tasks/taskfile-style.md#task-01) | A Taskfile declares version '3' as a string | EC-0015 | proposed | warning | conftest |
 | [TASK-02](tasks/taskfile-style.md#task-02) | A Taskfile names its variables in UPPER_SNAKE | EC-0015 | proposed | warning | conftest |
 | [TASK-03](tasks/taskfile-style.md#task-03) | A task name is kebab-case words joined by colons, with a leading underscore only on an internal task | EC-0015 | proposed | warning | conftest |
@@ -413,6 +429,7 @@ ID is permanent: it is never renumbered or reused.
 | [TOOL-09](toolchain/tool-pins.md#tool-09) | package.json's packageManager is the version mise pins | EC-0017 | proposed | warning | conftest |
 | [TOOL-10](toolchain/tool-pins.md#tool-10) | A setup action installs the version mise pins | EC-0017 | proposed | warning | conftest |
 | [TOOL-11](toolchain/tool-pins.md#tool-11) | A runtime version file says what mise pins, and there is no .tool-versions | EC-0017 | proposed | warning | conftest |
+| [TRUST-01](source-code/trust-boundaries.md#trust-01) | A control signal is stripped or ignored where untrusted input enters, at the hop closest to the untrusted party | EC-0047 | proposed | warning | review |
 
 ## Families
 
@@ -440,3 +457,6 @@ ID is permanent: it is never renumbered or reused.
 | COPY | Public copy | copy |
 | IMAGE | Container images | container-images |
 | BRANCH | Branch protection | branch-protection |
+| STATUS | Derived status | source-code |
+| RETRY | Bounded retries and waits | source-code |
+| TRUST | Trust boundaries | source-code |

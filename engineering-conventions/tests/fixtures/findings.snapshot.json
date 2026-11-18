@@ -38,7 +38,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"BRANCH\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"IMAGE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"BRANCH\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"IMAGE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"RETRY\", \"STATUS\", \"TASK\", \"TOFU\", \"TOOL\", \"TRUST\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -1279,6 +1279,10 @@
   "repository-github-exempt": [
     [".repo/repository.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
   ],
+  "status-06-match-exhaustiveness-off": [
+    ["platform-api/pyproject.toml", "STATUS-06", "warning", "basedpyright sets reportMatchNotExhaustive to false, so a match over a state enum that misses a member passes the type check; remove the setting, or set it to error", true]
+  ],
+  "status-06-passes-warning-level": [],
   "task-01-version": [
     ["tools/Taskfile.yml", "TASK-01", "warning", "version is the number 3; quote it as version: '3', the schema version Task reads", true]
   ],

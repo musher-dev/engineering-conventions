@@ -88,6 +88,10 @@ tasks:
   with:
     version: 2026.9.12   # the min_version in .config/mise/config.toml (TOOL-04)
 - name: Check the repository against its conventions
+  env:
+    # The CLI installs its engines through `mise exec`, and mise-action keeps
+    # its token to its own step (GHA-55).
+    MISE_GITHUB_TOKEN: ${{ github.token }}
   run: conventions check --fail-on warning
 ```
 

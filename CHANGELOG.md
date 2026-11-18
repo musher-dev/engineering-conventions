@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.6](https://github.com/musher-dev/engineering-conventions/compare/v0.9.5...v0.9.6) (2026-11-18)
+
+
+### Features
+
+* **conventions:** add the source-code topic: status, retries, trust ([#147](https://github.com/musher-dev/engineering-conventions/issues/147)) ([c223235](https://github.com/musher-dev/engineering-conventions/commit/c223235ef90ba0102be62bca54930e5ab2ab77e2))
+
 ## [0.9.5](https://github.com/musher-dev/engineering-conventions/compare/v0.9.4...v0.9.5) (2026-11-15)
 
 

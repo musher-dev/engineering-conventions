@@ -402,6 +402,14 @@
     [".github/dependabot.yml", "DEPS-17", "warning", "the github-actions update for /, /.github/actions/* runs weekly and groups nothing; set schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull request a month", true],
     [".github/dependabot.yml", "DEPS-17", "warning", "the gomod update for /platform-api groups nothing; set schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull request a month", true]
   ],
+  "deps-18-docker-over-compose": [
+    [".github/dependabot.yml", "DEPS-18", "warning", "the docker update scans \"/.devcontainer/stacks/**\", which holds nothing the docker ecosystem reads, so Dependabot aborts the update; point it at the directories that do, or use the ecosystem that reads what is there", true]
+  ],
+  "deps-18-passes-docker-compose-stacks": [],
+  "deps-19-npm-over-bun-lock": [
+    [".github/dependabot.yml", "DEPS-19", "warning", "the npm update scans /platform-api/tests/browser, whose dependencies bun.lock records, and Dependabot refuses it as a misconfigured Bun project, security updates included; set its package-ecosystem to bun", true]
+  ],
+  "deps-19-passes-bun-over-bun-lock": [],
   "devc-01-passes-named-config": [],
   "devc-01-root-config": [
     [".devcontainer.json", "DEVC-01", "warning", "move the dev container configuration to .devcontainer/devcontainer.json, beside the files it names", true],
@@ -1254,9 +1262,12 @@
     [".repo/repository.toml", "REPO-16", "warning", "the product directory api/ is not named after the repository; rename it to platform-api/ and set [layout] product = \"platform-api\"", true]
   ],
   "repo-17-no-manifest": [
+    [".github/dependabot.yml", "DEPS-18", "warning", "the gomod update scans \"/platform-api\", which holds nothing the gomod ecosystem reads, so Dependabot aborts the update; point it at the directories that do, or use the ecosystem that reads what is there", true],
     ["platform-api", "REPO-17", "warning", "platform-api/ holds no build manifest; move the product's manifest into it (one of Cargo.toml, build.gradle, build.gradle.kts, deno.json, deno.jsonc, go.mod, package.json, pom.xml, pyproject.toml, settings.gradle, settings.gradle.kts), or keep an OpenTofu root's .terraform.lock.hcl in it or in a directory below it", true]
   ],
-  "repo-17-passes-opentofu-lockfile": [],
+  "repo-17-passes-opentofu-lockfile": [
+    [".github/dependabot.yml", "DEPS-18", "warning", "the gomod update scans \"/platform-api\", which holds nothing the gomod ecosystem reads, so Dependabot aborts the update; point it at the directories that do, or use the ecosystem that reads what is there", true]
+  ],
   "repo-18-root-content": [
     ["go.sum", "REPO-18", "warning", "go.sum is product content at the repository root; move it into platform-api/, or list it under [layout.root_exceptions] with the reason it stays", true]
   ],
@@ -1267,6 +1278,7 @@
     [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
     [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the workflows; add \"/\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true],
     [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies platform-api/go.mod declares; add an update with package-ecosystem gomod and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true],
+    [".github/dependabot.yml", "DEPS-18", "warning", "the gomod update scans \"/\", which holds nothing the gomod ecosystem reads, so Dependabot aborts the update; point it at the directories that do, or use the ecosystem that reads what is there", true],
     [".github/dependabot.yml", "REPO-20", "warning", "the gomod update scans \"/\", the repository root, which holds no go.mod; set its directory to /platform-api", true]
   ],
   "repo-21-product-dir-var": [

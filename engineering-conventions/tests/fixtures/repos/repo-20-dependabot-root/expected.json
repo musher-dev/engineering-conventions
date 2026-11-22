@@ -10,6 +10,11 @@
     "severity": "warning"
   },
   {
+    "id": "DEPS-18",
+    "path": ".github/dependabot.yml",
+    "severity": "warning"
+  },
+  {
     "id": "REPO-20",
     "path": ".github/dependabot.yml",
     "severity": "warning"

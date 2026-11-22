@@ -6,7 +6,9 @@ summary: >-
   or a Dependabot update for the actions in the workflows and each
   composite action, for every directory that holds a Dockerfile, and for
   the product's manifest in the product directory. A Dependabot version
-  update is quiet: monthly, with every dependency in one group.
+  update is quiet: monthly, with every dependency in one group, and reads
+  what its directories hold: a manifest of its ecosystem, and Bun's
+  lockfile only as bun.
 status: draft
 topic: dependencies
 applies_to:
@@ -57,6 +59,22 @@ requirements:
     status: proposed
     severity: warning
     since: 0.9.4
+    validation:
+      engine: conftest
+      package: conventions.checks.dependencies.updates
+  - id: DEPS-18
+    title: Every directory a Dependabot update scans holds a manifest its ecosystem reads
+    status: proposed
+    severity: warning
+    since: 0.9.8
+    validation:
+      engine: conftest
+      package: conventions.checks.dependencies.updates
+  - id: DEPS-19
+    title: A directory whose dependencies bun.lock records is updated as bun, not npm
+    status: proposed
+    severity: warning
+    since: 0.9.8
     validation:
       engine: conftest
       package: conventions.checks.dependencies.updates
@@ -228,6 +246,72 @@ updates, and is not reported.
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.9.4
+
+### DEPS-18
+
+**Every directory a Dependabot update scans holds a manifest its ecosystem reads.**
+
+Dependabot aborts an update when a directory holds nothing its ecosystem reads (`Error during file fetching;
+aborting: /.devcontainer/stacks/** not found`), and it says so only in the update's log, which nobody reads. The
+directory exists, so [REPO-22](../repository/layout.md#repo-22) passes, while that ecosystem goes without
+updates for as long as nobody looks. A `docker` update pointed at directories of `compose.yaml` files is the usual
+case: Compose files are the `docker-compose` ecosystem's, and `docker` reads only Dockerfiles. The check reports each
+directory, or each glob, under which no directory holds one of its ecosystem's manifests:
+
+| Ecosystem | Manifests in the directory |
+| --- | --- |
+| `docker` | `Dockerfile`, `Containerfile`, `<name>.Dockerfile`, `Dockerfile.<suffix>` |
+| `docker-compose` | `compose.yaml`, `docker-compose.yaml`, and their `.yml` and `.<name>.` forms |
+| `devcontainers` | `.devcontainer/devcontainer.json`, `.devcontainer/<name>/devcontainer.json`, `.devcontainer.json` |
+| `github-actions` | `.github/workflows/*.yml`, `action.yml`, and their `.yaml` forms |
+| `npm`, `bun` | `package.json` |
+| `pip` | `requirements*.txt`, `requirements*.in`, `pyproject.toml`, `setup.py`, `setup.cfg`, `Pipfile` |
+| `uv` | `pyproject.toml`, `uv.lock` |
+| `cargo`, `gomod`, `maven`, `gradle`, `terraform` | `Cargo.toml`, `go.mod`, `pom.xml`, `build.gradle` or `settings.gradle` (or `.kts`), `*.tf` |
+
+A glob passes when any directory it matches holds one. An ecosystem the table does not list is not judged, and a
+directory that does not exist is REPO-22's.
+
+**Correct:**
+
+```yaml
+  - package-ecosystem: "docker-compose"
+    directories: ["/.devcontainer/stacks/*"]   # each holds a compose.yaml
+```
+
+**Incorrect:**
+
+```yaml
+  - package-ecosystem: "docker"
+    directories: ["/.devcontainer/stacks/**"]  # compose.yaml files only: no Dockerfile to read
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.8
+
+### DEPS-19
+
+**A directory whose dependencies bun.lock records is updated as bun, not npm.**
+
+Dependabot refuses an `npm` update over a directory that holds `bun.lock` or `bun.lockb` (`Dependabot detected that
+Bun is misconfigured`), and the refusal covers security updates too, so an advisory against a dependency opens no pull
+request. The `bun` ecosystem reads the same `package.json` and updates `bun.lock` with it. The check reports each
+directory an `npm` update scans that holds Bun's lockfile.
+
+**Correct:**
+
+```yaml
+  - package-ecosystem: "bun"
+    directory: "/platform-console"      # holds package.json and bun.lock
+```
+
+**Incorrect:**
+
+```yaml
+  - package-ecosystem: "npm"
+    directory: "/platform-console"      # holds bun.lock: Dependabot refuses the update
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.8
 
 ## References
 

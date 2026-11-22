@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: "monthly"
+    groups:
+      all:
+        patterns: ["*"]
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      all:
+        patterns: ["*"]
+  - package-ecosystem: "gomod"
+    directory: "/platform-api"
+    schedule:
+      interval: "monthly"
+    groups:
+      all:
+        patterns: ["*"]
+  - package-ecosystem: "docker"
+    directories:
+      - "/**"
+    schedule:
+      interval: "monthly"
+    groups:
+      all:
+        patterns: ["*"]
+  - package-ecosystem: "docker-compose"
+    directories:
+      - "/.devcontainer/stacks/*"
+    schedule:
+      interval: "monthly"
+    groups:
+      stacks:
+        patterns: ["*"]

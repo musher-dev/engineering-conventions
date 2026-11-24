@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "repository": "musher-dev/platform-backstage",
+  "path": "platform-backstage",
+  "version": "11.0.2",
+  "tag": "v11.0.2",
+  "previous_tag": "v11.0.1",
+  "commit": "b4b4c25c6d510def18c4c84e1b8d4a043a114d2c",
+  "release_pull_request": {
+    "number": 371,
+    "url": "https://github.com/musher-dev/platform-backstage/pull/371",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-22T11:16:01Z",
+    "merged_at": "2026-11-22T11:16:54Z",
+    "merge_commit": "b4b4c25c6d510def18c4c84e1b8d4a043a114d2c",
+    "refreshed_at": []
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 370,
+        "url": "https://github.com/musher-dev/platform-backstage/pull/370",
+        "title": "fix(backstage): withheld",
+        "type": "fix",
+        "breaking": false,
+        "author_kind": "agent",
+        "created_at": "2026-11-22T11:06:40Z",
+        "merged_at": "2026-11-22T11:15:33Z",
+        "merge_commit": "b17a0515dba25923ec14bda60875420a0d05269e"
+      },
+      "first_commit": {
+        "sha": "c51f181a1fb5f1d1aba6772cf7768c45cd5cce43",
+        "authored_at": "2026-11-22T11:06:20Z",
+        "at": "2026-11-22T11:06:20Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-22T11:16:01Z"
+    }
+  ]
+}

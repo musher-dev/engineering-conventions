@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "repository": "musher-dev/platform-docs",
+  "path": "docs/product",
+  "version": "0.26.9",
+  "tag": "platform-docs/v0.26.9",
+  "previous_tag": "platform-docs/v0.26.8",
+  "commit": "b2ac0a1e8e767dd1f12b3ed61b919f4e57161583",
+  "release_pull_request": {
+    "number": 142,
+    "url": "https://github.com/musher-dev/platform-docs/pull/142",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-22T05:28:28Z",
+    "merged_at": "2026-11-22T05:36:50Z",
+    "merge_commit": "b2ac0a1e8e767dd1f12b3ed61b919f4e57161583",
+    "refreshed_at": []
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 141,
+        "url": "https://github.com/musher-dev/platform-docs/pull/141",
+        "title": "fix(docs): withheld",
+        "type": "fix",
+        "breaking": false,
+        "author_kind": "agent",
+        "created_at": "2026-11-22T05:15:56Z",
+        "merged_at": "2026-11-22T05:27:46Z",
+        "merge_commit": "f48f5f15d53b78dc38932aecffd8524b1400a174"
+      },
+      "first_commit": {
+        "sha": "1257412344c9a29efd699d6e0eca0fe81572bafb",
+        "authored_at": "2026-11-22T05:13:07Z",
+        "at": "2026-11-22T05:13:07Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-22T05:28:28Z"
+    }
+  ]
+}

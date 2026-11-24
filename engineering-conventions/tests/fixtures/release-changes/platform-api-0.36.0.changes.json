@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "repository": "musher-dev/platform-api",
+  "path": "platform-api",
+  "version": "0.36.0",
+  "tag": "v0.36.0",
+  "previous_tag": null,
+  "commit": "fee8118bed21b92500779efb77f862a1be6fab56",
+  "release_pull_request": {
+    "number": 8,
+    "url": "https://github.com/musher-dev/platform-api/pull/8",
+    "title": "chore(release): withheld",
+    "created_at": "2026-09-30T14:56:39Z",
+    "merged_at": "2026-09-30T15:11:28Z",
+    "merge_commit": "fee8118bed21b92500779efb77f862a1be6fab56",
+    "refreshed_at": []
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 7,
+        "url": "https://github.com/musher-dev/platform-api/pull/7",
+        "title": "feat(api): withheld",
+        "type": "feat",
+        "breaking": true,
+        "author_kind": "human",
+        "created_at": "2026-09-30T14:41:53Z",
+        "merged_at": "2026-09-30T14:56:05Z",
+        "merge_commit": "605de30481b99037f0fcc7b2ddbff862d18f415b"
+      },
+      "first_commit": {
+        "sha": "ffc32db943a9fc6fb8a926556d169f3346cb2eec",
+        "authored_at": "2026-08-29T13:33:56Z",
+        "at": "2026-08-29T13:33:56Z",
+        "rewritten": false,
+        "truncated": true
+      },
+      "release_pull_request_opened_at": "2026-09-30T14:56:39Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 1,
+        "url": "https://github.com/musher-dev/platform-api/pull/1",
+        "title": "chore(repo): withheld",
+        "type": "chore",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-09-29T20:49:02Z",
+        "merged_at": "2026-09-29T20:54:27Z",
+        "merge_commit": "33c91cbe172309295b0912f306f5b33293644634"
+      },
+      "first_commit": {
+        "sha": "76d7450db3002eb7b15e399c7b1cf91db9c47966",
+        "authored_at": "2026-09-29T20:47:05Z",
+        "at": "2026-09-29T20:47:05Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-09-30T14:56:39Z"
+    }
+  ]
+}

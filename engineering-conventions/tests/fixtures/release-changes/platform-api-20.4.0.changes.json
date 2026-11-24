@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "repository": "musher-dev/platform-api",
+  "path": "platform-api",
+  "version": "20.4.0",
+  "tag": "v20.4.0",
+  "previous_tag": "v20.3.1",
+  "commit": "a5ed52259c007b8135099ab6265f0b83bec28098",
+  "release_pull_request": {
+    "number": 1394,
+    "url": "https://github.com/musher-dev/platform-api/pull/1394",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-12T05:11:47Z",
+    "merged_at": "2026-11-12T14:39:58Z",
+    "merge_commit": "a5ed52259c007b8135099ab6265f0b83bec28098",
+    "refreshed_at": [
+      "2026-11-12T14:03:32Z",
+      "2026-11-12T14:36:05Z"
+    ]
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1396,
+        "url": "https://github.com/musher-dev/platform-api/pull/1396",
+        "title": "feat(api): withheld",
+        "type": "feat",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-12T14:15:22Z",
+        "merged_at": "2026-11-12T14:35:34Z",
+        "merge_commit": "b211300d6dd117cb324d65e5a081bff024c357bb"
+      },
+      "first_commit": {
+        "sha": "d605035c52aa4bfb796292058041df1efe75dda9",
+        "authored_at": "2026-11-12T14:09:32Z",
+        "at": "2026-11-12T14:09:32Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-12T14:36:05Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1388,
+        "url": "https://github.com/musher-dev/platform-api/pull/1388",
+        "title": "feat(api): withheld",
+        "type": "feat",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-11T23:13:54Z",
+        "merged_at": "2026-11-12T14:02:55Z",
+        "merge_commit": "a4a85e95cc6dcc363bedd79f03dcede707739ca0"
+      },
+      "first_commit": {
+        "sha": "385b059545670ddf926eff7c08931237a813b73e",
+        "authored_at": "2026-11-11T22:38:17Z",
+        "at": "2026-11-11T22:38:17Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-12T14:03:32Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 809,
+        "url": "https://github.com/musher-dev/platform-api/pull/809",
+        "title": "feat(api): withheld",
+        "type": "feat",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-10-17T11:47:27Z",
+        "merged_at": "2026-11-12T05:11:18Z",
+        "merge_commit": "502240ac141a03026db06f0267fb80100741b7f5"
+      },
+      "first_commit": {
+        "sha": "d6fb38b02c077f140c1fa9c0ed0c2e552cd77887",
+        "authored_at": "2026-11-11T14:17:42Z",
+        "at": "2026-10-17T11:47:27Z",
+        "rewritten": true,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-12T05:11:47Z"
+    }
+  ]
+}

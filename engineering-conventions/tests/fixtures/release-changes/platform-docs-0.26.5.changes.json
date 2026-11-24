@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "repository": "musher-dev/platform-docs",
+  "path": "docs/product",
+  "version": "0.26.5",
+  "tag": "platform-docs/v0.26.5",
+  "previous_tag": "platform-docs/v0.26.4",
+  "commit": "35a0da4283d561ce45535c1c65c6c254b0dea5b6",
+  "release_pull_request": {
+    "number": 124,
+    "url": "https://github.com/musher-dev/platform-docs/pull/124",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-17T23:28:10Z",
+    "merged_at": "2026-11-18T16:30:15Z",
+    "merge_commit": "35a0da4283d561ce45535c1c65c6c254b0dea5b6",
+    "refreshed_at": [
+      "2026-11-18T15:25:30Z"
+    ]
+  },
+  "changes": [
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 125,
+        "url": "https://github.com/musher-dev/platform-docs/pull/125",
+        "title": "build(deps): withheld",
+        "type": "build",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-18T14:55:34Z",
+        "merged_at": "2026-11-18T16:15:14Z",
+        "merge_commit": "58fd01c8622a1fef487307f9e5dadd17177823c0"
+      },
+      "first_commit": {
+        "sha": "8515401f83ae3aa5d5ec92cd503ab88486c3dba0",
+        "authored_at": "2026-11-18T14:54:16Z",
+        "at": "2026-11-18T14:54:16Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-18T16:15:14Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 126,
+        "url": "https://github.com/musher-dev/platform-docs/pull/126",
+        "title": "docs(docs): withheld",
+        "type": "docs",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-18T15:04:38Z",
+        "merged_at": "2026-11-18T15:24:45Z",
+        "merge_commit": "2768ed70fd37739a4e745edbace0c6b9ebfca87f"
+      },
+      "first_commit": {
+        "sha": "ca8d6273cc669ecf3c4d86d7dd8e458da6069f94",
+        "authored_at": "2026-11-18T15:04:04Z",
+        "at": "2026-11-18T15:04:04Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-18T15:25:30Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 123,
+        "url": "https://github.com/musher-dev/platform-docs/pull/123",
+        "title": "fix(docs): withheld",
+        "type": "fix",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-17T23:17:01Z",
+        "merged_at": "2026-11-17T23:27:28Z",
+        "merge_commit": "7494f2046975ee3ef918b6a8e0373f511402f0f4"
+      },
+      "first_commit": {
+        "sha": "69be4a9cd6712d97d3fadd85bd9e058799d62e94",
+        "authored_at": "2026-11-17T23:16:52Z",
+        "at": "2026-11-17T23:16:52Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:28:10Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 122,
+        "url": "https://github.com/musher-dev/platform-docs/pull/122",
+        "title": "build(repo): withheld",
+        "type": "build",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-16T19:51:52Z",
+        "merged_at": "2026-11-16T20:14:39Z",
+        "merge_commit": "a08a04ef14d12eca9d97600f5f2e56fd0c3d2b6e"
+      },
+      "first_commit": {
+        "sha": "db78e55fa7382be017a2e91da3559e3be8ba26ed",
+        "authored_at": "2026-11-16T16:37:38Z",
+        "at": "2026-11-16T16:37:38Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:28:10Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 121,
+        "url": "https://github.com/musher-dev/platform-docs/pull/121",
+        "title": "refactor(docs): withheld",
+        "type": "refactor",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-16T19:15:54Z",
+        "merged_at": "2026-11-16T19:34:13Z",
+        "merge_commit": "121a740a19d87e8d41d6964dde75660f77b6e25f"
+      },
+      "first_commit": {
+        "sha": "1f26f50d1ca547d69c23976143c415be069a5e1d",
+        "authored_at": "2026-11-16T19:15:32Z",
+        "at": "2026-11-16T19:15:32Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:28:10Z"
+    }
+  ]
+}

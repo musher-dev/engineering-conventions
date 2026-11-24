@@ -390,10 +390,13 @@ draft, before the bundle and its `release.json` are built:
 ```
 
 It reads the release from GitHub at its tag, through the GitHub CLI, and needs no clone: the release-please
-configuration, for the package the tag releases; the package's previous tag; the commits between the two that change
-the package's path; the pull request each merged as; and the version's section of the package's changelog. So the
+configuration, for the package the tag releases; the package's previous tag; the commits between the two, and the
+pull request each merged as; and the version's section of the package's changelog. A commit belongs to the package as
+release-please decides it, by its pull request's files, or by its own when no pull request merged as it. So the
 deploying repository can write the manifest of an older release with `--repository OWNER/NAME`, and gets what the
-release job would have written. The repository is `--repository`, else `GITHUB_REPOSITORY`, else the origin remote.
+release job would have written. It asks GitHub once per commit, and tries a call that fails for a reason that can pass
+(a network error, a 5xx, a 429 or a secondary rate limit) up to three more times, after 2, 4 and 8 seconds. The
+repository is `--repository`, else `GITHUB_REPOSITORY`, else the origin remote.
 The manifest goes to `--out`, relative to where the command runs, or to standard output, and its format is
 `checks/schemas/change-manifest.schema.json`. Who opened each pull request is recorded by kind only: `agent` for a
 coding agent's App, `dependency-bot` for Dependabot and Renovate, `automation` for any other App, `human` otherwise.

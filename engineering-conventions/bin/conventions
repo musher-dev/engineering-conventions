@@ -1052,7 +1052,8 @@ dependencies() {
 query() {
   case $1 in
     # The pull requests a commit belongs to, each with the commit it merged
-    # as and its first page of commits.
+    # as, the files it changes, as release-please reads them, and its first
+    # page of commits.
     ChangeCommit)
       cat << 'EOF'
 query ChangeCommit($owner: String!, $name: String!, $oid: GitObjectID!) {
@@ -1069,6 +1070,10 @@ query ChangeCommit($owner: String!, $name: String!, $oid: GitObjectID!) {
             mergedAt
             mergeCommit { oid }
             author { __typename login }
+            files(first: 100) {
+              pageInfo { hasNextPage }
+              nodes { path }
+            }
             commits(first: 100) {
               totalCount
               pageInfo { hasNextPage }
@@ -1118,13 +1123,34 @@ EOF
   esac
 }
 
-# github WHAT ARGS...: `gh api ARGS`, its answer on stdout. When gh fails,
-# the command stops, naming what it could not read and GitHub's reason.
+# github WHAT ARGS...: `gh api ARGS`, its answer on stdout. A failure that
+# can pass (a network error, a 5xx, a 429, a secondary rate limit or GitHub's
+# GraphQL timeout) is tried again up to three more times, after 2, 4 and 8
+# seconds: every call is a read, so a retry is safe, and the answer is held
+# until a call succeeds, so a retried page is never written twice. Any other
+# failure, a 401, 404 or 422 among them, or one that persists, stops the
+# command, naming what it could not read and GitHub's reason.
 github() {
   what=$1
   shift
-  gh api "$@" < /dev/null 2> "${scratch}/gh.stderr" ||
-    die "cannot read ${what} of ${slug} on GitHub: $(head -n 1 "${scratch}/gh.stderr")"
+  delay=2
+  while ! gh api "$@" < /dev/null > "${scratch}/gh.out" 2> "${scratch}/gh.stderr"; do
+    if [ "${delay}" -gt 8 ] || ! passing "${scratch}/gh.stderr"; then
+      die "cannot read ${what} of ${slug} on GitHub: $(head -n 1 "${scratch}/gh.stderr")"
+    fi
+    sleep "${delay}"
+    delay=$((delay * 2))
+  done
+  cat "${scratch}/gh.out"
+}
+
+# passing STDERR: whether the failure gh reported in STDERR can pass by
+# itself, and so is worth another try.
+passing() {
+  if grep -Eq 'HTTP (401|404|422)' "$1"; then
+    return 1
+  fi
+  grep -Eqi 'HTTP 5[0-9][0-9]|HTTP 429|secondary rate limit|dial tcp|i/o timeout|connection (reset|refused)|TLS handshake timeout|unexpected EOF|context deadline exceeded|Client\.Timeout|no such host|Something went wrong while executing your query' "$1"
 }
 
 # changes PART ARGUMENTS...: run bin/changes.jq's PART on its named
@@ -1222,9 +1248,12 @@ release_changes() {
       "${previous:-${bootstrap:-its first commit}}" >&2
   fi
 
-  # The commits it covers, oldest first: those since the release before it
-  # that change the package's path. The comparison lists them all; the
-  # history of the path, from the earliest of them, says which change it.
+  # The commits it covers, oldest first: the comparison with the release
+  # before it, or else the tag's whole history. Which of them belong to the
+  # package is decided once their pull requests are known, as release-please
+  # decides it (carried, in bin/changes.jq): a commit a pull request merged as
+  # by the pull request's files, and any other by the files it changes
+  # itself, which the history of the package's path lists.
   : > "${scratch}/compare.json"
   : > "${scratch}/touching.json"
   : > "${scratch}/history.json"
@@ -1232,18 +1261,18 @@ release_changes() {
     mode=compare
     github "the commits from ${previous:-${base}} to ${tag}" "repos/${slug}/compare/${base}...${commit}" \
       -X GET -f per_page=100 --paginate > "${scratch}/compare.json"
-    if [ "${package_path}" != . ]; then
-      since=$(changes since --slurpfile compare "${scratch}/compare.json")
-      if [ -n "${since}" ]; then
-        github "the commits that change ${package_path}" "repos/${slug}/commits" -X GET -f "sha=${commit}" \
-          -f "path=${package_path}" -f "since=${since}" -f per_page=100 --paginate > "${scratch}/touching.json"
-      fi
-    fi
+    since=$(changes since --slurpfile compare "${scratch}/compare.json")
+    set -- -f "since=${since}"
   else
     mode=history
-    if [ "${package_path}" = . ]; then set --; else set -- -f "path=${package_path}"; fi
-    github "the history of ${tag}" "repos/${slug}/commits" -X GET -f "sha=${commit}" "$@" -f per_page=100 \
+    github "the history of ${tag}" "repos/${slug}/commits" -X GET -f "sha=${commit}" -f per_page=100 \
       --paginate > "${scratch}/history.json"
+    since='' # the whole history
+    set --
+  fi
+  if [ "${package_path}" != . ] && { [ "${mode}" = history ] || [ -n "${since}" ]; }; then
+    github "the commits that change ${package_path}" "repos/${slug}/commits" -X GET -f "sha=${commit}" \
+      -f "path=${package_path}" "$@" -f per_page=100 --paginate > "${scratch}/touching.json"
   fi
   changes range --arg mode "${mode}" --arg path "${package_path}" --slurpfile compare "${scratch}/compare.json" \
     --slurpfile touching "${scratch}/touching.json" --slurpfile history "${scratch}/history.json" \
@@ -1269,7 +1298,8 @@ release_changes() {
   # Every commit of a pull request with more than a page of them, when the
   # release pull request was refreshed, and the changelog at the tag.
   : > "${scratch}/pages.json"
-  changes paged --slurpfile associations "${scratch}/associations.json" > "${scratch}/paged"
+  changes paged --slurpfile associations "${scratch}/associations.json" --slurpfile range "${scratch}/range.json" \
+    --arg path "${package_path}" --arg commit "${commit}" > "${scratch}/paged"
   while IFS= read -r number; do
     github "the commits of pull request #${number}" graphql --paginate -f "query=$(query PullRequestCommits)" \
       -f "owner=${owner}" -f "name=${repo}" -F "number=${number}" >> "${scratch}/pages.json"

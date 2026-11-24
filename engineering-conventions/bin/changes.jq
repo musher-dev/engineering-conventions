@@ -17,14 +17,16 @@
 #              its name, object type and object sha, one per line; nothing
 #              for the package's first release
 #   since      the earliest date among the commits of --slurpfile compare
-#   range      the commits the release covers, oldest first, as a JSON array
-#              of {sha, message}: with --arg mode compare, those of
-#              --slurpfile compare that --slurpfile touching lists (all of
-#              them when --arg path is .); with --arg mode history, those of
-#              --slurpfile history
+#   range      every commit the release covers, oldest first, as a JSON array
+#              of {sha, message, touches}: with --arg mode compare, those of
+#              --slurpfile compare, and with --arg mode history, those of
+#              --slurpfile history; touches is whether --slurpfile touching,
+#              the history of --arg path, lists it, or the path is .
 #   release    the number of the pull request that merged as --arg commit,
 #              from --slurpfile associations (the ChangeCommit answers)
-#   paged      each pull request whose commits fill more than one page
+#   paged      each pull request the release carries whose commits fill more
+#              than one page, from --slurpfile associations and range, --arg
+#              path and --arg commit
 #   manifest   the manifest itself, from --slurpfile range, associations,
 #              pages (PullRequestCommits) and refreshes (ReleaseRefreshes),
 #              --rawfile changelog, and --arg repository, path, version, tag,
@@ -178,21 +180,38 @@ $ARGS.named as $in
   def since:
     [$in.compare // [] | .[] | .commits[]? | .commit.author.date, .commit.committer.date | strings] | min // empty;
 
+  # Every commit the release covers, oldest first, and whether it changes the
+  # package's path itself.
   def range:
-    if $in.mode == "history" then [$in.history // [] | items] | reverse
-    else
-      [$in.compare // [] | .[] | .commits[]?] as $compared
-      | if $in.path == "." then $compared
-        else ([$in.touching // [] | items | {key: .sha, value: true}] | from_entries) as $touches
-          | $compared | map(select($touches[.sha]))
-        end
-    end
-    | map({sha, message: (.commit.message // "")});
+    ([$in.touching // [] | items | {key: .sha, value: true}] | from_entries) as $touches
+    | if $in.mode == "history" then [$in.history // [] | items] | reverse
+      else [$in.compare // [] | .[] | .commits[]?] end
+    | map({sha, message: (.commit.message // ""), touches: ($in.path == "." or $touches[.sha] == true)});
+
+  # The pull requests the release carries: each whose merge commit the
+  # release covers and the package owns, as release-please decides it. A
+  # commit a pull request merged as is judged by the pull request's files,
+  # unless GitHub lists more than a page of them; any other commit, by its
+  # own. It belongs to the package when one of those files is under the
+  # package's path, or when there are none, since release-please counts an
+  # empty change in every package. A pull request whose changes reached the
+  # branch before it merged changes no file, and neither does its squash
+  # commit, which its own files would leave out.
+  def carried:
+    ($in.range[0] // [] | map({key: .sha, value: .}) | from_entries) as $commits
+    | merged
+    | map(select(.mergeCommit.oid != $commit and $commits[.mergeCommit.oid] != null)
+        | select(
+            $in.path == "."
+            or (if .files.pageInfo.hasNextPage == false
+                then (.files.nodes // []) as $files
+                  | ($files | length) == 0 or any($files[]; .path | startswith($in.path + "/"))
+                else $commits[.mergeCommit.oid].touches end)
+          ));
 
   def manifest:
     ($in.range[0] // []) as $range
     | ($range | map({key: .sha, value: .message}) | from_entries) as $messages
-    | merged as $pulls
     | release_pull_request as $release
     | ([$in.refreshes // [] | .[] | .data.repository.pullRequest.timelineItems.nodes[]? | .createdAt? // empty]
         | sort) as $refreshed
@@ -200,7 +219,7 @@ $ARGS.named as $in
         | group_by(.number)
         | map({key: (.[0].number | tostring), value: {totalCount: .[0].commits.totalCount, nodes: [.[].commits.nodes[]]}})
         | from_entries) as $paged
-    | ($pulls | map(select(.mergeCommit.oid != $commit and $messages[.mergeCommit.oid] != null))) as $changes
+    | carried as $changes
     | ($changes | map({key: (.number | tostring), value: true}) | from_entries) as $numbers
     | ($changes | map({key: .mergeCommit.oid, value: .number}) | from_entries) as $by_merge
     | ($in.changelog // "" | section | listed($numbers; $by_merge)) as $listed
@@ -271,6 +290,6 @@ $ARGS.named as $in
   elif $part == "since" then since
   elif $part == "range" then range
   elif $part == "release" then release_pull_request | .number
-  elif $part == "paged" then merged | map(select(.commits.pageInfo.hasNextPage) | .number) | .[]
+  elif $part == "paged" then carried | map(select(.commits.pageInfo.hasNextPage) | .number) | .[]
   elif $part == "manifest" then manifest
   else error("no part \($part)") end

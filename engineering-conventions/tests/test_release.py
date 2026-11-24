@@ -43,7 +43,10 @@ NAME_SOURCES = ("CONVENTIONS_REPOSITORY", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE
 # A stand-in for gh: it names each `gh api` call as a URL would, by its
 # endpoint, the GraphQL operation it sends and its fields, sorted, as the
 # query; logs the name; and prints every page recorded under it, or fails as
-# GitHub does for something that does not exist.
+# GitHub does for something that does not exist. A failure planned for the
+# call in failures.json comes first, one per call: its message on stderr,
+# after the recorded pages when it starts "partial: ", as a paginated call
+# can fail after printing some.
 GH_STUB = r"""#!/bin/sh
 here=$(dirname "$0")
 shift
@@ -66,9 +69,22 @@ done
 sorted=$(printf '%s\n' "${fields}" | sed '/^$/d' | LC_ALL=C sort | tr '\n' '&')
 key="${endpoint}${operation:+ ${operation}}${sorted:+?${sorted%&}}"
 printf '%s\n' "${key}" >> "${here}/calls"
-if jq -e --arg key "${key}" '.responses | has($key)' "${here}/github.json" > /dev/null; then
+pages() {
   jq -r --arg key "${key}" '.responses[$key][] | if type == "string" then . else tojson end' \
     "${here}/github.json"
+}
+failure=$(jq -r --arg key "${key}" '.[$key][0] // empty' "${here}/failures.json")
+if [ -n "${failure}" ]; then
+  jq --arg key "${key}" '.[$key] |= .[1:]' "${here}/failures.json" > "${here}/failures.next"
+  mv "${here}/failures.next" "${here}/failures.json"
+  case ${failure} in
+    'partial: '*) pages; failure=${failure#partial: } ;;
+  esac
+  printf '%s\n' "${failure}" >&2
+  exit 1
+fi
+if jq -e --arg key "${key}" '.responses | has($key)' "${here}/github.json" > /dev/null; then
+  pages
   exit 0
 fi
 echo 'gh: Not Found (HTTP 404)' >&2
@@ -86,12 +102,23 @@ def _responses(release: dict[str, object]) -> dict[str, object]:
     return as_map(release["responses"])
 
 
-def _stub(tmp_path: Path, release: dict[str, object]) -> Path:
+# A stand-in for sleep, so a retry waits for nothing: it logs how long it
+# was asked to wait.
+SLEEP_STUB = """#!/bin/sh
+printf '%s\\n' "$1" >> "$(dirname "$0")/sleeps"
+"""
+
+
+def _stub(
+    tmp_path: Path, release: dict[str, object], failures: dict[str, list[str]] | None = None
+) -> Path:
     stub = tmp_path / "stub"
     stub.mkdir()
-    (stub / "gh").write_text(GH_STUB)
-    (stub / "gh").chmod(0o755)
+    for name, script in (("gh", GH_STUB), ("sleep", SLEEP_STUB)):
+        (stub / name).write_text(script)
+        (stub / name).chmod(0o755)
     (stub / "github.json").write_text(json.dumps(release))
+    (stub / "failures.json").write_text(json.dumps(failures or {}))
     return stub
 
 
@@ -111,10 +138,13 @@ def _launch(
 
 
 def _write(
-    tmp_path: Path, release: dict[str, object], *arguments: str
+    tmp_path: Path,
+    release: dict[str, object],
+    *arguments: str,
+    failures: dict[str, list[str]] | None = None,
 ) -> tuple[dict[str, object], list[str]]:
     """The manifest the command writes for a recorded release, and the calls it made."""
-    stub = _stub(tmp_path, release)
+    stub = _stub(tmp_path, release, failures)
     completed = _launch(
         "release",
         "changes",
@@ -310,6 +340,11 @@ def test_a_first_release_reads_the_whole_history(tmp_path: Path) -> None:
     manifest, calls = _write(tmp_path, release)
     assert manifest["previous_tag"] is None
     assert not [call for call in calls if "/compare/" in call]
+    # Its every commit, and those that change the package's path themselves.
+    assert (
+        "repos/example-org/service-a/commits?per_page=100&sha=419f0b63be2bd1c6d60054da65bcb059a646ffe4"
+        in calls
+    )
     assert (
         "repos/example-org/service-a/commits?path=service-a&per_page=100"
         "&sha=419f0b63be2bd1c6d60054da65bcb059a646ffe4"
@@ -345,6 +380,54 @@ def test_a_first_release_starts_after_the_bootstrap_sha(tmp_path: Path) -> None:
     assert manifest["previous_tag"] is None
     assert any(f"/compare/{bootstrap}..." in call for call in calls)
     assert _numbers(manifest) == {141}
+
+
+# In service-c's 7.0.0, #340's changes reached the branch in a commit pushed
+# directly, which carries its number but belongs to no pull request, and
+# #340's squash commit, nine minutes later, changes nothing.
+SQUASHED_EMPTY = "e936df5c47f98a0bd589af0bbeec683cced54fb2"
+PUSHED_FIRST = "0db4d93ce8fb192cfbd66157ff75ce3c16004077"
+
+
+def test_carries_a_pull_request_whose_changes_landed_before_it(tmp_path: Path) -> None:
+    # release-please judges the commit a pull request merged as by the pull
+    # request's files, and counts a change of none in every package, so it
+    # listed #340. The squash commit's own files would leave it out.
+    release = _recorded("service-c-7.0.0")
+    [touching] = as_list(_responses(release)[_key(release, r"/commits\?path=")])
+    shas = {as_map(commit)["sha"] for commit in as_list(touching)}
+    assert PUSHED_FIRST in shas
+    assert SQUASHED_EMPTY not in shas
+    manifest, _ = _write(tmp_path, release)
+    change = _change(manifest, 340)
+    assert change["listed"] is True
+    assert as_map(change["pull_request"])["merge_commit"] == SQUASHED_EMPTY
+    # #334 and #337 change only files outside the package.
+    assert _numbers(manifest) == {322, 330, 333, 340}
+    assert _numbers(manifest, listed=True) == {330, 340}
+
+
+@pytest.mark.parametrize(
+    ("files", "more", "carried"),
+    [
+        ([{"path": "service-c/withheld"}], False, True),
+        # Files outside the package's path only.
+        ([{"path": "withheld"}], False, False),
+        # More than a page of files: the commit is judged by its own, and
+        # this squash commit changes nothing under the path.
+        ([], True, False),
+    ],
+)
+def test_judges_a_merge_commit_by_its_pull_request_s_files(
+    files: list[dict[str, str]], *, more: bool, carried: bool, tmp_path: Path
+) -> None:
+    release = _recorded("service-c-7.0.0")
+    [page] = as_list(_responses(release)[_key(release, f"oid={SQUASHED_EMPTY}")])
+    commit = as_map(as_map(as_map(as_map(page)["data"])["repository"])["object"])
+    [pull] = as_list(as_map(commit["associatedPullRequests"])["nodes"])
+    as_map(pull)["files"] = {"pageInfo": {"hasNextPage": more}, "nodes": files}
+    manifest, _ = _write(tmp_path, release)
+    assert (340 in _numbers(manifest)) is carried
 
 
 def test_pages_through_a_pull_request_s_commits(tmp_path: Path) -> None:
@@ -582,7 +665,7 @@ def _no_section(release: dict[str, object]) -> None:
 
 def _another_tag(release: dict[str, object]) -> None:
     responses = _responses(release)
-    responses["repos/example-org/service-b/git/ref/tags/console/v6.1.0"] = responses[
+    responses["repos/example-org/service-b/git/ref/tags/web/v6.1.0"] = responses[
         _key(release, "/git/ref/tags/v6.1.0$")
     ]
 
@@ -596,10 +679,10 @@ def _another_tag(release: dict[str, object]) -> None:
             "cannot read the tag v9.9.9 of example-org/service-b on GitHub: gh: Not Found",
         ),
         (
-            "console/v6.1.0",
+            "web/v6.1.0",
             _another_tag,
-            "no package in .github/release-please/config.json at console/v6.1.0 is released as"
-            " console/v6.1.0: service-b is released as vX.Y.Z",
+            "no package in .github/release-please/config.json at web/v6.1.0 is released as"
+            " web/v6.1.0: service-b is released as vX.Y.Z",
         ),
         (
             "v6.1.0",
@@ -653,3 +736,74 @@ def test_refuses_what_it_does_not_take(
     assert completed.returncode == 2
     assert reason in completed.stderr
     assert not (stub / "calls").exists()
+
+
+# What gh reports for a failure that can pass by itself: a network error, a
+# 5xx, a 429, a secondary rate limit, and GitHub's GraphQL timeout.
+PASSING = [
+    'Post "https://api.github.com/graphql": dial tcp 140.82.112.6:443: i/o timeout',
+    "gh: Server Error (HTTP 502)",
+    "gh: Too Many Requests (HTTP 429)",
+    "gh: You have exceeded a secondary rate limit. Please wait a few minutes before you try"
+    " again. (HTTP 403)",
+    "GraphQL: Something went wrong while executing your query. This may be the result of a"
+    " timeout, or it could be a GitHub bug.",
+]
+
+
+@pytest.mark.parametrize("failure", PASSING)
+def test_tries_a_failure_that_can_pass_again(failure: str, tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    key = _key(release, "/compare/")
+    manifest, calls = _write(tmp_path, release, failures={key: [failure] * 3})
+    # Three more tries, after 2, 4 and 8 seconds, and the fourth answers.
+    assert calls.count(key) == 4
+    assert (tmp_path / "stub" / "sleeps").read_text().split() == ["2", "4", "8"]
+    assert _numbers(manifest, listed=True) == {406}
+
+
+def test_stops_when_a_failure_persists(tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    key = _key(release, "/compare/")
+    stub = _stub(tmp_path, release, {key: [PASSING[0]] * 4})
+    arguments = ("--repository", "example-org/service-b", "--tag", "v6.1.0")
+    completed = _launch("release", "changes", *arguments, cwd=tmp_path, stub=stub)
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert f"of example-org/service-b on GitHub: {PASSING[0]}" in completed.stderr
+    assert (stub / "calls").read_text().splitlines().count(key) == 4
+    assert (stub / "sleeps").read_text().split() == ["2", "4", "8"]
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "gh: Not Found (HTTP 404)",
+        "gh: Bad credentials (HTTP 401)",
+        "gh: Validation Failed (HTTP 422)",
+        # The primary rate limit, which seconds of waiting do not lift.
+        "gh: API rate limit exceeded for user ID 1. (HTTP 403)",
+        "GraphQL: Could not resolve to a PullRequest with the number of 9.",
+    ],
+)
+def test_does_not_try_again_what_cannot_pass(failure: str, tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    key = _key(release, "/compare/")
+    stub = _stub(tmp_path, release, {key: [failure]})
+    arguments = ("--repository", "example-org/service-b", "--tag", "v6.1.0")
+    completed = _launch("release", "changes", *arguments, cwd=tmp_path, stub=stub)
+    assert completed.returncode == 2
+    assert failure in completed.stderr
+    assert (stub / "calls").read_text().splitlines().count(key) == 1
+    assert not (stub / "sleeps").exists()
+
+
+def test_writes_a_retried_page_once(tmp_path: Path) -> None:
+    # A paginated call can fail after printing some of its pages; only the
+    # answer of the try that succeeds is kept.
+    release = _recorded("service-a-35.4.0")
+    key = _key(release, "ReleaseRefreshes")
+    failures = {key: ["partial: gh: Server Error (HTTP 502)"]}
+    manifest, calls = _write(tmp_path, release, failures=failures)
+    assert calls.count(key) == 2
+    assert len(as_list(as_map(manifest["release_pull_request"])["refreshed_at"])) == 4

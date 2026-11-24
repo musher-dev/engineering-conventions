@@ -57,8 +57,12 @@ bundle, written by `conventions release changes` while the release is still a dr
 - **How it reads a release.** The package is the one in `.github/release-please/config.json` at the tag whose tag form
   the tag has. The previous tag is the package's highest lower `X.Y.Z` tag; a first release starts after the
   configuration's `bootstrap-sha`, as release-please does, or else at the start of the history. The commits are the
-  comparison of the two, kept to those the history of the package's path lists. A commit's change is the pull request
-  that merged as it; the one that merged as the tagged commit is the release pull request, never a change. A pull
+  comparison of the two. A commit's change is the pull request that merged as it, carried when the commit belongs to
+  the package as release-please decides it: by the pull request's files, or by the commit's own when there is no pull
+  request or GitHub lists more than a page of its files; one of them is under the package's path, or there are none,
+  since release-please counts an empty change in every package. A pull request whose changes reached the branch
+  before it merged changes no file, and neither does its squash commit. The one that merged as the tagged commit is
+  the release pull request, never a change. A pull
   request is listed when an entry of the version's section links its squash commit, or, when an entry's links resolve
   to none, by the entry's last `#N` that is a pull request of the release; a breaking-change note without a commit link
   repeats a linked entry and is skipped. A change was first carried when the release pull request opened or was next
@@ -84,7 +88,9 @@ bundle, written by `conventions release changes` while the release is still a dr
 ### Negative
 
 - Each such release job runs one more step, with a token that reads the repository's contents and pull requests, and
-  the step asks GitHub once per commit the release covers.
+  the step asks GitHub once per commit the release covers. A call that fails for a reason that can pass (a network
+  error, a 5xx, a 429, a secondary rate limit or GitHub's GraphQL timeout) is tried up to three more times, after 2, 4
+  and 8 seconds, so a release job or a backfill can take a few seconds longer.
 - What it reports is what GitHub associates: a commit pushed without a pull request is no change, and the first commit
   of a pull request with more than 250 commits may be missing, which the manifest marks.
 - `listed` depends on the links release-please writes into its notes; a release whose notes were edited by hand is
@@ -98,9 +104,10 @@ bundle, written by `conventions release changes` while the release is still a dr
 
 ## Enforcement
 
-- `tests/test_release.py` runs the command against nine releases recorded from GitHub, against a stand-in for `gh`,
+- `tests/test_release.py` runs the command against ten releases recorded from GitHub, against a stand-in for `gh`,
   and holds each manifest to the schema and to its committed expected copy; edited recordings cover the rules no
-  recorded release exercises. `tests/test_schemas.py` holds the schema to valid and invalid manifests, and
+  recorded release exercises, and failures the stand-in plans cover the retries. `tests/test_schemas.py` holds the
+  schema to valid and invalid manifests, and
   `bundle:verify` fails a bundle without `bin/changes.jq`.
 - That a deployed repository's release job writes the manifest before building its bundle is `review-only` until a
   requirement checks release workflows for it: a reviewer looks for the step, and for `changes.json` among the files of

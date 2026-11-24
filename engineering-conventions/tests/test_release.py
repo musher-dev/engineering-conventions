@@ -4,11 +4,14 @@ Each case in fixtures/release-changes/ is a real release, recorded with gh:
 `<case>.github.json` holds every answer GitHub gave the command, under the
 name the stand-in below asks for it by, and `<case>.changes.json` what the
 command wrote from them. The releases' repositories are private and this one
-is public, so each answer was reduced to the fields the command reads, and
-every title, commit message and changelog line keeps only its structure (its
-Conventional Commits header, its (#N) references, BREAKING CHANGE footers and
-links) with its prose withheld. Commits, pull requests, numbers and times are
-GitHub's. No test reaches the network.
+is public, so each answer was reduced to the fields the command reads, and its
+identifiers were replaced by stand-ins through one map: the organization is
+example-org, each repository a neutral name (service-a to service-c, and
+docs-site, whose package and tag prefix follow), and each commit a SHA derived
+from the real one. Every title, commit message and changelog line keeps only
+its structure (its Conventional Commits header, its (#N) references, BREAKING
+CHANGE footers and links) with its prose withheld. Pull request numbers,
+times and paths are GitHub's. No test reaches the network.
 """
 
 import json
@@ -189,25 +192,25 @@ class Golden(NamedTuple):
 
 # The golden traces of the change lead time measure (decision 0045).
 GOLDEN = {
-    "platform-docs-0.26.9": Golden(
+    "docs-site-0.26.9": Golden(
         141,
-        "1257412344c9a29efd699d6e0eca0fe81572bafb",
+        "2c6db2db9811427ad16b30f730e306d1411cba1a",
         "2026-11-22T05:13:07Z",
         "2026-11-22T05:15:56Z",
         "2026-11-22T05:27:46Z",
         142,
     ),
-    "platform-console-6.1.0": Golden(
+    "service-b-6.1.0": Golden(
         406,
-        "0d42fb00f5e1c093d77b0f4c4b6961944743f337",
+        "d2e3aff96b504214b5ec6423002af3c1c0b78840",
         "2026-11-21T22:58:25Z",
         "2026-11-21T23:49:47Z",
         "2026-11-22T01:14:18Z",
         407,
     ),
-    "platform-api-35.4.0": Golden(
+    "service-a-35.4.0": Golden(
         1807,
-        "71047fe0406321e638b7badd7f27c0e36933f941",
+        "7d26e8cf127dd4f07e686015aa0c1729828959b0",
         "2026-11-21T23:27:42Z",
         "2026-11-22T04:02:20Z",
         "2026-11-22T06:15:43Z",
@@ -239,30 +242,30 @@ def test_records_each_change_from_its_first_commit(case: str, tmp_path: Path) ->
 
 
 def test_counts_only_the_changes_to_its_package(tmp_path: Path) -> None:
-    # platform-docs releases docs/product and docs/engineering apart. Of the
-    # seven commits since platform-docs/v0.26.4, one changed only packages/.
-    release = _recorded("platform-docs-0.26.5")
+    # docs-site releases docs/product and docs/engineering apart. Of the
+    # seven commits since docs-site/v0.26.4, one changed only packages/.
+    release = _recorded("docs-site-0.26.5")
     manifest, calls = _write(tmp_path, release)
     assert manifest["path"] == "docs/product"
-    assert manifest["previous_tag"] == "platform-docs/v0.26.4"
+    assert manifest["previous_tag"] == "docs-site/v0.26.4"
     compared = as_list(
         as_map(as_list(_responses(release)[_key(release, "/compare/")])[0])["commits"]
     )
-    assert "1c6a6c642b2e8624aae54037f54e16ba414b4311" in {as_map(c)["sha"] for c in compared}
-    assert "1c6a6c642b2e8624aae54037f54e16ba414b4311" not in json.dumps(manifest)
+    assert "43292ba6b23a9499c782354d2b14cd9fa011da91" in {as_map(c)["sha"] for c in compared}
+    assert "43292ba6b23a9499c782354d2b14cd9fa011da91" not in json.dumps(manifest)
     assert _numbers(manifest) == {121, 122, 123, 125, 126}
     assert _numbers(manifest, listed=True) == {123}
     # The history of the path, from the earliest compared commit.
     assert (
-        "repos/musher-dev/platform-docs/commits?path=docs/product&per_page=100"
-        "&sha=35a0da4283d561ce45535c1c65c6c254b0dea5b6&since=2026-11-16T19:34:12Z"
+        "repos/example-org/docs-site/commits?path=docs/product&per_page=100"
+        "&sha=30babfe5329a8d15aefed1ebda4bad4f7c69a08a&since=2026-11-16T19:34:12Z"
     ) in calls
 
 
 def test_a_change_counts_from_the_release_pull_request_s_next_refresh(tmp_path: Path) -> None:
     # Release pull request #1810 opened before #1807 merged, and release-please
     # refreshed it after each merge.
-    manifest, _ = _write(tmp_path, _recorded("platform-api-35.4.0"))
+    manifest, _ = _write(tmp_path, _recorded("service-a-35.4.0"))
     release = as_map(manifest["release_pull_request"])
     assert release["created_at"] == "2026-11-22T04:48:18Z"
     assert release["merged_at"] == "2026-11-22T10:11:23Z"
@@ -287,7 +290,7 @@ def test_a_change_counts_from_the_release_pull_request_s_next_refresh(tmp_path: 
 
 
 def test_a_change_no_refresh_followed_counts_from_its_merge(tmp_path: Path) -> None:
-    release = _recorded("platform-api-35.4.0")
+    release = _recorded("service-a-35.4.0")
     key = _key(release, "ReleaseRefreshes")
     [page] = as_list(_responses(release)[key])
     items = as_map(as_map(as_map(as_map(page)["data"])["repository"])["pullRequest"])
@@ -302,23 +305,23 @@ def test_a_change_no_refresh_followed_counts_from_its_merge(tmp_path: Path) -> N
 
 
 def test_a_first_release_reads_the_whole_history(tmp_path: Path) -> None:
-    # platform-api's first tag, whose history holds the import of 1270 commits.
-    release = _recorded("platform-api-0.36.0")
+    # service-a's first tag, whose history holds the import of 1270 commits.
+    release = _recorded("service-a-0.36.0")
     manifest, calls = _write(tmp_path, release)
     assert manifest["previous_tag"] is None
     assert not [call for call in calls if "/compare/" in call]
     assert (
-        "repos/musher-dev/platform-api/commits?path=platform-api&per_page=100"
-        "&sha=fee8118bed21b92500779efb77f862a1be6fab56"
+        "repos/example-org/service-a/commits?path=service-a&per_page=100"
+        "&sha=419f0b63be2bd1c6d60054da65bcb059a646ffe4"
     ) in calls
     # #4 changed only the repository's root, outside the package.
     assert _numbers(manifest) == {1, 7}
     assert _numbers(manifest, listed=True) == {7}
     imported = _change(manifest, 7)
     # GitHub lists 250 of its commits, in three pages; an earlier one may be missing.
-    assert "graphql PullRequestCommits?name=platform-api&number=7&owner=musher-dev" in calls
+    assert "graphql PullRequestCommits?name=service-a&number=7&owner=example-org" in calls
     assert as_map(imported["first_commit"]) == {
-        "sha": "ffc32db943a9fc6fb8a926556d169f3346cb2eec",
+        "sha": "d055e62c5080e9cde1ed9133f372effd3369e561",
         "authored_at": "2026-08-29T13:33:56Z",
         "at": "2026-08-29T13:33:56Z",
         "rewritten": False,
@@ -329,12 +332,12 @@ def test_a_first_release_reads_the_whole_history(tmp_path: Path) -> None:
 def test_a_first_release_starts_after_the_bootstrap_sha(tmp_path: Path) -> None:
     # The same release, as if it were its package's first: the configuration's
     # bootstrap-sha bounds it, as it bounds release-please's notes.
-    release = _recorded("platform-docs-0.26.9")
+    release = _recorded("docs-site-0.26.9")
     responses = _responses(release)
     refs = _key(release, "/matching-refs/")
     responses[refs] = [[]]
     compare = _key(release, "/compare/")
-    bootstrap = "cf5177652adc5303b40bea82cad1436dee4a11f3"
+    bootstrap = "d6726da4f2c94610c8c7259793a4cc2b55051698"
     responses[re.sub(r"compare/[0-9a-f]{40}", f"compare/{bootstrap}", compare)] = responses.pop(
         compare
     )
@@ -345,14 +348,14 @@ def test_a_first_release_starts_after_the_bootstrap_sha(tmp_path: Path) -> None:
 
 
 def test_pages_through_a_pull_request_s_commits(tmp_path: Path) -> None:
-    release = _recorded("platform-api-24.0.0")
+    release = _recorded("service-a-24.0.0")
     manifest, calls = _write(tmp_path, release)
-    assert "graphql PullRequestCommits?name=platform-api&number=1482&owner=musher-dev" in calls
+    assert "graphql PullRequestCommits?name=service-a&number=1482&owner=example-org" in calls
     pages = as_list(_responses(release)[_key(release, "PullRequestCommits")])
     assert len(pages) == 2
     # 112 commits, all listed, so the earliest is certain.
     assert as_map(_change(manifest, 1482)["first_commit"]) == {
-        "sha": "7d2a51c1ca4f9f11370cb6fe6eb3e7a6f3f43895",
+        "sha": "e065fd767a22de9e5b094171a7c4ee8c811a1250",
         "authored_at": "2026-11-12T21:28:36Z",
         "at": "2026-11-12T21:28:36Z",
         "rewritten": False,
@@ -361,7 +364,7 @@ def test_pages_through_a_pull_request_s_commits(tmp_path: Path) -> None:
 
 
 def test_reads_type_and_breaking_from_the_squash_commit(tmp_path: Path) -> None:
-    manifest, _ = _write(tmp_path, _recorded("platform-api-24.0.0"))
+    manifest, _ = _write(tmp_path, _recorded("service-a-24.0.0"))
     kinds = {
         number: (
             as_map(_change(manifest, number)["pull_request"])["type"],
@@ -393,18 +396,18 @@ def test_a_breaking_note_without_a_commit_link_lists_nothing(
     # A breaking-change note repeats an entry the section lists with its
     # commit link, so its #N is prose; anywhere else, an entry without a
     # commit link names its pull request by its #N.
-    release = _recorded("platform-api-24.0.0")
-    note = "* **api:** withheld ([#1483](https://github.com/musher-dev/platform-api/issues/1483))"
+    release = _recorded("service-a-24.0.0")
+    note = "* **api:** withheld ([#1483](https://github.com/example-org/service-a/issues/1483))"
     _edit_changelog(release, lambda text: text.replace(f"{heading}\n", f"{heading}\n\n{note}\n", 1))
     manifest, _ = _write(tmp_path, release)
     assert _change(manifest, 1483)["listed"] is listed
 
 
 def test_lists_a_pull_request_once_however_many_entries_name_it(tmp_path: Path) -> None:
-    # release-please wrote two entries for one squash commit, b17a051.
-    release = _recorded("platform-backstage-11.0.2")
+    # release-please wrote two entries for one squash commit, c669dc8.
+    release = _recorded("service-c-11.0.2")
     changelog = str(as_list(_responses(release)[_key(release, r"/CHANGELOG\.md\?")])[0])
-    assert changelog.count("/commit/b17a0515dba25923ec14bda60875420a0d05269e") == 2
+    assert changelog.count("/commit/c669dc826ab539b3ec24503aca3f51a17173afe7") == 2
     manifest, _ = _write(tmp_path, release)
     assert _numbers(manifest) == _numbers(manifest, listed=True) == {370}
 
@@ -412,14 +415,14 @@ def test_lists_a_pull_request_once_however_many_entries_name_it(tmp_path: Path) 
 def test_a_squash_commit_names_its_pull_request_without_its_number(tmp_path: Path) -> None:
     # The squash commit of #383 has no (#383) in its subject, so only GitHub's
     # association of the commit with the pull request finds it.
-    release = _recorded("platform-console-5.0.1")
+    release = _recorded("service-b-5.0.1")
     compared = as_list(
         as_map(as_list(_responses(release)[_key(release, "/compare/")])[0])["commits"]
     )
     [squash] = [
         as_map(c)
         for c in compared
-        if as_map(c)["sha"] == "8044edc540355cee3fb9ab029cc54dd83ae906af"
+        if as_map(c)["sha"] == "0cb1cfd1124ee8a8bdf63eb124ae114f3f587465"
     ]
     assert "#383" not in json.dumps(squash)
     manifest, _ = _write(tmp_path, release)
@@ -430,8 +433,8 @@ def test_an_entry_without_a_commit_link_names_its_pull_request_last(tmp_path: Pa
     # Without its commit link, an entry falls back to its last #N that is a
     # pull request of the release: #1809 after the issues it closed, and
     # #1814 before the "closes #1808" release-please adds.
-    release = _recorded("platform-api-35.4.0")
-    links = re.compile(r" \(\[(46dc0a3|3d73558)\]\([^)]*\)\)")
+    release = _recorded("service-a-35.4.0")
+    links = re.compile(r" \(\[(6101b8f|012cbdf)\]\([^)]*\)\)")
     _edit_changelog(release, lambda text: links.sub("", text))
     manifest, _ = _write(tmp_path, release)
     assert _numbers(manifest, listed=True) == {1803, 1807, 1809, 1812, 1814}
@@ -441,11 +444,11 @@ def test_an_entry_without_a_commit_link_names_its_pull_request_last(tmp_path: Pa
 def test_lists_only_what_the_version_s_section_names(
     version: str, *, listed: bool, tmp_path: Path
 ) -> None:
-    release = _recorded("platform-api-35.4.0")
+    release = _recorded("service-a-35.4.0")
+    merged_as = "146ba3c510b7185ff73d5c941fba727a3c18e4ce"
     entry = (
-        "* **api:** withheld ([#1813](https://github.com/musher-dev/platform-api/issues/1813))"
-        " ([7ceebfc](https://github.com/musher-dev/platform-api/commit/"
-        "7ceebfc95321e24528885a98fff9dcd86f9be804))"
+        "* **api:** withheld ([#1813](https://github.com/example-org/service-a/issues/1813))"
+        f" ([{merged_as[:7]}](https://github.com/example-org/service-a/commit/{merged_as}))"
     )
     heading = re.compile(rf"(## \[{re.escape(version)}\][^\n]*\n)")
     _edit_changelog(release, lambda text: heading.sub(rf"\1\n### Bug Fixes\n\n{entry}\n", text, 1))
@@ -456,7 +459,7 @@ def test_lists_only_what_the_version_s_section_names(
 def test_a_history_rewritten_after_opening_counts_from_the_opening(tmp_path: Path) -> None:
     # #809 opened on 2026-10-17; its earliest commit, after a force-push, is
     # from 2026-11-11.
-    manifest, _ = _write(tmp_path, _recorded("platform-api-20.4.0"))
+    manifest, _ = _write(tmp_path, _recorded("service-a-20.4.0"))
     first_commit = as_map(_change(manifest, 809)["first_commit"])
     assert first_commit["authored_at"] == "2026-11-11T14:17:42Z"
     assert first_commit["at"] == "2026-10-17T11:47:27Z"
@@ -479,9 +482,9 @@ def test_a_history_rewritten_after_opening_counts_from_the_opening(tmp_path: Pat
 def test_author_kind_is_a_kind_never_a_login(
     author: dict[str, str] | None, kind: str, tmp_path: Path
 ) -> None:
-    release = _recorded("platform-console-6.1.0")
+    release = _recorded("service-b-6.1.0")
     responses = _responses(release)
-    key = _key(release, "oid=441d1106")
+    key = _key(release, "oid=e25b3cc8")
     [page] = as_list(responses[key])
     commit = as_map(as_map(as_map(as_map(page)["data"])["repository"])["object"])
     [pull] = as_list(as_map(commit["associatedPullRequests"])["nodes"])
@@ -492,12 +495,12 @@ def test_author_kind_is_a_kind_never_a_login(
 
 
 def test_follows_annotated_tags(tmp_path: Path) -> None:
-    release = _recorded("platform-console-6.1.0")
+    release = _recorded("service-b-6.1.0")
     responses = _responses(release)
     ref = _key(release, "/git/ref/tags/v6.1.0$")
     commit = as_map(as_map(as_list(responses[ref])[0])["object"])["sha"]
     responses[ref] = [{"object": {"type": "tag", "sha": "a" * 40}}]
-    responses[f"repos/musher-dev/platform-console/git/tags/{'a' * 40}"] = [
+    responses[f"repos/example-org/service-b/git/tags/{'a' * 40}"] = [
         {"object": {"type": "commit", "sha": commit}}
     ]
     # The previous release's tag, annotated too.
@@ -508,7 +511,7 @@ def test_follows_annotated_tags(tmp_path: Path) -> None:
     ]
     previous_commit = as_map(previous["object"])["sha"]
     previous["object"] = {"type": "tag", "sha": "b" * 40}
-    responses[f"repos/musher-dev/platform-console/git/tags/{'b' * 40}"] = [
+    responses[f"repos/example-org/service-b/git/tags/{'b' * 40}"] = [
         {"object": {"type": "commit", "sha": previous_commit}}
     ]
     manifest, _ = _write(tmp_path, release)
@@ -518,11 +521,11 @@ def test_follows_annotated_tags(tmp_path: Path) -> None:
 
 
 def test_writes_out_where_it_was_run_and_says_what_it_wrote(tmp_path: Path) -> None:
-    release = _recorded("platform-console-6.1.0")
+    release = _recorded("service-b-6.1.0")
     stub = _stub(tmp_path, release)
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
-    arguments = ("--repository", "musher-dev/platform-console", "--tag", "v6.1.0")
+    arguments = ("--repository", "example-org/service-b", "--tag", "v6.1.0")
     completed = _launch(
         "release",
         "changes",
@@ -550,25 +553,25 @@ def test_writes_out_where_it_was_run_and_says_what_it_wrote(tmp_path: Path) -> N
 
 
 def test_reads_the_repository_from_github_or_origin(tmp_path: Path) -> None:
-    release = _recorded("platform-console-6.1.0")
+    release = _recorded("service-b-6.1.0")
     stub = _stub(tmp_path, release)
-    env = {"GITHUB_REPOSITORY": "musher-dev/platform-console"}
+    env = {"GITHUB_REPOSITORY": "example-org/service-b"}
     completed = _launch("release", "changes", "--tag", "v6.1.0", cwd=tmp_path, stub=stub, env=env)
     assert completed.returncode == 0, completed.stderr
-    assert as_map(json.loads(completed.stdout))["repository"] == "musher-dev/platform-console"
+    assert as_map(json.loads(completed.stdout))["repository"] == "example-org/service-b"
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
-    remote = "git@github.com:musher-dev/platform-console.git"
+    remote = "git@github.com:example-org/service-b.git"
     subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", remote], check=True)
     completed = _launch("release", "changes", "--tag", "v6.1.0", cwd=repo, stub=stub)
     assert completed.returncode == 0, completed.stderr
-    assert as_map(json.loads(completed.stdout))["repository"] == "musher-dev/platform-console"
+    assert as_map(json.loads(completed.stdout))["repository"] == "example-org/service-b"
 
 
 def _no_release_pull_request(release: dict[str, object]) -> None:
     responses = _responses(release)
-    [page] = as_list(responses[_key(release, "oid=2eee8f91")])
+    [page] = as_list(responses[_key(release, "oid=dafdb120")])
     commit = as_map(as_map(as_map(as_map(page)["data"])["repository"])["object"])
     as_map(commit["associatedPullRequests"])["nodes"] = []
 
@@ -579,7 +582,7 @@ def _no_section(release: dict[str, object]) -> None:
 
 def _another_tag(release: dict[str, object]) -> None:
     responses = _responses(release)
-    responses["repos/musher-dev/platform-console/git/ref/tags/console/v6.1.0"] = responses[
+    responses["repos/example-org/service-b/git/ref/tags/console/v6.1.0"] = responses[
         _key(release, "/git/ref/tags/v6.1.0$")
     ]
 
@@ -590,18 +593,18 @@ def _another_tag(release: dict[str, object]) -> None:
         (
             "v9.9.9",
             None,
-            "cannot read the tag v9.9.9 of musher-dev/platform-console on GitHub: gh: Not Found",
+            "cannot read the tag v9.9.9 of example-org/service-b on GitHub: gh: Not Found",
         ),
         (
             "console/v6.1.0",
             _another_tag,
             "no package in .github/release-please/config.json at console/v6.1.0 is released as"
-            " console/v6.1.0: platform-console is released as vX.Y.Z",
+            " console/v6.1.0: service-b is released as vX.Y.Z",
         ),
         (
             "v6.1.0",
             _no_section,
-            "platform-console/CHANGELOG.md at v6.1.0 has no section for 6.1.0",
+            "service-b/CHANGELOG.md at v6.1.0 has no section for 6.1.0",
         ),
         (
             "v6.1.0",
@@ -616,11 +619,11 @@ def test_stops_when_the_release_cannot_be_read(
     reason: str,
     tmp_path: Path,
 ) -> None:
-    release = _recorded("platform-console-6.1.0")
+    release = _recorded("service-b-6.1.0")
     if edit is not None:
         edit(release)
     stub = _stub(tmp_path, release)
-    arguments = ("--repository", "musher-dev/platform-console", "--tag", tag)
+    arguments = ("--repository", "example-org/service-b", "--tag", tag)
     completed = _launch("release", "changes", *arguments, cwd=tmp_path, stub=stub)
     assert completed.returncode == 2
     assert completed.stdout == ""
@@ -637,7 +640,7 @@ def test_stops_when_the_release_cannot_be_read(
         (("release", "changes", "--tag", "v1;0"), "--tag must be a release tag"),
         (("release", "changes", "--tag", "../v1.0.0"), "--tag must be a release tag"),
         (
-            ("release", "changes", "--tag", "v1.0.0", "--repository", "platform-console"),
+            ("release", "changes", "--tag", "v1.0.0", "--repository", "service-b"),
             "--repository must be OWNER/NAME",
         ),
     ],

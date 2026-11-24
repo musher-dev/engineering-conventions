@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "tag": "v0.1.0",
   "previous_tag": null,
-  "commit": "fee8118bed0a1b2c3d4e5f60718293a4b5c6d7e8",
+  "commit": "b21c133a9c84b23c493c53fc96c17bd07e962063",
   "generated_at": "2026-09-30T15:12:00Z",
   "generator": "engineering-conventions unreleased",
   "release_pull_request": {
@@ -14,7 +14,7 @@
     "title": "chore(release): release 0.1.0",
     "created_at": "2026-09-30T14:57:00Z",
     "merged_at": "2026-09-30T15:11:28Z",
-    "merge_commit": "fee8118bed0a1b2c3d4e5f60718293a4b5c6d7e8",
+    "merge_commit": "b21c133a9c84b23c493c53fc96c17bd07e962063",
     "refreshed_at": []
   },
   "changes": []

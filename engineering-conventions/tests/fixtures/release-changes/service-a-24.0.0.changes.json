@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "repository": "musher-dev/platform-api",
-  "path": "platform-api",
+  "repository": "example-org/service-a",
+  "path": "service-a",
   "version": "24.0.0",
   "tag": "v24.0.0",
   "previous_tag": "v23.0.0",
-  "commit": "1cd0d78752ad527b36aaaa567b69d59568f71fd7",
+  "commit": "15942ebf14827b58589a80314b209ff4724edc17",
   "release_pull_request": {
     "number": 1480,
-    "url": "https://github.com/musher-dev/platform-api/pull/1480",
+    "url": "https://github.com/example-org/service-a/pull/1480",
     "title": "chore(release): withheld",
     "created_at": "2026-11-14T15:35:17Z",
     "merged_at": "2026-11-15T21:14:58Z",
-    "merge_commit": "1cd0d78752ad527b36aaaa567b69d59568f71fd7",
+    "merge_commit": "15942ebf14827b58589a80314b209ff4724edc17",
     "refreshed_at": [
       "2026-11-14T19:09:53Z",
       "2026-11-14T21:10:05Z",
@@ -27,17 +27,17 @@
       "listed": true,
       "pull_request": {
         "number": 1509,
-        "url": "https://github.com/musher-dev/platform-api/pull/1509",
+        "url": "https://github.com/example-org/service-a/pull/1509",
         "title": "feat(api)!: withheld",
         "type": "feat",
         "breaking": true,
         "author_kind": "human",
         "created_at": "2026-11-15T20:03:30Z",
         "merged_at": "2026-11-15T20:56:24Z",
-        "merge_commit": "9619828af30538e48be6ed7cadc4f86c727ba4d2"
+        "merge_commit": "54e096b1636d4befbccbc68c6c8849dc97b4c7f8"
       },
       "first_commit": {
-        "sha": "9c173b2f29eb3b54c61c2777a577b625f302c22c",
+        "sha": "ccb35840da2e7e7cdd747cbbabce3e67a63149d8",
         "authored_at": "2026-11-15T17:10:04Z",
         "at": "2026-11-15T17:10:04Z",
         "rewritten": false,
@@ -49,17 +49,17 @@
       "listed": true,
       "pull_request": {
         "number": 1500,
-        "url": "https://github.com/musher-dev/platform-api/pull/1500",
+        "url": "https://github.com/example-org/service-a/pull/1500",
         "title": "feat(api): withheld",
         "type": "feat",
         "breaking": false,
         "author_kind": "human",
         "created_at": "2026-11-15T16:16:32Z",
         "merged_at": "2026-11-15T17:03:25Z",
-        "merge_commit": "415885c03c79a01d8a0162205051f13cc06b7707"
+        "merge_commit": "7a4645a0610edbbe2db7a68476bf17e4358bda38"
       },
       "first_commit": {
-        "sha": "996fc44537944cec1fd27cae87eed607aa3eb7e0",
+        "sha": "91d1f57136fccd44e65c474757131a5d2f9b2f09",
         "authored_at": "2026-11-15T08:55:56Z",
         "at": "2026-11-15T08:55:56Z",
         "rewritten": false,
@@ -71,17 +71,17 @@
       "listed": true,
       "pull_request": {
         "number": 1482,
-        "url": "https://github.com/musher-dev/platform-api/pull/1482",
+        "url": "https://github.com/example-org/service-a/pull/1482",
         "title": "feat(api): withheld",
         "type": "feat",
         "breaking": false,
         "author_kind": "human",
         "created_at": "2026-11-14T16:29:36Z",
         "merged_at": "2026-11-14T23:48:29Z",
-        "merge_commit": "1f8bb769aae4c31ff1f5ba47163d269de6697044"
+        "merge_commit": "13f84bdeaf18ec242170c7cc478b380c8b983504"
       },
       "first_commit": {
-        "sha": "7d2a51c1ca4f9f11370cb6fe6eb3e7a6f3f43895",
+        "sha": "e065fd767a22de9e5b094171a7c4ee8c811a1250",
         "authored_at": "2026-11-12T21:28:36Z",
         "at": "2026-11-12T21:28:36Z",
         "rewritten": false,
@@ -93,17 +93,17 @@
       "listed": true,
       "pull_request": {
         "number": 1473,
-        "url": "https://github.com/musher-dev/platform-api/pull/1473",
+        "url": "https://github.com/example-org/service-a/pull/1473",
         "title": "feat(api)!: withheld",
         "type": "feat",
         "breaking": true,
         "author_kind": "human",
         "created_at": "2026-11-14T08:32:04Z",
         "merged_at": "2026-11-14T21:09:27Z",
-        "merge_commit": "29696613937491ece1a55eeeca43f85608ceebde"
+        "merge_commit": "2f88baf5f42e2e4b4c2cbbaa50ad950872076610"
       },
       "first_commit": {
-        "sha": "55aa574611167cb5dadd2ffcf0205a4c12439496",
+        "sha": "5f8862265652ab7c2e5574c572be4f2677d3ccb5",
         "authored_at": "2026-11-14T08:31:49Z",
         "at": "2026-11-14T08:31:49Z",
         "rewritten": false,
@@ -115,17 +115,17 @@
       "listed": false,
       "pull_request": {
         "number": 1483,
-        "url": "https://github.com/musher-dev/platform-api/pull/1483",
+        "url": "https://github.com/example-org/service-a/pull/1483",
         "title": "chore(api): withheld",
         "type": "chore",
         "breaking": false,
         "author_kind": "human",
         "created_at": "2026-11-14T20:33:36Z",
         "merged_at": "2026-11-14T20:41:02Z",
-        "merge_commit": "ecbe3726f1cc181bb45aad2cb9e96a135d858de9"
+        "merge_commit": "bed7697fa010e58af630e87bd4de35a563520d57"
       },
       "first_commit": {
-        "sha": "f3b70b87f6e77505ede3a9687f17b17acde8d022",
+        "sha": "b08d07db647ddd243f6b42f46f7fe0eee944ec0e",
         "authored_at": "2026-11-14T20:33:32Z",
         "at": "2026-11-14T20:33:32Z",
         "rewritten": false,
@@ -137,17 +137,17 @@
       "listed": false,
       "pull_request": {
         "number": 1477,
-        "url": "https://github.com/musher-dev/platform-api/pull/1477",
+        "url": "https://github.com/example-org/service-a/pull/1477",
         "title": "chore(api): withheld",
         "type": "chore",
         "breaking": false,
         "author_kind": "human",
         "created_at": "2026-11-14T12:25:22Z",
         "merged_at": "2026-11-14T19:11:32Z",
-        "merge_commit": "c2f255868b4c315410a2b6ad03d4bd8090f53aa5"
+        "merge_commit": "d93065c49ac50424b9b7211a1ca9543a3e459243"
       },
       "first_commit": {
-        "sha": "329419fc3f274755bd3567c361054a4bd6e7bbed",
+        "sha": "bcb8b5014f5582224e8a01c7b7581a652a60b9b0",
         "authored_at": "2026-11-14T12:24:53Z",
         "at": "2026-11-14T12:24:53Z",
         "rewritten": false,
@@ -159,17 +159,17 @@
       "listed": true,
       "pull_request": {
         "number": 1469,
-        "url": "https://github.com/musher-dev/platform-api/pull/1469",
+        "url": "https://github.com/example-org/service-a/pull/1469",
         "title": "feat(api)!: withheld",
         "type": "feat",
         "breaking": true,
         "author_kind": "human",
         "created_at": "2026-11-14T03:48:28Z",
         "merged_at": "2026-11-14T19:09:20Z",
-        "merge_commit": "54a938263f148a706ef208209e95035bd6143e96"
+        "merge_commit": "082c3b8e858739fa2775f51833adbac9a14dc2a6"
       },
       "first_commit": {
-        "sha": "01e89fc7d3ddc8b945a3e3a811a801e089edc2c9",
+        "sha": "de75ccd42e32ce243d83f0591055f8b262058ddc",
         "authored_at": "2026-11-13T20:35:06Z",
         "at": "2026-11-13T20:35:06Z",
         "rewritten": false,
@@ -181,17 +181,17 @@
       "listed": false,
       "pull_request": {
         "number": 1481,
-        "url": "https://github.com/musher-dev/platform-api/pull/1481",
+        "url": "https://github.com/example-org/service-a/pull/1481",
         "title": "chore(api): withheld",
         "type": "chore",
         "breaking": false,
         "author_kind": "human",
         "created_at": "2026-11-14T16:27:45Z",
         "merged_at": "2026-11-14T18:19:41Z",
-        "merge_commit": "492ba68153d09f87a09b0713a6c50f7e1cc44319"
+        "merge_commit": "8a78cefba957cf6ecb68aba046c4ed53f026e987"
       },
       "first_commit": {
-        "sha": "50c445c300341a374d8d056a3f11a4e3224655db",
+        "sha": "b15381791243495e146b7fdebb355f5d287d1697",
         "authored_at": "2026-11-14T16:19:52Z",
         "at": "2026-11-14T16:19:52Z",
         "rewritten": false,
@@ -203,17 +203,17 @@
       "listed": true,
       "pull_request": {
         "number": 1479,
-        "url": "https://github.com/musher-dev/platform-api/pull/1479",
+        "url": "https://github.com/example-org/service-a/pull/1479",
         "title": "fix(api): withheld",
         "type": "fix",
         "breaking": false,
         "author_kind": "human",
         "created_at": "2026-11-14T15:21:19Z",
         "merged_at": "2026-11-14T15:34:47Z",
-        "merge_commit": "aee0abcd423f3af5f62b8e65994f7fec9b8fdeef"
+        "merge_commit": "5d690f8091524a38daf6a75da27e21ecc8ea8423"
       },
       "first_commit": {
-        "sha": "f6bf0e58d7c2860213419b3719ece9e9d63eca76",
+        "sha": "07a9551d1639d4c4d8bdc63cf3a547aae027efed",
         "authored_at": "2026-11-14T15:05:23Z",
         "at": "2026-11-14T15:05:23Z",
         "rewritten": false,

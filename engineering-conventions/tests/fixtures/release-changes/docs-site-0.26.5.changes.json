@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "repository": "example-org/docs-site",
+  "path": "docs/product",
+  "version": "0.26.5",
+  "tag": "docs-site/v0.26.5",
+  "previous_tag": "docs-site/v0.26.4",
+  "commit": "30babfe5329a8d15aefed1ebda4bad4f7c69a08a",
+  "release_pull_request": {
+    "number": 124,
+    "url": "https://github.com/example-org/docs-site/pull/124",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-17T23:28:10Z",
+    "merged_at": "2026-11-18T16:30:15Z",
+    "merge_commit": "30babfe5329a8d15aefed1ebda4bad4f7c69a08a",
+    "refreshed_at": [
+      "2026-11-18T15:25:30Z"
+    ]
+  },
+  "changes": [
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 125,
+        "url": "https://github.com/example-org/docs-site/pull/125",
+        "title": "build(deps): withheld",
+        "type": "build",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-18T14:55:34Z",
+        "merged_at": "2026-11-18T16:15:14Z",
+        "merge_commit": "7643b3f5f87d7d967503819cc7c6d75a4969bae2"
+      },
+      "first_commit": {
+        "sha": "9a55628a9ce3563a1b4c6b96c04d5a556a5d8549",
+        "authored_at": "2026-11-18T14:54:16Z",
+        "at": "2026-11-18T14:54:16Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-18T16:15:14Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 126,
+        "url": "https://github.com/example-org/docs-site/pull/126",
+        "title": "docs(docs): withheld",
+        "type": "docs",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-18T15:04:38Z",
+        "merged_at": "2026-11-18T15:24:45Z",
+        "merge_commit": "29ad9f2c300abe26b2450f30736d35dfc95c03cc"
+      },
+      "first_commit": {
+        "sha": "015b84924d5e09ab6ebe23d3ae925e39f27eee53",
+        "authored_at": "2026-11-18T15:04:04Z",
+        "at": "2026-11-18T15:04:04Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-18T15:25:30Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 123,
+        "url": "https://github.com/example-org/docs-site/pull/123",
+        "title": "fix(docs): withheld",
+        "type": "fix",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-17T23:17:01Z",
+        "merged_at": "2026-11-17T23:27:28Z",
+        "merge_commit": "03136e23774942a23c76b54e97bf358aef4439d1"
+      },
+      "first_commit": {
+        "sha": "e3dbaaa329981b53c6ddd0d1e0df8a09331b55ac",
+        "authored_at": "2026-11-17T23:16:52Z",
+        "at": "2026-11-17T23:16:52Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:28:10Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 122,
+        "url": "https://github.com/example-org/docs-site/pull/122",
+        "title": "build(repo): withheld",
+        "type": "build",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-16T19:51:52Z",
+        "merged_at": "2026-11-16T20:14:39Z",
+        "merge_commit": "a6320b89a5f3b1afcbcad745f63294264292e2e0"
+      },
+      "first_commit": {
+        "sha": "610727cb9cea0e03bdd42e456ae12c5709c16728",
+        "authored_at": "2026-11-16T16:37:38Z",
+        "at": "2026-11-16T16:37:38Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:28:10Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 121,
+        "url": "https://github.com/example-org/docs-site/pull/121",
+        "title": "refactor(docs): withheld",
+        "type": "refactor",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-16T19:15:54Z",
+        "merged_at": "2026-11-16T19:34:13Z",
+        "merge_commit": "6818b875fb856d4f5b225c33ad2c561a7cbbd96c"
+      },
+      "first_commit": {
+        "sha": "f5ff43a8b6b7f9d3e1d91d95184d87eaaf45fecf",
+        "authored_at": "2026-11-16T19:15:32Z",
+        "at": "2026-11-16T19:15:32Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:28:10Z"
+    }
+  ]
+}

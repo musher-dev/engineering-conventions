@@ -46,6 +46,7 @@ conventions waivers                    # list the waivers in .repo/conventions.t
 conventions codeowners                 # ask GitHub whether every CODEOWNERS owner resolves (online)
 conventions dependencies status        # compare each pin of a Musher release with its producer's releases (online)
 conventions dependencies badges --out DIR  # render a currency badge per pin, with index.json and README.md (online)
+conventions release changes --tag TAG --out FILE  # write the change manifest of the release TAG cut (online)
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -370,6 +371,37 @@ Define `contracts:check`, `contracts:breaking` and `contracts:bundle` (and `cont
 definitions), run the first two in your validate workflow, and build the bundle with its `release.json` in the
 workflow that publishes it. The rules are the [interfaces](../engineering-conventions/definitions/conventions/interfaces/README.md)
 topic.
+
+## Record what each release carries
+
+A release whose artifact another repository deploys carries a change manifest, `changes.json`, in its contracts
+bundle ([decision 0045](decisions/0045-a-deployed-release-carries-its-change-manifest.md)). It lists every pull request
+the release carries: when its first commit was written, when it opened and merged, whether the release notes list
+it, and when the release pull request first carried it. The repository that deploys the release joins that with when
+production finished, to measure each change's lead time. Write it in the release job while the release is still a
+draft, before the bundle and its `release.json` are built:
+
+```yaml
+- name: Record the changes the release carries
+  env:
+    GH_TOKEN: ${{ steps.app_token.outputs.token }}   # reads the repository's contents and pull requests
+    TAG: ${{ needs.release-please.outputs.tag_name }}
+  run: conventions release changes --tag "$TAG" --out api/contracts/changes/changes.json
+```
+
+It reads the release from GitHub at its tag, through the GitHub CLI, and needs no clone: the release-please
+configuration, for the package the tag releases; the package's previous tag; the commits between the two, and the
+pull request each merged as; and the version's section of the package's changelog. A commit belongs to the package as
+release-please decides it, by its pull request's files, or by its own when no pull request merged as it. So the
+deploying repository can write the manifest of an older release with `--repository OWNER/NAME`, and gets what the
+release job would have written. It asks GitHub once per commit, and tries a call that fails for a reason that can pass
+(a network error, a 5xx, a 429 or a secondary rate limit) up to three more times, after 2, 4 and 8 seconds. The
+repository is `--repository`, else `GITHUB_REPOSITORY`, else the origin remote.
+The manifest goes to `--out`, relative to where the command runs, or to standard output, and its format is
+`checks/schemas/change-manifest.schema.json`. Who opened each pull request is recorded by kind only: `agent` for a
+coding agent's App, `dependency-bot` for Dependabot and Renovate, `automation` for any other App, `human` otherwise.
+A tag that no release-please package releases, a changelog without the version's section, or a tagged commit that
+merged no pull request stops it with exit status 2.
 
 ## Declare the interfaces you vendor
 

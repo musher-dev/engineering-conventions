@@ -15,7 +15,7 @@ It has three layers. `definitions/` is the source of truth; `checks/` validates 
 | Defined | `definitions/profiles/` | Convention profiles, such as `base-repo` | |
 | Defined | `definitions/copy/` | `style.yml`: the MusherCopy style and the Vale packages the copy rules adopt | |
 | Checked | `checks/rego/` | The Conftest checks and the `main` router that applies profiles, severities and waivers | |
-| Checked | `checks/schemas/` | JSON Schemas for the declarations (conventions, outputs, repository, dependencies), the environment schema, release records, the frontmatter of conventions, decisions, skills and subagents, terminology, profiles, families and the copy style; `vendor/` holds the upstream schemas the checks use | |
+| Checked | `checks/schemas/` | JSON Schemas for the declarations (conventions, outputs, repository, dependencies), the environment schema, release records, change manifests, the frontmatter of conventions, decisions, skills and subagents, terminology, profiles, families and the copy style; `vendor/` holds the upstream schemas the checks use | |
 | Checked | `checks/data/index.json` | Requirements, profiles and vocabulary, read by the Rego checks | yes |
 | Checked | `checks/vale/MusherConventions/` | The Vale style for prose-scope aliases | yes |
 | Checked | `checks/vale/MusherCopy/`, `checks/vale/MusherProse.ini` | The Vale style for public copy, and the `.vale.ini` of the `MusherProse` package | yes |

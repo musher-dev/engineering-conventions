@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "repository": "your-org/service-a",
+  "path": "service-a",
+  "version": "35.4.0",
+  "tag": "v35.4.0",
+  "previous_tag": "v35.3.0",
+  "commit": "0dffd76b6c551f32d6998cd6b90b8a3f58a095ed",
+  "generated_at": "2026-11-22T10:12:40Z",
+  "generator": "engineering-conventions 0.10.0",
+  "release_pull_request": {
+    "number": 1810,
+    "url": "https://github.com/your-org/service-a/pull/1810",
+    "title": "chore(release): release 35.4.0",
+    "created_at": "2026-11-22T04:48:18Z",
+    "merged_at": "2026-11-22T10:11:23Z",
+    "merge_commit": "0dffd76b6c551f32d6998cd6b90b8a3f58a095ed",
+    "refreshed_at": [
+      "2026-11-22T06:18:42Z",
+      "2026-11-22T07:09:55Z"
+    ]
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1807,
+        "url": "https://github.com/your-org/service-a/pull/1807",
+        "title": "feat(api): read a content screening",
+        "type": "feat",
+        "breaking": false,
+        "author_kind": "agent",
+        "created_at": "2026-11-22T04:02:20Z",
+        "merged_at": "2026-11-22T06:15:43Z",
+        "merge_commit": "d012dc89649934464ba833d871c323fca89a39e5"
+      },
+      "first_commit": {
+        "sha": "f0afd52164b11b1a99e7b31a220b60c9552b993a",
+        "authored_at": "2026-11-21T23:27:42Z",
+        "at": "2026-11-21T23:27:42Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-22T06:18:42Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 1813,
+        "url": "https://github.com/your-org/service-a/pull/1813",
+        "title": "Rename the money attributes",
+        "type": null,
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-22T07:40:00Z",
+        "merged_at": "2026-11-22T08:02:25Z",
+        "merge_commit": "e78701b992b241d140996653146183f380323ce8"
+      },
+      "first_commit": {
+        "sha": "395206b0c4526183606170a4458f9c66785579c7",
+        "authored_at": "2026-11-22T07:45:00Z",
+        "at": "2026-11-22T07:40:00Z",
+        "rewritten": true,
+        "truncated": true
+      },
+      "release_pull_request_opened_at": "2026-11-22T10:08:33Z"
+    }
+  ]
+}

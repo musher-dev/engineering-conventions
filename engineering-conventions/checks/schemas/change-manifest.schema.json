@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Change manifest",
+  "description": "Every pull request one release carries, with the time of its first commit, its own lifecycle, and the release pull request that cut the release. Written by `conventions release changes` while the release is still a draft, so it ships inside the release's contracts bundle. The deploying repository reads it to measure DORA change lead time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository",
+    "path",
+    "version",
+    "tag",
+    "previous_tag",
+    "commit",
+    "generated_at",
+    "generator",
+    "release_pull_request",
+    "changes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "repository": {
+      "description": "The repository that cut the release, as OWNER/NAME.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "path": {
+      "description": "The release-please package path the release covers, `.` for the repository root. Changes are the pull requests whose merge commit touches it.",
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "description": "The released version, without the tag's prefix.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "previous_tag": {
+      "description": "The highest earlier tag of the same package. Null for a package's first release.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "commit": {
+      "description": "The commit the tag names: the squash commit of the release pull request.",
+      "$ref": "#/definitions/sha"
+    },
+    "generated_at": {
+      "$ref": "#/definitions/time"
+    },
+    "generator": {
+      "description": "What wrote the file, for example `engineering-conventions 0.10.0`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "release_pull_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "url",
+        "title",
+        "created_at",
+        "merged_at",
+        "merge_commit",
+        "refreshed_at"
+      ],
+      "properties": {
+        "number": {
+          "$ref": "#/definitions/number"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string"
+        },
+        "created_at": {
+          "description": "When release-please first opened the pull request. It is reused and refreshed for every later change, so this can predate a change.",
+          "$ref": "#/definitions/time"
+        },
+        "merged_at": {
+          "$ref": "#/definitions/time"
+        },
+        "merge_commit": {
+          "$ref": "#/definitions/sha"
+        },
+        "refreshed_at": {
+          "description": "Every force-push to the pull request's head, oldest first.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/time"
+          }
+        }
+      }
+    },
+    "changes": {
+      "description": "One entry per pull request in (previous_tag, tag] whose merge commit touches `path`, newest merge first. The release pull request itself is not one.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/change"
+      }
+    }
+  },
+  "definitions": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "time": {
+      "description": "An RFC 3339 UTC timestamp, as GitHub reports it.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "listed",
+        "pull_request",
+        "first_commit",
+        "release_pull_request_opened_at"
+      ],
+      "properties": {
+        "listed": {
+          "description": "Whether the version's changelog section lists the pull request (by its commit link, or by its `#N` when no link resolves). The listed ones are the release's releasable changes.",
+          "type": "boolean"
+        },
+        "pull_request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "number",
+            "url",
+            "title",
+            "type",
+            "breaking",
+            "author_kind",
+            "created_at",
+            "merged_at",
+            "merge_commit"
+          ],
+          "properties": {
+            "number": {
+              "$ref": "#/definitions/number"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "type": {
+              "description": "The Conventional Commits type of the squash commit's subject, null when it has none.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "breaking": {
+              "description": "A `!` before the subject's colon, or a `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer.",
+              "type": "boolean"
+            },
+            "author_kind": {
+              "description": "Who opened the pull request, by kind only, never by login: `agent` for a coding agent's App (musher-dagger), `dependency-bot` for Dependabot and Renovate, `automation` for any other App or bot, `human` otherwise.",
+              "enum": [
+                "human",
+                "agent",
+                "dependency-bot",
+                "automation"
+              ]
+            },
+            "created_at": {
+              "$ref": "#/definitions/time"
+            },
+            "merged_at": {
+              "$ref": "#/definitions/time"
+            },
+            "merge_commit": {
+              "$ref": "#/definitions/sha"
+            }
+          }
+        },
+        "first_commit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sha",
+            "authored_at",
+            "at",
+            "rewritten",
+            "truncated"
+          ],
+          "properties": {
+            "sha": {
+              "description": "The pull request's commit with the earliest author date.",
+              "$ref": "#/definitions/sha"
+            },
+            "authored_at": {
+              "$ref": "#/definitions/time"
+            },
+            "at": {
+              "description": "When the change started: `authored_at`, or the pull request's `created_at` when that is earlier (`rewritten`).",
+              "$ref": "#/definitions/time"
+            },
+            "rewritten": {
+              "description": "The earliest author date is after the pull request opened, so its history was rewritten after it opened.",
+              "type": "boolean"
+            },
+            "truncated": {
+              "description": "The pull request has more commits than the 250 GitHub returns, so an earlier one may be missing.",
+              "type": "boolean"
+            }
+          }
+        },
+        "release_pull_request_opened_at": {
+          "description": "When the release pull request first carried this change: its creation, or its first refresh, at or after the change merged.",
+          "$ref": "#/definitions/time"
+        }
+      }
+    }
+  }
+}

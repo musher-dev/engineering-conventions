@@ -25,6 +25,8 @@ REPOSITORY = "repository.schema.json"
 ENV_SCHEMA = "env-schema.schema.json"
 ENV_GRAMMAR = "env-grammar.schema.json"
 DECISION = "decision.schema.json"
+# What `conventions release changes` writes; no check reads it (decision 0045).
+CHANGE_MANIFEST = "change-manifest.schema.json"
 SKILL = "skill-frontmatter.schema.json"
 SUBAGENT = "subagent-frontmatter.schema.json"
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.8](https://github.com/musher-dev/engineering-conventions/compare/v0.9.7...v0.9.8) (2026-11-25)
+
+
+### Features
+
+* **conventions:** write a release's change manifest for lead time ([#159](https://github.com/musher-dev/engineering-conventions/issues/159)) ([0a96d4d](https://github.com/musher-dev/engineering-conventions/commit/0a96d4d3fdbe0be7a0d2fb7af7d879442b92aa4f))
+
 ## [0.9.7](https://github.com/musher-dev/engineering-conventions/compare/v0.9.6...v0.9.7) (2026-11-18)
 
 

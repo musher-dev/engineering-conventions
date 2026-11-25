@@ -207,3 +207,215 @@ test_gha_32_dual_trigger_and_matrix_contexts if {
 	found := execution_hygiene.findings with input as docs with data.conventions.index as td.index
 	td.pairs(found) == {["GHA-32", ".github/workflows/validate.yml"]}
 }
+
+mise_setup := {"name": "Install the pinned tools", "uses": "jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca"}
+
+with_jobs(jobs) := object.union(td.validate, {"jobs": jobs})
+
+job(extra) := object.union({"name": "Job", "runs-on": "ubuntu-24.04", "timeout-minutes": 5, "steps": []}, extra)
+
+gha_55_docs(workflow, extra) := array.concat([wf("validate.yml", workflow)], extra)
+
+gha_55_message(step, job_id, line) := sprintf(
+	concat(" ", [
+		"step %q in job %q runs %q after jdx/mise-action, which keeps its GitHub token to its own step,",
+		"so what mise installs here goes to the GitHub API unauthenticated and fails once the runner's",
+		"shared 60-call hourly limit is spent; set env: {MISE_GITHUB_TOKEN: ${{ github.token }}} on the",
+		"step or the job",
+	]),
+	[step, job_id, line],
+)
+
+test_gha_55_installs_after_mise_action if {
+	workflow := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Install", "run": "mise install"},
+		{"name": "Exec", "run": "mise exec jq@1.8.2 -- jq --version"},
+		{"name": "Short", "run": "cd site && mise x -- node build.js"},
+		{"name": "Use", "run": "mise use -g aqua:jqlang/jq@1.8.2"},
+		{"name": "Conventions", "run": "conventions check --fail-on warning"},
+		{"name": "Bundled", "run": "./engineering-conventions/bin/conventions hadolint"},
+	]})})
+	found_1 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [])
+		with data.conventions.index as td.index
+	found_1 == {
+		gha_55_message("Install", "check", "mise install"),
+		gha_55_message("Exec", "check", "mise exec jq@1.8.2 -- jq --version"),
+		gha_55_message("Short", "check", "cd site && mise x -- node build.js"),
+		gha_55_message("Use", "check", "mise use -g aqua:jqlang/jq@1.8.2"),
+		gha_55_message("Conventions", "check", "conventions check --fail-on warning"),
+		gha_55_message("Bundled", "check", "./engineering-conventions/bin/conventions hadolint"),
+	}
+}
+
+test_gha_55_token_at_step_job_or_workflow_level if {
+	token := {"MISE_GITHUB_TOKEN": "${{ github.token }}"}
+	step_level := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Install", "env": token, "run": "mise install"},
+	]})})
+	found_2 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(step_level, [])
+		with data.conventions.index as td.index
+	count(found_2) == 0
+	job_level := with_jobs({"check": job({"env": token, "steps": [
+		mise_setup,
+		{"name": "Install", "run": "mise install"},
+	]})})
+	found_3 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(job_level, [])
+		with data.conventions.index as td.index
+	count(found_3) == 0
+	workflow_level := object.union(
+		with_jobs({"check": job({"steps": [mise_setup, {"name": "Install", "run": "mise install"}]})}),
+		{"env": token},
+	)
+	found_4 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow_level, [])
+		with data.conventions.index as td.index
+	count(found_4) == 0
+}
+
+test_gha_55_other_token_variables_and_exports if {
+	github_token := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Install", "env": {"GITHUB_TOKEN": "${{ github.token }}"}, "run": "mise install"},
+	]})})
+	found_5 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(github_token, [])
+		with data.conventions.index as td.index
+	count(found_5) == 0
+	expression := with_jobs({"check": job({"env": "${{ fromJSON(inputs.env) }}", "steps": [
+		mise_setup,
+		{"name": "Install", "run": "mise install"},
+	]})})
+	found_6 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(expression, [])
+		with data.conventions.index as td.index
+	count(found_6) == 0
+	exported := with_jobs({"check": job({"steps": [
+		{"name": "Export", "env": {"T": "${{ github.token }}"}, "run": `echo "MISE_GITHUB_TOKEN=$T" >> "$GITHUB_ENV"`},
+		mise_setup,
+		{"name": "Install", "run": "mise install"},
+	]})})
+	found_7 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(exported, [])
+		with data.conventions.index as td.index
+	count(found_7) == 0
+}
+
+test_gha_55_no_mise_action_or_step_before_it if {
+	no_action := with_jobs({"check": job({"steps": [
+		{"name": "Install", "run": "mise install"},
+		{"name": "Conventions", "run": "conventions check"},
+	]})})
+	found_8 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(no_action, [])
+		with data.conventions.index as td.index
+	count(found_8) == 0
+	before := with_jobs({"check": job({"steps": [
+		{"name": "Install", "run": "mise install"},
+		mise_setup,
+		{"name": "Lint", "run": "task lint"},
+	]})})
+	found_9 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(before, [])
+		with data.conventions.index as td.index
+	count(found_9) == 0
+	other_job := with_jobs({
+		"setup": job({"steps": [mise_setup]}),
+		"check": job({"steps": [{"name": "Install", "run": "mise install"}]}),
+	})
+	found_10 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(other_job, [])
+		with data.conventions.index as td.index
+	count(found_10) == 0
+}
+
+test_gha_55_commands_that_install_nothing if {
+	workflow := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Version", "run": "conventions version"},
+		{"name": "List", "run": "mise ls --current"},
+		{"name": "Lock", "run": "mise lock"},
+		{"name": "Print", "run": "echo 'run mise install to fix this'"},
+		{"name": "Comment", "run": "# mise install happened above\ntask lint"},
+		{"name": "Word", "run": "./scripts/promise exec"},
+		{"name": "Action", "uses": "actions/upload-artifact@v4"},
+	]})})
+	found_11 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [])
+		with data.conventions.index as td.index
+	count(found_11) == 0
+}
+
+test_gha_55_through_a_task if {
+	taskfile := td.file("Taskfile.yml", {"version": "3", "tasks": {
+		"conventions": {"cmds": [{"task": "conventions:check"}]},
+		"conventions:check": {"cmds": ["conventions check --fail-on warning"]},
+		"lint": {"cmds": ["markdownlint-cli2 '**/*.md'"]},
+	}})
+	workflow := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Conventions", "run": "task conventions"},
+		{"name": "Lint", "run": "task lint"},
+	]})})
+	found_12 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [taskfile])
+		with data.conventions.index as td.index
+	found_12 == {gha_55_message("Conventions", "check", "task conventions")}
+}
+
+test_gha_55_through_a_local_action if {
+	setup := {"name": "Setup Tools", "description": "x", "runs": {"using": "composite", "steps": [mise_setup]}}
+	workflow := with_jobs({"check": job({"steps": [
+		{"uses": "./.github/actions/setup-tools"},
+		{"name": "Install", "run": "mise install"},
+	]})})
+	plain := td.file(".github/actions/setup-tools/action.yml", setup)
+	found_13 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [plain])
+		with data.conventions.index as td.index
+	found_13 == {gha_55_message("Install", "check", "mise install")}
+
+	# The action exports the token to every later step.
+	exporting := {"name": "Setup Tools", "description": "x", "runs": {"using": "composite", "steps": [
+		mise_setup,
+		{"name": "Export", "shell": "bash", "run": `echo "MISE_GITHUB_TOKEN=${{ github.token }}" >> "$GITHUB_ENV"`},
+	]}}
+	exports := td.file(".github/actions/setup-tools/action.yml", exporting)
+	found_14 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [exports])
+		with data.conventions.index as td.index
+	count(found_14) == 0
+
+	# An action in another repository is not read.
+	remote := with_jobs({"check": job({"steps": [
+		{"uses": "org/setup-tools@v1"},
+		{"name": "Install", "run": "mise install"},
+	]})})
+	found_15 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(remote, [])
+		with data.conventions.index as td.index
+	count(found_15) == 0
+}
+
+test_gha_55_one_finding_per_step if {
+	workflow := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Both", "run": "mise install\nmise exec -- jq ."},
+	]})})
+	found_16 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [])
+		with data.conventions.index as td.index
+	found_16 == {gha_55_message("Both", "check", "mise install")}
+}
+
+test_gha_55_task_names_match_whole if {
+	root := td.file("Taskfile.yml", {
+		"version": "3", "includes": {
+			"cli": "taskfiles/cli.yml",
+			"tools": {"taskfile": "taskfiles/tools.yml", "flatten": true},
+		},
+		"tasks": {"lint": {"cmds": ["mise exec -- markdownlint-cli2"]}},
+	})
+	cli := td.file("taskfiles/cli.yml", {"version": "3", "tasks": {
+		"lint": {"cmds": ["ruff check"]},
+		"sync": {"cmds": [{"task": "install"}]},
+		"install": {"cmds": ["mise install"]},
+	}})
+	tools := td.file("taskfiles/tools.yml", {"version": "3", "tasks": {"tools:check": {"cmds": ["actionlint"]}}})
+	workflow := with_jobs({"check": job({"steps": [
+		mise_setup,
+		{"name": "Lint", "run": "task cli:lint tools:check"},
+		{"name": "Sync", "run": "task cli:sync"},
+	]})})
+	found_17 := messages(execution_hygiene.findings, "GHA-55") with input as gha_55_docs(workflow, [root, cli, tools])
+		with data.conventions.index as td.index
+	found_17 == {gha_55_message("Sync", "check", "task cli:sync")}
+}

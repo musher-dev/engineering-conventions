@@ -38,7 +38,7 @@
     [".config/mise/config.toml", "ADOPT-09", "warning", "nothing pins the conventions release this repository is checked against; add \"github:musher-dev/engineering-conventions\" = \"<release>\" under [tools] in .config/mise/config.toml, or conventions.version to .repo/conventions.toml", true]
   ],
   "adopt-10-unknown-family": [
-    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"BRANCH\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"IMAGE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"TASK\", \"TOFU\", \"TOOL\"", true]
+    [".repo/conventions.toml", "ADOPT-10", "warning", "[adoption] enforce names \"GH\", which is not a family this release defines; use one of \"ADOPT\", \"AGENT\", \"BRANCH\", \"COMM\", \"COMMIT\", \"CONF\", \"COPY\", \"DEC\", \"DEPS\", \"DEVC\", \"ENVS\", \"GHA\", \"HOOKS\", \"IFACE\", \"IMAGE\", \"OAS\", \"OUT\", \"REL\", \"REPO\", \"RETRY\", \"STATUS\", \"TASK\", \"TOFU\", \"TOOL\", \"TRUST\"", true]
   ],
   "adopt-11-adoption-expired": [
     [".github/workflows/validate.yml", "GHA-07", "warning", "name \"CI\" should be \"Validate\": a workflow's name is its filename stem in Title Case", true],
@@ -377,10 +377,6 @@
   "deps-09-validate-without-check": [
     [".repo/dependencies.toml", "DEPS-09", "warning", "the repository vendors dependencies but no validate workflow runs `task deps:check`; run it in a validate workflow, so an edited or half-updated copy cannot merge", true]
   ],
-  "deps-10-no-maintain-workflow": [
-    [".repo/dependencies.toml", "DEPS-10", "warning", "the repository vendors dependencies but has no maintain-dependencies.yml; add it, on a schedule, to run `task deps:sync` and open a pull request for each new release", true]
-  ],
-  "deps-10-passes-schedule-only": [],
   "deps-11-action-not-updated": [
     [".github/dependabot.yml", "DEPS-11", "warning", "nothing updates the actions used by the composite action in .github/actions/setup-tools; add \"/.github/actions/setup-tools\" to the directories of a github-actions update in the Dependabot configuration, or configure Renovate", true]
   ],
@@ -392,6 +388,19 @@
   "deps-13-passes-renovate": [],
   "deps-13-product-not-updated": [
     [".github/dependabot.yml", "DEPS-13", "warning", "nothing updates the go dependencies platform-api/go.mod declares; add an update with package-ecosystem gomod and directory \"/platform-api\" to the Dependabot configuration, or configure Renovate", true]
+  ],
+  "deps-15-missing-badge": [
+    ["README.md", "DEPS-15", "warning", ".repo/dependencies.toml pins specifications schemas but README.md shows no currency badge for it; add ![specifications schemas](https://github.com/musher-dev/<this-repository>/raw/badges/specifications-schemas.svg), so a reader sees when the pin falls behind", true]
+  ],
+  "deps-15-passes-conventions-pin": [],
+  "deps-16-no-badge-workflow": [
+    [".repo/dependencies.toml", "DEPS-16", "warning", "the repository pins specifications schemas but has no maintain-dependency-badges.yml; add it, on a schedule and on a dependency-released repository_dispatch, calling musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml, so its currency badges stay fresh", true]
+  ],
+  "deps-16-passes-badges-command": [],
+  "deps-17-passes-security-only-and-quarterly": [],
+  "deps-17-weekly-update": [
+    [".github/dependabot.yml", "DEPS-17", "warning", "the github-actions update for /, /.github/actions/* runs weekly and groups nothing; set schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull request a month", true],
+    [".github/dependabot.yml", "DEPS-17", "warning", "the gomod update for /platform-api groups nothing; set schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull request a month", true]
   ],
   "devc-01-passes-named-config": [],
   "devc-01-root-config": [
@@ -575,7 +584,7 @@
     ["platform-api/env.schema.yaml", "ENVS-22", "warning", "binding DATABASE_URL names capability \"postgresql\" inline; declare the instance under requires, with the versions the code works with, and write requires: <instance> on the binding", true]
   ],
   "envs-18-unregistered-capability": [
-    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"access-proxy\", \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"container-registry\", \"dns\", \"edge-compute\", \"email-delivery\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"valkey\", \"vpn-mesh\", \"web-search\", or propose a new one", true],
+    ["platform-api/env.schema.yaml", "ENVS-18", "warning", "binding DATABASE_URL has capability \"postgres\", which is not a registered capability; use one of \"access-proxy\", \"block-storage\", \"cdn\", \"cloud-compute\", \"code-hosting\", \"container-registry\", \"dns\", \"edge-compute\", \"email-delivery\", \"kafka\", \"llm\", \"oauth-identity\", \"object-storage\", \"otlp\", \"payments\", \"postgresql\", \"valkey\", \"vpn-mesh\", \"web-search\", or propose a new one", true],
     ["platform-api/env.schema.yaml", "ENVS-22", "warning", "binding DATABASE_URL names capability \"postgres\" inline; declare the instance under requires, with the versions the code works with, and write requires: <instance> on the binding", true]
   ],
   "envs-20-missing-contract": [
@@ -595,6 +604,7 @@
   ],
   "envs-22-passes-requires": [],
   "envs-23-passes-every-instance-reached": [],
+  "envs-23-passes-kafka-cluster": [],
   "envs-23-undeclared-instance": [
     ["platform-api/env.schema.yaml", "ENVS-23", "warning", "binding CACHE_URL requires \"kv\", which is not declared under requires; declare it, or name a declared instance", true],
     ["platform-api/env.schema.yaml", "ENVS-23", "warning", "requires declares cache, which no binding reaches; name it with requires: cache on the binding that does, or remove it", true]
@@ -835,6 +845,10 @@
   "gha-54-unmatched-filter": [
     [".github/workflows/validate.yml", "GHA-54", "warning", "step \"changes\" in job \"lint\": the pattern \"services/api/**\" in paths-filter filter \"api\" matches no file in the repository, so the filter never reports a change; point it at the files it is meant to watch, or delete it", true]
   ],
+  "gha-55-anonymous-mise-install": [
+    [".github/workflows/validate.yml", "GHA-55", "warning", "step \"Check the repository against its conventions\" in job \"lint\" runs \"conventions check --fail-on warning\" after jdx/mise-action, which keeps its GitHub token to its own step, so what mise installs here goes to the GitHub API unauthenticated and fails once the runner's shared 60-call hourly limit is spent; set env: {MISE_GITHUB_TOKEN: ${{ github.token }}} on the step or the job", true]
+  ],
+  "gha-55-passes-token-and-order": [],
   "hooks-01-assert-installed": [
     [".config/lefthook.yml", "HOOKS-01", "warning", "assert_lefthook_installed is not true, so where the lefthook executable is missing the hooks skip without a word; set assert_lefthook_installed: true", true]
   ],
@@ -1266,6 +1280,10 @@
   "repository-github-exempt": [
     [".repo/repository.toml", "COPY-01", "warning", "the repository publishes a site but has no Vale config to lint its copy; add .config/prose/vale.ini that installs https://github.com/musher-dev/engineering-conventions/releases/download/v0.1.0/MusherProse.zip and applies MusherCopy, proselint, write-good to the site's sources", true]
   ],
+  "status-06-match-exhaustiveness-off": [
+    ["platform-api/pyproject.toml", "STATUS-06", "warning", "basedpyright sets reportMatchNotExhaustive to false, so a match over a state enum that misses a member passes the type check; remove the setting, or set it to error", true]
+  ],
+  "status-06-passes-warning-level": [],
   "task-01-version": [
     ["tools/Taskfile.yml", "TASK-01", "warning", "version is the number 3; quote it as version: '3', the schema version Task reads", true]
   ],

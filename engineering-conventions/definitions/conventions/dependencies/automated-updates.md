@@ -5,7 +5,8 @@ summary: >-
   Something proposes every dependency update as a pull request: Renovate,
   or a Dependabot update for the actions in the workflows and each
   composite action, for every directory that holds a Dockerfile, and for
-  the product's manifest in the product directory.
+  the product's manifest in the product directory. A Dependabot version
+  update is quiet: monthly, with every dependency in one group.
 status: draft
 topic: dependencies
 applies_to:
@@ -51,6 +52,14 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.dependencies.updates
+  - id: DEPS-17
+    title: Every Dependabot version update runs monthly or less often and groups every dependency
+    status: proposed
+    severity: warning
+    since: 0.9.4
+    validation:
+      engine: conftest
+      package: conventions.checks.dependencies.updates
 ---
 
 # Automated dependency updates
@@ -66,14 +75,16 @@ This convention covers what proposes updates to the packages, actions and images
 configuration, or the updates in `.github/dependabot.yml`. A dev container's Features are
 [DEVC-09](../dev-containers/dev-container-configuration.md#devc-09)'s; another Musher repository's vendored interfaces
 are [EC-0033](keeping-dependencies-current.md)'s; the tools in `.config/mise/config.toml` have no Dependabot
-ecosystem, and Renovate's mise manager is the one updater for them. How often the updater runs, and how it groups its
-pull requests, is the repository's choice.
+ecosystem, and Renovate's mise manager is the one updater for them. How often Dependabot proposes version updates, and
+how it groups them, is DEPS-17's; Renovate's schedule and grouping stay the repository's.
 
 ## Status and authority
 
 This convention is a **draft** owned by this repository (`authority: self`). Its requirements are `proposed` at severity
 `warning`, like every requirement in the 0.x series. The reasons are in [decision
-0032](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0032-every-dependency-ecosystem-has-an-updater.md).
+0032](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0032-every-dependency-ecosystem-has-an-updater.md)
+and, for DEPS-17, in [decision
+0042](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0042-dependency-currency-is-shown-not-proposed.md).
 
 ## How it fits together
 
@@ -86,16 +97,31 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"         # DEPS-11
     directories: ["/", "/.github/actions/*"]
-    schedule: { interval: "weekly" }
+    schedule: { interval: "monthly" }           # DEPS-17
+    cooldown: { default-days: 7 }
+    groups:
+      github-actions: { patterns: ["*"] }       # DEPS-17: one pull request a month
+      github-actions-security: { applies-to: security-updates, patterns: ["*"] }
   - package-ecosystem: "docker"                 # DEPS-12
     directories: ["/.devcontainer", "/platform-api/docker"]
-    schedule: { interval: "weekly" }
+    schedule: { interval: "monthly" }
+    cooldown: { default-days: 7 }
+    groups:
+      docker: { patterns: ["*"] }
+      docker-security: { applies-to: security-updates, patterns: ["*"] }
   - package-ecosystem: "gomod"                  # DEPS-13
     directory: "/platform-api"
-    schedule: { interval: "weekly" }
+    schedule: { interval: "monthly" }
+    cooldown: { default-days: 7 }
+    groups:
+      gomod: { patterns: ["*"] }
+      gomod-security: { applies-to: security-updates, patterns: ["*"] }
 ```
 
-A directory in `directories` may be a glob, as Dependabot allows.
+A directory in `directories` may be a glob, as Dependabot allows. Security updates are not subject to the schedule or
+the cooldown: Dependabot opens one as soon as an advisory names a pinned version, in the update's
+`applies-to: security-updates` group. They run only when Dependabot security updates are enabled in the repository's
+code security settings, so enable them there.
 
 ## Requirements
 
@@ -168,6 +194,40 @@ no Dependabot ecosystem and needs Renovate.
 **Incorrect:** no `gomod` update, with `platform-api/go.mod` in the repository.
 
 Checked by: conftest · Severity: warning · Since: 0.8.0
+
+### DEPS-17
+
+**Every Dependabot version update runs monthly or less often and groups every dependency.**
+
+A pull request per dependency per week is more than anyone reads, so they pile up unmerged, and the one that matters
+is lost among them. A monthly schedule with one group whose `patterns` are `["*"]` opens at most one version-update
+pull request per ecosystem a month, which a person can review in one sitting. Security updates are not affected: they
+ignore the schedule and arrive as soon as an advisory does. The check reports each update whose `schedule.interval`
+is not `monthly`, `quarterly`, `semiannually` or `yearly`, or that has no group with `patterns: ["*"]` for version
+updates (`applies-to` absent or `version-updates`). An update with `open-pull-requests-limit: 0` runs only security
+updates, and is not reported.
+
+**Correct:**
+
+```yaml
+  - package-ecosystem: "gomod"
+    directory: "/platform-api"
+    schedule: { interval: "monthly" }
+    cooldown: { default-days: 7 }
+    groups:
+      gomod: { patterns: ["*"] }
+      gomod-security: { applies-to: security-updates, patterns: ["*"] }
+```
+
+**Incorrect:**
+
+```yaml
+  - package-ecosystem: "gomod"
+    directory: "/platform-api"
+    schedule: { interval: "weekly" }     # and no group: a pull request per module per week
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.4
 
 ## References
 

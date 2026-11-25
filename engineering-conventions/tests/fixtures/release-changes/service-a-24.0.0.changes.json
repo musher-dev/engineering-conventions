@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "repository": "example-org/service-a",
+  "path": "service-a",
+  "version": "24.0.0",
+  "tag": "v24.0.0",
+  "previous_tag": "v23.0.0",
+  "commit": "15942ebf14827b58589a80314b209ff4724edc17",
+  "release_pull_request": {
+    "number": 1480,
+    "url": "https://github.com/example-org/service-a/pull/1480",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-14T15:35:17Z",
+    "merged_at": "2026-11-15T21:14:58Z",
+    "merge_commit": "15942ebf14827b58589a80314b209ff4724edc17",
+    "refreshed_at": [
+      "2026-11-14T19:09:53Z",
+      "2026-11-14T21:10:05Z",
+      "2026-11-14T23:49:03Z",
+      "2026-11-15T04:14:25Z",
+      "2026-11-15T17:04:09Z",
+      "2026-11-15T20:57:12Z"
+    ]
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1509,
+        "url": "https://github.com/example-org/service-a/pull/1509",
+        "title": "feat(api)!: withheld",
+        "type": "feat",
+        "breaking": true,
+        "author_kind": "human",
+        "created_at": "2026-11-15T20:03:30Z",
+        "merged_at": "2026-11-15T20:56:24Z",
+        "merge_commit": "54e096b1636d4befbccbc68c6c8849dc97b4c7f8"
+      },
+      "first_commit": {
+        "sha": "ccb35840da2e7e7cdd747cbbabce3e67a63149d8",
+        "authored_at": "2026-11-15T17:10:04Z",
+        "at": "2026-11-15T17:10:04Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-15T20:57:12Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1500,
+        "url": "https://github.com/example-org/service-a/pull/1500",
+        "title": "feat(api): withheld",
+        "type": "feat",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-15T16:16:32Z",
+        "merged_at": "2026-11-15T17:03:25Z",
+        "merge_commit": "7a4645a0610edbbe2db7a68476bf17e4358bda38"
+      },
+      "first_commit": {
+        "sha": "91d1f57136fccd44e65c474757131a5d2f9b2f09",
+        "authored_at": "2026-11-15T08:55:56Z",
+        "at": "2026-11-15T08:55:56Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-15T17:04:09Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1482,
+        "url": "https://github.com/example-org/service-a/pull/1482",
+        "title": "feat(api): withheld",
+        "type": "feat",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-14T16:29:36Z",
+        "merged_at": "2026-11-14T23:48:29Z",
+        "merge_commit": "13f84bdeaf18ec242170c7cc478b380c8b983504"
+      },
+      "first_commit": {
+        "sha": "e065fd767a22de9e5b094171a7c4ee8c811a1250",
+        "authored_at": "2026-11-12T21:28:36Z",
+        "at": "2026-11-12T21:28:36Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T23:49:03Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1473,
+        "url": "https://github.com/example-org/service-a/pull/1473",
+        "title": "feat(api)!: withheld",
+        "type": "feat",
+        "breaking": true,
+        "author_kind": "human",
+        "created_at": "2026-11-14T08:32:04Z",
+        "merged_at": "2026-11-14T21:09:27Z",
+        "merge_commit": "2f88baf5f42e2e4b4c2cbbaa50ad950872076610"
+      },
+      "first_commit": {
+        "sha": "5f8862265652ab7c2e5574c572be4f2677d3ccb5",
+        "authored_at": "2026-11-14T08:31:49Z",
+        "at": "2026-11-14T08:31:49Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T21:10:05Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 1483,
+        "url": "https://github.com/example-org/service-a/pull/1483",
+        "title": "chore(api): withheld",
+        "type": "chore",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-14T20:33:36Z",
+        "merged_at": "2026-11-14T20:41:02Z",
+        "merge_commit": "bed7697fa010e58af630e87bd4de35a563520d57"
+      },
+      "first_commit": {
+        "sha": "b08d07db647ddd243f6b42f46f7fe0eee944ec0e",
+        "authored_at": "2026-11-14T20:33:32Z",
+        "at": "2026-11-14T20:33:32Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T21:10:05Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 1477,
+        "url": "https://github.com/example-org/service-a/pull/1477",
+        "title": "chore(api): withheld",
+        "type": "chore",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-14T12:25:22Z",
+        "merged_at": "2026-11-14T19:11:32Z",
+        "merge_commit": "d93065c49ac50424b9b7211a1ca9543a3e459243"
+      },
+      "first_commit": {
+        "sha": "bcb8b5014f5582224e8a01c7b7581a652a60b9b0",
+        "authored_at": "2026-11-14T12:24:53Z",
+        "at": "2026-11-14T12:24:53Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T21:10:05Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1469,
+        "url": "https://github.com/example-org/service-a/pull/1469",
+        "title": "feat(api)!: withheld",
+        "type": "feat",
+        "breaking": true,
+        "author_kind": "human",
+        "created_at": "2026-11-14T03:48:28Z",
+        "merged_at": "2026-11-14T19:09:20Z",
+        "merge_commit": "082c3b8e858739fa2775f51833adbac9a14dc2a6"
+      },
+      "first_commit": {
+        "sha": "de75ccd42e32ce243d83f0591055f8b262058ddc",
+        "authored_at": "2026-11-13T20:35:06Z",
+        "at": "2026-11-13T20:35:06Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T19:09:53Z"
+    },
+    {
+      "listed": false,
+      "pull_request": {
+        "number": 1481,
+        "url": "https://github.com/example-org/service-a/pull/1481",
+        "title": "chore(api): withheld",
+        "type": "chore",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-14T16:27:45Z",
+        "merged_at": "2026-11-14T18:19:41Z",
+        "merge_commit": "8a78cefba957cf6ecb68aba046c4ed53f026e987"
+      },
+      "first_commit": {
+        "sha": "b15381791243495e146b7fdebb355f5d287d1697",
+        "authored_at": "2026-11-14T16:19:52Z",
+        "at": "2026-11-14T16:19:52Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T19:09:53Z"
+    },
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 1479,
+        "url": "https://github.com/example-org/service-a/pull/1479",
+        "title": "fix(api): withheld",
+        "type": "fix",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-14T15:21:19Z",
+        "merged_at": "2026-11-14T15:34:47Z",
+        "merge_commit": "5d690f8091524a38daf6a75da27e21ecc8ea8423"
+      },
+      "first_commit": {
+        "sha": "07a9551d1639d4c4d8bdc63cf3a547aae027efed",
+        "authored_at": "2026-11-14T15:05:23Z",
+        "at": "2026-11-14T15:05:23Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-14T15:35:17Z"
+    }
+  ]
+}

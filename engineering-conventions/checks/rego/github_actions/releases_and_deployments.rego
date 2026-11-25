@@ -357,7 +357,7 @@ private_key_pattern := `^\$\{\{\s*secrets\.([A-Z0-9_]+)_APP_PRIVATE_KEY\s*\}\}$`
 app_token_problems(inputs) := problems if {
 	purposes := {
 		"client": purpose(client_id_pattern, object.get(inputs, "client-id", "")),
-		"key": purpose(private_key_pattern, object.get(inputs, "private-key", "")),
+		"key": key_purpose(object.get(inputs, "private-key", "")),
 	}
 	problems := {problem |
 		some problem in [
@@ -369,6 +369,16 @@ app_token_problems(inputs) := problems if {
 		problem != ""
 	}
 }
+
+# A called workflow's secrets are kebab-case (GHA-38), so there the key may be
+# secrets.<purpose>-app-private-key: the same pair as <PURPOSE>_APP_PRIVATE_KEY.
+kebab_private_key_pattern := `^\$\{\{\s*secrets\.([a-z0-9-]+)-app-private-key\s*\}\}$`
+
+# At most one of the two forms matches, so their concatenation is the purpose.
+key_purpose(value) := concat("", [
+	purpose(private_key_pattern, value),
+	upper(replace(purpose(kebab_private_key_pattern, value), "-", "_")),
+])
 
 default purpose(_, _) := ""
 

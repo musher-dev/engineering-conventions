@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "repository": "example-org/service-b",
+  "path": "service-b",
+  "version": "5.0.1",
+  "tag": "v5.0.1",
+  "previous_tag": "v5.0.0",
+  "commit": "9bd64aff491279f8e455ed5136decd0801ffce70",
+  "release_pull_request": {
+    "number": 384,
+    "url": "https://github.com/example-org/service-b/pull/384",
+    "title": "chore(release): withheld",
+    "created_at": "2026-11-17T23:37:34Z",
+    "merged_at": "2026-11-17T23:39:04Z",
+    "merge_commit": "9bd64aff491279f8e455ed5136decd0801ffce70",
+    "refreshed_at": []
+  },
+  "changes": [
+    {
+      "listed": true,
+      "pull_request": {
+        "number": 383,
+        "url": "https://github.com/example-org/service-b/pull/383",
+        "title": "fix(console): withheld",
+        "type": "fix",
+        "breaking": false,
+        "author_kind": "human",
+        "created_at": "2026-11-17T23:26:31Z",
+        "merged_at": "2026-11-17T23:37:02Z",
+        "merge_commit": "0cb1cfd1124ee8a8bdf63eb124ae114f3f587465"
+      },
+      "first_commit": {
+        "sha": "57410968d8178d1e10d4916645eb75d26a6bcd19",
+        "authored_at": "2026-11-17T23:22:15Z",
+        "at": "2026-11-17T23:22:15Z",
+        "rewritten": false,
+        "truncated": false
+      },
+      "release_pull_request_opened_at": "2026-11-17T23:37:34Z"
+    }
+  ]
+}

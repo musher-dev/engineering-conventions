@@ -6,7 +6,7 @@ configuration and one command, the same locally and in CI.
 ## Try it without adopting anything
 
 ```sh
-mise exec github:musher-dev/engineering-conventions@0.9.3 -- conventions check  # x-release-please-version
+mise exec github:musher-dev/engineering-conventions@0.9.8 -- conventions check  # x-release-please-version
 ```
 
 mise downloads that release, verifies it and runs it against the repository you are in. Nothing is written to the
@@ -27,7 +27,7 @@ being told ([EC-0017](../engineering-conventions/definitions/conventions/toolcha
 min_version = "2026.9.12"   # the mise that CI and the dev container install
 
 [tools]
-"github:musher-dev/engineering-conventions" = "0.9.3"  # x-release-please-version
+"github:musher-dev/engineering-conventions" = "0.9.8"  # x-release-please-version
 ```
 
 Then lock it, commit `.config/mise/mise.lock` beside the configuration, and run it:
@@ -44,6 +44,9 @@ conventions env-contract SCHEMA        # print the environment contract derived 
 conventions env-file SCHEMA            # write a developer's local .env beside an env.schema.yaml
 conventions waivers                    # list the waivers in .repo/conventions.toml with their expiry
 conventions codeowners                 # ask GitHub whether every CODEOWNERS owner resolves (online)
+conventions dependencies status        # compare each pin of a Musher release with its producer's releases (online)
+conventions dependencies badges --out DIR  # render a currency badge per pin, with index.json and README.md (online)
+conventions release changes --tag TAG --out FILE  # write the change manifest of the release TAG cut (online)
 ```
 
 With the identity declaration below, that is the whole adoption. What mise does with the line:
@@ -86,6 +89,10 @@ tasks:
   with:
     version: 2026.9.12   # the min_version in .config/mise/config.toml (TOOL-04)
 - name: Check the repository against its conventions
+  env:
+    # The CLI installs its engines through `mise exec`, and mise-action keeps
+    # its token to its own step (GHA-55).
+    MISE_GITHUB_TOKEN: ${{ github.token }}
   run: conventions check --fail-on warning
 ```
 
@@ -103,7 +110,17 @@ review, and `required_status_checks` naming the validate workflow's aggregate (B
 
 Let Renovate, or a Dependabot update per ecosystem, propose every update: the actions in the workflows and each
 composite action, the base image of every Dockerfile, and the product's manifest in the product directory (DEPS-11 to
-DEPS-13, [EC-0042](../engineering-conventions/definitions/conventions/dependencies/automated-updates.md)).
+DEPS-13, [EC-0042](../engineering-conventions/definitions/conventions/dependencies/automated-updates.md)). Keep
+Dependabot quiet: each version update monthly, with one group whose `patterns` are `["*"]`, so it opens at most one
+pull request per ecosystem a month (DEPS-17). Security updates ignore the schedule; enable them in the repository's
+settings.
+
+Show the conventions pin's currency, and each vendored dependency's, as a README badge (DEPS-15), rendered by a
+`maintain-dependency-badges.yml` that calls the reusable `reusable-maintain-dependency-badges.yml` on a schedule, on a
+`dependency-released` dispatch (DEPS-16), and on a push to `main` that changes a pin. Nothing opens a pull request per
+release: when a badge turns yellow or orange, run `task deps:sync`, or change the pin, and open one yourself. The
+caller and the README snippet are in
+[EC-0033](../engineering-conventions/definitions/conventions/dependencies/keeping-dependencies-current.md#currency-badges).
 
 ## Declare the repository's identity
 
@@ -355,6 +372,37 @@ definitions), run the first two in your validate workflow, and build the bundle 
 workflow that publishes it. The rules are the [interfaces](../engineering-conventions/definitions/conventions/interfaces/README.md)
 topic.
 
+## Record what each release carries
+
+A release whose artifact another repository deploys carries a change manifest, `changes.json`, in its contracts
+bundle ([decision 0045](decisions/0045-a-deployed-release-carries-its-change-manifest.md)). It lists every pull request
+the release carries: when its first commit was written, when it opened and merged, whether the release notes list
+it, and when the release pull request first carried it. The repository that deploys the release joins that with when
+production finished, to measure each change's lead time. Write it in the release job while the release is still a
+draft, before the bundle and its `release.json` are built:
+
+```yaml
+- name: Record the changes the release carries
+  env:
+    GH_TOKEN: ${{ steps.app_token.outputs.token }}   # reads the repository's contents and pull requests
+    TAG: ${{ needs.release-please.outputs.tag_name }}
+  run: conventions release changes --tag "$TAG" --out api/contracts/changes/changes.json
+```
+
+It reads the release from GitHub at its tag, through the GitHub CLI, and needs no clone: the release-please
+configuration, for the package the tag releases; the package's previous tag; the commits between the two, and the
+pull request each merged as; and the version's section of the package's changelog. A commit belongs to the package as
+release-please decides it, by its pull request's files, or by its own when no pull request merged as it. So the
+deploying repository can write the manifest of an older release with `--repository OWNER/NAME`, and gets what the
+release job would have written. It asks GitHub once per commit, and tries a call that fails for a reason that can pass
+(a network error, a 5xx, a 429 or a secondary rate limit) up to three more times, after 2, 4 and 8 seconds. The
+repository is `--repository`, else `GITHUB_REPOSITORY`, else the origin remote.
+The manifest goes to `--out`, relative to where the command runs, or to standard output, and its format is
+`checks/schemas/change-manifest.schema.json`. Who opened each pull request is recorded by kind only: `agent` for a
+coding agent's App, `dependency-bot` for Dependabot and Renovate, `automation` for any other App, `human` otherwise.
+A tag that no release-please package releases, a changelog without the version's section, or a tagged commit that
+merged no pull request stops it with exit status 2.
+
 ## Declare the interfaces you vendor
 
 When your repository builds against another repository's interfaces, vendor the release into
@@ -371,9 +419,9 @@ version = "0.36.1"
 
 That file is the only place the pin lives: no `config/<repository>.ref`, no hand-kept lock. Packages and tools keep
 their pins in their own manifests, at exact versions. Define `deps:check` and `deps:sync`, run `deps:check` in your
-validate workflow, and run `deps:sync` from a scheduled `maintain-dependencies.yml`. At runtime, name what each
-environment binding reaches: `target = "platform-api#public-http"` for another service, or a registered `capability`
-such as `postgresql`. The rules are the [dependencies](../engineering-conventions/definitions/conventions/dependencies/README.md)
+validate workflow, and run `deps:sync` yourself when the dependency's currency badge says it is behind. At runtime,
+name what each environment binding reaches: `target = "platform-api#public-http"` for another service, or a
+registered `capability` such as `postgresql`. The rules are the [dependencies](../engineering-conventions/definitions/conventions/dependencies/README.md)
 topic and [EC-0020](../engineering-conventions/definitions/conventions/environment/env-schema.md).
 
 ## Lint a site's copy
@@ -389,7 +437,7 @@ your mise configuration pins, and apply the styles to the site's sources:
 StylesPath = ../../.vale
 MinAlertLevel = warning
 # x-release-please-start-version
-Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.9.3/MusherProse.zip
+Packages = https://github.com/musher-dev/engineering-conventions/releases/download/v0.9.8/MusherProse.zip
 # x-release-please-end
 
 [formats]
@@ -426,7 +474,7 @@ Download the release tarball, verify it, and run its launcher with conftest and 
 Spectral for `openapi`, hadolint for `hadolint`):
 
 ```sh
-version=0.9.3  # x-release-please-version
+version=0.9.8  # x-release-please-version
 gh release download "v${version}" -R musher-dev/engineering-conventions -p "engineering-conventions-${version}.tar.gz"
 gh attestation verify "engineering-conventions-${version}.tar.gz" -R musher-dev/engineering-conventions \
   --signer-workflow musher-dev/engineering-conventions/.github/workflows/release.yml \
@@ -630,5 +678,6 @@ adds is not enforced until you list it. The rules are in
 
 ## Upgrading
 
-Change the version in `.config/mise/config.toml` and run `mise lock`, or accept Renovate's pull request that does. Read
+When the `engineering-conventions` badge says a release is out, change the version in `.config/mise/config.toml` and
+run `mise lock`, or accept Renovate's pull request that does. Read
 the release notes first: what each kind of release can change is in [versioning](versioning.md).

@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.9.8](https://github.com/musher-dev/engineering-conventions/compare/v0.9.7...v0.9.8) (2026-11-25)
+
+
+### Features
+
+* **conventions:** write a release's change manifest for lead time ([#159](https://github.com/musher-dev/engineering-conventions/issues/159)) ([0a96d4d](https://github.com/musher-dev/engineering-conventions/commit/0a96d4d3fdbe0be7a0d2fb7af7d879442b92aa4f))
+
+## [0.9.7](https://github.com/musher-dev/engineering-conventions/compare/v0.9.6...v0.9.7) (2026-11-18)
+
+
+### Features
+
+* **conventions:** give mise a token after jdx/mise-action (GHA-55) ([#149](https://github.com/musher-dev/engineering-conventions/issues/149)) ([8eb52c0](https://github.com/musher-dev/engineering-conventions/commit/8eb52c03494afcafe2966a0c214874afcaa31f11))
+
+## [0.9.6](https://github.com/musher-dev/engineering-conventions/compare/v0.9.5...v0.9.6) (2026-11-18)
+
+
+### Features
+
+* **conventions:** add the source-code topic: status, retries, trust ([#147](https://github.com/musher-dev/engineering-conventions/issues/147)) ([c223235](https://github.com/musher-dev/engineering-conventions/commit/c223235ef90ba0102be62bca54930e5ab2ab77e2))
+
+## [0.9.5](https://github.com/musher-dev/engineering-conventions/compare/v0.9.4...v0.9.5) (2026-11-15)
+
+
+### Features
+
+* **conventions:** show a newer major on badges and read with either app ([#141](https://github.com/musher-dev/engineering-conventions/issues/141)) ([8c48aea](https://github.com/musher-dev/engineering-conventions/commit/8c48aea86633a4ebbb048070f44b2277a5019366))
+
+## [0.9.4](https://github.com/musher-dev/engineering-conventions/compare/v0.9.3...v0.9.4) (2026-11-15)
+
+
+### Features
+
+* **conventions:** show dependency currency as badges, not bump PRs ([#138](https://github.com/musher-dev/engineering-conventions/issues/138)) ([a2998ab](https://github.com/musher-dev/engineering-conventions/commit/a2998abc8916e25de50cb2e377defc6d7f3f29f4))
+
 ## [0.9.3](https://github.com/musher-dev/engineering-conventions/compare/v0.9.2...v0.9.3) (2026-10-24)
 
 

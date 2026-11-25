@@ -17,9 +17,12 @@
 # findings with --output json; any other format is conftest's own. The report
 # goes to stdout; progress goes to stderr, and only on a terminal.
 #
-# `check` never reaches the network. Two commands do, through the GitHub CLI:
-# `waivers --check-tracking`, and `codeowners`, which asks GitHub for the
-# errors it finds in the repository's CODEOWNERS (COMM-11, decision 0041).
+# `check` never reaches the network. Four commands do, through the GitHub
+# CLI: `waivers --check-tracking`; `codeowners`, which asks GitHub for the
+# errors it finds in the repository's CODEOWNERS (COMM-11, decision 0041);
+# `dependencies`, which reads each producer's releases (decision 0042); and
+# `release changes`, which reads a release's commits, pull requests and
+# changelog at its tag to write its change manifest (decision 0045).
 #
 # The repository's actual name, which REPO-07 compares with the declared one,
 # comes from --repository or CONVENTIONS_REPOSITORY, else GITHUB_REPOSITORY
@@ -35,6 +38,9 @@
 #   conventions env-file [-C DIR] [--force | --update] [--backup] SCHEMA
 #   conventions waivers [-C DIR] [--check-tracking]
 #   conventions codeowners [--repository OWNER/NAME] [--ref REF] [--fail-on error|warning] [--output text|json] [-C DIR]
+#   conventions dependencies status [--json] [-C DIR]
+#   conventions dependencies badges --out DIR [--status FILE] [-C DIR]
+#   conventions release changes --tag TAG [--repository OWNER/NAME] [--out FILE] [-C DIR]
 #   conventions version
 set -eu
 
@@ -214,6 +220,8 @@ TEXTS="${TEXTS}|"'^([^/]+/){0,2}taskfiles/(tools/)?[^/]+\.Taskfile\.ya?ml$'
 # A Vale config where Vale finds one by itself; conftest's ini parser drops
 # the global keys Packages lives in, so the copy checks read its text (EC-0038).
 TEXTS="${TEXTS}|"'^(\.|_)?vale\.ini$'
+# The root README, for the currency badge of each pin (DEPS-15).
+TEXTS="${TEXTS}|"'^README\.md$'
 # A .gitignore, for whether it ignores a product's local .env (ENVS-27).
 TEXTS="${TEXTS}|"'(^|/)\.gitignore$'
 # The root .gitattributes, for whether each pattern matches a file (CONF-13).
@@ -818,6 +826,25 @@ owner_and_name() {
   printf '%s\n' "${url}"
 }
 
+# github_slug COMMAND: settle ${slug}, the OWNER/NAME a command asks GitHub
+# about: --repository as given, else GITHUB_REPOSITORY, else the origin
+# remote of the work tree; and check that gh, which every such call goes
+# through, is installed. COMMAND names the command in that message.
+github_slug() {
+  if [ -z "${slug}" ]; then slug=${GITHUB_REPOSITORY:-}; fi
+  if [ -z "${slug}" ]; then
+    slug=$(owner_and_name "$(git -C "${root}" remote get-url origin 2> /dev/null || true)")
+  fi
+  case ${slug} in
+    '' ) die "no repository to ask about: pass --repository OWNER/NAME" ;;
+    */*/* | */ | /* | *[!A-Za-z0-9._/-]*) die "--repository must be OWNER/NAME, not ${slug}" ;;
+    */*) ;;
+    *) die "--repository must be OWNER/NAME, not ${slug}" ;;
+  esac
+  command -v gh > /dev/null 2>&1 ||
+    die "$1 needs the GitHub CLI: install gh (https://cli.github.com) and run gh auth login, or set GH_TOKEN"
+}
+
 # Ask GitHub for the errors it finds in the repository's CODEOWNERS (COMM-11):
 # an owner that does not exist or has no write access, and any line it cannot
 # parse. GitHub judges the file as it judges a pull request's reviewers, so
@@ -846,18 +873,7 @@ codeowners() {
     *) die "--output must be text or json, not ${output}" ;;
   esac
   find_root
-  if [ -z "${slug}" ]; then slug=${GITHUB_REPOSITORY:-}; fi
-  if [ -z "${slug}" ]; then
-    slug=$(owner_and_name "$(git -C "${root}" remote get-url origin 2> /dev/null || true)")
-  fi
-  case ${slug} in
-    '' ) die "no repository to ask about: pass --repository OWNER/NAME" ;;
-    */*/* | */ | /* | *[!A-Za-z0-9._/-]*) die "--repository must be OWNER/NAME, not ${slug}" ;;
-    */*) ;;
-    *) die "--repository must be OWNER/NAME, not ${slug}" ;;
-  esac
-  command -v gh > /dev/null 2>&1 ||
-    die "codeowners needs the GitHub CLI: install gh (https://cli.github.com) and run gh auth login, or set GH_TOKEN"
+  github_slug codeowners
 
   scratch=$(mktemp -d)
   trap 'rm -rf "${scratch}"' EXIT
@@ -898,6 +914,429 @@ codeowners() {
   fi
 }
 
+# The pins of other Musher releases, as bin/pins.jq writes them, into
+# ${scratch}/pins.json: each [[dependencies]] entry, with the tag line its
+# vendored release record names, and the conventions release
+# .config/mise/config.toml pins.
+read_pins() {
+  printf '{}\n' > "${scratch}/dependencies.json"
+  printf '{}\n' > "${scratch}/mise.json"
+  if [ -f .repo/dependencies.toml ]; then
+    tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse .repo/dependencies.toml \
+      > "${scratch}/dependencies.json" || die "cannot read .repo/dependencies.toml"
+  fi
+  if [ -f .config/mise/config.toml ]; then
+    tool conftest aqua:open-policy-agent/conftest "${CONFTEST_VERSION}" parse .config/mise/config.toml \
+      > "${scratch}/mise.json" || die "cannot read .config/mise/config.toml"
+  fi
+  set --
+  while IFS= read -r file; do
+    if [ -n "${file}" ]; then set -- "$@" --slurpfile "record:${file}" "${file}"; fi
+  done << EOF
+$(list_files | grep -E '^([^/]+/)?contracts/vendor/[^/]+/[^/]+/release\.json$' || true)
+EOF
+  # conftest parse of one file is the document itself; jq slurps it as [doc].
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -n --slurpfile dependencies "${scratch}/dependencies.json" \
+    --slurpfile mise "${scratch}/mise.json" "$@" -f "${bundle}/bin/pins.jq" > "${scratch}/pins.json" ||
+    die "cannot read the pins"
+}
+
+# Each pin against its producer's releases, as bin/currency.jq writes them,
+# into ${scratch}/status.json. A producer gh cannot read leaves its pins
+# `unknown`, with the reason on stderr: a behind or unreadable pin is a
+# state, never a failure.
+read_status() {
+  read_pins
+  command -v gh > /dev/null 2>&1 ||
+    die "dependencies needs the GitHub CLI: install gh (https://cli.github.com) and run gh auth login, or set GH_TOKEN"
+  mkdir -p "${scratch}/tags"
+  set --
+  while IFS= read -r producer; do
+    case ${producer} in
+      '' | . | .. | *[!A-Za-z0-9._-]*) continue ;;
+    esac
+    if gh api "repos/musher-dev/${producer}/releases" --paginate < /dev/null \
+      > "${scratch}/releases.json" 2> "${scratch}/stderr" &&
+      tool jq aqua:jqlang/jq "${JQ_VERSION}" -s \
+        '[.[] | if type == "array" then .[] else empty end | select((.draft or .prerelease) | not) | .tag_name]' \
+        "${scratch}/releases.json" > "${scratch}/tags/${producer}.json" 2> /dev/null; then
+      set -- "$@" --slurpfile "tags:${producer}" "${scratch}/tags/${producer}.json"
+    else
+      printf 'conventions: cannot read the releases of musher-dev/%s, so its pins are unknown: %s\n' \
+        "${producer}" "$(head -n 1 "${scratch}/stderr")" >&2
+    fi
+  done << EOF
+$(tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '[.[].repository] | unique | .[]' "${scratch}/pins.json")
+EOF
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" "$@" -f "${bundle}/bin/currency.jq" "${scratch}/pins.json" \
+    > "${scratch}/status.json" || die "cannot compare the pins with their releases"
+}
+
+# `dependencies status` prints each pin's currency; `dependencies badges`
+# renders a badge per pin, an index.json and a README.md into --out, from
+# --status (a saved `status --json`) or from the producers' releases (EC-0033,
+# decision 0042). Neither fails because a pin is behind.
+dependencies() {
+  action=${1:-}
+  [ $# -gt 0 ] && shift
+  json='' out='' status_file='' given=''
+  # --out and --status are relative to where the command was run, not -C.
+  here=$(pwd)
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --json) json=1; shift ;;
+      --out) out=${2:?--out needs a directory}; shift 2 ;;
+      --status) status_file=${2:?--status needs a file}; shift 2 ;;
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  case ${action} in
+    status) [ -z "${out}" ] && [ -z "${status_file}" ] || usage ;;
+    badges) [ -n "${out}" ] && [ -z "${json}" ] || usage ;;
+    *) usage ;;
+  esac
+  case ${out} in '' | /*) ;; *) out="${here}/${out}" ;; esac
+  case ${status_file} in '' | /*) ;; *) status_file="${here}/${status_file}" ;; esac
+  find_root
+  cd "${root}"
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+
+  if [ -n "${status_file}" ]; then
+    [ -f "${status_file}" ] || die "${status_file} does not exist"
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -e 'type == "array"' "${status_file}" > /dev/null 2>&1 ||
+      die "${status_file} is not what \`conventions dependencies status --json\` prints"
+    cp -- "${status_file}" "${scratch}/status.json"
+  else
+    read_status
+  fi
+
+  if [ "${action}" = status ]; then
+    if [ -n "${json}" ]; then
+      tool jq aqua:jqlang/jq "${JQ_VERSION}" . "${scratch}/status.json"
+    else
+      tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '
+        if length == 0 then "no pins of another Musher release"
+        else .[] | "\(.label)  \(.pinned // "?")  \(.state)\(
+          if .state == "behind-minor" or .state == "behind-major" then "  \(.latest) is out"
+          else "" end)" end' "${scratch}/status.json"
+    fi
+    return 0
+  fi
+
+  mkdir -p -- "${out}"
+  count=$(tool jq aqua:jqlang/jq "${JQ_VERSION}" length "${scratch}/status.json")
+  at=0
+  while [ "${at}" -lt "${count}" ]; do
+    badge=$(tool jq aqua:jqlang/jq "${JQ_VERSION}" -r ".[${at}].badge // \"\"" "${scratch}/status.json")
+    case ${badge} in
+      .* | *[!A-Za-z0-9._-]*)
+        printf 'conventions: skipping a pin whose badge name %s is not a plain file name\n' "${badge}" >&2 ;;
+      ?*.svg)
+        tool jq aqua:jqlang/jq "${JQ_VERSION}" -j --arg part svg --argjson at "${at}" -f "${bundle}/bin/badges.jq" \
+          "${scratch}/status.json" > "${out}/${badge}" || die "cannot render ${badge}"
+        printf '\n' >> "${out}/${badge}" ;;
+      *) printf 'conventions: skipping a pin with no badge name\n' >&2 ;;
+    esac
+    at=$((at + 1))
+  done
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" . "${scratch}/status.json" > "${out}/index.json"
+  tool jq aqua:jqlang/jq "${JQ_VERSION}" -r --arg part readme --argjson at 0 -f "${bundle}/bin/badges.jq" \
+    "${scratch}/status.json" > "${out}/README.md" || die "cannot write the badges' README.md"
+  printf 'wrote %s badges to %s\n' "${count}" "${out}" >&2
+}
+
+# query OPERATION: the GraphQL query `release changes` sends under that name.
+# Each names its operation, so a log of the calls says which one it was.
+query() {
+  case $1 in
+    # The pull requests a commit belongs to, each with the commit it merged
+    # as, the files it changes, as release-please reads them, and its first
+    # page of commits.
+    ChangeCommit)
+      cat << 'EOF'
+query ChangeCommit($owner: String!, $name: String!, $oid: GitObjectID!) {
+  repository(owner: $owner, name: $name) {
+    object(oid: $oid) {
+      ... on Commit {
+        oid
+        associatedPullRequests(first: 10) {
+          nodes {
+            number
+            url
+            title
+            createdAt
+            mergedAt
+            mergeCommit { oid }
+            author { __typename login }
+            files(first: 100) {
+              pageInfo { hasNextPage }
+              nodes { path }
+            }
+            commits(first: 100) {
+              totalCount
+              pageInfo { hasNextPage }
+              nodes { commit { oid authoredDate } }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+EOF
+      ;;
+    # Every page of a pull request's commits, up to the 250 GitHub lists.
+    PullRequestCommits)
+      cat << 'EOF'
+query PullRequestCommits($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      number
+      commits(first: 100, after: $endCursor) {
+        totalCount
+        pageInfo { hasNextPage endCursor }
+        nodes { commit { oid authoredDate } }
+      }
+    }
+  }
+}
+EOF
+      ;;
+    # Every time release-please refreshed its release pull request: each
+    # force-push to the pull request's branch.
+    ReleaseRefreshes)
+      cat << 'EOF'
+query ReleaseRefreshes($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      timelineItems(first: 100, after: $endCursor, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT]) {
+        pageInfo { hasNextPage endCursor }
+        nodes { ... on HeadRefForcePushedEvent { createdAt } }
+      }
+    }
+  }
+}
+EOF
+      ;;
+  esac
+}
+
+# github WHAT ARGS...: `gh api ARGS`, its answer on stdout. A failure that
+# can pass (a network error, a 5xx, a 429, a secondary rate limit or GitHub's
+# GraphQL timeout) is tried again up to three more times, after 2, 4 and 8
+# seconds: every call is a read, so a retry is safe, and the answer is held
+# until a call succeeds, so a retried page is never written twice. Any other
+# failure, a 401, 404 or 422 among them, or one that persists, stops the
+# command, naming what it could not read and GitHub's reason.
+github() {
+  what=$1
+  shift
+  delay=2
+  while ! gh api "$@" < /dev/null > "${scratch}/gh.out" 2> "${scratch}/gh.stderr"; do
+    if [ "${delay}" -gt 8 ] || ! passing "${scratch}/gh.stderr"; then
+      die "cannot read ${what} of ${slug} on GitHub: $(head -n 1 "${scratch}/gh.stderr")"
+    fi
+    sleep "${delay}"
+    delay=$((delay * 2))
+  done
+  cat "${scratch}/gh.out"
+}
+
+# passing STDERR: whether the failure gh reported in STDERR can pass by
+# itself, and so is worth another try.
+passing() {
+  if grep -Eq 'HTTP (401|404|422)' "$1"; then
+    return 1
+  fi
+  grep -Eqi 'HTTP 5[0-9][0-9]|HTTP 429|secondary rate limit|dial tcp|i/o timeout|connection (reset|refused)|TLS handshake timeout|unexpected EOF|context deadline exceeded|Client\.Timeout|no such host|Something went wrong while executing your query' "$1"
+}
+
+# changes PART ARGUMENTS...: run bin/changes.jq's PART on its named
+# arguments. A part that cannot do its work stops the command with its
+# reason.
+changes() {
+  part=$1
+  shift
+  if ! tool jq aqua:jqlang/jq "${JQ_VERSION}" -nr --arg part "${part}" "$@" -f "${bundle}/bin/changes.jq" \
+    2> "${scratch}/jq.stderr"; then
+    reason=$(sed -n 's/^jq: error (at [^)]*): //p' "${scratch}/jq.stderr" | head -n 1)
+    die "${reason:-$(head -n 1 "${scratch}/jq.stderr")}"
+  fi
+}
+
+# commit_of WHAT ENDPOINT: the commit a ref or a tag object of ${slug}
+# names, through any annotated tag.
+commit_of() {
+  what=$1 endpoint=$2
+  while :; do
+    github "${what}" "repos/${slug}/${endpoint}" > "${scratch}/object.json"
+    object=$(tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '.object | "\(.type) \(.sha)"' "${scratch}/object.json")
+    case ${object} in
+      'commit '*) printf '%s\n' "${object#commit }"; return 0 ;;
+      'tag '*) endpoint="git/tags/${object#tag }" ;;
+      *) die "${what} of ${slug} names no commit" ;;
+    esac
+  done
+}
+
+# Write the change manifest of the release TAG cut (decision 0045): every
+# pull request it carries, with its first commit, its own lifecycle and
+# whether the release's changelog section lists it, and the release pull
+# request that cut it, valid against checks/schemas/change-manifest.schema.json.
+# Everything is read from GitHub at the tag, through gh, so it needs no clone:
+# a release job runs it while its release is still a draft, and a repository
+# that deploys the release can rebuild the manifest of an older one. The
+# repository is --repository, else GITHUB_REPOSITORY, else the origin remote.
+# Its variables are named apart from the globals tool() and version() set.
+release_changes() {
+  tag='' slug='' out='' given=''
+  # --out is relative to where the command was run, not -C.
+  here=$(pwd)
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --tag) tag=${2:?--tag needs a tag}; shift 2 ;;
+      --repository) slug=${2:?--repository needs OWNER/NAME}; shift 2 ;;
+      --out) out=${2:?--out needs a file}; shift 2 ;;
+      -C) cd -- "${2:?-C needs a directory}"; given=1; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  [ -n "${tag}" ] || usage
+  case ${tag} in
+    /* | */ | *..* | *[!A-Za-z0-9._/-]*) die "--tag must be a release tag such as v1.2.3 or component/v1.2.3, not ${tag}" ;;
+  esac
+  case ${out} in '' | /*) ;; *) out="${here}/${out}" ;; esac
+  find_root
+  github_slug "release changes"
+  owner=${slug%%/*} repo=${slug#*/}
+  scratch=$(mktemp -d)
+  trap 'rm -rf "${scratch}"' EXIT
+
+  # The release: the commit its tag names, and the release-please package
+  # the tag belongs to, as the configuration at that commit declares it.
+  commit=$(commit_of "the tag ${tag}" "git/ref/tags/${tag}")
+  github "the release-please configuration at ${tag}" "repos/${slug}/contents/.github/release-please/config.json" \
+    -X GET -f "ref=${commit}" -H 'Accept: application/vnd.github.raw+json' > "${scratch}/config.json"
+  changes package --slurpfile config "${scratch}/config.json" --arg tag "${tag}" > "${scratch}/package"
+  { read -r package_path; read -r changelog; read -r prefix; read -r released; read -r bootstrap; } \
+    < "${scratch}/package"
+
+  # The release before it: the package's highest earlier tag. A first
+  # release starts after the configuration's bootstrap-sha, as release-please
+  # starts it, or else at the beginning of the history.
+  github "the tags ${prefix}X.Y.Z" "repos/${slug}/git/matching-refs/tags${prefix:+/${prefix}}" --paginate \
+    > "${scratch}/refs.json"
+  changes previous --slurpfile refs "${scratch}/refs.json" --arg prefix "${prefix}" --arg version "${released}" \
+    > "${scratch}/previous"
+  previous='' previous_type='' previous_sha=''
+  { read -r previous; read -r previous_type; read -r previous_sha; } < "${scratch}/previous" || true
+  base=''
+  if [ "${previous_type}" = commit ]; then
+    base=${previous_sha}
+  elif [ -n "${previous}" ]; then
+    base=$(commit_of "the tag ${previous}" "git/tags/${previous_sha}")
+  elif [ -n "${bootstrap}" ]; then
+    base=${bootstrap}
+  fi
+  # Progress goes to stderr, and only to a terminal.
+  progress=''
+  if [ -t 2 ]; then
+    progress=1
+    printf 'conventions %s: reading %s %s, %s since %s…\n' "$(version)" "${slug}" "${tag}" "${package_path}" \
+      "${previous:-${bootstrap:-its first commit}}" >&2
+  fi
+
+  # The commits it covers, oldest first: the comparison with the release
+  # before it, or else the tag's whole history. Which of them belong to the
+  # package is decided once their pull requests are known, as release-please
+  # decides it (carried, in bin/changes.jq): a commit a pull request merged as
+  # by the pull request's files, and any other by the files it changes
+  # itself, which the history of the package's path lists.
+  : > "${scratch}/compare.json"
+  : > "${scratch}/touching.json"
+  : > "${scratch}/history.json"
+  if [ -n "${base}" ]; then
+    mode=compare
+    github "the commits from ${previous:-${base}} to ${tag}" "repos/${slug}/compare/${base}...${commit}" \
+      -X GET -f per_page=100 --paginate > "${scratch}/compare.json"
+    since=$(changes since --slurpfile compare "${scratch}/compare.json")
+    set -- -f "since=${since}"
+  else
+    mode=history
+    github "the history of ${tag}" "repos/${slug}/commits" -X GET -f "sha=${commit}" -f per_page=100 \
+      --paginate > "${scratch}/history.json"
+    since='' # the whole history
+    set --
+  fi
+  if [ "${package_path}" != . ] && { [ "${mode}" = history ] || [ -n "${since}" ]; }; then
+    github "the commits that change ${package_path}" "repos/${slug}/commits" -X GET -f "sha=${commit}" \
+      -f "path=${package_path}" "$@" -f per_page=100 --paginate > "${scratch}/touching.json"
+  fi
+  changes range --arg mode "${mode}" --arg path "${package_path}" --slurpfile compare "${scratch}/compare.json" \
+    --slurpfile touching "${scratch}/touching.json" --slurpfile history "${scratch}/history.json" \
+    > "${scratch}/range.json"
+
+  # The pull request each commit merged as, and the release pull request,
+  # which merged as the tagged commit: one query per commit.
+  {
+    tool jq aqua:jqlang/jq "${JQ_VERSION}" -r '.[].sha' "${scratch}/range.json"
+    printf '%s\n' "${commit}"
+  } | awk '!seen[$0]++' > "${scratch}/shas"
+  if [ -n "${progress}" ]; then
+    printf 'conventions: asking for the pull requests of %s commits…\n' "$(wc -l < "${scratch}/shas" | tr -d ' ')" >&2
+  fi
+  : > "${scratch}/associations.json"
+  while IFS= read -r sha; do
+    github "the pull requests of ${sha}" graphql -f "query=$(query ChangeCommit)" -f "owner=${owner}" \
+      -f "name=${repo}" -f "oid=${sha}" >> "${scratch}/associations.json"
+  done < "${scratch}/shas"
+  release_pull=$(changes release --slurpfile associations "${scratch}/associations.json" --arg commit "${commit}" \
+    --arg tag "${tag}")
+
+  # Every commit of a pull request with more than a page of them, when the
+  # release pull request was refreshed, and the changelog at the tag.
+  : > "${scratch}/pages.json"
+  changes paged --slurpfile associations "${scratch}/associations.json" --slurpfile range "${scratch}/range.json" \
+    --arg path "${package_path}" --arg commit "${commit}" > "${scratch}/paged"
+  while IFS= read -r number; do
+    github "the commits of pull request #${number}" graphql --paginate -f "query=$(query PullRequestCommits)" \
+      -f "owner=${owner}" -f "name=${repo}" -F "number=${number}" >> "${scratch}/pages.json"
+  done < "${scratch}/paged"
+  github "the refreshes of release pull request #${release_pull}" graphql --paginate \
+    -f "query=$(query ReleaseRefreshes)" -f "owner=${owner}" -f "name=${repo}" -F "number=${release_pull}" \
+    > "${scratch}/refreshes.json"
+  github "${changelog} at ${tag}" "repos/${slug}/contents/${changelog}" -X GET -f "ref=${commit}" \
+    -H 'Accept: application/vnd.github.raw+json' > "${scratch}/changelog.md"
+
+  changes manifest --arg repository "${slug}" --arg path "${package_path}" --arg version "${released}" \
+    --arg tag "${tag}" --arg previous "${previous}" --arg commit "${commit}" --arg changelog_path "${changelog}" \
+    --arg generator "engineering-conventions $(version | sed 's/ .*//')" \
+    --slurpfile range "${scratch}/range.json" --slurpfile associations "${scratch}/associations.json" \
+    --slurpfile pages "${scratch}/pages.json" --slurpfile refreshes "${scratch}/refreshes.json" \
+    --rawfile changelog "${scratch}/changelog.md" > "${scratch}/changes.json"
+  if [ -z "${out}" ]; then
+    cat "${scratch}/changes.json"
+    return 0
+  fi
+  { mkdir -p -- "$(dirname -- "${out}")" && cp -- "${scratch}/changes.json" "${out}"; } ||
+    die "cannot write ${out}"
+  summary='"\(.changes | length) pull request\(if (.changes | length) == 1 then "" else "s" end),'
+  summary="${summary}"' \([.changes[] | select(.listed)] | length) listed, released by #\(.release_pull_request.number)"'
+  printf 'wrote %s: %s\n' "${out}" "$(tool jq aqua:jqlang/jq "${JQ_VERSION}" -r "${summary}" "${out}")" >&2
+}
+
+# `release changes` writes a release's change manifest (decision 0045).
+release() {
+  action=${1:-}
+  [ $# -gt 0 ] && shift
+  case ${action} in
+    changes) release_changes "$@" ;;
+    *) usage ;;
+  esac
+}
+
 version() {
   release="${bundle}/checks/data/release.json"
   if [ -f "${release}" ]; then
@@ -918,6 +1357,8 @@ case ${command} in
   env-file) env_file "$@" ;;
   waivers) waivers "$@" ;;
   codeowners) codeowners "$@" ;;
+  dependencies) dependencies "$@" ;;
+  release) release "$@" ;;
   version | --version) version ;;
   *) usage ;;
 esac

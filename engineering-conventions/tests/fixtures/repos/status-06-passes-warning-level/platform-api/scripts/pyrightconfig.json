@@ -1,0 +1,5 @@
+// The scripts are checked on their own, with exhaustiveness at error.
+{
+  "typeCheckingMode": "strict",
+  "reportMatchNotExhaustive": "error",
+}

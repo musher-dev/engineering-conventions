@@ -393,6 +393,6 @@ come in `infra-github/data/rename-map.yaml`.
 
 - [EC-0009 Identity declaration](identity-declaration.md)
 - [Decision 0012: A repository is named `<system>-<component>`, from a registered system](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0012-repository-names.md)
-- [Decision 0042: A few organization-wide repositories keep a single-token name](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0042-kept-repository-names.md)
+- [Decision 0046: A few organization-wide repositories keep a single-token name](https://github.com/musher-dev/engineering-conventions/blob/main/docs/decisions/0046-kept-repository-names.md)
 - [GitHub: Renaming a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository)
 - [Backstage: System model](https://backstage.io/docs/features/software-catalog/system-model/)

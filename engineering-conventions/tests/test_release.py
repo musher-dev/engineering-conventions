@@ -1,0 +1,809 @@
+"""`conventions release changes`: a release's change manifest (decision 0045).
+
+Each case in fixtures/release-changes/ is a real release, recorded with gh:
+`<case>.github.json` holds every answer GitHub gave the command, under the
+name the stand-in below asks for it by, and `<case>.changes.json` what the
+command wrote from them. The releases' repositories are private and this one
+is public, so each answer was reduced to the fields the command reads, and its
+identifiers were replaced by stand-ins through one map: the organization is
+example-org, each repository a neutral name (service-a to service-c, and
+docs-site, whose package and tag prefix follow), and each commit a SHA derived
+from the real one. Every title, commit message and changelog line keeps only
+its structure (its Conventional Commits header, its (#N) references, BREAKING
+CHANGE footers and links) with its prose withheld. Pull request numbers,
+times and paths are GitHub's. No test reaches the network.
+"""
+
+import json
+import os
+import re
+import subprocess
+from collections.abc import Callable
+from pathlib import Path
+from typing import NamedTuple
+
+import pytest
+
+from conventions_tools import schemas
+from conventions_tools.loading import as_list, as_map, get_str, read_json
+from conventions_tools.paths import product_dir
+
+PRODUCT = product_dir()
+LAUNCHER = PRODUCT / "bin" / "conventions"
+RELEASES = PRODUCT / "tests" / "fixtures" / "release-changes"
+
+# Set to rewrite each case's <case>.changes.json after a deliberate change to
+# bin/changes.jq; read the diff before committing it.
+UPDATE = "CONVENTIONS_UPDATE_CHANGES"
+
+# Where the launcher learns the repository; cleared so a run in GitHub
+# Actions tests the same thing as a run anywhere else.
+NAME_SOURCES = ("CONVENTIONS_REPOSITORY", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE")
+
+# A stand-in for gh: it names each `gh api` call as a URL would, by its
+# endpoint, the GraphQL operation it sends and its fields, sorted, as the
+# query; logs the name; and prints every page recorded under it, or fails as
+# GitHub does for something that does not exist. A failure planned for the
+# call in failures.json comes first, one per call: its message on stderr,
+# after the recorded pages when it starts "partial: ", as a paginated call
+# can fail after printing some.
+GH_STUB = r"""#!/bin/sh
+here=$(dirname "$0")
+shift
+endpoint='' operation='' fields=''
+while [ $# -gt 0 ]; do
+  case $1 in
+    -f | -F | --raw-field | --field)
+      case $2 in
+        query=*)
+          operation=$(printf '%s\n' "${2#query=}" | sed -n '1s/^query \([A-Za-z]*\).*/\1/p') ;;
+        *) fields="${fields}
+$2" ;;
+      esac
+      shift 2 ;;
+    -H | --header | -X | --method) shift 2 ;;
+    -*) shift ;;
+    *) endpoint=$1; shift ;;
+  esac
+done
+sorted=$(printf '%s\n' "${fields}" | sed '/^$/d' | LC_ALL=C sort | tr '\n' '&')
+key="${endpoint}${operation:+ ${operation}}${sorted:+?${sorted%&}}"
+printf '%s\n' "${key}" >> "${here}/calls"
+pages() {
+  jq -r --arg key "${key}" '.responses[$key][] | if type == "string" then . else tojson end' \
+    "${here}/github.json"
+}
+failure=$(jq -r --arg key "${key}" '.[$key][0] // empty' "${here}/failures.json")
+if [ -n "${failure}" ]; then
+  jq --arg key "${key}" '.[$key] |= .[1:]' "${here}/failures.json" > "${here}/failures.next"
+  mv "${here}/failures.next" "${here}/failures.json"
+  case ${failure} in
+    'partial: '*) pages; failure=${failure#partial: } ;;
+  esac
+  printf '%s\n' "${failure}" >&2
+  exit 1
+fi
+if jq -e --arg key "${key}" '.responses | has($key)' "${here}/github.json" > /dev/null; then
+  pages
+  exit 0
+fi
+echo 'gh: Not Found (HTTP 404)' >&2
+exit 1
+"""
+
+CASES = sorted(path.name.removesuffix(".github.json") for path in RELEASES.glob("*.github.json"))
+
+
+def _recorded(case: str) -> dict[str, object]:
+    return as_map(read_json(RELEASES / f"{case}.github.json"))
+
+
+def _responses(release: dict[str, object]) -> dict[str, object]:
+    return as_map(release["responses"])
+
+
+# A stand-in for sleep, so a retry waits for nothing: it logs how long it
+# was asked to wait.
+SLEEP_STUB = """#!/bin/sh
+printf '%s\\n' "$1" >> "$(dirname "$0")/sleeps"
+"""
+
+
+def _stub(
+    tmp_path: Path, release: dict[str, object], failures: dict[str, list[str]] | None = None
+) -> Path:
+    stub = tmp_path / "stub"
+    stub.mkdir()
+    for name, script in (("gh", GH_STUB), ("sleep", SLEEP_STUB)):
+        (stub / name).write_text(script)
+        (stub / name).chmod(0o755)
+    (stub / "github.json").write_text(json.dumps(release))
+    (stub / "failures.json").write_text(json.dumps(failures or {}))
+    return stub
+
+
+def _launch(
+    *arguments: str, cwd: Path, stub: Path, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    environment = {key: value for key, value in os.environ.items() if key not in NAME_SOURCES}
+    environment |= {"CONVENTIONS_NO_MISE": "1", "PATH": f"{stub}{os.pathsep}{os.environ['PATH']}"}
+    return subprocess.run(
+        [str(LAUNCHER), *arguments],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=environment | (env or {}),
+    )
+
+
+def _write(
+    tmp_path: Path,
+    release: dict[str, object],
+    *arguments: str,
+    failures: dict[str, list[str]] | None = None,
+) -> tuple[dict[str, object], list[str]]:
+    """The manifest the command writes for a recorded release, and the calls it made."""
+    stub = _stub(tmp_path, release, failures)
+    completed = _launch(
+        "release",
+        "changes",
+        "--repository",
+        get_str(release, "repository"),
+        "--tag",
+        get_str(release, "tag"),
+        *arguments,
+        cwd=tmp_path,
+        stub=stub,
+    )
+    assert completed.returncode == 0, completed.stderr
+    manifest = as_map(json.loads(completed.stdout))
+    assert schemas.problems(PRODUCT, schemas.CHANGE_MANIFEST, manifest, "changes.json") == []
+    return manifest, (stub / "calls").read_text().splitlines()
+
+
+def _change(manifest: dict[str, object], number: int) -> dict[str, object]:
+    [change] = [
+        as_map(change)
+        for change in as_list(manifest["changes"])
+        if as_map(as_map(change)["pull_request"])["number"] == number
+    ]
+    return change
+
+
+def _numbers(manifest: dict[str, object], *, listed: bool | None = None) -> set[int]:
+    changes = [as_map(change) for change in as_list(manifest["changes"])]
+    return {
+        int(str(as_map(change["pull_request"])["number"]))
+        for change in changes
+        if listed is None or change["listed"] is listed
+    }
+
+
+def _key(release: dict[str, object], pattern: str) -> str:
+    [key] = [key for key in _responses(release) if re.search(pattern, key)]
+    return key
+
+
+def _edit_changelog(release: dict[str, object], edit: Callable[[str], str]) -> None:
+    responses = _responses(release)
+    key = _key(release, r"/CHANGELOG\.md\?")
+    [text] = as_list(responses[key])
+    responses[key] = [edit(str(text))]
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_writes_what_each_recorded_release_carries(case: str, tmp_path: Path) -> None:
+    release = _recorded(case)
+    manifest, calls = _write(tmp_path, release)
+    # It asks for each recorded answer once, and for nothing else.
+    assert sorted(calls) == sorted(_responses(release))
+    assert get_str(manifest, "generator").startswith("engineering-conventions ")
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", get_str(manifest, "generated_at"))
+    written = {
+        key: value for key, value in manifest.items() if key not in ("generated_at", "generator")
+    }
+    expected = RELEASES / f"{case}.changes.json"
+    if os.environ.get(UPDATE):
+        expected.write_text(json.dumps(written, indent=2) + "\n")
+    assert written == read_json(expected), f"{case} differs from {expected.name}; set {UPDATE}=1"
+
+
+class Golden(NamedTuple):
+    """One change of a golden trace: what the lead time measure must read."""
+
+    number: int
+    first_commit: str
+    authored: str
+    created: str
+    merged: str
+    released_by: int
+
+
+# The golden traces of the change lead time measure (decision 0045).
+GOLDEN = {
+    "docs-site-0.26.9": Golden(
+        141,
+        "2c6db2db9811427ad16b30f730e306d1411cba1a",
+        "2026-11-22T05:13:07Z",
+        "2026-11-22T05:15:56Z",
+        "2026-11-22T05:27:46Z",
+        142,
+    ),
+    "service-b-6.1.0": Golden(
+        406,
+        "d2e3aff96b504214b5ec6423002af3c1c0b78840",
+        "2026-11-21T22:58:25Z",
+        "2026-11-21T23:49:47Z",
+        "2026-11-22T01:14:18Z",
+        407,
+    ),
+    "service-a-35.4.0": Golden(
+        1807,
+        "7d26e8cf127dd4f07e686015aa0c1729828959b0",
+        "2026-11-21T23:27:42Z",
+        "2026-11-22T04:02:20Z",
+        "2026-11-22T06:15:43Z",
+        1810,
+    ),
+}
+
+
+@pytest.mark.parametrize("case", sorted(GOLDEN))
+def test_records_each_change_from_its_first_commit(case: str, tmp_path: Path) -> None:
+    golden = GOLDEN[case]
+    manifest, _ = _write(tmp_path, _recorded(case))
+    change = _change(manifest, golden.number)
+    assert change["listed"] is True
+    assert as_map(change["first_commit"]) == {
+        "sha": golden.first_commit,
+        "authored_at": golden.authored,
+        "at": golden.authored,
+        "rewritten": False,
+        "truncated": False,
+    }
+    pull_request = as_map(change["pull_request"])
+    assert (pull_request["created_at"], pull_request["merged_at"]) == (
+        golden.created,
+        golden.merged,
+    )
+    assert pull_request["author_kind"] == "agent"
+    assert as_map(manifest["release_pull_request"])["number"] == golden.released_by
+
+
+def test_counts_only_the_changes_to_its_package(tmp_path: Path) -> None:
+    # docs-site releases docs/product and docs/engineering apart. Of the
+    # seven commits since docs-site/v0.26.4, one changed only packages/.
+    release = _recorded("docs-site-0.26.5")
+    manifest, calls = _write(tmp_path, release)
+    assert manifest["path"] == "docs/product"
+    assert manifest["previous_tag"] == "docs-site/v0.26.4"
+    compared = as_list(
+        as_map(as_list(_responses(release)[_key(release, "/compare/")])[0])["commits"]
+    )
+    assert "43292ba6b23a9499c782354d2b14cd9fa011da91" in {as_map(c)["sha"] for c in compared}
+    assert "43292ba6b23a9499c782354d2b14cd9fa011da91" not in json.dumps(manifest)
+    assert _numbers(manifest) == {121, 122, 123, 125, 126}
+    assert _numbers(manifest, listed=True) == {123}
+    # The history of the path, from the earliest compared commit.
+    assert (
+        "repos/example-org/docs-site/commits?path=docs/product&per_page=100"
+        "&sha=30babfe5329a8d15aefed1ebda4bad4f7c69a08a&since=2026-11-16T19:34:12Z"
+    ) in calls
+
+
+def test_a_change_counts_from_the_release_pull_request_s_next_refresh(tmp_path: Path) -> None:
+    # Release pull request #1810 opened before #1807 merged, and release-please
+    # refreshed it after each merge.
+    manifest, _ = _write(tmp_path, _recorded("service-a-35.4.0"))
+    release = as_map(manifest["release_pull_request"])
+    assert release["created_at"] == "2026-11-22T04:48:18Z"
+    assert release["merged_at"] == "2026-11-22T10:11:23Z"
+    assert release["refreshed_at"] == [
+        "2026-11-22T06:18:42Z",
+        "2026-11-22T07:09:55Z",
+        "2026-11-22T07:36:38Z",
+        "2026-11-22T10:08:33Z",
+    ]
+    opened = {
+        number: _change(manifest, number)["release_pull_request_opened_at"]
+        for number in (1803, 1807, 1813)
+    }
+    assert opened == {
+        # It merged before the release pull request opened.
+        1803: "2026-11-22T04:48:18Z",
+        1807: "2026-11-22T06:18:42Z",
+        # A refactor rewrites no notes; the next refresh still carried it.
+        1813: "2026-11-22T10:08:33Z",
+    }
+    assert _numbers(manifest, listed=False) == {1813}
+
+
+def test_a_change_no_refresh_followed_counts_from_its_merge(tmp_path: Path) -> None:
+    release = _recorded("service-a-35.4.0")
+    key = _key(release, "ReleaseRefreshes")
+    [page] = as_list(_responses(release)[key])
+    items = as_map(as_map(as_map(as_map(page)["data"])["repository"])["pullRequest"])
+    timeline = as_map(items["timelineItems"])
+    timeline["nodes"] = as_list(timeline["nodes"])[:-1]
+    manifest, _ = _write(tmp_path, release)
+    for number in (1813, 1814):
+        change = _change(manifest, number)
+        merged = as_map(change["pull_request"])["merged_at"]
+        assert change["release_pull_request_opened_at"] == merged
+    assert _change(manifest, 1812)["release_pull_request_opened_at"] == "2026-11-22T07:36:38Z"
+
+
+def test_a_first_release_reads_the_whole_history(tmp_path: Path) -> None:
+    # service-a's first tag, whose history holds the import of 1270 commits.
+    release = _recorded("service-a-0.36.0")
+    manifest, calls = _write(tmp_path, release)
+    assert manifest["previous_tag"] is None
+    assert not [call for call in calls if "/compare/" in call]
+    # Its every commit, and those that change the package's path themselves.
+    assert (
+        "repos/example-org/service-a/commits?per_page=100&sha=419f0b63be2bd1c6d60054da65bcb059a646ffe4"
+        in calls
+    )
+    assert (
+        "repos/example-org/service-a/commits?path=service-a&per_page=100"
+        "&sha=419f0b63be2bd1c6d60054da65bcb059a646ffe4"
+    ) in calls
+    # #4 changed only the repository's root, outside the package.
+    assert _numbers(manifest) == {1, 7}
+    assert _numbers(manifest, listed=True) == {7}
+    imported = _change(manifest, 7)
+    # GitHub lists 250 of its commits, in three pages; an earlier one may be missing.
+    assert "graphql PullRequestCommits?name=service-a&number=7&owner=example-org" in calls
+    assert as_map(imported["first_commit"]) == {
+        "sha": "d055e62c5080e9cde1ed9133f372effd3369e561",
+        "authored_at": "2026-08-29T13:33:56Z",
+        "at": "2026-08-29T13:33:56Z",
+        "rewritten": False,
+        "truncated": True,
+    }
+
+
+def test_a_first_release_starts_after_the_bootstrap_sha(tmp_path: Path) -> None:
+    # The same release, as if it were its package's first: the configuration's
+    # bootstrap-sha bounds it, as it bounds release-please's notes.
+    release = _recorded("docs-site-0.26.9")
+    responses = _responses(release)
+    refs = _key(release, "/matching-refs/")
+    responses[refs] = [[]]
+    compare = _key(release, "/compare/")
+    bootstrap = "d6726da4f2c94610c8c7259793a4cc2b55051698"
+    responses[re.sub(r"compare/[0-9a-f]{40}", f"compare/{bootstrap}", compare)] = responses.pop(
+        compare
+    )
+    manifest, calls = _write(tmp_path, release)
+    assert manifest["previous_tag"] is None
+    assert any(f"/compare/{bootstrap}..." in call for call in calls)
+    assert _numbers(manifest) == {141}
+
+
+# In service-c's 7.0.0, #340's changes reached the branch in a commit pushed
+# directly, which carries its number but belongs to no pull request, and
+# #340's squash commit, nine minutes later, changes nothing.
+SQUASHED_EMPTY = "e936df5c47f98a0bd589af0bbeec683cced54fb2"
+PUSHED_FIRST = "0db4d93ce8fb192cfbd66157ff75ce3c16004077"
+
+
+def test_carries_a_pull_request_whose_changes_landed_before_it(tmp_path: Path) -> None:
+    # release-please judges the commit a pull request merged as by the pull
+    # request's files, and counts a change of none in every package, so it
+    # listed #340. The squash commit's own files would leave it out.
+    release = _recorded("service-c-7.0.0")
+    [touching] = as_list(_responses(release)[_key(release, r"/commits\?path=")])
+    shas = {as_map(commit)["sha"] for commit in as_list(touching)}
+    assert PUSHED_FIRST in shas
+    assert SQUASHED_EMPTY not in shas
+    manifest, _ = _write(tmp_path, release)
+    change = _change(manifest, 340)
+    assert change["listed"] is True
+    assert as_map(change["pull_request"])["merge_commit"] == SQUASHED_EMPTY
+    # #334 and #337 change only files outside the package.
+    assert _numbers(manifest) == {322, 330, 333, 340}
+    assert _numbers(manifest, listed=True) == {330, 340}
+
+
+@pytest.mark.parametrize(
+    ("files", "more", "carried"),
+    [
+        ([{"path": "service-c/withheld"}], False, True),
+        # Files outside the package's path only.
+        ([{"path": "withheld"}], False, False),
+        # More than a page of files: the commit is judged by its own, and
+        # this squash commit changes nothing under the path.
+        ([], True, False),
+    ],
+)
+def test_judges_a_merge_commit_by_its_pull_request_s_files(
+    files: list[dict[str, str]], *, more: bool, carried: bool, tmp_path: Path
+) -> None:
+    release = _recorded("service-c-7.0.0")
+    [page] = as_list(_responses(release)[_key(release, f"oid={SQUASHED_EMPTY}")])
+    commit = as_map(as_map(as_map(as_map(page)["data"])["repository"])["object"])
+    [pull] = as_list(as_map(commit["associatedPullRequests"])["nodes"])
+    as_map(pull)["files"] = {"pageInfo": {"hasNextPage": more}, "nodes": files}
+    manifest, _ = _write(tmp_path, release)
+    assert (340 in _numbers(manifest)) is carried
+
+
+def test_pages_through_a_pull_request_s_commits(tmp_path: Path) -> None:
+    release = _recorded("service-a-24.0.0")
+    manifest, calls = _write(tmp_path, release)
+    assert "graphql PullRequestCommits?name=service-a&number=1482&owner=example-org" in calls
+    pages = as_list(_responses(release)[_key(release, "PullRequestCommits")])
+    assert len(pages) == 2
+    # 112 commits, all listed, so the earliest is certain.
+    assert as_map(_change(manifest, 1482)["first_commit"]) == {
+        "sha": "e065fd767a22de9e5b094171a7c4ee8c811a1250",
+        "authored_at": "2026-11-12T21:28:36Z",
+        "at": "2026-11-12T21:28:36Z",
+        "rewritten": False,
+        "truncated": False,
+    }
+
+
+def test_reads_type_and_breaking_from_the_squash_commit(tmp_path: Path) -> None:
+    manifest, _ = _write(tmp_path, _recorded("service-a-24.0.0"))
+    kinds = {
+        number: (
+            as_map(_change(manifest, number)["pull_request"])["type"],
+            as_map(_change(manifest, number)["pull_request"])["breaking"],
+        )
+        for number in _numbers(manifest)
+    }
+    assert kinds == {
+        1469: ("feat", True),
+        1473: ("feat", True),
+        1477: ("chore", False),
+        1479: ("fix", False),
+        1481: ("chore", False),
+        1482: ("feat", False),
+        1483: ("chore", False),
+        1500: ("feat", False),
+        1509: ("feat", True),
+    }
+    # The section lists feat, fix and breaking changes; chores are carried, unlisted.
+    assert _numbers(manifest, listed=True) == {1469, 1473, 1479, 1482, 1500, 1509}
+
+
+@pytest.mark.parametrize(
+    ("heading", "listed"), [("### ⚠ BREAKING CHANGES", False), ("### Bug Fixes", True)]
+)
+def test_a_breaking_note_without_a_commit_link_lists_nothing(
+    heading: str, *, listed: bool, tmp_path: Path
+) -> None:
+    # A breaking-change note repeats an entry the section lists with its
+    # commit link, so its #N is prose; anywhere else, an entry without a
+    # commit link names its pull request by its #N.
+    release = _recorded("service-a-24.0.0")
+    note = "* **api:** withheld ([#1483](https://github.com/example-org/service-a/issues/1483))"
+    _edit_changelog(release, lambda text: text.replace(f"{heading}\n", f"{heading}\n\n{note}\n", 1))
+    manifest, _ = _write(tmp_path, release)
+    assert _change(manifest, 1483)["listed"] is listed
+
+
+def test_lists_a_pull_request_once_however_many_entries_name_it(tmp_path: Path) -> None:
+    # release-please wrote two entries for one squash commit, c669dc8.
+    release = _recorded("service-c-11.0.2")
+    changelog = str(as_list(_responses(release)[_key(release, r"/CHANGELOG\.md\?")])[0])
+    assert changelog.count("/commit/c669dc826ab539b3ec24503aca3f51a17173afe7") == 2
+    manifest, _ = _write(tmp_path, release)
+    assert _numbers(manifest) == _numbers(manifest, listed=True) == {370}
+
+
+def test_a_squash_commit_names_its_pull_request_without_its_number(tmp_path: Path) -> None:
+    # The squash commit of #383 has no (#383) in its subject, so only GitHub's
+    # association of the commit with the pull request finds it.
+    release = _recorded("service-b-5.0.1")
+    compared = as_list(
+        as_map(as_list(_responses(release)[_key(release, "/compare/")])[0])["commits"]
+    )
+    [squash] = [
+        as_map(c)
+        for c in compared
+        if as_map(c)["sha"] == "0cb1cfd1124ee8a8bdf63eb124ae114f3f587465"
+    ]
+    assert "#383" not in json.dumps(squash)
+    manifest, _ = _write(tmp_path, release)
+    assert _numbers(manifest, listed=True) == {383}
+
+
+def test_an_entry_without_a_commit_link_names_its_pull_request_last(tmp_path: Path) -> None:
+    # Without its commit link, an entry falls back to its last #N that is a
+    # pull request of the release: #1809 after the issues it closed, and
+    # #1814 before the "closes #1808" release-please adds.
+    release = _recorded("service-a-35.4.0")
+    links = re.compile(r" \(\[(6101b8f|012cbdf)\]\([^)]*\)\)")
+    _edit_changelog(release, lambda text: links.sub("", text))
+    manifest, _ = _write(tmp_path, release)
+    assert _numbers(manifest, listed=True) == {1803, 1807, 1809, 1812, 1814}
+
+
+@pytest.mark.parametrize(("version", "listed"), [("35.3.0", False), ("35.4.0", True)])
+def test_lists_only_what_the_version_s_section_names(
+    version: str, *, listed: bool, tmp_path: Path
+) -> None:
+    release = _recorded("service-a-35.4.0")
+    merged_as = "146ba3c510b7185ff73d5c941fba727a3c18e4ce"
+    entry = (
+        "* **api:** withheld ([#1813](https://github.com/example-org/service-a/issues/1813))"
+        f" ([{merged_as[:7]}](https://github.com/example-org/service-a/commit/{merged_as}))"
+    )
+    heading = re.compile(rf"(## \[{re.escape(version)}\][^\n]*\n)")
+    _edit_changelog(release, lambda text: heading.sub(rf"\1\n### Bug Fixes\n\n{entry}\n", text, 1))
+    manifest, _ = _write(tmp_path, release)
+    assert _change(manifest, 1813)["listed"] is listed
+
+
+def test_a_history_rewritten_after_opening_counts_from_the_opening(tmp_path: Path) -> None:
+    # #809 opened on 2026-10-17; its earliest commit, after a force-push, is
+    # from 2026-11-11.
+    manifest, _ = _write(tmp_path, _recorded("service-a-20.4.0"))
+    first_commit = as_map(_change(manifest, 809)["first_commit"])
+    assert first_commit["authored_at"] == "2026-11-11T14:17:42Z"
+    assert first_commit["at"] == "2026-10-17T11:47:27Z"
+    assert first_commit["rewritten"] is True
+
+
+@pytest.mark.parametrize(
+    ("author", "kind"),
+    [
+        ({"__typename": "Bot", "login": "musher-dagger"}, "agent"),
+        ({"__typename": "Bot", "login": "dependabot"}, "dependency-bot"),
+        ({"__typename": "Bot", "login": "renovate"}, "dependency-bot"),
+        ({"__typename": "Bot", "login": "github-actions"}, "automation"),
+        ({"__typename": "User", "login": "someone"}, "human"),
+        ({"__typename": "Mannequin", "login": "someone"}, "human"),
+        # A deleted account.
+        (None, "human"),
+    ],
+)
+def test_author_kind_is_a_kind_never_a_login(
+    author: dict[str, str] | None, kind: str, tmp_path: Path
+) -> None:
+    release = _recorded("service-b-6.1.0")
+    responses = _responses(release)
+    key = _key(release, "oid=e25b3cc8")
+    [page] = as_list(responses[key])
+    commit = as_map(as_map(as_map(as_map(page)["data"])["repository"])["object"])
+    [pull] = as_list(as_map(commit["associatedPullRequests"])["nodes"])
+    as_map(pull)["author"] = author
+    manifest, _ = _write(tmp_path, release)
+    assert as_map(_change(manifest, 406)["pull_request"])["author_kind"] == kind
+    assert "someone" not in json.dumps(manifest)
+
+
+def test_follows_annotated_tags(tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    responses = _responses(release)
+    ref = _key(release, "/git/ref/tags/v6.1.0$")
+    commit = as_map(as_map(as_list(responses[ref])[0])["object"])["sha"]
+    responses[ref] = [{"object": {"type": "tag", "sha": "a" * 40}}]
+    responses[f"repos/example-org/service-b/git/tags/{'a' * 40}"] = [
+        {"object": {"type": "commit", "sha": commit}}
+    ]
+    # The previous release's tag, annotated too.
+    refs = _key(release, "/matching-refs/")
+    [listing] = as_list(responses[refs])
+    [previous] = [
+        as_map(ref) for ref in as_list(listing) if as_map(ref)["ref"] == "refs/tags/v6.0.2"
+    ]
+    previous_commit = as_map(previous["object"])["sha"]
+    previous["object"] = {"type": "tag", "sha": "b" * 40}
+    responses[f"repos/example-org/service-b/git/tags/{'b' * 40}"] = [
+        {"object": {"type": "commit", "sha": previous_commit}}
+    ]
+    manifest, _ = _write(tmp_path, release)
+    assert manifest["commit"] == commit
+    assert manifest["previous_tag"] == "v6.0.2"
+    assert _numbers(manifest, listed=True) == {406}
+
+
+def test_writes_out_where_it_was_run_and_says_what_it_wrote(tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    stub = _stub(tmp_path, release)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    arguments = ("--repository", "example-org/service-b", "--tag", "v6.1.0")
+    completed = _launch(
+        "release",
+        "changes",
+        *arguments,
+        "--out",
+        "out/changes.json",
+        "-C",
+        str(elsewhere),
+        cwd=tmp_path,
+        stub=stub,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout == ""
+    written = tmp_path / "out" / "changes.json"
+    assert completed.stderr == f"wrote {written}: 1 pull request, 1 listed, released by #407\n"
+    manifest = as_map(read_json(written))
+    assert schemas.problems(PRODUCT, schemas.CHANGE_MANIFEST, manifest, "changes.json") == []
+    # A file where its directory should be.
+    (tmp_path / "taken").write_text("")
+    blocked = _launch(
+        "release", "changes", *arguments, "--out", "taken/changes.json", cwd=tmp_path, stub=stub
+    )
+    assert blocked.returncode == 2
+    assert f"cannot write {tmp_path / 'taken' / 'changes.json'}" in blocked.stderr
+
+
+def test_reads_the_repository_from_github_or_origin(tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    stub = _stub(tmp_path, release)
+    env = {"GITHUB_REPOSITORY": "example-org/service-b"}
+    completed = _launch("release", "changes", "--tag", "v6.1.0", cwd=tmp_path, stub=stub, env=env)
+    assert completed.returncode == 0, completed.stderr
+    assert as_map(json.loads(completed.stdout))["repository"] == "example-org/service-b"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    remote = "git@github.com:example-org/service-b.git"
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", remote], check=True)
+    completed = _launch("release", "changes", "--tag", "v6.1.0", cwd=repo, stub=stub)
+    assert completed.returncode == 0, completed.stderr
+    assert as_map(json.loads(completed.stdout))["repository"] == "example-org/service-b"
+
+
+def _no_release_pull_request(release: dict[str, object]) -> None:
+    responses = _responses(release)
+    [page] = as_list(responses[_key(release, "oid=dafdb120")])
+    commit = as_map(as_map(as_map(as_map(page)["data"])["repository"])["object"])
+    as_map(commit["associatedPullRequests"])["nodes"] = []
+
+
+def _no_section(release: dict[str, object]) -> None:
+    _edit_changelog(release, lambda text: text.replace("## [6.1.0]", "## [6.1.9]"))
+
+
+def _another_tag(release: dict[str, object]) -> None:
+    responses = _responses(release)
+    responses["repos/example-org/service-b/git/ref/tags/web/v6.1.0"] = responses[
+        _key(release, "/git/ref/tags/v6.1.0$")
+    ]
+
+
+@pytest.mark.parametrize(
+    ("tag", "edit", "reason"),
+    [
+        (
+            "v9.9.9",
+            None,
+            "cannot read the tag v9.9.9 of example-org/service-b on GitHub: gh: Not Found",
+        ),
+        (
+            "web/v6.1.0",
+            _another_tag,
+            "no package in .github/release-please/config.json at web/v6.1.0 is released as"
+            " web/v6.1.0: service-b is released as vX.Y.Z",
+        ),
+        (
+            "v6.1.0",
+            _no_section,
+            "service-b/CHANGELOG.md at v6.1.0 has no section for 6.1.0",
+        ),
+        (
+            "v6.1.0",
+            _no_release_pull_request,
+            "the commit v6.1.0 names, is no pull request's merge commit",
+        ),
+    ],
+)
+def test_stops_when_the_release_cannot_be_read(
+    tag: str,
+    edit: Callable[[dict[str, object]], None] | None,
+    reason: str,
+    tmp_path: Path,
+) -> None:
+    release = _recorded("service-b-6.1.0")
+    if edit is not None:
+        edit(release)
+    stub = _stub(tmp_path, release)
+    arguments = ("--repository", "example-org/service-b", "--tag", tag)
+    completed = _launch("release", "changes", *arguments, cwd=tmp_path, stub=stub)
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert reason in completed.stderr
+
+
+@pytest.mark.parametrize(
+    ("arguments", "reason"),
+    [
+        (("release",), "conventions release changes --tag TAG"),
+        (("release", "notes", "--tag", "v1.0.0"), "conventions release changes --tag TAG"),
+        (("release", "changes"), "conventions release changes --tag TAG"),
+        (("release", "changes", "--tag", "v1.0.0", "--since", "x"), "conventions release changes"),
+        (("release", "changes", "--tag", "v1;0"), "--tag must be a release tag"),
+        (("release", "changes", "--tag", "../v1.0.0"), "--tag must be a release tag"),
+        (
+            ("release", "changes", "--tag", "v1.0.0", "--repository", "service-b"),
+            "--repository must be OWNER/NAME",
+        ),
+    ],
+)
+def test_refuses_what_it_does_not_take(
+    arguments: tuple[str, ...], reason: str, tmp_path: Path
+) -> None:
+    stub = _stub(tmp_path, {"responses": {}})
+    completed = _launch(*arguments, cwd=tmp_path, stub=stub)
+    assert completed.returncode == 2
+    assert reason in completed.stderr
+    assert not (stub / "calls").exists()
+
+
+# What gh reports for a failure that can pass by itself: a network error, a
+# 5xx, a 429, a secondary rate limit, and GitHub's GraphQL timeout.
+PASSING = [
+    'Post "https://api.github.com/graphql": dial tcp 140.82.112.6:443: i/o timeout',
+    "gh: Server Error (HTTP 502)",
+    "gh: Too Many Requests (HTTP 429)",
+    "gh: You have exceeded a secondary rate limit. Please wait a few minutes before you try"
+    " again. (HTTP 403)",
+    "GraphQL: Something went wrong while executing your query. This may be the result of a"
+    " timeout, or it could be a GitHub bug.",
+]
+
+
+@pytest.mark.parametrize("failure", PASSING)
+def test_tries_a_failure_that_can_pass_again(failure: str, tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    key = _key(release, "/compare/")
+    manifest, calls = _write(tmp_path, release, failures={key: [failure] * 3})
+    # Three more tries, after 2, 4 and 8 seconds, and the fourth answers.
+    assert calls.count(key) == 4
+    assert (tmp_path / "stub" / "sleeps").read_text().split() == ["2", "4", "8"]
+    assert _numbers(manifest, listed=True) == {406}
+
+
+def test_stops_when_a_failure_persists(tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    key = _key(release, "/compare/")
+    stub = _stub(tmp_path, release, {key: [PASSING[0]] * 4})
+    arguments = ("--repository", "example-org/service-b", "--tag", "v6.1.0")
+    completed = _launch("release", "changes", *arguments, cwd=tmp_path, stub=stub)
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert f"of example-org/service-b on GitHub: {PASSING[0]}" in completed.stderr
+    assert (stub / "calls").read_text().splitlines().count(key) == 4
+    assert (stub / "sleeps").read_text().split() == ["2", "4", "8"]
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "gh: Not Found (HTTP 404)",
+        "gh: Bad credentials (HTTP 401)",
+        "gh: Validation Failed (HTTP 422)",
+        # The primary rate limit, which seconds of waiting do not lift.
+        "gh: API rate limit exceeded for user ID 1. (HTTP 403)",
+        "GraphQL: Could not resolve to a PullRequest with the number of 9.",
+    ],
+)
+def test_does_not_try_again_what_cannot_pass(failure: str, tmp_path: Path) -> None:
+    release = _recorded("service-b-6.1.0")
+    key = _key(release, "/compare/")
+    stub = _stub(tmp_path, release, {key: [failure]})
+    arguments = ("--repository", "example-org/service-b", "--tag", "v6.1.0")
+    completed = _launch("release", "changes", *arguments, cwd=tmp_path, stub=stub)
+    assert completed.returncode == 2
+    assert failure in completed.stderr
+    assert (stub / "calls").read_text().splitlines().count(key) == 1
+    assert not (stub / "sleeps").exists()
+
+
+def test_writes_a_retried_page_once(tmp_path: Path) -> None:
+    # A paginated call can fail after printing some of its pages; only the
+    # answer of the try that succeeds is kept.
+    release = _recorded("service-a-35.4.0")
+    key = _key(release, "ReleaseRefreshes")
+    failures = {key: ["partial: gh: Server Error (HTTP 502)"]}
+    manifest, calls = _write(tmp_path, release, failures=failures)
+    assert calls.count(key) == 2
+    assert len(as_list(as_map(manifest["release_pull_request"])["refreshed_at"])) == 4

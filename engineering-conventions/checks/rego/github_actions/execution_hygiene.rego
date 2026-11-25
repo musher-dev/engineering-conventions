@@ -2,8 +2,9 @@
 # title: Execution hygiene
 # description: >-
 #   Workflows pin what they run, grant the least privilege they need, cannot
-#   hang, and never let a path filter or a shared concurrency group hide a
-#   required check.
+#   hang, never let a path filter or a shared concurrency group hide a
+#   required check, and give mise a GitHub token after jdx/mise-action
+#   (GHA-55).
 # scope: package
 # custom:
 #   convention: EC-0005
@@ -13,6 +14,9 @@ import data.conventions.lib.contexts
 import data.conventions.lib.files
 import data.conventions.lib.findings as lib
 import data.conventions.lib.names
+import data.conventions.lib.runs
+import data.conventions.lib.steps
+import data.conventions.lib.taskfiles
 
 # GHA-24
 findings contains lib.finding("GHA-24", reference.path, message) if {
@@ -110,6 +114,32 @@ findings contains lib.finding("GHA-32", path, message) if {
 			"work inside the jobs instead",
 		]),
 		[event, key],
+	)
+}
+
+# GHA-55
+findings contains lib.finding("GHA-55", path, message) if {
+	some path, workflow in files.workflows
+	not token_set(workflow)
+	some job_id, job in files.jobs(workflow)
+	not token_set(job)
+	job_steps := files.steps(job)
+	some setup, setup_step in job_steps
+	sets_up_mise(setup_step)
+	some index, step in job_steps
+	index > setup
+	not token_set(step)
+	not exported_before(job_steps, index)
+	installing := [line | some line in steps.command_lines(step); installs_through_mise(line)]
+	count(installing) > 0
+	message := sprintf(
+		concat(" ", [
+			"%s in job %q runs %q after jdx/mise-action, which keeps its GitHub token to its own step,",
+			"so what mise installs here goes to the GitHub API unauthenticated and fails once the runner's",
+			"shared 60-call hourly limit is spent; set env: {MISE_GITHUB_TOKEN: ${{ github.token }}} on the",
+			"step or the job",
+		]),
+		[files.step_label(step, index), job_id, installing[0]],
 	)
 }
 
@@ -247,3 +277,127 @@ concurrency_problem(workflow) := sprintf(
 )
 
 filtered_events := {"pull_request", "push", "merge_group"}
+
+# GHA-55: the step that sets up mise, directly or through a local composite
+# action that uses jdx/mise-action. An action in another repository is not
+# read.
+mise_action := "jdx/mise-action"
+
+sets_up_mise(step) if steps.action(step) == mise_action
+
+sets_up_mise(step) if {
+	some action_step in local_action_steps(step)
+	steps.action(action_step) == mise_action
+}
+
+# The steps of the local action a step uses: `./.github/actions/<name>`.
+local_action_steps(step) := files.action_steps(files.actions[path]) if {
+	is_string(step.uses)
+	startswith(step.uses, "./.github/actions/")
+	some extension in ["yml", "yaml"]
+	path := sprintf("%s/action.%s", [trim_right(trim_prefix(step.uses, "./"), "/"), extension])
+	files.actions[path]
+}
+
+# The variables mise reads a GitHub token from, in its order of preference
+# (https://mise.jdx.dev/configuration.html#mise-github-token).
+token_variables := {"MISE_GITHUB_TOKEN", "GITHUB_API_TOKEN", "GITHUB_TOKEN"}
+
+# A workflow, job or step whose env gives mise a token. An env written as an
+# expression is resolved at run time, so it is taken to set one.
+token_set(node) if {
+	is_object(node.env)
+	some name in token_variables
+	name in object.keys(node.env)
+}
+
+token_set(node) if is_string(node.env)
+
+# An earlier step, or a local action an earlier step uses, that writes a
+# token variable to $GITHUB_ENV for every later step.
+exported_before(job_steps, index) if {
+	some earlier, step in job_steps
+	earlier < index
+	exports_token(step)
+}
+
+exports_token(step) if exports_in_code(step)
+
+exports_token(step) if {
+	some action_step in local_action_steps(step)
+	exports_in_code(action_step)
+}
+
+exports_in_code(step) if {
+	code := steps.code(step)
+	contains(code, "GITHUB_ENV")
+	some name in token_variables
+	contains(code, name)
+}
+
+# A command that makes mise install a tool: `mise install`, `mise use` and
+# `mise exec` (with their short forms), and every conventions CLI subcommand
+# but `version`, which runs its engines through `mise exec`. A task matches
+# when it runs one of these or calls a task that does.
+mise_install_patterns := {
+	`(?m)(^|[\s;&|(])mise\s+(install|i|use|exec|x)(\s|$)`,
+	sprintf(`(?m)(^|[\s;&|(/])conventions\s+(%s)(\s|$)`, [concat("|", conventions_subcommands)]),
+}
+
+conventions_subcommands := [
+	"check", "prose", "openapi", "hadolint", "env-contract", "env-file",
+	"waivers", "codeowners", "dependencies",
+]
+
+# A command line that installs through mise, itself or through `task`.
+installs_through_mise(line) if runs.matches(mise_install_patterns, line)
+
+installs_through_mise(line) if {
+	some name in runs.task_arguments(line)
+	trim_prefix(name, ":") in installing_tasks
+}
+
+# Every task with the Taskfile that defines it.
+defined_tasks contains {"path": path, "name": name, "task": task} if {
+	some path, _ in taskfiles.documents
+	some name, task in taskfiles.tasks(path)
+}
+
+# The names `task` calls a task by: its own, and under the namespace of each
+# include that loads its Taskfile without flattening it. A name is matched
+# whole, so `cli:lint` never stands for a task called `lint`.
+namespaces(path) := {include.namespace |
+	some include in taskfiles.includes
+	taskfiles.target(include) == path
+	not include.entry.flatten == true
+}
+
+qualified(path, name) := {name} | {concat(":", [namespace, name]) | some namespace in namespaces(path)}
+
+# A call inside a Taskfile: `:name` from the root, else a name in the
+# calling Taskfile's own namespaces.
+resolved_call(_, call) := {trim_prefix(call, ":")} if startswith(call, ":")
+
+resolved_call(path, call) := qualified(path, call) if not startswith(call, ":")
+
+installing_directly contains name if {
+	some entry in defined_tasks
+	some command in runs.commands(entry.task)
+	runs.matches(mise_install_patterns, command)
+	some name in qualified(entry.path, entry.name)
+}
+
+# Each task name, with the names of the tasks that call it. Every name is a
+# key, because graph.reachable follows only the nodes it finds as keys.
+task_callers[name] := {caller_name |
+	some caller in defined_tasks
+	some call in runs.task_calls(caller.task)
+	name in resolved_call(caller.path, call)
+	some caller_name in qualified(caller.path, caller.name)
+} if {
+	some entry in defined_tasks
+	some name in qualified(entry.path, entry.name)
+}
+
+# The tasks that install through mise, or call a task that does.
+installing_tasks := graph.reachable(task_callers, installing_directly)

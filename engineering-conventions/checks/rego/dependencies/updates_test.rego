@@ -7,7 +7,12 @@ identity := td.repository(object.union(td.identity, {"layout": {"product": "plat
 
 dependabot(entries) := td.file(".github/dependabot.yml", {"version": 2, "updates": entries})
 
-update(ecosystem, directories) := {"package-ecosystem": ecosystem, "directories": directories}
+quiet := {
+	"schedule": {"interval": "monthly"},
+	"groups": {"all": {"patterns": ["*"]}},
+}
+
+update(ecosystem, directories) := object.union(quiet, {"package-ecosystem": ecosystem, "directories": directories})
 
 listed := [
 	".github/workflows/validate.yml",
@@ -21,7 +26,7 @@ listed := [
 full := [
 	update("github-actions", ["/", "/.github/actions/setup-tools"]),
 	update("docker", ["/.devcontainer", "/platform-api/docker"]),
-	{"package-ecosystem": "gomod", "directory": "/platform-api"},
+	object.union(quiet, {"package-ecosystem": "gomod", "directory": "/platform-api"}),
 ]
 
 repo(entries, paths) := [identity, dependabot(entries), td.inventory(paths)]
@@ -75,7 +80,7 @@ test_deps_12_test_input_is_not_updated if {
 }
 
 test_deps_13_product_missing if {
-	entries := [full[0], full[1], {"package-ecosystem": "gomod", "directory": "/"}]
+	entries := [full[0], full[1], object.union(quiet, {"package-ecosystem": "gomod", "directory": "/"})]
 	found := updates.findings with input as repo(entries, listed)
 	td.pairs(found) == {["DEPS-13", ".github/dependabot.yml"]}
 }
@@ -83,4 +88,52 @@ test_deps_13_product_missing if {
 test_deps_13_deno_has_no_updater if {
 	paths := [".github/dependabot.yml", "platform-api/deno.json"]
 	count(updates.findings) == 0 with input as repo([], paths)
+}
+
+test_deps_17_weekly_and_ungrouped if {
+	entries := [{
+		"package-ecosystem": "github-actions",
+		"directories": ["/", "/.github/actions/setup-tools"],
+		"schedule": {"interval": "weekly"},
+	}]
+	paths := [".github/workflows/validate.yml", ".github/actions/setup-tools/action.yml", ".github/dependabot.yml"]
+	found := updates.findings with input as repo(entries, paths)
+	td.pairs(found) == {["DEPS-17", ".github/dependabot.yml"]}
+	{f.message | some f in found} == {concat(" ", [
+		"the github-actions update for /, /.github/actions/setup-tools runs weekly and groups nothing; set",
+		"schedule.interval to monthly and add a group whose patterns are [\"*\"], so it opens at most one pull",
+		"request a month",
+	])}
+}
+
+test_deps_17_security_group_is_not_enough if {
+	entry := {
+		"package-ecosystem": "gomod",
+		"schedule": {"interval": "monthly"},
+		"directory": "/platform-api",
+		"groups": {"security": {"applies-to": "security-updates", "patterns": ["*"]}},
+	}
+	found := updates.findings with input as repo([full[0], full[1], entry], listed)
+	{f.message | some f in found} == {concat(" ", [
+		"the gomod update for /platform-api groups nothing; set schedule.interval to monthly and add a group",
+		"whose patterns are [\"*\"], so it opens at most one pull request a month",
+	])}
+}
+
+test_deps_17_missing_interval if {
+	entry := {"package-ecosystem": "gomod", "directory": "/platform-api", "groups": quiet.groups}
+	found := updates.findings with input as repo([full[0], full[1], entry], listed)
+	some f in found
+	contains(f.message, "has no schedule.interval")
+}
+
+test_deps_17_quarterly_and_security_only_pass if {
+	security_only := {
+		"package-ecosystem": "npm",
+		"directory": "/",
+		"open-pull-requests-limit": 0,
+		"schedule": {"interval": "daily"},
+	}
+	gomod := object.union(full[2], {"schedule": {"interval": "quarterly"}})
+	count(updates.findings) == 0 with input as repo([full[0], full[1], gomod, security_only], listed)
 }

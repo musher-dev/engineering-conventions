@@ -4,6 +4,7 @@ date: 2026-10-03
 status: accepted
 deciders: ["@justinmerrell"]
 supersedes: []
+amended_by: ["0042"]
 ---
 
 # 0032 — Every dependency ecosystem a repository pins has Renovate or Dependabot proposing its updates

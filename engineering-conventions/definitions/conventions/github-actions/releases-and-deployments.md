@@ -429,6 +429,10 @@ The check reports:
 - anywhere else in a workflow or action, a reference to `secrets.<NAME>_APP_ID`, `vars.<NAME>_APP_ID`,
   `secrets.<NAME>_APP_CLIENT_ID` or `vars.<NAME>_APP_PRIVATE_KEY`.
 
+A called workflow declares its secrets in kebab-case ([GHA-38](composite-actions.md#gha-38)), and its callers map the
+repository secret onto that name, so there the key may be read as `${{ secrets.<purpose>-app-private-key }}`: it is the
+same pair as `<PURPOSE>_APP_PRIVATE_KEY`, and the client ID is still `vars.<PURPOSE>_APP_CLIENT_ID`.
+
 The release App is the one exception to who checks it: the App token steps of `release.yml` are
 [REL-16](../releases/release-workflows.md#rel-16)'s, which also says which App they use, so GHA-52 does not read
 them. A reference to the release App's credentials anywhere else is GHA-52's.

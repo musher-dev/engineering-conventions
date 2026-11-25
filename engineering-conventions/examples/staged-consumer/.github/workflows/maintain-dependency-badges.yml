@@ -1,0 +1,44 @@
+name: Maintain Dependency Badges
+
+# Keeps the README's currency badge for each pin of another Musher release
+# current (DEPS-15, DEPS-16): here the conventions release in
+# .config/mise/config.toml. The reusable workflow renders the badges and
+# force-pushes them, as one commit, to the orphan `badges` branch the README
+# links. Nothing opens a pull request: when a badge turns yellow or orange,
+# move the pin yourself.
+#
+# The pin is the release that ships the reusable workflow, 0.9.4 or later;
+# Dependabot's github-actions update raises it with the rest.
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  # A producer's notify-release.yml sends this, so a badge turns within
+  # minutes of a release rather than by the next schedule.
+  repository_dispatch:
+    types: [dependency-released]
+  # A merged pin change turns its badge at once.
+  push:
+    branches: [main]
+    paths:
+      - .repo/dependencies.toml
+      - .config/mise/config.toml
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  badges:
+    name: Badges
+    permissions:
+      contents: write  # push the badges branch
+    # v0.9.4. The comment sits above the pin, which is longer than a line.
+    uses: musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml@fa33c68ee4776d9dac32e562d8d2a7cb8678047c
+    # The release App reads private producers' releases; its client ID
+    # is the variable RELEASE_APP_CLIENT_ID (GHA-52).
+    secrets:
+      release-app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

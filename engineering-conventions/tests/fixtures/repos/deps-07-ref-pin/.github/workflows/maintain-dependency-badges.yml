@@ -1,0 +1,19 @@
+name: Maintain Dependency Badges
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  repository_dispatch:
+    types: [dependency-released]
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  badges:
+    name: Badges
+    permissions:
+      contents: write
+    uses: musher-dev/engineering-conventions/.github/workflows/reusable-maintain-dependency-badges.yml@0123456789abcdef0123456789abcdef01234567 # v0.9.4
+    secrets:
+      release-app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

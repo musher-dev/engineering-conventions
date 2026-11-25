@@ -3,7 +3,7 @@ id: EC-0005
 title: Execution hygiene
 summary: >-
   Workflows pin what they run, grant the least privilege they need, cannot
-  hang, and pass the workflow linters.
+  hang, pass the workflow linters, and authenticate what mise installs.
 status: draft
 topic: github-actions
 applies_to:
@@ -29,6 +29,8 @@ references:
     url: https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions
   - title: zizmor audit rules
     url: https://docs.zizmor.sh/audits/
+  - title: "mise: MISE_GITHUB_TOKEN"
+    url: https://mise.jdx.dev/configuration.html#mise-github-token
 requirements:
   - id: GHA-24
     title: A third-party action is pinned to a full commit SHA
@@ -111,6 +113,14 @@ requirements:
       engine: delegated
       tool: actionlint, zizmor
       check: "actionlint; zizmor --min-severity medium --persona regular"
+  - id: GHA-55
+    title: A step that installs tools through mise after jdx/mise-action gives mise a GitHub token
+    status: proposed
+    severity: warning
+    since: 0.9.6
+    validation:
+      engine: conftest
+      package: conventions.checks.github_actions.execution_hygiene
 ---
 
 # Execution hygiene
@@ -444,10 +454,71 @@ workflow, not in `conventions check` output.
 
 Checked by: actionlint, zizmor (delegated) · Severity: warning · Since: 0.1.0
 
+### GHA-55
+
+**A step that installs tools through mise after jdx/mise-action gives mise a GitHub token.**
+
+Since v5.1.1, `jdx/mise-action` passes its GitHub token only to its own step. A later step that makes mise install a
+tool, such as `mise exec jq@1.8.2`, then calls the GitHub API anonymously, and shares the runner IP's 60 calls an hour
+with every other tenant of that IP. Once they are spent the install fails with a 403, on a run nothing else is wrong
+with. In one repository this failed its conventions job in 7 of 48 runs over three and a half days, 3 of them on
+pushes that left `main` red. Give the step, or its job, the job's own token as `MISE_GITHUB_TOKEN`: the read-only
+`${{ github.token }}` is enough, so the job's permissions do not change.
+
+A step counts when it comes after `jdx/mise-action` in the same job, whether the job uses the action itself or through
+a local composite action under `.github/actions/` that does, and a line of its `run:` block:
+
+- runs `mise install`, `mise use` or `mise exec`, or their short forms `mise i` and `mise x`;
+- runs the conventions CLI (`conventions` or a path ending in `/conventions`) with any subcommand but `version`, since
+  it runs its engines through `mise exec`;
+- runs `task <name>`, where that task, or a task it calls through `task:` or `deps:`, runs one of the above.
+
+The step is satisfied when `MISE_GITHUB_TOKEN`, or one of the other variables mise reads a token from
+(`GITHUB_API_TOKEN`, `GITHUB_TOKEN`), is set in the env of the step, its job or its workflow; when that env is an
+expression; or when an earlier step in the job, or a local action it uses, writes one of them to `$GITHUB_ENV`.
+
+What the check does not see, and leaves to review:
+
+- a tool installed by a script the step runs, a `mise run` task, or a mise shim that installs on first use;
+- a task called through a name the check cannot resolve, such as a templated one, or a Taskfile outside the depths
+  the conventions CLI reads; a task is matched by its own name, so a same-named task in another Taskfile counts too;
+- `jdx/mise-action` used through an action in another repository, and steps inside a composite action itself.
+
+**Correct:**
+
+```yaml
+jobs:
+  conventions:
+    name: Conventions / Check
+    permissions:
+      contents: read
+    steps:
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
+      - name: Check the repository against its conventions
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+        run: conventions check --fail-on warning
+```
+
+**Incorrect:**
+
+```yaml
+jobs:
+  conventions:
+    name: Conventions / Check
+    steps:
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca  # v5.1.1
+      - name: Check the repository against its conventions
+        run: conventions check --fail-on warning   # installs jq through mise exec, anonymously
+```
+
+Checked by: conftest · Severity: warning · Since: 0.9.6
+
 ## References
 
 - [GitHub Docs: Security hardening for GitHub Actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
 - [GitHub Docs: Controlling permissions for GITHUB_TOKEN](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token)
 - [zizmor audit rules](https://docs.zizmor.sh/audits/)
 - [actionlint](https://github.com/rhysd/actionlint)
+- [mise: MISE_GITHUB_TOKEN](https://mise.jdx.dev/configuration.html#mise-github-token)
 - [EC-0003 Jobs and steps](jobs-and-steps.md)

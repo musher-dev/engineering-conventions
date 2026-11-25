@@ -1,0 +1,46 @@
+version: 2
+updates:
+  # Quarterly is quieter than monthly; one group still takes every update.
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: "quarterly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns: ["*"]
+      github-actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      devcontainers:
+        patterns: ["*"]
+  - package-ecosystem: "gomod"
+    directory: "/platform-api"
+    schedule:
+      interval: "monthly"
+    groups:
+      gomod:
+        patterns: ["*"]
+  - package-ecosystem: "docker"
+    directories:
+      - "/**"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker:
+        patterns: ["*"]
+  # Security updates only: no version-update pull requests, whatever the schedule.
+  - package-ecosystem: "npm"
+    directory: "/platform-api"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 0

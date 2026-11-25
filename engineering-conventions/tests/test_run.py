@@ -334,9 +334,11 @@ def test_selection_is_read_from_the_launcher(product: Path) -> None:
         ".trivyignore",
         ".config/security/trivyignore",
         ".config/security/gitleaksignore",
+        # The root README, for its currency badges (DEPS-15).
+        "README.md",
     ):
         assert chosen.texts.search(name), name
-    assert not chosen.texts.search("README.md")
+    assert not chosen.texts.search("docs/README.md")
     assert not chosen.texts.search(".claude/skills/writing-commits/references/guide.md")
     assert not chosen.texts.search("docs/trivyignore")
     assert chosen.sizes.search("docs/guide.md")

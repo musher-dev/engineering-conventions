@@ -6,7 +6,8 @@
 #   (DEPS-11), for every directory that holds a Dockerfile (DEPS-12), and for
 #   the product's manifest in the product directory (DEPS-13); and each
 #   Dependabot version update is quiet: monthly or rarer, every dependency in
-#   one group (DEPS-17).
+#   one group (DEPS-17); every directory an update scans holds a manifest its
+#   ecosystem reads (DEPS-18); and Bun's lockfile is updated as bun (DEPS-19).
 # scope: package
 # custom:
 #   convention: EC-0042
@@ -82,6 +83,41 @@ findings contains lib.finding("DEPS-17", entry.path, message) if {
 	)
 }
 
+# DEPS-18. A directory that does not exist, or a glob that matches none, is
+# REPO-22's.
+findings contains lib.finding("DEPS-18", entry.path, message) if {
+	some entry in updates.dependabot_updates
+	ecosystem := entry.update["package-ecosystem"]
+	updates.dependabot_manifests[ecosystem]
+	some declared in updates.update_directories(entry.update)
+	scanned := updates.scanned_by(trim(declared, "/ "))
+	count(scanned) > 0
+	not any_manifest(ecosystem, scanned)
+	message := sprintf(
+		concat(" ", [
+			"the %s update scans %q, which holds nothing the %s ecosystem reads, so Dependabot aborts the",
+			"update; point it at the directories that do, or use the ecosystem that reads what is there",
+		]),
+		[ecosystem, declared, ecosystem],
+	)
+}
+
+# DEPS-19
+findings contains lib.finding("DEPS-19", entry.path, message) if {
+	some entry in updates.dependabot_updates
+	entry.update["package-ecosystem"] == "npm"
+	some declared in updates.update_directories(entry.update)
+	some dir in updates.scanned_by(trim(declared, "/ "))
+	updates.holds_bun_lock(dir)
+	message := sprintf(
+		concat(" ", [
+			"the npm update scans %s, whose dependencies bun.lock records, and Dependabot refuses it as",
+			"a misconfigured Bun project, security updates included; set its package-ecosystem to bun",
+		]),
+		[slashed(dir)],
+	)
+}
+
 # The intervals that open at most one version-update pull request a month
 # per group.
 quiet_intervals := {"monthly", "quarterly", "semiannually", "yearly"}
@@ -143,3 +179,8 @@ slashed(directory) := concat("", ["/", directory])
 action_owner("") := "the workflows"
 
 action_owner(directory) := sprintf("the composite action in %s", [directory]) if directory != ""
+
+any_manifest(ecosystem, scanned) if {
+	some dir in scanned
+	updates.holds_manifest(ecosystem, dir)
+}

@@ -165,6 +165,8 @@ ID is permanent: it is never renumbered or reused.
 | [DEPS-15](dependencies/keeping-dependencies-current.md#deps-15) | The README shows a currency badge for each pin of another Musher release | EC-0033 | proposed | warning | conftest |
 | [DEPS-16](dependencies/keeping-dependencies-current.md#deps-16) | A maintain-dependency-badges workflow refreshes the currency badges on a schedule and on each release | EC-0033 | proposed | warning | conftest |
 | [DEPS-17](dependencies/automated-updates.md#deps-17) | Every Dependabot version update runs monthly or less often and groups every dependency | EC-0042 | proposed | warning | conftest |
+| [DEPS-18](dependencies/automated-updates.md#deps-18) | Every directory a Dependabot update scans holds a manifest its ecosystem reads | EC-0042 | proposed | warning | conftest |
+| [DEPS-19](dependencies/automated-updates.md#deps-19) | A directory whose dependencies bun.lock records is updated as bun, not npm | EC-0042 | proposed | warning | conftest |
 | [DEVC-01](dev-containers/dev-container-configuration.md#devc-01) | A dev container's configuration lives at .devcontainer/devcontainer.json or .devcontainer/\<name\>/devcontainer.json | EC-0027 | proposed | warning | conftest |
 | [DEVC-02](dev-containers/dev-container-configuration.md#devc-02) | A dev container that uses Features commits its lockfile beside its configuration | EC-0027 | proposed | warning | conftest |
 | [DEVC-03](dev-containers/dev-container-configuration.md#devc-03) | The lockfile records exactly the Features the configuration uses | EC-0027 | proposed | warning | conftest |

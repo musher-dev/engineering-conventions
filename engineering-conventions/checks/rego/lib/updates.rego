@@ -5,7 +5,8 @@
 #   Dependabot configuration, each with the directories it scans, whether it
 #   has a Renovate configuration, and the Dependabot ecosystems that read
 #   each kind of product manifest (REPO-20, REPO-22, DEVC-09, DEPS-11 to
-#   DEPS-13).
+#   DEPS-13), and what each ecosystem reads in a directory it scans (DEPS-18,
+#   DEPS-19).
 package conventions.lib.updates
 
 import data.conventions.lib.files
@@ -89,4 +90,61 @@ ecosystems := {
 		"manifests": ["pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"],
 		"dependabot": ["maven", "gradle"],
 	},
+}
+
+# What each Dependabot ecosystem reads, as patterns over a path relative to
+# the directory an update scans (DEPS-18). An ecosystem missing here is not
+# judged.
+dependabot_manifests := {
+	"docker": `^([^/]+\.)?([Dd]ockerfile|[Cc]ontainerfile)(\.[A-Za-z0-9_-]+)?$`,
+	"docker-compose": `^(docker-)?compose(\.[A-Za-z0-9_-]+)?\.ya?ml$`,
+	"devcontainers": `^(\.devcontainer\.json|\.devcontainer/devcontainer\.json|\.devcontainer/[^/]+/devcontainer\.json)$`,
+	"github-actions": `^(\.github/workflows/[^/]+\.ya?ml|action\.ya?ml)$`,
+	"npm": `^package\.json$`,
+	"bun": `^package\.json$`,
+	"pip": `^(requirements[^/]*\.(txt|in)|pyproject\.toml|setup\.py|setup\.cfg|Pipfile)$`,
+	"uv": `^(pyproject\.toml|uv\.lock)$`,
+	"cargo": `^Cargo\.toml$`,
+	"gomod": `^go\.mod$`,
+	"maven": `^pom\.xml$`,
+	"gradle": `^(build|settings)\.gradle(\.kts)?$`,
+	"terraform": `^[^/]+\.tf$`,
+}
+
+# Every directory an update could scan, the root ("") included.
+scannable contains ""
+
+scannable contains dir if some dir in files.directories
+
+# The directories a scanned pattern names, after glob expansion. `**` takes
+# in the root as well, as Dependabot's does.
+scanned_by(pattern) := {dir | some dir in scannable; scans(pattern, dir)} | root_of(pattern)
+
+default root_of(_) := set()
+
+root_of(pattern) := {""} if pattern in {"**", "**/*"}
+
+# A path below a directory, relative to it.
+relative(path, "") := path
+
+relative(path, dir) := trim_prefix(path, concat("", [dir, "/"])) if {
+	dir != ""
+	startswith(path, concat("", [dir, "/"]))
+}
+
+# Whether a directory holds a manifest of a Dependabot ecosystem.
+holds_manifest(ecosystem, dir) if {
+	some path in files.repository_files
+	regex.match(dependabot_manifests[ecosystem], relative(path, dir))
+}
+
+# Whether a directory holds Bun's lockfile (DEPS-19).
+holds_bun_lock(dir) if {
+	some name in ["bun.lock", "bun.lockb"]
+	concat("/", [dir, name]) in files.repository_files
+}
+
+holds_bun_lock("") if {
+	some name in ["bun.lock", "bun.lockb"]
+	name in files.repository_files
 }

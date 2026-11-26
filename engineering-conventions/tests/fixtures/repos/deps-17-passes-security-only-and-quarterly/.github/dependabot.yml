@@ -39,8 +39,9 @@ updates:
       docker:
         patterns: ["*"]
   # Security updates only: no version-update pull requests, whatever the schedule.
-  - package-ecosystem: "npm"
-    directory: "/platform-api"
+  - package-ecosystem: "docker-compose"
+    directories:
+      - "/.devcontainer/stacks/*"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 0

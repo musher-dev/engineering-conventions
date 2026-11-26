@@ -30,7 +30,7 @@ The conventions are **drafts**, owned by this repository, and every requirement 
 | --- | --- | --- |
 | [EC-0032 Dependencies declaration](dependencies-declaration.md) | DEPS-01 – DEPS-07, DEPS-14 | The file, exact pins, the vendored copy and its release record, and no cycle between repositories |
 | [EC-0033 Keeping dependencies current](keeping-dependencies-current.md) | DEPS-08 – DEPS-10 (retired), DEPS-15, DEPS-16 | The `deps:*` tasks, validation, and a currency badge per pin |
-| [EC-0042 Automated dependency updates](automated-updates.md) | DEPS-11 – DEPS-13, DEPS-17 | Renovate or Dependabot for the actions, the Dockerfiles and the product's manifest, monthly and grouped |
+| [EC-0042 Automated dependency updates](automated-updates.md) | DEPS-11 – DEPS-13, DEPS-17 – DEPS-19 | Renovate or Dependabot for the actions, the Dockerfiles and the product's manifest, monthly and grouped, each update reading what its directories hold |
 
 What a producer declares and ships is the [interfaces](../interfaces/README.md) topic. Runtime edges and capabilities
 are fields of an environment binding ([EC-0020](../environment/env-schema.md)). The reasoning is recorded in

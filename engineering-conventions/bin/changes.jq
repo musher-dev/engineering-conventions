@@ -83,8 +83,9 @@ def conventional:
     };
 
 # Who opened a pull request, by kind, never by login. The coding agents' Apps
-# are the one list to extend when another agent opens pull requests.
-def agents: ["musher-dagger"];
+# are the one list to extend when another agent opens pull requests: the
+# feature agent, the hotfix agent and the read-only investigator.
+def agents: ["musher-dagger", "musher-balto", "musher-larry"];
 def dependency_bots: ["dependabot", "renovate"];
 
 def author_kind:

@@ -553,6 +553,8 @@ def test_a_history_rewritten_after_opening_counts_from_the_opening(tmp_path: Pat
     ("author", "kind"),
     [
         ({"__typename": "Bot", "login": "musher-dagger"}, "agent"),
+        ({"__typename": "Bot", "login": "musher-balto[bot]"}, "agent"),
+        ({"__typename": "Bot", "login": "musher-larry"}, "agent"),
         ({"__typename": "Bot", "login": "dependabot"}, "dependency-bot"),
         ({"__typename": "Bot", "login": "renovate"}, "dependency-bot"),
         ({"__typename": "Bot", "login": "github-actions"}, "automation"),

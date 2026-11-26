@@ -81,6 +81,16 @@ requirements:
     validation:
       engine: conftest
       package: conventions.checks.commits.messages
+  - id: COMMIT-07
+    title: A pull request gives each issue it closes its own closing keyword
+    status: proposed
+    severity: warning
+    since: 0.9.9
+    validation:
+      engine: delegated
+      tool: grep
+      check: conventions closing-keywords
+    waivable: false
 ---
 
 # Commit messages
@@ -348,6 +358,46 @@ it, with the script that read it.
 ```
 
 Checked by: conftest · Severity: warning · Since: 0.7.1
+
+### COMMIT-07
+
+**A pull request gives each issue it closes its own closing keyword.**
+
+GitHub closes an issue when a pull request that names it after a closing keyword (`close`, `fix` or `resolve`, in any
+tense) merges into the default branch. The keyword applies to the one reference that follows it. In `Closes #12, #13`
+only #12 closes; #13 stays open after its work has shipped, and nobody is told. Write the keyword again for every
+issue: `Closes #12, closes #13`, or one per line.
+
+`conventions closing-keywords` reads a pull request body from a file, or from standard input, and prints each line
+where a closing keyword is followed by a second reference that has none of its own. It exits 1 when it finds one. The
+body is not in the repository, so `conventions check` cannot see it; a pull request workflow runs the command on
+`github.event.pull_request.body`, passed through an environment variable like the title in [COMMIT-04](#commit-04), on
+the `opened`, `edited` and `synchronize` events. A waiver cannot suppress a finding that `conventions check` does not
+produce, so COMMIT-07 is not waivable.
+
+```yaml
+- name: Check each closed issue has its own keyword
+  env:
+    BODY: ${{ github.event.pull_request.body }}
+  run: printf '%s\n' "$BODY" | conventions closing-keywords
+```
+
+**Correct:**
+
+```text
+Closes #12, closes #13
+Fixes musher-dev/platform#40
+Resolves #14
+```
+
+**Incorrect:**
+
+```text
+Closes #12, #13
+Fixes #12 and #13
+```
+
+Checked by: grep (delegated) · Severity: warning · Since: 0.9.9 · Waivable: no
 
 ## References
 

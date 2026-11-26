@@ -26,6 +26,14 @@ test_reserved_names_are_exempt if {
 	not repository.exempt with input as declared("platform-api")
 }
 
+test_kept_names if {
+	repository.kept with input as declared("specifications")
+	repository.kept with input as [td.named_inventory([], "pelorus")]
+	not repository.kept with input as declared("gadgets")
+	not repository.kept with input as declared("platform-api")
+	not repository.exempt with input as declared("specifications")
+}
+
 test_well_formed if {
 	repository.well_formed("platform-api")
 	repository.well_formed("platform-operator-console")

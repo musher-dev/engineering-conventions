@@ -58,6 +58,7 @@ decisions about why Musher exists and what it designs are in `musher-dev/pelorus
 | [0043](0043-a-newer-major-always-shows-on-a-currency-badge.md) | A newer major always shows on a currency badge, and the badge workflow reads with either App | accepted |
 | [0044](0044-source-code-behaviour-is-a-topic-of-its-own.md) | Conventions about what source code does live in a source-code topic, with a family per concern | accepted |
 | [0045](0045-a-deployed-release-carries-its-change-manifest.md) | A release another repository deploys carries its change manifest, written while it is a draft | proposed |
+| [0046](0046-kept-repository-names.md) | A few organization-wide repositories keep a single-token name, from a reviewed list in EC-0010 | accepted |
 
 ## Writing a decision
 

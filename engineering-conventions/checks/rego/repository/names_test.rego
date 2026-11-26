@@ -46,10 +46,10 @@ test_repo_08_grammar if {
 }
 
 test_repo_08_missing_component if {
-	found := names.findings with input as [td.named_inventory([], "platform"), platform_api]
+	found := names.findings with input as [td.named_inventory([], "gadgets"), platform_api]
 		with data.conventions.index as td.index
 	messages(found, "REPO-08") == {concat(" ", [
-		`repository name "platform" is not <system>-<component>: a registered system, a hyphen`,
+		`repository name "gadgets" is not <system>-<component>: a registered system, a hyphen`,
 		"and a component, in lowercase letters, digits and hyphens",
 	])}
 }
@@ -108,6 +108,23 @@ test_repo_11_short_name if {
 		`repository name "platform-organization-membership-reconciler" is 43 characters, more than 40;`,
 		"shorten the component so the name stays readable in paths, image names and URLs",
 	])}
+}
+
+test_repo_08_accepts_a_kept_name if {
+	kept := td.repository(object.union(td.identity, {
+		"name": "specifications",
+		"system": "platform",
+		"component": "specifications",
+	}))
+	count(names.findings) == 0 with input as [kept] with data.conventions.index as td.index
+	count(names.findings) == 0 with input as [kept, td.named_inventory([], "specifications")]
+		with data.conventions.index as td.index
+}
+
+test_repo_07_still_judges_a_kept_name if {
+	found := names.findings with input as [platform_api, td.named_inventory([], "pelorus")]
+		with data.conventions.index as td.index
+	td.ids(found) == {"REPO-07"}
 }
 
 test_reserved_names_are_exempt if {

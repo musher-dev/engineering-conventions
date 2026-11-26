@@ -801,7 +801,7 @@ specifiers = ["0.23.3"]
 version = "0.38.1"
 backend = "pipx:check-jsonschema"
 specifiers = ["0.38.1"]
-uv = { path = "locks/pipx-check-jsonschema/0.38.1", digest = "sha256:7d301ecb25029485039d8a3b6dc86966d3944242876dc0002db5ad1f3b873b40" }
+uv = { path = "locks/pipx-check-jsonschema/0.38.1", digest = "sha256:b651954c20b6aab09f484a8d2f199a216c3365e702f4d8b2585406422e22231e" }
 
 [[tools."pipx:yamllint"]]
 version = "1.38.0"

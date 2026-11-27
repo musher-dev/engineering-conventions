@@ -113,6 +113,7 @@ ID is permanent: it is never renumbered or reused.
 | [COMMIT-04](commits/commit-messages.md#commit-04) | A pull request workflow checks the title with committed and requires a scope | EC-0035 | proposed | warning | conftest |
 | [COMMIT-05](commits/commit-messages.md#commit-05) | Every commit message and pull request title passes committed | EC-0035 | proposed | warning | delegated |
 | [COMMIT-06](commits/commit-messages.md#commit-06) | No .github/conventional-commits.yaml keeps a second list of types and scopes | EC-0035 | proposed | warning | conftest |
+| [COMMIT-07](commits/commit-messages.md#commit-07) | A pull request gives each issue it closes its own closing keyword | EC-0035 | proposed | warning | delegated |
 | [CONF-01](configuration/tool-configuration.md#conf-01) | A known tool's configuration does not sit at the repository root | EC-0011 | proposed | warning | conftest |
 | [CONF-02](configuration/tool-configuration.md#conf-02) | A repository with a .config/ directory indexes it in .config/README.md | EC-0011 | proposed | warning | conftest |
 | [CONF-03](configuration/tool-configuration.md#conf-03) | Every file under .config/ is named in .config/README.md | EC-0011 | proposed | warning | conftest |

@@ -907,3 +907,54 @@ def test_prose_hands_vale_every_copy_extension(content: Content) -> None:
     assert found, "bin/conventions defines COPY_FILES as '\\.(ext|ext)$'"
     listed = set(found.group(1).replace("html?", "html|htm").split("|"))
     assert listed == set(generate.copy_extensions(content.copy_style))
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Closes #12, #13",
+        "Fixes #12 and #13",
+        "resolves: #12 #13",
+        "Closes musher-dev/platform#12, #13",
+        "Fixes https://github.com/example/example-api/issues/12, #13",
+    ],
+)
+def test_closing_keywords_reports_a_second_issue_without_a_keyword(
+    line: str, tmp_path: Path
+) -> None:
+    body = tmp_path / "body.md"
+    body.write_text(f"## Summary\n\n{line}\n")
+    completed = _launch("closing-keywords", str(body), cwd=tmp_path)
+    assert completed.returncode == 1, completed.stderr
+    assert completed.stdout.splitlines()[0] == f"warning [COMMIT-07] line 3: {line}"
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Closes #12, closes #13",
+        "Fixes musher-dev/platform#40",
+        "Prefixes #12, #13 are not keywords",
+        "Refs #12, #13",
+        "",
+    ],
+)
+def test_closing_keywords_passes_one_keyword_per_issue(line: str, tmp_path: Path) -> None:
+    body = tmp_path / "body.md"
+    body.write_text(f"{line}\n")
+    completed = _launch("closing-keywords", str(body), cwd=tmp_path)
+    assert completed.returncode == 0, completed.stdout
+    assert completed.stdout == "every closed issue has its own keyword\n"
+
+
+def test_closing_keywords_reads_standard_input(tmp_path: Path) -> None:
+    completed = subprocess.run(
+        [str(LAUNCHER), "closing-keywords"],
+        input="Closes #12, #13\n",
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 1
+    assert completed.stdout.startswith("warning [COMMIT-07] line 1: Closes #12, #13\n")

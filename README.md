@@ -100,7 +100,7 @@ Start from the part of your repository you are working on:
 | [Adoption](engineering-conventions/definitions/conventions/adoption/README.md) | The release pin in `.config/mise/config.toml`, `.repo/conventions.toml` | EC-0001 | ADOPT-01 – ADOPT-11 |
 | [Agents](engineering-conventions/definitions/conventions/agents/README.md) | `AGENTS.md`, `.claude/rules/`, `.claude/skills/`, `.claude/agents/` | EC-0013, EC-0034 | AGENT-01 – AGENT-19 |
 | [Branch protection](engineering-conventions/definitions/conventions/branch-protection/README.md) | `.github/rulesets/`: the ruleset that protects the default branch | EC-0041 | BRANCH-01 – BRANCH-04 |
-| [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-06 |
+| [Commits](engineering-conventions/definitions/conventions/commits/README.md) | `.config/commits/committed.toml`, the commit-msg hook, the pull request title | EC-0035 | COMMIT-01 – COMMIT-07 |
 | [Community files](engineering-conventions/definitions/conventions/community-files/README.md) | `.github/ISSUE_TEMPLATE/`, `.github/DISCUSSION_TEMPLATE/`, `CODEOWNERS`, `SECURITY.md` | EC-0036 | COMM-01 – COMM-11 |
 | [Configuration](engineering-conventions/definitions/conventions/configuration/README.md) | `.config/`, tool configuration at the root, scanner ignore files, how strict each tool's configuration is | EC-0011, EC-0012, EC-0044 | CONF-01 – CONF-23 |
 | [Container images](engineering-conventions/definitions/conventions/container-images/README.md) | Dockerfiles, their ignore files and compose files in `docker/` directories, `.config/docker/hadolint.yaml` | EC-0039, EC-0040, EC-0043 | IMAGE-01 – IMAGE-12 |

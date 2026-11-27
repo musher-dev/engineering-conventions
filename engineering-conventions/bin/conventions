@@ -37,6 +37,7 @@
 #   conventions env-contract [-C DIR] SCHEMA
 #   conventions env-file [-C DIR] [--force | --update] [--backup] SCHEMA
 #   conventions waivers [-C DIR] [--check-tracking]
+#   conventions closing-keywords [FILE]
 #   conventions codeowners [--repository OWNER/NAME] [--ref REF] [--fail-on error|warning] [--output text|json] [-C DIR]
 #   conventions dependencies status [--json] [-C DIR]
 #   conventions dependencies badges --out DIR [--status FILE] [-C DIR]
@@ -1337,6 +1338,30 @@ release() {
   esac
 }
 
+# closing-keywords [FILE]: print each line of a pull request body, read
+# from FILE or standard input, where a closing keyword is followed by a second
+# issue reference with no keyword of its own. GitHub closes only the first:
+# "Closes #12, #13" leaves #13 open (COMMIT-07). Exit 1 when any line does.
+closing_keywords() {
+  [ $# -le 1 ] || usage
+  body=${1:--}
+  [ "${body}" = - ] || [ -f "${body}" ] || die "closing-keywords: ${body} is not a file"
+  keyword='(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)'
+  ref='(([[:alnum:]_.-]+/[[:alnum:]_.-]+)?#[0-9]+|https://github\.com/[[:alnum:]_.-]+/[[:alnum:]_.-]+/(issues|pull)/[0-9]+)'
+  separator='([[:space:]]*,[[:space:]]*(and[[:space:]]+)?|[[:space:]]+((and|&)[[:space:]]+)?)'
+  pattern="(^|[^[:alnum:]_])${keyword}:?[[:space:]]+${ref}${separator}${ref}"
+  found=$(grep -n -i -E -e "${pattern}" -- "${body}" || true)
+  if [ -z "${found}" ]; then
+    echo "every closed issue has its own keyword"
+    return 0
+  fi
+  printf '%s\n' "${found}" | while IFS= read -r line; do
+    printf 'warning [COMMIT-07] line %s: %s\n' "${line%%:*}" "${line#*:}"
+  done
+  echo "GitHub closes only the first issue after a keyword: write \"Closes #12, closes #13\", not \"Closes #12, #13\""
+  return 1
+}
+
 version() {
   release="${bundle}/checks/data/release.json"
   if [ -f "${release}" ]; then
@@ -1356,6 +1381,7 @@ case ${command} in
   env-contract) env_contract "$@" ;;
   env-file) env_file "$@" ;;
   waivers) waivers "$@" ;;
+  closing-keywords) closing_keywords "$@" ;;
   codeowners) codeowners "$@" ;;
   dependencies) dependencies "$@" ;;
   release) release "$@" ;;

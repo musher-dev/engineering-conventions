@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.9](https://github.com/musher-dev/engineering-conventions/compare/v0.9.8...v0.9.9) (2026-11-27)
+
+
+### Features
+
+* **conventions:** check what each Dependabot directory holds (DEPS-18, DEPS-19) ([#157](https://github.com/musher-dev/engineering-conventions/issues/157)) ([5181802](https://github.com/musher-dev/engineering-conventions/commit/5181802e7ce03b2c57fc2ab6e8cf3b389b4529f7))
+* **conventions:** give each closed issue its own keyword (COMMIT-07) ([#165](https://github.com/musher-dev/engineering-conventions/issues/165)) ([bdf5973](https://github.com/musher-dev/engineering-conventions/commit/bdf597344c7cf0b5857910df79bb996e7354e218))
+
+
+### Bug Fixes
+
+* **conventions:** accept a reviewed list of kept names in REPO-08 ([#133](https://github.com/musher-dev/engineering-conventions/issues/133)) ([157a8a3](https://github.com/musher-dev/engineering-conventions/commit/157a8a37f04e703a12a2455e451f1abd97d8e4ff)), closes [#132](https://github.com/musher-dev/engineering-conventions/issues/132)
+
 ## [0.9.8](https://github.com/musher-dev/engineering-conventions/compare/v0.9.7...v0.9.8) (2026-11-25)
 
 
